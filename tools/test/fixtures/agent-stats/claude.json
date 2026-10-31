@@ -1,0 +1,30 @@
+{
+  "daily": [
+    {
+      "date": "2026-10-30",
+      "inputTokens": 12,
+      "outputTokens": 30,
+      "cacheCreationTokens": 8,
+      "cacheReadTokens": 50,
+      "totalTokens": 100,
+      "totalCost": 1.25,
+      "modelsUsed": ["claude-opus-5-5", "claude-sonnet-5-5"],
+      "modelBreakdowns": [
+        { "modelName": "claude-opus-5-5", "cost": 1 },
+        { "modelName": "claude-sonnet-5-5", "cost": 0.25 }
+      ]
+    },
+    {
+      "date": "2026-10-31",
+      "inputTokens": 2,
+      "outputTokens": 3,
+      "cacheCreationTokens": 0,
+      "cacheReadTokens": 5,
+      "totalTokens": 10,
+      "totalCost": 0.5,
+      "modelsUsed": ["claude-sonnet-5-5"],
+      "modelBreakdowns": [{ "modelName": "claude-sonnet-5-5", "cost": 0.5 }]
+    }
+  ],
+  "totals": { "totalTokens": 110, "totalCost": 1.75 }
+}
