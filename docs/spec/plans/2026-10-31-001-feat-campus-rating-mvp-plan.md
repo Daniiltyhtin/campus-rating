@@ -242,9 +242,10 @@ execution: code
   - e2e — Playwright против compose-стека.
 - KTD16. **Агентский процесс.**
   - `AGENTS.md` — единый источник правил. `CLAUDE.md` импортирует его строкой `@AGENTS.md` в каждой папке с вложенным `AGENTS.md`.
-  - Скиллы лежат по стандарту Agent Skills в `.agents/skills/` (их читает Codex), в `.claude/skills/` — симлинки.
+  - Скиллы лежат по стандарту Agent Skills в `.agents/skills/` (их читает Codex), в `.claude/skills/` — сгенерированные копии с проверкой расхождений. Симлинки не используются: в команде есть Windows. Хуки и служебные скрипты обвязки написаны на Node, который есть у всех участников.
   - Codex реализует юнит, ревьюер (субагент `reviewer` или человек) проверяет diff против плана, проверки гоняются заново, коммит делает человек или Claude.
   - Журнал — `docs/agent-log.md` по шаблону, хук `Stop` напоминает о записи. Статистику даёт `ccusage` по локальным журналам сессий.
+  - Для доменных юнитов приёмочные тесты пишет отдельная сессия до реализации, и исполнитель их не меняет; критичные запреты (пуш в `main`, правка сгенерированных файлов, `.env`) закреплены хуком, а не только текстом. Детали — план U1.
   - Автор PR обязан понимать и уметь объяснить каждую строку своего diff, даже если её написал агент: «это написал агент» на защите не принимается. Правило закреплено в `REVIEWING.md` и шаблоне PR.
   - Значимые решения дублируются ADR в `docs/spec/architecture-decisions/` (контекст, решение, последствия включая отрицательные, статус). Изменение решения — новый ADR со статусом `supersedes` и правка KTD в плане тем же PR; старый ADR не удаляется.
   - (session-settled: user-approved — chosen over OTel-телеметрии: жюри оценивает выводы команды, а не метрики, и OTel требует инфраструктуры на трёх машинах.)
@@ -423,10 +424,10 @@ erDiagram
 - **Dependencies.** нет.
 - **Files:**
   - `AGENTS.md`, `CLAUDE.md`, `backend/AGENTS.md`, `backend/CLAUDE.md`, `frontend/AGENTS.md`, `frontend/CLAUDE.md`, `e2e/AGENTS.md`, `e2e/CLAUDE.md`;
-  - `.agents/skills/ub-mode/SKILL.md`, `.agents/skills/implement-unit/SKILL.md`, `.agents/skills/review-unit/SKILL.md`, `.agents/skills/write-tests/SKILL.md`, `.agents/skills/agent-log/SKILL.md`, `.claude/skills/*` (симлинки);
-  - `.claude/agents/reviewer.md`, `.claude/agents/tester.md`, `.claude/settings.json`, `.claude/hooks/agent-log-reminder.sh`, `.codex/config.toml`, `.codex/hooks.json`;
-  - `.mcp.json`, `docs/agent-process.md`, `docs/agent-log.md`, `tools/agent-stats.sh`, `docs/spec/README.md`;
-  - `REVIEWING.md`, `.github/PULL_REQUEST_TEMPLATE.md`, `docs/spec/architecture-decisions/adr000-template.md`, `docs/spec/architecture-decisions/index.md`, ADR для KTD3, KTD4, KTD8, KTD9, KTD11.
+  - `.agents/skills/ub-mode/SKILL.md`, `.agents/skills/implement-unit/SKILL.md`, `.agents/skills/review-unit/SKILL.md`, `.agents/skills/write-tests/SKILL.md`, `.agents/skills/agent-log/SKILL.md`, `.claude/skills/*` (сгенерированные копии);
+  - `.claude/agents/reviewer.md`, `.claude/agents/tester.md`, `.claude/settings.json`, `.claude/hooks/agent-log-reminder.mjs`, `.codex/config.toml`, `.codex/hooks.json`;
+  - `.mcp.json`, `docs/agent-process.md`, `docs/agent-log.md`, `tools/agent-stats.mjs`, `tools/sync-skills.mjs`, `tools/check-agent-docs.mjs`, `tools/test/`, `.gitattributes`, `.nvmrc`, `docs/spec/README.md`;
+  - `REVIEWING.md`, `.github/PULL_REQUEST_TEMPLATE.md`, `docs/spec/architecture-decisions/adr000-template.md`, `docs/spec/architecture-decisions/index.md`, ADR для KTD3, KTD4, KTD8, KTD9, KTD11, KTD13. Детальный план юнита — `docs/spec/plans/2026-10-31-002-feat-u1-agent-harness-plan.md`.
 - **Approach:**
   1. Корневой `AGENTS.md` (до ~8 КБ, лимит Codex — 32 КиБ на всю цепочку): цель проекта и ссылка на этот план, карта репозитория, команды из Verification Contract, соглашения по коду, коммитам и ветвлению, запреты, цикл «юнит → ревью → коммит», ссылка на глоссарий. Вложенные `AGENTS.md` добавляют специфику стека: Boot 4 и Jackson 3 и Modulith для backend, Mantine и TanStack Query и сгенерированные типы для frontend, Playwright для e2e.
   2. Каждый `CLAUDE.md` — строка `@AGENTS.md` плюс то, что нужно только Claude (список субагентов).
@@ -452,15 +453,14 @@ erDiagram
 
      Там же: где общие настройки, а где персональные; что делает хук и как проверить его срабатывание; какие инструменты разрешены ролям.
   9. `docs/agent-log.md`: шаблон записи (дата, кто, агент и модель, юнит, поручение, результат, ошибка агента, как обнаружили, исправление, урок, коммит) и первая запись — сессия написания этой спеки.
-  10. `tools/agent-stats.sh` вызывает `ccusage` для Claude и Codex и сводит таблицу для презентации.
+  10. `tools/agent-stats.mjs` вызывает `ccusage` для Claude и Codex и сводит таблицу для презентации.
 - **Patterns to follow.** Формат Agent Skills (`name`, `description`, markdown-тело) — без Claude-специфичных полей в общих скиллах.
 - **Test scenarios:**
   - Codex в `backend/` подхватывает корневой и backend `AGENTS.md` (проверка вопросом «какая версия Jackson в проекте»).
   - Claude Code видит скиллы `ub-mode`, `implement-unit`, `review-unit`, `write-tests`, `agent-log` и субагентов `reviewer`, `tester`; Codex видит те же скиллы.
   - Хук: изменён `.java`, журнал не тронут — напоминание появляется. Журнал изменён — напоминания нет. Повторный `Stop` с `stop_hook_active` не зацикливается.
-  - `tools/agent-stats.sh` на машине без сессий завершается понятным сообщением, а не трассой.
-  - Сквозной прогон на учебном мини-юните: `implement-unit` → `review-unit` → `agent-log` даёт diff, ревью с решением и запись журнала.
-  - Негативный сценарий: в diff специально нарушен KTD (баланс меняется в обход `LedgerApi`), и `review-unit` выносит `request changes` со ссылкой на KTD3.
+  - `tools/agent-stats.mjs` на машине без сессий завершается понятным сообщением, а не трассой.
+  - Сквозной прогон и негативный сценарий ревью проверяются на первых реальных юнитах: мастер-U2 и мастер-U6.
 - **Verification.** Новый участник клонирует репо и по `AGENTS.md` за 10 минут понимает, как взять юнит в работу; оба агента подтверждают загрузку правил.
 
 ### U2. Скелет монорепо и compose
@@ -487,6 +487,7 @@ erDiagram
   - `SmokeIT` поднимает контекст на Testcontainers, `/actuator/health` возвращает UP.
   - e2e-смоук открывает главную страницу через nginx и видит форму входа.
   - Смоук PIT на одном тривиальном доменном классе подтверждает совместимость с JUnit 6.
+  - Юнит выполнен через `implement-unit` → `review-unit` → `agent-log`: есть diff, ревью с решением и запись журнала. Это первый сквозной прогон скиллов U1.
   - Changeset из пустой папки модуля, добавленный в двух ветках с разными метками, применяется в любом порядке слияния; changeset с `context: demo` не применяется в тестах.
 - **Verification.** Чистый клон → `docker compose up` → приложение открывается на `http://localhost:8080`, а Mailpit на `:8025`; CI зелёный. `docker-compose.e2e.yml` переопределяет значения по умолчанию для штрафа (интервал 4 с, poll-period 1 с); e2e-стек запускается отдельным проектом compose с чистым томом командой из Verification Contract, Playwright стеком не управляет.
 
@@ -563,6 +564,7 @@ erDiagram
   - Covers AE6. Две параллельные транзакции с одним ключом дают одну проводку.
   - Сбой после вставки проводки откатывает и проводку, и баланс.
   - Инвариант «снимок = сумма журнала» держится после 1000 случайных операций.
+  - Негативный сценарий ревью: в учебной ветке баланс меняется в обход `LedgerApi`, и `review-unit` выносит `request changes` со ссылкой на KTD3.
   - `CHECK` в базе отвергает АР 1001, даже если обойти доменный код.
 - **Verification.** Мутационный порог `ledger.domain` пройден, сверка инварианта на демо-данных пустая.
 
@@ -690,7 +692,7 @@ erDiagram
 - **Requirements.** R42; AE1, AE3, AE8.
 - **Dependencies.** U7–U11.
 - **Files:** `docs/spec/test-plan.md`, `docs/spec/perf-baseline.md`, `backend/src/test/java/ru/campusrating/perf/QueryBaselineIT.java`, `e2e/tests/base/registration.spec.ts`, `e2e/tests/base/checkpoint-penalty.spec.ts`, `e2e/tests/base/activity-budget.spec.ts`, `e2e/tests/base/feed.spec.ts`, `e2e/fixtures/`.
-- **Approach.** Тест-план содержит: уровни тестов и их владельцев, матрицу «R → тест», матрицу доступа «операция × роль × принадлежность ресурса» (R3) с негативным API-тестом на каждую строку, ручные сценарии для защиты, мобильные проверки. e2e используют демо-аккаунты и стек `docker-compose.e2e.yml` с ускоренным штрафом (интервал 4 с); ожидания — `expect.poll`, а не паузы. API админки (U13) e2e базы не нужен.
+- **Approach.** Тест-план содержит: уровни тестов и их владельцев, матрицу «R → тест», матрицу доступа «операция × роль × принадлежность ресурса» (R3) с негативным API-тестом на каждую строку, ручные сценарии для защиты, мобильные проверки. Каждый сценарий — стабильный ID, предусловия, шаги, ожидание, негативные ветки, источник (R/AE) и файл автотеста. e2e используют демо-аккаунты и стек `docker-compose.e2e.yml` с ускоренным штрафом (интервал 4 с); ожидания — `expect.poll`, а не паузы. API админки (U13) e2e базы не нужен.
 - **Test scenarios:**
   - Регистрация студента → вход → профиль с 1000 АР.
   - Covers AE1. Просрочка: АР уменьшается и останавливается на потолке.
@@ -836,7 +838,7 @@ erDiagram
 - **Approach.**
   - Демо-история: студенты с разной историей, точка, просроченная на демо, активность с полным бюджетом, опрос.
   - README: запуск, демо-аккаунты, карта документации.
-  - Статистика агентов из `tools/agent-stats.sh` со всех трёх машин.
+  - Статистика агентов из `tools/agent-stats.mjs` со всех трёх машин.
   - Чистка репозитория по `git status`, `.gitignore` и отсутствию секретов.
 - **Test expectation: none -- документация и данные; проверяются прогоном compose из чистого клона и полным e2e.**
 - **Verification.** Чистый клон на чужой машине → `docker compose up` → демо-сценарий проходит по README.
@@ -853,7 +855,7 @@ erDiagram
 | Frontend: сборка | `npm --prefix frontend run build` | каждый юнит с frontend |
 | Контракт ↔ типы | `npm --prefix frontend run api:gen` и пустой `git diff` | когда меняется `openapi.yaml` |
 | Стек и e2e | `docker compose -p campus-e2e -f docker-compose.yml -f docker-compose.e2e.yml down -v`, затем то же с `up -d --build --wait`, затем `npm --prefix e2e test` | каждый PR в CI, локально перед PR |
-| Статистика агентов | `tools/agent-stats.sh` | U20 |
+| Статистика агентов | `node tools/agent-stats.mjs --export <имя>` на каждой машине, затем `--merge` | U20 |
 
 Пороги (KTD15): JaCoCo ≥ 80% строк в `*.domain`, PIT ≥ 70% в `ledger.domain`, `checkpoint.domain`, `activity.domain`, CRAP ≤ 10 на метод в `*.domain`, CPD без дублей от 100 токенов. Команды создаются в U2; до U2 этот раздел — целевое состояние.
 
