@@ -39,6 +39,8 @@ test('KTD12: Codex patches inspect only file headers, including deletes', () => 
     assert.match(check('apply_patch', { patch: `*** ${action} File: backend/.env.local` }), /\.env/);
   }
   assert.equal(check('apply_patch', { input: '*** Update File: tools/a.mjs\n+const x = ".env";' }), null);
+  assert.match(check('apply_patch', { command: '*** Begin Patch\n*** Update File: .claude/skills/ub-mode/SKILL.md\n*** End Patch' }), /синк/);
+  assert.equal(check('apply_patch', { command: '*** Begin Patch\n*** Update File: .agents/skills/ub-mode/SKILL.md\n*** End Patch' }), null);
 });
 
 test('KTD12: shell commands across Claude and Codex', () => {

@@ -1,0 +1,4 @@
+# Проектные настройки Codex: применяются только после доверия проекту (см. docs/agent-process.md).
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+project_doc_max_bytes = 24576

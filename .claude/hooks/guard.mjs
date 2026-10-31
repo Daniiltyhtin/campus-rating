@@ -63,7 +63,7 @@ export function guard(input, context) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) return null;
   const { tool_name: name, tool_input: args } = input;
   if (name === 'apply_patch') {
-    const patch = typeof args === 'string' ? args : args?.patch ?? args?.input;
+    const patch = typeof args === 'string' ? args : args?.command ?? args?.patch ?? args?.input;
     if (typeof patch !== 'string') return null;
     for (const match of patch.matchAll(/^\*\*\* (?:Add|Update|Delete) File: (.+)\r?$/gm)) {
       const reason = pathReason(match[1].trim(), true, context);
