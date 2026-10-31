@@ -21,7 +21,7 @@ async function setup(t) {
     platform: 'linux',
     run(command, args, settings) {
       calls.push({ command, args, settings });
-      return { status: 0, stdout: args[2] === 'claude' ? claude : codex, stderr: '' };
+      return { status: 0, stdout: args.includes('claude') ? claude : codex, stderr: '' };
     },
     log: text => messages.push(text),
     error: text => messages.push(text),
@@ -55,12 +55,17 @@ test('KTD9 export normalizes both daily formats and invokes pinned ccusage with 
   ]);
 });
 
-test('KTD9 defaults to hackathon start and machine coverage; Windows uses npx.cmd without shell', async t => {
+test('R3/KTD9 defaults to hackathon start and machine coverage; Windows invokes npx via cmd.exe without shell', async t => {
   const { options, calls, exported } = await setup(t);
   assert.equal(await main(['--export', 'Боб'], { ...options, platform: 'win32' }), 0);
-  assert.ok(calls.every(call => call.command === 'npx.cmd' && call.settings.shell === false));
-  assert.ok(calls.every(call => call.args.at(-1) === '20261022' && !call.args.includes('--project')));
-  assert.equal((await exported('Боб')).sources.claude.coverage, 'вся машина');
+  assert.deepEqual(calls.map(({ command, args, settings }) => [command, args, settings.shell]), [
+    ['cmd.exe', ['/d', '/s', '/c', 'npx', '-y', 'ccusage@20.0.46', 'claude', 'daily', '--json', '--since', '20261022'], false],
+    ['cmd.exe', ['/d', '/s', '/c', 'npx', '-y', 'ccusage@20.0.46', 'codex', 'daily', '--json', '--since', '20261022'], false],
+  ]);
+  const result = await exported('Боб');
+  assert.equal(result.sources.claude.coverage, 'вся машина');
+  assert.equal(result.sources.claude.daily[0].tokens.total, 100);
+  assert.equal(result.sources.codex.daily[0].tokens.total, 200);
 });
 
 test('KTD9 merge sums two participants, counts journal entries and review rounds, and is repeatable', async t => {
@@ -72,11 +77,40 @@ test('KTD9 merge sums two participants, counts journal entries and review rounds
   assert.match(text, /\| Алиса \| claude \| 14 \| 33 \| 63 \| 110 \| 1\.750000 \| проект campus \|/);
   assert.match(text, /\| Боб \| codex \| 20 \| 10 \| 170 \| 200 \| 2\.500000 \| вся машина \|/);
   assert.match(text, /\| \*\*Итого\*\* \| — \| 68 \| 86 \| 466 \| 620 \| 8\.500000 \|/);
-  assert.match(text, /Записей журнала: 3/);
+  assert.match(text, /Записей журнала: 5/);
   assert.match(text, /Кругов ревью: 5/);
   await main(['--export', 'Алиса', '--claude-project', 'campus'], options);
   assert.equal(await main(['--merge'], options), 0);
   assert.equal(await report(), text);
+});
+
+test('KTD9 merge includes daily rows by date, participant and source alongside totals', async t => {
+  const { options, report } = await setup(t);
+  await main(['--export', 'Боб'], options);
+  await main(['--export', 'Алиса'], options);
+  assert.equal(await main(['--merge'], options), 0);
+  const text = await report();
+  assert.match(text, /\| Дата \| Участник \| Источник \| Всего токенов \| Стоимость, USD \|/);
+  assert.deepEqual(text.split('\n').filter(line => /^\| \d{4}-/.test(line)), [
+    '| 2026-10-30 | Алиса | claude | 100 | 1.250000 |',
+    '| 2026-10-30 | Алиса | codex | 200 | 2.500000 |',
+    '| 2026-10-30 | Боб | claude | 100 | 1.250000 |',
+    '| 2026-10-30 | Боб | codex | 200 | 2.500000 |',
+    '| 2026-10-31 | Алиса | claude | 10 | 0.500000 |',
+    '| 2026-10-31 | Боб | claude | 10 | 0.500000 |',
+  ]);
+  assert.match(text, /\*\*Итого\*\*.*620 \| 8\.500000/);
+  assert.doesNotMatch(text, /сесси/i);
+});
+
+test('KTD9 journal distinguishes accepted units from research, missing commits and templates', async t => {
+  const { options, report } = await setup(t);
+  await main(['--export', 'Алиса'], options);
+  assert.equal(await main(['--merge'], options), 0);
+  const text = await report();
+  assert.match(text, /Принятых юнитов: 1\b/);
+  assert.match(text, /Записей журнала: 5\b/);
+  assert.match(text, /Кругов ревью: 5\b/);
 });
 
 for (const [name, failed, reason] of [
@@ -143,5 +177,5 @@ test('KTD9 merge without participant exports reports zero and still counts the j
   await fs.writeFile(path.join(options.root, 'docs/presentation/agent-stats/.gitkeep'), '');
   assert.equal(await main(['--merge'], options), 0);
   assert.match(await report(), /\*\*Итого\*\* \| — \| 0 \| 0 \| 0 \| 0 \| 0\.000000/);
-  assert.match(await report(), /Записей журнала: 3/);
+  assert.match(await report(), /Записей журнала: 5/);
 });

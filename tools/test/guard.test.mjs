@@ -68,6 +68,132 @@ test('KTD12: malformed input and unknown tools fail open', () => {
   assert.equal(check('unknown', { path: '.env', command: 'git push --force' }), null);
 });
 
+for (const command of [
+  'git push --all', 'git push origin --all', 'git push --mirror', 'git push origin --mirror',
+  'git push origin --delete main', 'git push origin HEAD:main', 'git push origin +x:main', 'git push origin :main',
+]) {
+  test(`KTD12: deny broad pushes and main refspecs: ${command}`, () => {
+    assert.match(check('Bash', { command }, { branch: 'u1-agent-harness' }), /push/);
+  });
+}
+
+for (const command of ['git push', 'git push origin', 'git push -u origin', 'git status && git push origin',
+  'git push origin\ngit status', ['git push origin', 'git status']]) {
+  test(`KTD12: implicit push uses current branch: ${command}`, () => {
+    assert.match(check('Bash', { command }, { branch: 'main' }), /push/);
+    assert.equal(check('Bash', { command }, { branch: 'u1-agent-harness' }), null);
+  });
+}
+
+test('KTD12: main may push an explicit unit branch refspec', () => {
+  assert.equal(check('Bash', { command: 'git push origin u1-agent-harness' }, { branch: 'main' }), null);
+});
+
+for (const command of [
+  'cd backend && cat ../.env',
+  `node -e 'require("fs").readFileSync(".env")'`,
+  'cat "../.env.local"',
+  'cat ../../.env.production',
+  'echo config=../.env.example.local',
+]) {
+  test(`KTD12: env components anywhere in shell text are denied: ${command}`, () => {
+    assert.match(check('Bash', { command }), /\.env/);
+  });
+}
+
+for (const command of [
+  'git restore .claude/skills/ub-mode/SKILL.md',
+  'git checkout -- .claude/skills/ub-mode/SKILL.md',
+  'cat .claude/skills/a.md && git restore .claude/skills/a.md',
+  'cat .claude/skills/a.md; echo changed',
+  'cat .claude/skills/a.md || echo changed',
+  'cat .claude/skills/a.md | sort',
+  'cat .claude/skills/a.md\ngit restore .claude/skills/a.md',
+  ['cat .claude/skills/a.md', 'git restore .claude/skills/a.md'],
+  'cat .claude/skills/a.md > copy.md',
+  'cat .claude/skills/a.md >> copy.md',
+  'git diff .claude/skills/a.md && git reset --hard',
+  'git restore .claude\\skills\\a.md',
+  `node -e 'require("fs").writeFileSync(".claude/skills/a.md", "changed")'`,
+]) {
+  test(`KTD12: skill references require every subcommand to be read-only: ${command}`, () => {
+    assert.match(check('Bash', { command }), /синк/);
+  });
+}
+
+for (const command of [
+  ...['cat', 'type', 'head', 'tail', 'less', 'ls', 'dir', 'grep', 'rg', 'wc', 'diff',
+    'Get-Content', 'Select-String', 'git diff', 'git log', 'git status', 'git show',
+    'node tools/check-agent-docs.mjs', 'node tools/sync-skills.mjs']
+    .map(prefix => `${prefix} .claude/skills/a.md`),
+  'cat .claude/skills/a.md | wc -l && git diff .claude/skills; ls .claude/skills || git status',
+  'cat .claude\\skills\\a.md',
+  ['cat', '.claude/skills/a.md'],
+  'git restore .agents/skills/ub-mode/SKILL.md',
+  'cd backend && cat ../.env.example',
+  `node -e 'require("fs").readFileSync(".env.example")'`,
+]) {
+  test(`KTD12: permitted shell scenario: ${command}`, () => {
+    assert.equal(check('Bash', { command }), null);
+  });
+}
+
+for (const file of ['.claude/skills/a.md', 'backend/.env.local']) {
+  for (const [source, destination] of [['tools/a.md', file], [file, 'tools/a.md']]) {
+    test(`KTD12: patch move checks source and destination: ${source} -> ${destination}`, () => {
+      const reason = check('apply_patch', `*** Begin Patch\n*** Update File: ${source}\n*** Move to: ${destination}\n@@\n-a\n+b\n*** End Patch`);
+      assert.match(reason, /синк|\.env/);
+    });
+  }
+}
+
+test('KTD12: patch move between unprotected files is allowed', () => {
+  assert.equal(check('apply_patch', '*** Update File: tools/a.mjs\n*** Move to: tools/b.mjs'), null);
+});
+
+for (const file_path of ['.claude/skills/a.md', '.env.local']) {
+  test(`KTD12: MultiEdit denies protected file: ${file_path}`, () => {
+    assert.match(check('MultiEdit', { file_path, edits: [] }), /синк|\.env/);
+  });
+}
+
+for (const file of ['C:\\repo\\.CLAUDE\\SKILLS\\a.md', 'C:\\repo\\.ENV.LOCAL']) {
+  test(`R3/KTD12: Windows protected components ignore case: ${file}`, () => {
+    const context = { root: 'C:\\repo', cwd: 'C:\\repo\\backend' };
+    assert.match(check('Edit', { file_path: file }, context), /синк|\.env/);
+    assert.match(check('PowerShell', { command: `git restore "${file}"` }, context), /синк|\.env/);
+    assert.equal(check('Read', { file_path: 'C:\\repo\\.ENV.EXAMPLE' }, context), null);
+    assert.equal(check('PowerShell', { command: 'Get-Content C:\\repo\\.ENV.EXAMPLE' }, context), null);
+  });
+}
+
+test('R3/KTD12: implicit push gets branch from hook root, including a nested repository cwd', async t => {
+  const repo = await fs.mkdtemp(path.join(os.tmpdir(), 'guard-branch-'));
+  t.after(() => fs.rm(repo, { recursive: true, force: true }));
+  await fs.mkdir(path.join(repo, '.claude/hooks'), { recursive: true });
+  const backend = path.join(repo, 'backend');
+  await fs.mkdir(backend);
+  const script = path.join(repo, '.claude/hooks/guard.mjs');
+  await fs.copyFile(new URL('../../.claude/hooks/guard.mjs', import.meta.url), script);
+  for (const [directory, branch] of [[repo, 'main'], [backend, 'u2-skeleton']]) {
+    assert.equal(spawnSync('git', ['init', '--quiet', `--initial-branch=${branch}`, directory]).status, 0);
+    assert.equal(spawnSync('git', ['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.test',
+      'commit', '--quiet', '--allow-empty', '-m', 'fixture'], { cwd: directory }).status, 0);
+  }
+  const run = command => spawnSync(process.execPath, [script], {
+    input: JSON.stringify({ cwd: backend, tool_name: 'Bash', tool_input: { command } }),
+    cwd: backend, encoding: 'utf8',
+  });
+  for (const command of ['git push', 'git push origin']) {
+    const denied = run(command);
+    assert.equal(denied.status, 2);
+    assert.match(denied.stderr, /push/);
+  }
+  assert.equal(run('git push origin u1-agent-harness').status, 0);
+  assert.equal(spawnSync('git', ['checkout', '--quiet', '-b', 'u1-agent-harness'], { cwd: repo }).status, 0);
+  assert.equal(run('git push origin').status, 0);
+});
+
 test('R3/KTD12: real hook protocol and path root from script location', async t => {
   const repo = await fs.mkdtemp(path.join(os.tmpdir(), 'guard кириллица-'));
   t.after(() => fs.rm(repo, { recursive: true, force: true }));

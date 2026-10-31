@@ -76,7 +76,9 @@ function collectSource(source, config, { root, run, platform, log }) {
   const args = ['-y', ccusage, source, 'daily', '--json', '--since', config.since];
   if (source === 'claude' && config.project) args.push('--project', config.project);
   try {
-    const result = run(platform === 'win32' ? 'npx.cmd' : 'npx', args, {
+    const command = platform === 'win32' ? 'cmd.exe' : 'npx';
+    const commandArgs = platform === 'win32' ? ['/d', '/s', '/c', 'npx', ...args] : args;
+    const result = run(command, commandArgs, {
       cwd: root, encoding: 'utf8', shell: false, timeout: 120_000, maxBuffer: 32 * 1024 * 1024,
     });
     if (result.error) throw result.error;
@@ -113,8 +115,12 @@ function journalStats(text) {
   const lines = text.replace(/\r\n/g, '\n').split('\n');
   let fence;
   let entries = 0;
+  let accepted = 0;
   let rounds = 0;
-  let inEntry = false;
+  let entry;
+  const finishEntry = () => {
+    if (entry?.unit && entry.committed) accepted += 1;
+  };
   for (const line of lines) {
     const marker = line.match(/^\s*(`{3,}|~{3,})/);
     if (marker) {
@@ -124,13 +130,18 @@ function journalStats(text) {
     }
     if (fence) continue;
     if (/^#{2,3}\s/.test(line)) {
-      inEntry = /^#{2,3}\s+\d{4}-\d{2}-\d{2}\b/.test(line);
-      if (inEntry) entries += 1;
+      finishEntry();
+      entry = /^#{2,3}\s+\d{4}-\d{2}-\d{2}\b/.test(line)
+        ? { unit: /\bU\d+\b/.test(line), committed: false } : undefined;
+      if (entry) entries += 1;
     }
     const match = line.match(/^\s*- \*\*Кругов ревью:\*\*\s+(\d+)(?:\s*\(.*\))?\s*$/);
-    if (inEntry && match) rounds += Number(match[1]);
+    if (entry && match) rounds += Number(match[1]);
+    const commit = line.match(/^\s*- \*\*Коммит \/ PR:\*\*\s*(.*?)\s*$/);
+    if (entry && commit && commit[1] && commit[1] !== '—') entry.committed = true;
   }
-  return { entries, rounds };
+  finishEntry();
+  return { entries, accepted, rounds };
 }
 
 const emptyTotal = () => ({ input: 0, output: 0, cache: 0, total: 0, costUSD: 0 });
@@ -159,6 +170,7 @@ async function merge(options) {
   ];
   const grand = emptyTotal();
   const periods = [];
+  const daily = [];
   for (const file of files) {
     const data = JSON.parse(await fs.readFile(path.join(directory, file), 'utf8'));
     if (typeof data.participant !== 'string' || !data.period || !data.sources) throw new Error(`Некорректный экспорт: ${file}`);
@@ -171,12 +183,21 @@ async function merge(options) {
         const total = totalDays(stats.daily);
         for (const key of Object.keys(grand)) grand[key] += total[key];
         rows.push(`| ${cell(data.participant)} | ${source} | ${totalCells(total)} | ${cell(stats.coverage)} |`);
+        for (const day of stats.daily) {
+          daily.push({ date: day.date, participant: data.participant, source, total: day.tokens.total, costUSD: day.costUSD });
+        }
       } else throw new Error(`Некорректный источник ${source}: ${file}`);
     }
   }
   rows.push(`| **Итого** | — | ${totalCells(grand)} | доступные данные |`, '', ...periods, '');
+  rows.push('| Дата | Участник | Источник | Всего токенов | Стоимость, USD |', '| --- | --- | --- | ---: | ---: |');
+  daily.sort((a, b) => a.date.localeCompare(b.date) || a.participant.localeCompare(b.participant) || a.source.localeCompare(b.source));
+  for (const day of daily) {
+    rows.push(`| ${cell(day.date)} | ${cell(day.participant)} | ${day.source} | ${day.total} | ${day.costUSD.toFixed(6)} |`);
+  }
+  rows.push('');
   const journal = journalStats(await fs.readFile(path.join(options.root, 'docs/agent-log.md'), 'utf8'));
-  rows.push(`Записей журнала: ${journal.entries}`, '', `Кругов ревью: ${journal.rounds}`, '');
+  rows.push(`Принятых юнитов: ${journal.accepted}`, '', `Записей журнала: ${journal.entries}`, '', `Кругов ревью: ${journal.rounds}`, '');
   await fs.writeFile(path.join(options.root, 'docs/presentation/agent-stats.md'), rows.join('\n'));
   options.log('Сводка: docs/presentation/agent-stats.md');
 }
