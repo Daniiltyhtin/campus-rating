@@ -96,4 +96,4 @@ Codex применяет проектный конфиг и хуки тольк�
 2. Клонировать репозиторий, прочитать `AGENTS.md` и `docs/spec/README.md`.
 3. Codex: открыть в корне репозитория, доверить проект и хуки (`/hooks`).
 4. Проверить обвязку: `node --test "tools/test/*.test.mjs"` и `node tools/check-agent-docs.mjs` — оба зелёные.
-5. Проверить агентов: в Claude Code `/agents` показывает `reviewer` и `tester`, `/mcp` — `playwright`; Codex перечисляет пять скиллов проекта.
+5. Проверить агентов: в новой сессии Claude Code попросить перечислить субагентов проекта — должны быть `reviewer` и `tester` (мастер `/agents` в текущих версиях Claude Code убран), `/mcp` показывает `playwright`; Codex перечисляет пять скиллов проекта.
