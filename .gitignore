@@ -1,0 +1,25 @@
+# Build output
+target/
+dist/
+build/
+node_modules/
+
+# Test reports
+playwright-report/
+test-results/
+coverage/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# IDE and OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Local agent settings
+.claude/settings.local.json
+.compound-engineering/config.local.yaml
