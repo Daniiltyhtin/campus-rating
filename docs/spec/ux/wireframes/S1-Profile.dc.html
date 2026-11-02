@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Профиль студента</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#222}
+a{color:#444}a:hover{color:#000}
+</style>
+</helmet>
+<div style="width:360px;height:800px;box-sizing:border-box;background:#fff;display:flex;flex-direction:column;border:1px solid #ccc">
+<header style="height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid #ddd;flex-shrink:0">
+<strong style="font-size:17px">Профиль</strong>
+<button type="button" aria-label="Выйти" style="width:44px;height:44px;border:1px solid #bbb;border-radius:6px;background:#f2f2f2"></button>
+</header>
+<main style="flex-grow:1;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;gap:12px;align-items:center">
+<div aria-hidden="true" style="width:56px;height:56px;border-radius:50%;background:#ddd;flex-shrink:0"></div>
+<div style="display:flex;flex-direction:column;gap:2px">
+<strong style="font-size:17px">Смирнова Анна Олеговна</strong>
+<span style="font-size:13px;color:#555">ФИТ · ИВТ-21</span>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+<div style="border:1px solid #888;border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#555">АР</span><strong style="font-size:22px">940</strong><span style="font-size:11px;color:#666">из 1000</span></div>
+<div style="border:1px solid #bbb;border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#555">БУА</span><strong style="font-size:22px">120</strong></div>
+<div style="border:1px solid #bbb;border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#555">БОА</span><strong style="font-size:22px">50</strong></div>
+</div>
+<div role="tablist" style="display:flex;background:#eee;border-radius:6px;padding:3px">
+<button type="button" role="tab" aria-selected="true" style="flex:1;height:36px;border:0;border-radius:4px;background:#fff;font-size:14px;font-weight:600">История</button>
+<button type="button" role="tab" aria-selected="false" style="flex:1;height:36px;border:0;border-radius:4px;background:transparent;font-size:14px">Задачи</button>
+</div>
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+<div style="display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #e5e5e5">
+<div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+<span style="font-size:14px;line-height:1.3">{{r.reason}}</span>
+<span style="font-size:12px;color:#666">{{r.meta}}</span>
+</div>
+<strong style="font-size:14px;white-space:nowrap">{{r.amount}}</strong>
+</div>
+</sc-for>
+</div>
+<span style="font-size:12px;color:#666;text-align:center">Прокрутка подгружает ещё (курсор)</span>
+</main>
+<nav aria-label="Основная" style="height:60px;display:flex;border-top:1px solid #ddd;flex-shrink:0">
+<sc-for list="{{nav}}" as="n" hint-placeholder-count="5">
+<a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-decoration:none;font-size:11px;font-weight:{{n.weight}};color:#333"><span aria-hidden="true" style="width:20px;height:20px;border-radius:4px;background:{{n.icon}}"></span>{{n.label}}</a>
+</sc-for>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const nav = ['Главная', 'Задачи', 'Активности', 'Награды', 'Профиль'].map((label, i) => ({ label, weight: i === 4 ? 700 : 400, icon: i === 4 ? '#777' : '#ccc' }));
+    return { nav, rows: [
+      { reason: 'Просрочка «Лабораторная 3»', meta: '02.11 12:02 · Система', amount: '−20 АР' },
+      { reason: 'Просрочка «Лабораторная 3»', meta: '02.11 12:01 · Система', amount: '−20 АР' },
+      { reason: '«Помощь в организации конференции»', meta: '01.11 · от Иванова И. И.', amount: '+50 БОА' },
+      { reason: '«Олимпиада по программированию», 75 %', meta: '30.10 · от Петрова П. П.', amount: '+120 БУА' },
+      { reason: 'Стартовые баллы', meta: '28.08 · Система', amount: '+1000 АР' }
+    ]};
+  }
+}
+</script>
+</body>
+</html>

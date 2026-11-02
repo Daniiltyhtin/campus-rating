@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Мои задачи</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#222}
+a{color:#444}a:hover{color:#000}
+</style>
+</helmet>
+<div style="width:360px;height:800px;box-sizing:border-box;background:#fff;display:flex;flex-direction:column;border:1px solid #ccc">
+<header style="height:52px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid #ddd;flex-shrink:0">
+<strong style="font-size:17px">Мои задачи</strong>
+</header>
+<main style="flex-grow:1;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div role="tablist" style="display:flex;background:#eee;border-radius:6px;padding:3px">
+<button type="button" role="tab" aria-selected="true" style="flex:1;height:36px;border:0;border-radius:4px;background:#fff;font-size:14px;font-weight:600">Активные · 3</button>
+<button type="button" role="tab" aria-selected="false" style="flex:1;height:36px;border:0;border-radius:4px;background:transparent;font-size:14px">Завершённые · 7</button>
+</div>
+<span style="font-size:12px;color:#555">Сначала просроченные, затем по ближайшему дедлайну</span>
+<sc-for list="{{tasks}}" as="t" hint-placeholder-count="3">
+<a href="S3-Task.dc.html" style="text-decoration:none;color:#222;border:1px solid #bbb;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
+<strong style="font-size:15px;line-height:1.3">{{t.title}}</strong>
+<span style="font-size:12px;border:{{t.chip}};border-radius:4px;padding:2px 6px;white-space:nowrap;font-weight:{{t.weight}}">{{t.status}}</span>
+</div>
+<span style="font-size:13px;color:#555">{{t.teacher}}</span>
+<div style="display:flex;justify-content:space-between;font-size:13px;color:#333"><span>{{t.deadline}}</span><span>{{t.penalty}}</span></div>
+<sc-if value="{{t.bar}}" hint-placeholder-val="{{false}}">
+<div aria-hidden="true" style="height:6px;background:#e5e5e5;border-radius:3px;overflow:hidden"><div style="height:6px;width:{{t.bar}};background:#777"></div></div>
+</sc-if>
+</a>
+</sc-for>
+<div style="border:1px dashed #aaa;border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center">
+<span style="font-size:13px;font-weight:600">Пустое состояние</span>
+<span style="font-size:12px;color:#555">«Новых задач нет. Когда преподаватель создаст точку для вашей группы, она появится здесь»</span>
+</div>
+</main>
+<nav aria-label="Основная" style="height:60px;display:flex;border-top:1px solid #ddd;flex-shrink:0">
+<sc-for list="{{nav}}" as="n" hint-placeholder-count="5">
+<a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-decoration:none;font-size:11px;font-weight:{{n.weight}};color:#333"><span aria-hidden="true" style="width:20px;height:20px;border-radius:4px;background:{{n.icon}}"></span>{{n.label}}</a>
+</sc-for>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const nav = ['Главная', 'Задачи', 'Активности', 'Награды', 'Профиль'].map((label, i) => ({ label, weight: i === 1 ? 700 : 400, icon: i === 1 ? '#777' : '#ccc' }));
+    return { nav, tasks: [
+      { title: 'Лабораторная 3. Деревья поиска', teacher: 'Петров П. П. · Алгоритмы', status: 'Просрочено', chip: '2px solid #333', weight: 700, deadline: 'Дедлайн 02.11, 12:00', penalty: 'списано 40 из 60', bar: '67%' },
+      { title: 'Эссе по истории науки', teacher: 'Иванова И. И. · История', status: 'В процессе', chip: '1px solid #888', weight: 400, deadline: 'Дедлайн 05.11, 23:59 · через 3 дня', penalty: 'стоимость 40', bar: false },
+      { title: 'Курсовой проект, этап 1', teacher: 'Петров П. П. · Алгоритмы', status: 'Сдано на проверку', chip: '1px dashed #888', weight: 400, deadline: 'Сдано 01.11, 18:20', penalty: 'списано 0', bar: false }
+    ]};
+  }
+}
+</script>
+</body>
+</html>

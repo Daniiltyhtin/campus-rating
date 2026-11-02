@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Ключевые пути</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#222}
+a{color:#444}a:hover{color:#000}
+</style>
+</helmet>
+<div style="width:1400px;height:1150px;box-sizing:border-box;padding:48px;background:#fafafa;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;flex-direction:column;gap:6px">
+<h1 style="margin:0;font-size:32px;font-weight:700">Ключевые пути</h1>
+<p style="margin:0;font-size:16px;color:#555">Пять сценариев, на которых держится демо. Пунктир — ветка ошибки или отказа.</p>
+</div>
+<sc-for list="{{flows}}" as="f" hint-placeholder-count="5">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;gap:10px;align-items:baseline"><strong style="font-size:17px">{{f.title}}</strong><span style="font-size:13px;color:#555">{{f.refs}}</span></div>
+<div style="display:flex;gap:6px;align-items:stretch">
+<sc-for list="{{f.steps}}" as="s" hint-placeholder-count="5">
+<div style="display:flex;gap:6px;align-items:center;flex:1 1 0;min-width:0">
+<div style="flex:1 1 0;min-width:0;background:#fff;border:{{s.border}};border-radius:6px;padding:9px 11px;display:flex;flex-direction:column;gap:3px;align-self:stretch">
+<span style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.04em">{{s.who}}</span>
+<span style="font-size:13.5px;line-height:1.35">{{s.text}}</span>
+</div>
+<sc-if value="{{s.arrow}}" hint-placeholder-val="{{true}}">
+<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4" fill="none" stroke="#777" stroke-width="1.5"></path></svg>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":1150}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const flow = (title, refs, steps) => ({ title, refs, steps: steps.map((s, i) => ({
+      who: s[0], text: s[1], border: s[2] ? '1px dashed #999' : '1px solid #888', arrow: i < steps.length - 1 })) });
+    return { flows: [
+      flow('1. Регистрация студента', 'R1, R8, R31', [
+        ['Гость', 'Регистрация: роль «Студент», ФИО, email, пароль'],
+        ['Гость', 'Факультет → список групп сужается'],
+        ['Система', 'P2: письмо со ссылкой, вход до подтверждения закрыт', true],
+        ['Студент', 'Профиль: АР 1000, БУА 0, БОА 0, история «+1000 стартовые»']
+      ]),
+      flow('2. Студент сдаёт просроченную работу', 'R10–R12, R15', [
+        ['Студент', 'Мои задачи: карточка «Просрочено», списано 40 из 60'],
+        ['Студент', 'Задача: «следующее списание −20 через 0:42»'],
+        ['Студент', 'Сдать ссылку или файл ≤ 10 МБ'],
+        ['Система', 'Файл не того типа — ошибка у поля, штраф идёт', true],
+        ['Студент', '«Сдано на проверку»: штраф остановлен, сумма зафиксирована']
+      ]),
+      flow('3. Преподаватель проверяет работы', 'R14', [
+        ['Преподаватель', 'Точка: фильтр «Сдано», выбрать несколько'],
+        ['Преподаватель', 'Принять выбранные (кнопка с числом)'],
+        ['Преподаватель', 'Или вернуть одну с комментарием'],
+        ['Система', 'После дедлайна: предупреждение «штраф возобновится»', true],
+        ['Студент', 'Событие в ленте; статус «Принято» или «В процессе»']
+      ]),
+      flow('4. Активность от создания до награды', 'R17–R20, R23', [
+        ['Преподаватель', 'Создать: тип, группы, дата, максимум'],
+        ['Студент', 'Видит максимум; на общественную — записаться'],
+        ['Преподаватель', 'После даты: участники и уровни 25–100 %'],
+        ['Система', 'Не хватает бюджета: остаток по каждой группе, ничего не начислено', true],
+        ['Все', 'Награда в ленте и в истории профиля']
+      ]),
+      flow('5. Рейтинг группы', 'R22, R5', [
+        ['Преподаватель', 'Группы: остаток бюджета по каждой'],
+        ['Преподаватель', 'Рейтинг группы: сортировка АР, БУА, БОА'],
+        ['Преподаватель', 'Чужая группа по прямой ссылке — «нет доступа»', true],
+        ['Преподаватель', 'Профиль студента: история и задачи']
+      ])
+    ]};
+  }
+}
+</script>
+</body>
+</html>
