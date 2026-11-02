@@ -27,9 +27,20 @@ function pathReason(file, writing, context) {
   return null;
 }
 
+// Как в shell: соседние куски в кавычках и без склеиваются в одно слово.
 function tokens(command) {
-  return (command.match(/"[^"\n]*"|'[^'\n]*'|[^\s;|&<>]+|[\r\n;|&<>]/g) ?? [])
-    .map(token => token.replace(/^(["'])(.*)\1$/, '$2'));
+  return (command.match(/(?:"[^"\n]*"|'[^'\n]*'|[^\s;|&<>"'])+|[\r\n;|&<>]/g) ?? [])
+    .map(token => token.replace(/"([^"\n]*)"|'([^'\n]*)'/g, (_, double, single) => double ?? single));
+}
+
+function collapseSegments(text) {
+  let previous;
+  do {
+    previous = text;
+    text = text.replace(/\/\.(?=\/)/g, '').replace(/\/{2,}/g, '/')
+      .replace(/(?:^|(?<=[\s'"`<>|&;(){}\[\],:=/]))(?!\.\.\/)[^\s/'"`<>|&;(){}\[\],:=]+\/\.\.\//g, '');
+  } while (text !== previous);
+  return text;
 }
 
 function pushBlocked(words, branch) {
@@ -42,7 +53,7 @@ function pushBlocked(words, branch) {
       j += ['-C', '-c', '--git-dir', '--work-tree', '--namespace'].includes(command[j]) ? 2 : 1;
     }
     if (command[j] !== 'push') continue;
-    const args = command.slice(j + 1);
+    const args = command.slice(j + 1).map(arg => arg.replace(/\\(.)/g, '$1'));
     if (args.some(arg => ['--all', '--mirror'].includes(arg))) return true;
     if (args.some(arg => /^--force(?:$|[-=])/.test(arg) || /^-[^-]*f/.test(arg) || arg.startsWith('+'))) return true;
     if (args.some(arg => /^(?:main|refs\/heads\/main)$/.test(arg) || /:(?:refs\/heads\/)?main$/.test(arg))) return true;
@@ -57,9 +68,10 @@ function pushBlocked(words, branch) {
 }
 
 function readOnly(command) {
-  const [name, subcommand] = tokens(command);
+  const words = tokens(command);
+  const [name, subcommand] = words;
   if (readCommands.has(name?.toLowerCase())) return true;
-  if (name === 'git') return readGitCommands.has(subcommand);
+  if (name === 'git') return readGitCommands.has(subcommand) && !words.some(word => /^--output(?:=|$)/.test(word));
   return name === 'node' && skillScripts.has(subcommand);
 }
 
@@ -69,7 +81,7 @@ function shellReason(command, context) {
   const shell = commands.some(value => /\s/.test(value)) ? commands.join(';') : commands.join(' ');
   const words = tokens(shell);
   if (pushBlocked(words, context.branch)) return pushReason;
-  const text = protectedText(commands.join(' '), context);
+  const text = collapseSegments(protectedText(commands.join(' '), context));
   const components = text.split(/[\s/\\'"`<>|&;(){}\[\],:=]+/);
   if (components.some(part => part.startsWith('.env') && part !== '.env.example')) return envReason;
   if (text.includes('.claude/skills')) {

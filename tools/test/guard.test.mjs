@@ -85,6 +85,13 @@ for (const command of ['git push', 'git push origin', 'git push -u origin', 'git
   });
 }
 
+for (const command of ['git push origin HEAD:ma"in"', "git push origin 'HEAD':'main'", 'git push origin HEAD:ma\\in',
+  'git push origin "ma"in', 'git push origin HEAD:"refs/heads/"main']) {
+  test(`KTD12: shell quote concatenation and escapes do not hide main: ${command}`, () => {
+    assert.match(check('Bash', { command }, { branch: 'u1-agent-harness' }), /push/);
+  });
+}
+
 test('KTD12: main may push an explicit unit branch refspec', () => {
   assert.equal(check('Bash', { command: 'git push origin u1-agent-harness' }, { branch: 'main' }), null);
 });
@@ -115,6 +122,13 @@ for (const command of [
   'git diff .claude/skills/a.md && git reset --hard',
   'git restore .claude\\skills\\a.md',
   `node -e 'require("fs").writeFileSync(".claude/skills/a.md", "changed")'`,
+  'git restore .claude/./skills/ub-mode/SKILL.md',
+  'git restore .claude/hooks/../skills/ub-mode/SKILL.md',
+  'git restore .claude//skills/ub-mode/SKILL.md',
+  'git restore .claude\\.\\skills\\a.md',
+  'git diff --output=.claude/skills/ub-mode/SKILL.md',
+  'git diff --output .claude/skills/a.md',
+  'git log -p --output=.claude/skills/a.md',
 ]) {
   test(`KTD12: skill references require every subcommand to be read-only: ${command}`, () => {
     assert.match(check('Bash', { command }), /синк/);
