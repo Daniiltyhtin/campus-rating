@@ -1,0 +1,61 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./mvnw *)",
+      "Bash(mvnw.cmd *)",
+      "Bash(npm run *)",
+      "Bash(node --test *)",
+      "Bash(node tools/*)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "PowerShell(./mvnw *)",
+      "PowerShell(mvnw.cmd *)",
+      "PowerShell(npm run *)",
+      "PowerShell(node --test *)",
+      "PowerShell(node tools/*)",
+      "PowerShell(git status *)",
+      "PowerShell(git diff *)",
+      "PowerShell(git log *)",
+      "Bash(git status)",
+      "Bash(git diff)",
+      "Bash(git log)",
+      "PowerShell(git status)",
+      "PowerShell(git diff)",
+      "PowerShell(git log)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "PowerShell(git push *)"
+    ],
+    "deny": [
+      "Read(**/.env*)",
+      "Read(!**/.env.example)",
+      "Edit(**/.env*)",
+      "Edit(!**/.env.example)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/agent-log-reminder.mjs\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/guard.mjs\""
+          }
+        ]
+      }
+    ]
+  }
+}
