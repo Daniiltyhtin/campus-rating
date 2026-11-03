@@ -21,7 +21,7 @@ a{color:#444}a:hover{color:#000}
 <main style="flex-grow:1;overflow:hidden;padding:14px 16px;display:flex;flex-direction:column;gap:12px">
 <div style="display:flex;flex-direction:column;gap:3px">
 <strong style="font-size:16px">Субботник в кампусе</strong>
-<span style="font-size:13px;color:#555">Общественная · БОА · до 50 · прошла 09.11 · только записавшиеся (4)</span>
+<span style="font-size:13px;color:#555">Общественная · БОА · до 50 · началась 09.11, 10:00 · только записавшиеся (4)</span>
 </div>
 <sc-for list="{{students}}" as="s" hint-placeholder-count="4">
 <div style="border:1px solid #bbb;border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:8px">
@@ -32,11 +32,12 @@ a{color:#444}a:hover{color:#000}
 </div>
 <div role="radiogroup" aria-label="Уровень участия" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px">
 <sc-for list="{{s.levels}}" as="l" hint-placeholder-count="4">
-<button type="button" role="radio" aria-checked="{{l.on}}" style="height:36px;border:{{l.border}};border-radius:6px;background:{{l.bg}};font-size:13px;font-weight:{{l.weight}}">{{l.label}}</button>
+<button type="button" role="radio" aria-checked="{{l.on}}" style="height:44px;border:{{l.border}};border-radius:6px;background:{{l.bg}};font-size:13px;font-weight:{{l.weight}}">{{l.label}}</button>
 </sc-for>
 </div>
 </div>
 </sc-for>
+<div style="border:1px solid #ccc;border-radius:6px;padding:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;background:#f7f7f7"><span style="font-size:14px">Морозова В. Д. <span style="color:#666;font-size:12px">· ИВТ-22</span></span><span style="font-size:12px;color:#444">Подтверждено 09.11 · 75 % · +38 — только просмотр</span></div>
 <div style="border:2px solid #333;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:#f2f2f2">
 <strong style="font-size:14px">Бюджет на ноябрь не позволяет</strong>
 <div style="display:flex;justify-content:space-between;font-size:13px"><span>ИВТ-21: нужно 75, остаток 40</span><strong>не хватает 35</strong></div>
@@ -45,7 +46,7 @@ a{color:#444}a:hover{color:#000}
 </div>
 </main>
 <div style="padding:12px 16px;border-top:1px solid #ddd;flex-shrink:0;display:flex;flex-direction:column;gap:6px">
-<span style="font-size:12px;color:#555;text-align:center">3 студента · бюджет списывается с групп студентов</span>
+<span style="font-size:12px;color:#555;text-align:center">3 студента · бюджет списывается с групп студентов. После успеха — «Начислено 125 БОА», список только для просмотра</span>
 <button type="button" disabled style="width:100%;height:48px;border:0;border-radius:6px;background:#bbb;color:#fff;font-size:16px;font-weight:600">Начислить 125 БОА</button>
 </div>
 </div>
@@ -57,8 +58,7 @@ class Component extends DCLogic {
     return { students: [
       { id: 'p1', name: 'Смирнова А. О.', group: 'ИВТ-21', checked: true, amount: '+50', levels: levels(100) },
       { id: 'p2', name: 'Кузнецов Д. А.', group: 'ИВТ-21', checked: true, amount: '+25', levels: levels(50) },
-      { id: 'p3', name: 'Орлова Е. В.', group: 'ИВТ-22', checked: true, amount: '+50', levels: levels(100) },
-      { id: 'p4', name: 'Волков М. И.', group: 'ИВТ-22', checked: false, amount: '—', levels: levels(0) }
+      { id: 'p3', name: 'Орлова Е. В.', group: 'ИВТ-22', checked: true, amount: '+50', levels: levels(100) }
     ]};
   }
 }

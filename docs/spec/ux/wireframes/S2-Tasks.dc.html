@@ -19,8 +19,8 @@ a{color:#444}a:hover{color:#000}
 </header>
 <main style="flex-grow:1;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:12px">
 <div role="tablist" style="display:flex;background:#eee;border-radius:6px;padding:3px">
-<button type="button" role="tab" aria-selected="true" style="flex:1;height:36px;border:0;border-radius:4px;background:#fff;font-size:14px;font-weight:600">Активные · 3</button>
-<button type="button" role="tab" aria-selected="false" style="flex:1;height:36px;border:0;border-radius:4px;background:transparent;font-size:14px">Завершённые · 7</button>
+<button type="button" role="tab" aria-selected="true" style="flex:1;height:44px;border:0;border-radius:4px;background:#fff;font-size:14px;font-weight:600">Активные · 3</button>
+<button type="button" role="tab" aria-selected="false" style="flex:1;height:44px;border:0;border-radius:4px;background:transparent;font-size:14px">Завершённые · 7</button>
 </div>
 <span style="font-size:12px;color:#555">Сначала просроченные, затем по ближайшему дедлайну</span>
 <sc-for list="{{tasks}}" as="t" hint-placeholder-count="3">
@@ -37,8 +37,9 @@ a{color:#444}a:hover{color:#000}
 </a>
 </sc-for>
 <div style="border:1px dashed #aaa;border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center">
-<span style="font-size:13px;font-weight:600">Пустое состояние</span>
+<span style="font-size:13px;font-weight:600">Пустые состояния</span>
 <span style="font-size:12px;color:#555">«Новых задач нет. Когда преподаватель создаст точку для вашей группы, она появится здесь»</span>
+<span style="font-size:12px;color:#555">P2, членство PENDING: «Членство в ИВТ-21 ждёт подтверждения старосты или преподавателя. Задачи появятся после подтверждения»</span>
 </div>
 </main>
 <nav aria-label="Основная" style="height:60px;display:flex;border-top:1px solid #ddd;flex-shrink:0">

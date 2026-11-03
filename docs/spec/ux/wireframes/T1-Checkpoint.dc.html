@@ -42,6 +42,7 @@ a{color:#444}a:hover{color:#000}
 </div>
 <input type="search" aria-label="Поиск студента" placeholder="Поиск по ФИО" style="height:36px;width:240px;border:1px solid #999;border-radius:6px;padding:0 10px;font-size:14px">
 </div>
+<div role="status" style="display:flex;align-items:center;gap:12px;border:2px solid #555;border-radius:6px;padding:8px 12px;font-size:14px"><strong>Принято 2 из 3.</strong><span style="color:#444">Новиков А. П. пропущен: работу уже вернули, статус «Просрочено».</span></div>
 <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#eee;border:1px solid #999;border-radius:6px;padding:8px 12px">
 <span style="font-size:14px;font-weight:600">Выбрано 3 работы</span>
 <div style="display:flex;gap:8px">
@@ -59,7 +60,7 @@ a{color:#444}a:hover{color:#000}
 <a href="S1-Profile.dc.html" style="text-decoration:none;color:#222">{{r.name}}</a>
 <span>{{r.group}}</span>
 <span style="font-size:12px;border:{{r.chip}};border-radius:4px;padding:2px 6px;justify-self:start">{{r.status}}</span>
-<span style="color:#444">{{r.submitted}}</span>
+<span style="color:#444;display:flex;flex-direction:column;gap:1px"><span>{{r.submittedAt}}</span><sc-if value="{{r.file}}" hint-placeholder-val="{{true}}"><a href="#" style="font-size:13px">{{r.file}}</a></sc-if></span>
 <span>{{r.penalty}}</span>
 <sc-if value="{{r.canReturn}}" hint-placeholder-val="{{true}}">
 <button type="button" style="height:32px;border:1px solid #888;border-radius:6px;background:#fff;font-size:13px">Вернуть…</button>
@@ -76,17 +77,18 @@ class Component extends DCLogic {
     const nav = ['Главная', 'Точки', 'Активности', 'Группы', 'Профиль'].map((label, i) => ({ label, weight: i === 1 ? 700 : 400, bg: i === 1 ? '#e6e6e6' : 'transparent' }));
     const filters = [['Все · 36', true], ['Сдано · 5', false], ['Просрочено · 9', false], ['Принято · 22', false]]
       .map(([label, sel]) => ({ label, sel: String(sel), border: sel ? '1px solid #555' : '1px solid #bbb', bg: sel ? '#eee' : '#fff' }));
-    const row = (name, group, status, submitted, penalty, opts = {}) => ({ name, group, status, submitted, penalty,
+    const row = (name, group, status, submitted, penalty, opts = {}) => ({ name, group, status, penalty,
+      submittedAt: submitted.split(' · ')[0], file: submitted.split(' · ')[1] || false,
       chip: status === 'Просрочено' ? '2px solid #333' : status === 'Сдано на проверку' ? '1px dashed #888' : '1px solid #888',
       checked: !!opts.checked, disabled: status !== 'Сдано на проверку', canReturn: status === 'Сдано на проверку' });
     return { nav, filters,
       stats: [{ label: 'Ждут проверки', value: 5 }, { label: 'Просрочено', value: 9 }, { label: 'Принято', value: 22 }, { label: 'Списано всего', value: '340 АР' }],
       rows: [
-        row('Смирнова Анна Олеговна', 'ИВТ-21', 'Сдано на проверку', '02.11 12:01 · ссылка', '40', { checked: true }),
-        row('Кузнецов Дмитрий Андреевич', 'ИВТ-21', 'Сдано на проверку', '01.11 22:40 · файл', '0', { checked: true }),
-        row('Орлова Елена Викторовна', 'ИВТ-22', 'Сдано на проверку', '02.11 09:15 · файл', '0', { checked: true }),
+        row('Смирнова Анна Олеговна', 'ИВТ-21', 'Сдано на проверку', '02.11 12:01 · github.com/smirnova/avl ↗', '40', { checked: true }),
+        row('Кузнецов Дмитрий Андреевич', 'ИВТ-21', 'Сдано на проверку', '01.11 22:40 · lab3-kuznetsov.pdf', '0', { checked: true }),
+        row('Орлова Елена Викторовна', 'ИВТ-22', 'Сдано на проверку', '02.11 09:15 · orlova-lab3.zip', '0', { checked: true }),
         row('Волков Максим Игоревич', 'ИВТ-22', 'Просрочено', '—', '60 (потолок)'),
-        row('Белова Ольга Сергеевна', 'ИВТ-21', 'Принято', '31.10 17:05 · ссылка', '0'),
+        row('Белова Ольга Сергеевна', 'ИВТ-21', 'Принято', '31.10 17:05 · gitlab.com/belova/lab3 ↗', '0'),
         row('Новиков Артём Павлович', 'ИВТ-22', 'Просрочено', '—', '20 · возвращено 02.11 12:10')
       ]};
   }

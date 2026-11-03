@@ -19,9 +19,9 @@ a{color:#444}a:hover{color:#000}
 </header>
 <main style="flex-grow:1;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:12px">
 <div role="tablist" style="display:flex;gap:6px">
-<button type="button" role="tab" aria-selected="true" style="height:36px;padding:0 12px;border:1px solid #555;border-radius:18px;background:#eee;font-size:13px;font-weight:600">Все</button>
-<button type="button" role="tab" aria-selected="false" style="height:36px;padding:0 12px;border:1px solid #bbb;border-radius:18px;background:#fff;font-size:13px">Учебные · БУА</button>
-<button type="button" role="tab" aria-selected="false" style="height:36px;padding:0 12px;border:1px solid #bbb;border-radius:18px;background:#fff;font-size:13px">Общественные · БОА</button>
+<button type="button" role="tab" aria-selected="true" style="height:44px;padding:0 12px;border:1px solid #555;border-radius:22px;background:#eee;font-size:13px;font-weight:600">Все</button>
+<button type="button" role="tab" aria-selected="false" style="height:44px;padding:0 10px;border:1px solid #bbb;border-radius:22px;background:#fff;font-size:13px">Учебные · БУА</button>
+<button type="button" role="tab" aria-selected="false" style="height:44px;padding:0 10px;border:1px solid #bbb;border-radius:22px;background:#fff;font-size:13px">Общественные · БОА</button>
 </div>
 <sc-for list="{{items}}" as="a" hint-placeholder-count="3">
 <div style="border:1px solid #bbb;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px">
@@ -52,9 +52,9 @@ class Component extends DCLogic {
     const enroll = { canEnroll: true, action: 'Записаться', btnBorder: '0', btnBg: '#444', btnColor: '#fff' };
     const cancel = { canEnroll: true, action: 'Отменить запись', btnBorder: '1px solid #888', btnBg: '#fff', btnColor: '#222' };
     return { nav, items: [
-      { type: 'Общественная · БОА', max: 50, title: 'Субботник в кампусе', meta: '09.11 · Иванова И. И. · ИВТ-21, ИВТ-22', ...enroll, hint: 'Баллы получат только записавшиеся. Запись открыта до 09.11' },
-      { type: 'Общественная · БОА', max: 100, title: 'Волонтёр дня открытых дверей', meta: '15.11 · Сидоров С. С. · весь ФИТ', ...cancel, hint: 'Вы записаны. Отменить можно до 15.11' },
-      { type: 'Учебная · БУА', max: 160, title: 'Олимпиада по программированию', meta: '20.11 · Петров П. П. · ИВТ-21', canEnroll: false, action: '', btnBorder: '', btnBg: '', btnColor: '', hint: 'Запись не нужна: участников отметит преподаватель' }
+      { type: 'Общественная · БОА', max: 50, title: 'Субботник в кампусе', meta: '09.11, 10:00 · Иванова И. И. · ИВТ-21, ИВТ-22', ...enroll, hint: 'Баллы получат только записавшиеся. Запись до начала — 09.11, 10:00' },
+      { type: 'Общественная · БОА', max: 100, title: 'Волонтёр дня открытых дверей', meta: '15.11, 11:00 · Сидоров С. С. · весь ФИТ', ...cancel, hint: 'Вы записаны. Отменить можно до 15.11, 11:00' },
+      { type: 'Учебная · БУА', max: 160, title: 'Олимпиада по программированию', meta: '20.11, 14:00 · Петров П. П. · ИВТ-21', canEnroll: false, action: '', btnBorder: '', btnBg: '', btnColor: '', hint: 'Запись не нужна: участников отметит преподаватель' }
     ]};
   }
 }
