@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Подтверждение участия</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#222}
+a{color:#444}a:hover{color:#000}
+</style>
+</helmet>
+<div style="width:360px;height:800px;box-sizing:border-box;background:#fff;display:flex;flex-direction:column;border:1px solid #ccc">
+<header style="height:52px;display:flex;align-items:center;gap:8px;padding:0 8px;border-bottom:1px solid #ddd;flex-shrink:0">
+<a href="#" aria-label="Назад к активности" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M12 4l-6 6 6 6" fill="none" stroke="#333" stroke-width="2"></path></svg></a>
+<strong style="font-size:17px">Подтверждение участия</strong>
+</header>
+<main style="flex-grow:1;overflow:hidden;padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-direction:column;gap:3px">
+<strong style="font-size:16px">Субботник в кампусе</strong>
+<span style="font-size:13px;color:#555">Общественная · БОА · до 50 · началась 09.11, 10:00 · только записавшиеся (4)</span>
+</div>
+<sc-for list="{{students}}" as="s" hint-placeholder-count="4">
+<div style="border:1px solid #bbb;border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:10px">
+<input type="checkbox" id="{{s.id}}" checked="{{s.checked}}" style="width:20px;height:20px">
+<label for="{{s.id}}" style="flex-grow:1;font-size:14px">{{s.name}} <span style="color:#666;font-size:12px">· {{s.group}}</span></label>
+<strong style="font-size:14px">{{s.amount}}</strong>
+</div>
+<div role="radiogroup" aria-label="Уровень участия" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px">
+<sc-for list="{{s.levels}}" as="l" hint-placeholder-count="4">
+<button type="button" role="radio" aria-checked="{{l.on}}" style="height:44px;border:{{l.border}};border-radius:6px;background:{{l.bg}};font-size:13px;font-weight:{{l.weight}}">{{l.label}}</button>
+</sc-for>
+</div>
+</div>
+</sc-for>
+<div style="border:1px solid #ccc;border-radius:6px;padding:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;background:#f7f7f7"><span style="font-size:14px">Морозова В. Д. <span style="color:#666;font-size:12px">· ИВТ-22</span></span><span style="font-size:12px;color:#444">Подтверждено 09.11 · 75 % · +38 — только просмотр</span></div>
+<div style="border:2px solid #333;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;background:#f2f2f2">
+<strong style="font-size:14px">Бюджет на ноябрь не позволяет</strong>
+<div style="display:flex;justify-content:space-between;font-size:13px"><span>ИВТ-21: нужно 75, остаток 40</span><strong>не хватает 35</strong></div>
+<div style="display:flex;justify-content:space-between;font-size:13px;color:#444"><span>ИВТ-22: нужно 50, остаток 600</span><span>хватает</span></div>
+<span style="font-size:12px;color:#444">Подтверждение проходит целиком или не проходит. Снизьте уровень или уберите студентов ИВТ-21.</span>
+</div>
+</main>
+<div style="padding:12px 16px;border-top:1px solid #ddd;flex-shrink:0;display:flex;flex-direction:column;gap:6px">
+<span style="font-size:12px;color:#555;text-align:center">3 студента · бюджет списывается с групп студентов. После успеха — «Начислено 125 БОА», список только для просмотра</span>
+<button type="button" disabled style="width:100%;height:48px;border:0;border-radius:6px;background:#bbb;color:#fff;font-size:16px;font-weight:600">Начислить 125 БОА</button>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const levels = on => [25, 50, 75, 100].map(v => ({ label: v + ' %', on: String(v === on), border: v === on ? '2px solid #333' : '1px solid #bbb', bg: v === on ? '#e6e6e6' : '#fff', weight: v === on ? 700 : 400 }));
+    return { students: [
+      { id: 'p1', name: 'Смирнова А. О.', group: 'ИВТ-21', checked: true, amount: '+50', levels: levels(100) },
+      { id: 'p2', name: 'Кузнецов Д. А.', group: 'ИВТ-21', checked: true, amount: '+25', levels: levels(50) },
+      { id: 'p3', name: 'Орлова Е. В.', group: 'ИВТ-22', checked: true, amount: '+50', levels: levels(100) }
+    ]};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Точка преподавателя</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#222}
+a{color:#444}a:hover{color:#000}
+</style>
+</helmet>
+<div style="width:1280px;height:800px;box-sizing:border-box;background:#fff;display:flex;border:1px solid #ccc">
+<nav aria-label="Основная" style="width:232px;flex-shrink:0;border-right:1px solid #ddd;padding:16px 12px;display:flex;flex-direction:column;gap:4px;background:#fafafa">
+<strong style="font-size:16px;padding:8px 10px 16px">Campus Rating</strong>
+<sc-for list="{{nav}}" as="n" hint-placeholder-count="5">
+<a href="#" style="display:flex;align-items:center;gap:10px;height:40px;padding:0 10px;border-radius:6px;text-decoration:none;color:#222;font-size:14px;font-weight:{{n.weight}};background:{{n.bg}}"><span aria-hidden="true" style="width:18px;height:18px;border-radius:4px;background:#ccc"></span>{{n.label}}</a>
+</sc-for>
+</nav>
+<main style="flex-grow:1;min-width:0;padding:24px 32px;display:flex;flex-direction:column;gap:16px;overflow:hidden">
+<div style="font-size:13px;color:#555">Точки / Лабораторная 3</div>
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px">
+<div style="display:flex;flex-direction:column;gap:6px">
+<h1 style="margin:0;font-size:24px">Лабораторная 3. Деревья поиска</h1>
+<span style="font-size:14px;color:#555">ИВТ-21, ИВТ-22 · дедлайн 02.11, 12:00 · стоимость 60 АР · штраф 20 АР каждую минуту (зафиксирован при создании)</span>
+</div>
+<button type="button" style="height:40px;padding:0 14px;border:1px solid #888;border-radius:6px;background:#fff;font-size:14px">Редактировать описание</button>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+<sc-for list="{{stats}}" as="s" hint-placeholder-count="4">
+<div style="border:1px solid #bbb;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;color:#555">{{s.label}}</span><strong style="font-size:22px">{{s.value}}</strong></div>
+</sc-for>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+<div role="tablist" style="display:flex;gap:6px">
+<sc-for list="{{filters}}" as="f" hint-placeholder-count="5">
+<button type="button" role="tab" aria-selected="{{f.sel}}" style="height:34px;padding:0 12px;border:{{f.border}};border-radius:17px;background:{{f.bg}};font-size:13px">{{f.label}}</button>
+</sc-for>
+</div>
+<input type="search" aria-label="Поиск студента" placeholder="Поиск по ФИО" style="height:36px;width:240px;border:1px solid #999;border-radius:6px;padding:0 10px;font-size:14px">
+</div>
+<div role="status" style="display:flex;align-items:center;gap:12px;border:2px solid #555;border-radius:6px;padding:8px 12px;font-size:14px"><strong>Принято 2 из 3.</strong><span style="color:#444">Новиков А. П. пропущен: работу уже вернули, статус «Просрочено».</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:#eee;border:1px solid #999;border-radius:6px;padding:8px 12px">
+<span style="font-size:14px;font-weight:600">Выбрано 3 работы</span>
+<div style="display:flex;gap:8px">
+<button type="button" style="height:36px;padding:0 14px;border:1px solid #888;border-radius:6px;background:#fff;font-size:14px">Снять выбор</button>
+<button type="button" style="height:36px;padding:0 14px;border:0;border-radius:6px;background:#444;color:#fff;font-size:14px;font-weight:600">Принять 3 работы</button>
+</div>
+</div>
+<div style="border:1px solid #ccc;border-radius:6px;overflow:hidden">
+<div style="display:grid;grid-template-columns:44px minmax(0,2fr) minmax(0,1fr) minmax(0,1.3fr) minmax(0,1.4fr) minmax(0,1fr) 140px;gap:8px;padding:10px 12px;background:#f2f2f2;font-size:12px;color:#444;font-weight:600">
+<span></span><span>Студент</span><span>Группа</span><span>Статус</span><span>Сдано</span><span>Списано</span><span></span>
+</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+<div style="display:grid;grid-template-columns:44px minmax(0,2fr) minmax(0,1fr) minmax(0,1.3fr) minmax(0,1.4fr) minmax(0,1fr) 140px;gap:8px;padding:10px 12px;border-top:1px solid #e5e5e5;align-items:center;font-size:14px">
+<input type="checkbox" aria-label="Выбрать {{r.name}}" checked="{{r.checked}}" disabled="{{r.disabled}}" style="width:18px;height:18px">
+<a href="S1-Profile.dc.html" style="text-decoration:none;color:#222">{{r.name}}</a>
+<span>{{r.group}}</span>
+<span style="font-size:12px;border:{{r.chip}};border-radius:4px;padding:2px 6px;justify-self:start">{{r.status}}</span>
+<span style="color:#444;display:flex;flex-direction:column;gap:1px"><span>{{r.submittedAt}}</span><sc-if value="{{r.file}}" hint-placeholder-val="{{true}}"><a href="#" style="font-size:13px">{{r.file}}</a></sc-if></span>
+<span>{{r.penalty}}</span>
+<sc-if value="{{r.canReturn}}" hint-placeholder-val="{{true}}">
+<button type="button" style="height:32px;border:1px solid #888;border-radius:6px;background:#fff;font-size:13px">Вернуть…</button>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const nav = ['Главная', 'Точки', 'Активности', 'Группы', 'Профиль'].map((label, i) => ({ label, weight: i === 1 ? 700 : 400, bg: i === 1 ? '#e6e6e6' : 'transparent' }));
+    const filters = [['Все · 36', true], ['Сдано · 5', false], ['Просрочено · 9', false], ['Принято · 22', false]]
+      .map(([label, sel]) => ({ label, sel: String(sel), border: sel ? '1px solid #555' : '1px solid #bbb', bg: sel ? '#eee' : '#fff' }));
+    const row = (name, group, status, submitted, penalty, opts = {}) => ({ name, group, status, penalty,
+      submittedAt: submitted.split(' · ')[0], file: submitted.split(' · ')[1] || false,
+      chip: status === 'Просрочено' ? '2px solid #333' : status === 'Сдано на проверку' ? '1px dashed #888' : '1px solid #888',
+      checked: !!opts.checked, disabled: status !== 'Сдано на проверку', canReturn: status === 'Сдано на проверку' });
+    return { nav, filters,
+      stats: [{ label: 'Ждут проверки', value: 5 }, { label: 'Просрочено', value: 9 }, { label: 'Принято', value: 22 }, { label: 'Списано всего', value: '340 АР' }],
+      rows: [
+        row('Смирнова Анна Олеговна', 'ИВТ-21', 'Сдано на проверку', '02.11 12:01 · github.com/smirnova/avl ↗', '40', { checked: true }),
+        row('Кузнецов Дмитрий Андреевич', 'ИВТ-21', 'Сдано на проверку', '01.11 22:40 · lab3-kuznetsov.pdf', '0', { checked: true }),
+        row('Орлова Елена Викторовна', 'ИВТ-22', 'Сдано на проверку', '02.11 09:15 · orlova-lab3.zip', '0', { checked: true }),
+        row('Волков Максим Игоревич', 'ИВТ-22', 'Просрочено', '—', '60 (потолок)'),
+        row('Белова Ольга Сергеевна', 'ИВТ-21', 'Принято', '31.10 17:05 · gitlab.com/belova/lab3 ↗', '0'),
+        row('Новиков Артём Павлович', 'ИВТ-22', 'Просрочено', '—', '20 · возвращено 02.11 12:10')
+      ]};
+  }
+}
+</script>
+</body>
+</html>

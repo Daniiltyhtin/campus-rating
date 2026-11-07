@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Рейтинг группы</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#222}
+a{color:#444}a:hover{color:#000}
+</style>
+</helmet>
+<div style="width:360px;height:800px;box-sizing:border-box;background:#fff;display:flex;flex-direction:column;border:1px solid #ccc">
+<header style="height:52px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid #ddd;flex-shrink:0">
+<strong style="font-size:17px">Рейтинг группы</strong>
+</header>
+<main style="flex-grow:1;overflow:hidden;padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+<label for="group" style="font-size:13px;font-weight:600">Группа</label>
+<select id="group" style="height:44px;border:1px solid #999;border-radius:6px;padding:0 10px;font-size:15px;margin-top:-6px">
+<option>ИВТ-21 · 24 студента</option>
+<option>ИВТ-22 · 26 студентов</option>
+</select>
+<div style="display:flex;justify-content:space-between;font-size:13px;color:#444;border:1px solid #ccc;border-radius:6px;padding:8px 10px"><span>Бюджет ноября</span><strong>40 из 1000</strong></div>
+<div role="tablist" style="display:flex;background:#eee;border-radius:6px;padding:3px">
+<button type="button" role="tab" aria-selected="true" style="flex:1;height:44px;border:0;border-radius:4px;background:#fff;font-size:14px;font-weight:600">Рейтинг</button>
+<button type="button" role="tab" aria-selected="false" style="flex:1;height:44px;border:0;border-radius:4px;background:transparent;font-size:14px;color:#666">Аналитика · P2</button>
+</div>
+<div style="display:flex;gap:6px;align-items:center">
+<span style="font-size:13px;color:#555">Сортировка</span>
+<sc-for list="{{sorts}}" as="s" hint-placeholder-count="3">
+<button type="button" aria-pressed="{{s.on}}" style="height:44px;padding:0 14px;border:{{s.border}};border-radius:22px;background:{{s.bg}};font-size:13px;font-weight:{{s.weight}}">{{s.label}}</button>
+</sc-for>
+</div>
+<div style="display:flex;flex-direction:column">
+<div style="display:grid;grid-template-columns:28px minmax(0,1fr) 44px 44px 44px;gap:6px;padding:6px 0;font-size:12px;color:#555;border-bottom:1px solid #ccc">
+<span>#</span><span>Студент</span><span style="text-align:right;font-weight:700;color:#222">АР ↓</span><span style="text-align:right">БУА</span><span style="text-align:right">БОА</span>
+</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+<a href="S1-Profile.dc.html" style="display:grid;grid-template-columns:28px minmax(0,1fr) 44px 44px 44px;gap:6px;padding:10px 0;border-bottom:1px solid #e5e5e5;font-size:14px;text-decoration:none;color:#222;align-items:center">
+<span style="color:#555">{{r.rank}}</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{r.name}}</span><strong style="text-align:right">{{r.ar}}</strong><span style="text-align:right">{{r.bua}}</span><span style="text-align:right">{{r.boa}}</span>
+</a>
+</sc-for>
+</div>
+<span style="font-size:12px;color:#666">Равные баллы — по ФИО. Доступные группы — факультет вашей кафедры и выданные администратором.</span>
+</main>
+<nav aria-label="Основная" style="height:60px;display:flex;border-top:1px solid #ddd;flex-shrink:0">
+<sc-for list="{{nav}}" as="n" hint-placeholder-count="5">
+<a href="#" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-decoration:none;font-size:11px;font-weight:{{n.weight}};color:#333"><span aria-hidden="true" style="width:20px;height:20px;border-radius:4px;background:{{n.icon}}"></span>{{n.label}}</a>
+</sc-for>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":360,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const nav = ['Главная', 'Точки', 'Активности', 'Группы', 'Профиль'].map((label, i) => ({ label, weight: i === 3 ? 700 : 400, icon: i === 3 ? '#777' : '#ccc' }));
+    const sorts = ['АР', 'БУА', 'БОА'].map((label, i) => ({ label, on: String(i === 0), border: i === 0 ? '1px solid #555' : '1px solid #bbb', bg: i === 0 ? '#eee' : '#fff', weight: i === 0 ? 700 : 400 }));
+    const rows = [
+      ['Белова О. С.', 1000, 80, 120], ['Кузнецов Д. А.', 1000, 38, 0], ['Лебедева И. А.', 980, 0, 100],
+      ['Смирнова А. О.', 940, 120, 50], ['Фёдоров Н. С.', 900, 0, 25], ['Морозова В. Д.', 880, 0, 25],
+      ['Григорьева Т. Н.', 860, 60, 0], ['Зайцев К. Р.', 760, 0, 0]
+    ].map(([name, ar, bua, boa], i) => ({ rank: i + 1, name, ar, bua, boa }));
+    return { nav, sorts, rows };
+  }
+}
+</script>
+</body>
+</html>
