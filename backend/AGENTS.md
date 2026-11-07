@@ -51,4 +51,12 @@ Java 25, Spring Boot 4.1, Spring Modulith 2.1, PostgreSQL 18, Liquibase, Maven (
 
 ## Команды
 
-Появятся в мастер-U2: `./mvnw verify` (unit, интеграция, модульность, контракт, JaCoCo, CPD) и `./mvnw -Pquality verify` (PIT). На Windows — `mvnw.cmd`.
+Команды из корня репозитория:
+
+| Что | Команда |
+|---|---|
+| Unit, интеграция, модульность, контракт, JaCoCo, CPD | `./backend/mvnw -f backend/pom.xml verify` |
+| Мутации и CRAP по `*.domain` | `./backend/mvnw -f backend/pom.xml -Pquality verify` и `node tools/crap.mjs backend/target/site/jacoco/jacoco.xml` |
+| Один модульный тест | `./backend/mvnw -f backend/pom.xml -Dtest=MoscowTimeTest test` |
+
+Тесты `*IT` требуют Docker. Профиль `quality` (PIT) запускается локально ревьюером, в CI не используется. На Windows — `backend/mvnw.cmd`.
