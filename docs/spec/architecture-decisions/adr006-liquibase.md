@@ -13,7 +13,7 @@
 
 Схема управляется Liquibase в формате formatted SQL. Changeset'ы находятся в `db/changelog/<module>/<yyyyMMddHHmm>-<desc>.sql`, id — `<автор>:<метка>`.
 
-Master-changelog подключает папки через `includeAll` в порядке зависимостей: `settings`, `directory`, `identity`, `ledger`, `checkpoint`, `activity`, `feed`, `poll`, `admin`, `notification`, затем `demo`. Добавление файла в папку не требует правки master-changelog. Liquibase применяет любой ещё не применённый changeset независимо от порядка слияния веток.
+Master-changelog подключает папки через `includeAll` в порядке зависимостей: `shared` (технические таблицы, например реестр событий ADR005), затем `settings`, `directory`, `identity`, `ledger`, `checkpoint`, `activity`, `feed`, `poll`, `admin`, `notification` и `demo`. Добавление файла в папку не требует правки master-changelog. Liquibase применяет любой ещё не применённый changeset независимо от порядка слияния веток.
 
 Демо-данные помечены `context: demo`. Контексты задаются всегда, иначе Liquibase выполнит и демо-changeset'ы: базовая конфигурация — `default`, профиль `demo` (compose) — `default,demo`, тесты и `prod` — `default`. Справочные данные используют `runOnChange`. Демо-пароли видны только в README.
 
