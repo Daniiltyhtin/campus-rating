@@ -217,3 +217,15 @@
 - **Урок:** закрывая дыру безопасности, проверять, в каком режиме работает стенд жюри и остаётся ли демонстрируемым требование ТЗ; полномочия отделять от регистрации, а не запрещать регистрацию (`docs/spec/architecture-decisions/adr007-teacher-access.md`).
 - **Кругов ревью:** 1
 - **Коммит / PR:** PR #4
+
+### 2026-11-07 — U2, PR 0: спека, скилл и права до кода
+
+- **Кто / агент / модель:** Максим / Claude Code / claude-opus-5-5; ревью — Даниил (`review-unit`)
+- **Поручение:** U0 плана `docs/spec/plans/2026-11-07-001-feat-u2-skeleton-plan.md` — правки по KTD16 до первого кода U2.
+- **Результат с доказательствами:** контексты Liquibase в мастер-KTD13, ADR006 и `backend/AGENTS.md` (KTD7); `crap.py` → `node tools/crap.mjs` в мастер-плане, плане U1 и скилле `ub-mode` с синком (KTD9); модули Modulith и имена настроек в `backend/AGENTS.md` (KTD4, KTD17); `api:gen` → мастер-U3; Node ≥ 22.22 и WSL2 в онбординге; `allow` для `./backend/mvnw` и `npm --prefix`. `node tools/check-agent-docs.mjs` — passed, `node --test "tools/test/*.test.mjs"` — 119/119; ревьюер повторил обе на SHA PR.
+- **Не проверено:** работа новых правил `allow` без запроса прав — до первого запуска `./backend/mvnw`.
+- **Неудачные попытки:** `gh pr create` из PowerShell падает на вызове git (`'merge' is not recognized`) — PR открыт тем же `gh` из bash.
+- **Ошибка агента:** правило о контекстах Liquibase поправлено только в файлах из `Files` U0 и в ADR006, а мастер-KTD22 и ADR008 по-прежнему говорят «контекст `demo`»; там же остались «Node 22+» в `docs/agent-process.md` и «скрипты `tools/` вне WSL» в онбординге → нашёл ревьюер (6 вопросов, не блокеры) → правка спеки ушла в PR #6.
+- **Урок:** меняя правило в спеке, искать все его упоминания по `docs/` и `.agents/` (`rg`), а не править только перечисленные в `Files` юнита (`docs/spec/plans/`, `docs/spec/architecture-decisions/`).
+- **Кругов ревью:** 1
+- **Коммит / PR:** PR #5

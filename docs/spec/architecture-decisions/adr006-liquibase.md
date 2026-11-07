@@ -15,7 +15,7 @@
 
 Master-changelog подключает папки через `includeAll` в порядке зависимостей: `settings`, `directory`, `identity`, `ledger`, `checkpoint`, `activity`, `feed`, `poll`, `admin`, `notification`, затем `demo`. Добавление файла в папку не требует правки master-changelog. Liquibase применяет любой ещё не применённый changeset независимо от порядка слияния веток.
 
-Демо-данные помечены `context: demo`: compose включает контекст, тесты запускаются без него. Справочные данные используют `runOnChange`. Демо-пароли видны только в README.
+Демо-данные помечены `context: demo`. Контексты задаются всегда, иначе Liquibase выполнит и демо-changeset'ы: базовая конфигурация — `default`, профиль `demo` (compose) — `default,demo`, тесты и `prod` — `default`. Справочные данные используют `runOnChange`. Демо-пароли видны только в README.
 
 Применённый changeset не редактируется: контрольная сумма защищает историю, исправление оформляется новым changeset'ом. Тесты на Testcontainers и CI накатывают changelog на пустую базу.
 

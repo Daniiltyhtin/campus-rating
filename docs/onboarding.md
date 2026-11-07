@@ -9,12 +9,12 @@
 | Git | любая свежая | клон и ветки |
 | Docker с Compose v2 | Docker Desktop или Engine | `docker compose up` поднимает весь стек |
 | JDK | 25 | backend (Maven Wrapper качает Maven сам) |
-| Node.js | 22 (`.nvmrc`) | frontend, e2e, служебные скрипты `tools/` |
+| Node.js | ≥ 22.22 (`.nvmrc`) | frontend, e2e, служебные скрипты `tools/` |
 | Агент | Claude Code или Codex CLI | работа по скиллам репозитория |
 
 Windows:
 
-- Docker Desktop с бэкендом WSL2; репозиторий клонировать внутрь WSL (`~/…`), а не на `C:\` — так быстрее работают тома и сборка.
+- Весь стек разработки — внутри WSL2: репозиторий клонировать в WSL (`~/…`), а не на `C:\`; JDK, Node и агент ставятся туда же. Docker Desktop — с бэкендом WSL2. Так быстрее работают тома и сборка, а нативные бинари `node_modules` совпадают с Linux-образами.
 - Концы строк держит `.gitattributes`; `core.autocrlf` не включать.
 - Скрипты `tools/` — на Node, без bash, поэтому работают и вне WSL.
 

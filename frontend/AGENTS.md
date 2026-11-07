@@ -30,4 +30,4 @@ React 19, Vite, TypeScript, Mantine, React Router, TanStack Query, Vitest. До�
 
 ## Команды
 
-Появятся в мастер-U2: `npm run check` (lint, typecheck, Vitest), `npm run build`, `npm run api:gen`.
+Появятся в мастер-U2: `npm run check` (lint, typecheck, Vitest), `npm run build`. Появится в мастер-U3: `npm run api:gen`.
