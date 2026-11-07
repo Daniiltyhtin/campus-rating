@@ -1,5 +1,9 @@
 databaseChangeLog:
   - includeAll:
+      path: shared
+      relativeToChangelogFile: true
+      errorIfMissingOrEmpty: false
+  - includeAll:
       path: settings
       relativeToChangelogFile: true
       errorIfMissingOrEmpty: false
