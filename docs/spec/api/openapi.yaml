@@ -1,0 +1,4360 @@
+openapi: 3.1.0
+info:
+  title: Campus Rating API
+  version: 0.1.0
+  description: |
+    Контракт API модулей 1–4 (профиль, академический рейтинг, баллы активности, лента наград),
+    входа, регистрации и сессии. Источник правды для backend и frontend (ADR004): сначала правится
+    контракт, потом код. Как читать и расширять — `docs/spec/api/README.md`; термины — `docs/spec/glossary.md`.
+
+    Соглашения:
+    - Все пути — под `/api/v1`, полностью в `paths`.
+    - Идентификаторы — `int64`, баллы — целые, время — `date-time` в UTC, длительность — целые секунды.
+    - Отсутствующее значение — `null` (тип `[T, "null"]`), а не пропуск поля.
+    - Ошибки — `application/problem+json` со схемой `Problem` и полем `code` из закрытого перечня `ProblemCode`.
+    - Сессия — cookie; изменяющие запросы несут CSRF-заголовок (схемы безопасности `session` и `csrf`).
+      Токен выдаёт `GET /api/v1/auth/csrf`: фронт вызывает его при старте и после входа, выхода и смены пароля.
+    - Пока у пользователя `mustChangePassword`, все непубличные операции, кроме `GET /auth/me`,
+      `POST /auth/password` и `POST /auth/logout`, отвечают `403 PASSWORD_CHANGE_REQUIRED` (мастер-R49).
+    - `x-roles` — кто вызывает операцию; строка «Доступ:» в описании — правило принадлежности ресурса.
+    - `x-status` — `planned` до реализации, `implemented` после; меняет юнит, реализующий операцию.
+servers:
+  - url: /
+security:
+  - session: []
+tags:
+  - name: identity
+    description: Вход, сессия, регистрация, доступные группы (мастер-U5).
+  - name: directory
+    description: Справочники факультетов, групп и кафедр (мастер-U4).
+  - name: checkpoint
+    description: Контрольные точки, назначения, сдача (мастер-U7, U8).
+  - name: activity
+    description: Активности, запись, подтверждение участия, бюджет (мастер-U9).
+  - name: ledger
+    description: История проводок и сверка журнала (мастер-U6, U10).
+  - name: profile
+    description: Профиль пользователя (мастер-U10).
+  - name: feed
+    description: Лента наград и рейтинги групп (мастер-U11).
+
+paths:
+  /api/v1/auth/csrf:
+    get:
+      tags: [identity]
+      operationId: getCsrfToken
+      summary: Выдать CSRF-токен
+      description: |
+        Выставляет свежий cookie `XSRF-TOKEN` (не HttpOnly). Значение cookie фронт передаёт в заголовке
+        `X-XSRF-TOKEN` на `POST`, `PUT`, `PATCH`, `DELETE`. Вход, выход и смена пароля меняют токен,
+        поэтому после них фронт вызывает операцию снова.
+
+        Доступ: все, включая гостя.
+      x-roles: [PUBLIC]
+      x-status: planned
+      security: []
+      responses:
+        '204':
+          description: Cookie `XSRF-TOKEN` выставлен.
+          headers:
+            Set-Cookie:
+              description: '`XSRF-TOKEN=<токен>; Path=/; SameSite=Lax`'
+              schema:
+                type: string
+
+  /api/v1/auth/config:
+    get:
+      tags: [identity]
+      operationId: getAuthConfig
+      summary: Настройки стенда для формы регистрации
+      description: |
+        Режим запуска и режим подтверждения email — для пометок «Демо-стенд, данные удаляются» и
+        «Подтверждение email на этом стенде выключено» (мастер-R47, R48).
+
+        Доступ: все, включая гостя.
+      x-roles: [PUBLIC]
+      x-status: planned
+      security: []
+      responses:
+        '200':
+          description: Настройки стенда.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthConfig'
+              example:
+                demo: true
+                emailVerification: OFF
+
+  /api/v1/auth/login:
+    post:
+      tags: [identity]
+      operationId: login
+      summary: Войти
+      description: |
+        Создаёт сессию и отвечает тем же, что `GET /auth/me`. Вход меняет CSRF-токен: после ответа фронт
+        вызывает `GET /auth/csrf`.
+
+        Порядок проверок (защита от перечисления учётных записей): неизвестный email и неверный пароль —
+        одинаковый `401 INVALID_CREDENTIALS`; `403 EMAIL_NOT_VERIFIED` (с мастер-U15) — только после верного
+        пароля. При `mustChangePassword: true` вход проходит, но до смены пароля работают только операции,
+        перечисленные в описании контракта.
+
+        Цикл CSRF на стороне фронта:
+        `GET /auth/csrf` → регистрация → `GET /auth/csrf` → вход → `GET /auth/csrf` → изменяющие запросы →
+        выход → `GET /auth/csrf` → вход.
+
+        Доступ: все, включая гостя; нужен CSRF-заголовок.
+      x-roles: [PUBLIC]
+      x-status: planned
+      security:
+        - csrf: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: smirnova@student.campus.test
+              password: demo-student-1
+      responses:
+        '200':
+          description: Сессия создана, cookie `JSESSIONID` выставлен.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+              examples:
+                student:
+                  $ref: '#/components/examples/CurrentStudent'
+                mustChangePassword:
+                  $ref: '#/components/examples/CurrentAdminMustChangePassword'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          description: Неверная пара email и пароль.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: about:blank
+                title: Unauthorized
+                status: 401
+                code: INVALID_CREDENTIALS
+                detail: Неверный email или пароль.
+        '403':
+          description: '`EMAIL_NOT_VERIFIED` (только после верного пароля) или `CSRF_INVALID`.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                emailNotVerified:
+                  value:
+                    type: about:blank
+                    title: Forbidden
+                    status: 403
+                    code: EMAIL_NOT_VERIFIED
+                    detail: Подтвердите email по ссылке из письма.
+                csrfInvalid:
+                  $ref: '#/components/examples/CsrfInvalid'
+
+  /api/v1/auth/logout:
+    post:
+      tags: [identity]
+      operationId: logout
+      summary: Выйти
+      description: |
+        Завершает текущую сессию. Выход меняет CSRF-токен: после ответа фронт вызывает `GET /auth/csrf`.
+        Доступен и при `mustChangePassword`.
+
+        Доступ: любой вошедший.
+      x-roles: [AUTHENTICATED]
+      x-status: planned
+      security:
+        - session: []
+          csrf: []
+      responses:
+        '204':
+          description: Сессия завершена, cookie `JSESSIONID` удалён.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/CsrfForbidden'
+
+  /api/v1/auth/me:
+    get:
+      tags: [identity]
+      operationId: getCurrentUser
+      summary: Текущий пользователь
+      description: |
+        Кто вошёл, роль, флаг смены пароля, для преподавателя — кафедра и допуск, для студента — группа и
+        состояние членства. По этим полям фронт показывает плашки «Заявка ждёт подтверждения
+        администратора» и «Членство ждёт подтверждения» (мастер-R2, R32). Доступна и при
+        `mustChangePassword`.
+
+        Доступ: любой вошедший.
+      x-roles: [AUTHENTICATED]
+      x-status: planned
+      responses:
+        '200':
+          description: Текущий пользователь.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+              examples:
+                student:
+                  $ref: '#/components/examples/CurrentStudent'
+                studentPending:
+                  value:
+                    role: STUDENT
+                    id: 1004
+                    fullName: Орлов Никита Сергеевич
+                    email: orlov@student.campus.test
+                    mustChangePassword: false
+                    group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    membershipState: PENDING
+                teacher:
+                  $ref: '#/components/examples/CurrentTeacher'
+                teacherNotApproved:
+                  value:
+                    role: TEACHER
+                    id: 2002
+                    fullName: Волков Максим Игоревич
+                    email: volkov@campus.test
+                    mustChangePassword: false
+                    department:
+                      id: 101
+                      code: ПИ
+                      name: Кафедра программной инженерии
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    teacherApproved: false
+                adminMustChangePassword:
+                  $ref: '#/components/examples/CurrentAdminMustChangePassword'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/auth/register/student:
+    post:
+      tags: [identity]
+      operationId: registerStudent
+      summary: Регистрация студента
+      description: |
+        Создаёт студента, членство в выбранной группе (`ACTIVE` до мастер-U15, затем `PENDING`) и проводку
+        `INITIAL` +1000 АР (мастер-R1, R8). Сессию не создаёт: дальше — вход или подтверждение email
+        (`nextStep`).
+
+        Порядок проверок: сначала email из списка преподавателей (`EMAIL_RESERVED_FOR_TEACHER`, без учёта
+        регистра), потом занятость email (`EMAIL_TAKEN`), — ответ не выдаёт, зарегистрировался ли уже
+        преподаватель из списка. Группа не того факультета — `400` по полю `groupId`.
+
+        Пароль: от 8 символов и не больше 72 байт в UTF-8 (предел BCrypt); 73 байта — `400` с кодом
+        `TOO_LONG` по полю `password`.
+
+        Доступ: все, включая гостя; нужен CSRF-заголовок.
+      x-roles: [PUBLIC]
+      x-status: planned
+      security:
+        - csrf: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentRegistration'
+            example:
+              fullName: Смирнова Анна Олеговна
+              email: smirnova@student.campus.test
+              password: demo-student-1
+              facultyId: 1
+              groupId: 11
+      responses:
+        '201':
+          description: Студент создан.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationResult'
+              example:
+                userId: 1001
+                nextStep: LOGIN
+        '400':
+          description: Поля не прошли проверку.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblem'
+              examples:
+                groupOfOtherFaculty:
+                  value:
+                    type: about:blank
+                    title: Bad Request
+                    status: 400
+                    code: VALIDATION_FAILED
+                    detail: Проверьте поля формы.
+                    fieldErrors:
+                      - field: groupId
+                        code: MISMATCH
+                        message: Группа не принадлежит выбранному факультету.
+                passwordTooLong:
+                  value:
+                    type: about:blank
+                    title: Bad Request
+                    status: 400
+                    code: VALIDATION_FAILED
+                    detail: Проверьте поля формы.
+                    fieldErrors:
+                      - field: password
+                        code: TOO_LONG
+                        message: Пароль длиннее 72 байт.
+        '403':
+          $ref: '#/components/responses/CsrfForbidden'
+        '409':
+          description: Email занят или зарезервирован за преподавателем.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                reservedForTeacher:
+                  value:
+                    type: about:blank
+                    title: Conflict
+                    status: 409
+                    code: EMAIL_RESERVED_FOR_TEACHER
+                    detail: Этот email закреплён за преподавателем. Зарегистрируйтесь как преподаватель.
+                taken:
+                  $ref: '#/components/examples/EmailTaken'
+
+  /api/v1/auth/register/teacher:
+    post:
+      tags: [identity]
+      operationId: registerTeacher
+      summary: Регистрация преподавателя
+      description: |
+        Создаёт преподавателя с выбранной кафедрой без допуска (мастер-R2, ADR007): вход работает, доступных
+        групп нет, `GET /auth/me` отдаёт `teacherApproved: false`. Допуск ставит администратор (мастер-U13)
+        или подтверждение email из списка преподавателей при `required` (мастер-U15); тогда кафедра берётся
+        из записи списка. Проводок нет. Сессию не создаёт.
+
+        Пароль — как у регистрации студента.
+
+        Доступ: все, включая гостя; нужен CSRF-заголовок.
+      x-roles: [PUBLIC]
+      x-status: planned
+      security:
+        - csrf: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeacherRegistration'
+            example:
+              fullName: Волков Максим Игоревич
+              email: volkov@campus.test
+              password: teacher-pass-1
+              departmentId: 101
+      responses:
+        '201':
+          description: Преподаватель создан, ждёт допуска.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationResult'
+              examples:
+                emailVerificationOff:
+                  value:
+                    userId: 2002
+                    nextStep: LOGIN
+                emailVerificationRequired:
+                  value:
+                    userId: 2002
+                    nextStep: CONFIRM_EMAIL
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '403':
+          $ref: '#/components/responses/CsrfForbidden'
+        '409':
+          description: Email занят.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                taken:
+                  $ref: '#/components/examples/EmailTaken'
+
+  /api/v1/auth/password:
+    post:
+      tags: [identity]
+      operationId: changePassword
+      summary: Сменить пароль
+      description: |
+        Меняет пароль, снимает `mustChangePassword` и завершает все остальные сессии пользователя; текущая
+        сессия остаётся (мастер-R49, R50). Токен CSRF меняется: после ответа фронт вызывает `GET /auth/csrf`.
+        Новый пароль — по правилам регистрации и не равен текущему (`PASSWORD_REUSED`); неверный текущий —
+        `400` с кодом `MISMATCH` по полю `currentPassword`.
+
+        Доступ: любой вошедший, в том числе с `mustChangePassword`.
+      x-roles: [AUTHENTICATED]
+      x-status: planned
+      security:
+        - session: []
+          csrf: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+            example:
+              currentPassword: Tmp-8kQ2-vX7p
+              newPassword: my-new-password-1
+      responses:
+        '204':
+          description: Пароль сменён.
+        '400':
+          description: Пароль не прошёл проверку или совпадает с текущим.
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ValidationProblem'
+                  - $ref: '#/components/schemas/PasswordReusedProblem'
+              examples:
+                wrongCurrent:
+                  value:
+                    type: about:blank
+                    title: Bad Request
+                    status: 400
+                    code: VALIDATION_FAILED
+                    detail: Проверьте поля формы.
+                    fieldErrors:
+                      - field: currentPassword
+                        code: MISMATCH
+                        message: Текущий пароль указан неверно.
+                reused:
+                  value:
+                    type: about:blank
+                    title: Bad Request
+                    status: 400
+                    code: PASSWORD_REUSED
+                    detail: Новый пароль должен отличаться от текущего.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/CsrfForbidden'
+
+  /api/v1/me/accessible-groups:
+    get:
+      tags: [identity]
+      operationId: listAccessibleGroups
+      summary: Доступные группы преподавателя
+      description: |
+        Группы факультета кафедры плюс группы выдач доступа (мастер-R3, KTD23) — для форм точек и
+        активностей и экрана «Группы». У преподавателя без допуска — пустой список. Отсортированы по
+        факультету и названию.
+
+        Доступ: преподаватель, только свои.
+      x-roles: [TEACHER]
+      x-status: planned
+      responses:
+        '200':
+          description: Доступные группы.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyGroupList'
+              examples:
+                approved:
+                  value:
+                    items:
+                      - id: 11
+                        name: ИВТ-21
+                        faculty:
+                          id: 1
+                          code: ФИТ
+                          name: Факультет информационных технологий
+                      - id: 12
+                        name: ИВТ-22
+                        faculty:
+                          id: 1
+                          code: ФИТ
+                          name: Факультет информационных технологий
+                notApproved:
+                  value:
+                    items: []
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/directory/faculties:
+    get:
+      tags: [directory]
+      operationId: listFaculties
+      summary: Факультеты
+      description: |
+        Для формы регистрации; по названию.
+
+        Доступ: все, включая гостя.
+      x-roles: [PUBLIC]
+      x-status: planned
+      security: []
+      responses:
+        '200':
+          description: Факультеты.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FacultyList'
+              example:
+                items:
+                  - id: 1
+                    code: ФИТ
+                    name: Факультет информационных технологий
+                  - id: 2
+                    code: ЭФ
+                    name: Экономический факультет
+
+  /api/v1/directory/faculties/{facultyId}/groups:
+    get:
+      tags: [directory]
+      operationId: listFacultyGroups
+      summary: Группы факультета
+      description: |
+        Только группы этого факультета, по названию (мастер-R1).
+
+        Доступ: все, включая гостя.
+      x-roles: [PUBLIC]
+      x-status: planned
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/FacultyId'
+      responses:
+        '200':
+          description: Группы факультета.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyGroupList'
+              example:
+                items:
+                  - id: 11
+                    name: ИВТ-21
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+                  - id: 12
+                    name: ИВТ-22
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/directory/faculties/{facultyId}/departments:
+    get:
+      tags: [directory]
+      operationId: listFacultyDepartments
+      summary: Кафедры факультета
+      description: |
+        Для формы регистрации преподавателя; по названию.
+
+        Доступ: все, включая гостя.
+      x-roles: [PUBLIC]
+      x-status: planned
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/FacultyId'
+      responses:
+        '200':
+          description: Кафедры факультета.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepartmentList'
+              example:
+                items:
+                  - id: 101
+                    code: ПИ
+                    name: Кафедра программной инженерии
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/checkpoints:
+    get:
+      tags: [checkpoint]
+      operationId: listMyCheckpoints
+      summary: Мои контрольные точки
+      description: |
+        Точки текущего преподавателя со счётчиками для экранов «Мои точки» и «Главная» (мастер-R14).
+        Сначала ближайший дедлайн в будущем, затем прошедшие, от недавних. Список целиком: точек у
+        преподавателя за семестр десятки.
+
+        Доступ: преподаватель, только свои точки — в том числе для групп, которые уже недоступны.
+      x-roles: [TEACHER]
+      x-status: planned
+      responses:
+        '200':
+          description: Точки преподавателя.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckpointList'
+              example:
+                items:
+                  - id: 501
+                    title: Лабораторная 3. Деревья поиска
+                    description: Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.
+                    deadline: '2026-11-12T09:00:00Z'
+                    cost: 60
+                    penaltyStep: 20
+                    penaltyIntervalSeconds: 60
+                    groups:
+                      - id: 11
+                        name: ИВТ-21
+                        faculty:
+                          id: 1
+                          code: ФИТ
+                          name: Факультет информационных технологий
+                      - id: 12
+                        name: ИВТ-22
+                        faculty:
+                          id: 1
+                          code: ФИТ
+                          name: Факультет информационных технологий
+                    author:
+                      id: 2001
+                      fullName: Петров Павел Петрович
+                    createdAt: '2026-11-05T07:30:00Z'
+                    submittedCount: 3
+                    totalCount: 48
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [checkpoint]
+      operationId: createCheckpoint
+      summary: Создать контрольную точку
+      description: |
+        Создаёт точку и назначения всем студентам выбранных групп с `ACTIVE`-членством (мастер-R7). Шаг и
+        интервал штрафа копируются из текущих настроек и видны в ответе. Дедлайн — в будущем, иначе `400`
+        по полю `deadline`. Если интервал в настройках меньше минимума (2 × poll-period, мастер-KTD4), —
+        `409 INVALID_STATE`; администраторская форма настроек (мастер-U13) такой интервал не сохраняет.
+
+        Доступ: допущенный преподаватель; каждая группа — из доступных (`403 GROUP_NOT_ACCESSIBLE`; у
+        преподавателя без допуска доступных групп нет).
+      x-roles: [TEACHER]
+      x-status: planned
+      security:
+        - session: []
+          csrf: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckpointCreate'
+            example:
+              title: Лабораторная 3. Деревья поиска
+              description: Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.
+              groupIds: [11, 12]
+              deadline: '2026-11-12T09:00:00Z'
+              cost: 60
+      responses:
+        '201':
+          description: Точка создана.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Checkpoint'
+              example:
+                id: 501
+                title: Лабораторная 3. Деревья поиска
+                description: Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.
+                deadline: '2026-11-12T09:00:00Z'
+                cost: 60
+                penaltyStep: 20
+                penaltyIntervalSeconds: 60
+                groups:
+                  - id: 11
+                    name: ИВТ-21
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+                  - id: 12
+                    name: ИВТ-22
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+                author:
+                  id: 2001
+                  fullName: Петров Павел Петрович
+                createdAt: '2026-11-05T07:30:00Z'
+                submittedCount: 0
+                totalCount: 48
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/GroupForbidden'
+        '409':
+          $ref: '#/components/responses/InvalidState'
+
+  /api/v1/checkpoints/defaults:
+    get:
+      tags: [checkpoint]
+      operationId: getCheckpointDefaults
+      summary: Параметры штрафа для новой точки
+      description: |
+        Текущие шаг и интервал штрафа из настроек — их получит новая точка — и минимальный интервал
+        (2 × poll-period, мастер-KTD4). Для формы «Новая точка».
+
+        Доступ: преподаватель.
+      x-roles: [TEACHER]
+      x-status: planned
+      responses:
+        '200':
+          description: Параметры штрафа.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckpointDefaults'
+              example:
+                penaltyStep: 20
+                penaltyIntervalSeconds: 60
+                minPenaltyIntervalSeconds: 2
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/checkpoints/{checkpointId}:
+    get:
+      tags: [checkpoint]
+      operationId: getCheckpoint
+      summary: Контрольная точка
+      description: |
+        Доступ: автор точки, даже если её группы ему уже недоступны; администратор — только чтение.
+        Остальным — `403 FORBIDDEN`.
+      x-roles: [TEACHER, ADMIN]
+      x-status: planned
+      parameters:
+        - $ref: '#/components/parameters/CheckpointId'
+      responses:
+        '200':
+          description: Точка.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Checkpoint'
+              example:
+                id: 501
+                title: Лабораторная 3. Деревья поиска
+                description: Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.
+                deadline: '2026-11-12T09:00:00Z'
+                cost: 60
+                penaltyStep: 20
+                penaltyIntervalSeconds: 60
+                groups:
+                  - id: 11
+                    name: ИВТ-21
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+                author:
+                  id: 2001
+                  fullName: Петров Павел Петрович
+                createdAt: '2026-11-05T07:30:00Z'
+                submittedCount: 3
+                totalCount: 24
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/checkpoints/{checkpointId}/assignments:
+    get:
+      tags: [checkpoint]
+      operationId: listCheckpointAssignments
+      summary: Назначения точки
+      description: |
+        Таблица точки у преподавателя (мастер-R14): студенты со статусами, фильтры по статусу и группе,
+        курсор по `(ФИО, id)`. `statusCounts` считается по всей точке с фильтром группы, но без фильтра
+        статуса — для чипов фильтра.
+
+        Доступ: автор точки, даже если её группы ему уже недоступны; администратор — только чтение.
+        Остальным — `403 FORBIDDEN`, даже если группа доступна.
+      x-roles: [TEACHER, ADMIN]
+      x-status: planned
+      parameters:
+        - $ref: '#/components/parameters/CheckpointId'
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/AssignmentStatus'
+        - name: groupId
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Id'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Страница назначений.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckpointAssignmentPage'
+              example:
+                items:
+                  - assignmentId: 7003
+                    student:
+                      id: 1003
+                      fullName: Иванова Ирина Игоревна
+                    group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    state: SUBMITTED
+                    status: SUBMITTED
+                    charged: 0
+                    submittedAt: '2026-11-11T18:20:00Z'
+                    submissionKind: FILE
+                  - assignmentId: 7002
+                    student:
+                      id: 1002
+                      fullName: Кузнецов Дмитрий Андреевич
+                    group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    state: OPEN
+                    status: OVERDUE
+                    charged: 40
+                    submittedAt: null
+                    submissionKind: null
+                nextCursor: eyJuIjoi0JrRg9C30L3QtdGG0L7QsiIsImlkIjo3MDAyfQ
+                statusCounts:
+                  IN_PROGRESS: 0
+                  SUBMITTED: 3
+                  OVERDUE: 20
+                  ACCEPTED: 1
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/checkpoints/{checkpointId}/assignments:accept:
+    post:
+      tags: [checkpoint]
+      operationId: acceptAssignments
+      summary: Принять работы
+      description: |
+        Массовый приём (мастер-R14). Повторы в `assignmentIds` отбрасываются. Если хотя бы один id не из
+        этой точки — весь запрос `400` по полю `assignmentIds` до изменений. Назначения в `SUBMITTED`
+        принимаются по возрастанию id (мастер-KTD5), остальные попадают в `skipped` с `INVALID_STATE`:
+        частичный успех — штатный итог «Принято 2 из 3».
+
+        Доступ: только автор точки, даже если её группы ему уже недоступны. Администратор — `403`.
+      x-roles: [TEACHER]
+      x-status: planned
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - $ref: '#/components/parameters/CheckpointId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptAssignmentsRequest'
+            example:
+              assignmentIds: [7001, 7002, 7003]
+      responses:
+        '200':
+          description: Итог приёма.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptAssignmentsResult'
+              example:
+                accepted: [7001, 7003]
+                skipped:
+                  - assignmentId: 7002
+                    code: INVALID_STATE
+        '400':
+          description: Пустой список или id не из этой точки; ничего не изменено.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblem'
+              example:
+                type: about:blank
+                title: Bad Request
+                status: 400
+                code: VALIDATION_FAILED
+                detail: Назначения не принадлежат этой точке.
+                fieldErrors:
+                  - field: assignmentIds
+                    code: MISMATCH
+                    message: 'Не из этой точки: 9001.'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/me/assignments:
+    get:
+      tags: [checkpoint]
+      operationId: listMyAssignments
+      summary: Мои задачи
+      description: |
+        Задачи студента (мастер-R15).
+        - `view=active` — `OPEN` и `SUBMITTED` целиком, без пагинации (`cursor` и `limit` не применяются,
+          `nextCursor` всегда `null`): сначала `OVERDUE`, затем по дедлайну.
+        - `view=completed` — `ACCEPTED`, курсор по `(время приёма desc, id desc)`.
+
+        Без `ACTIVE`-членства назначений нет: пустой список и `membershipState: PENDING` — экран пишет
+        «Членство ждёт подтверждения» вместо пустого списка.
+
+        Доступ: студент, только свои назначения.
+      x-roles: [STUDENT]
+      x-status: planned
+      parameters:
+        - name: view
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [active, completed]
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Задачи студента.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentTaskPage'
+              examples:
+                active:
+                  value:
+                    items:
+                      - assignmentId: 7001
+                        checkpoint:
+                          id: 501
+                          title: Лабораторная 3. Деревья поиска
+                        teacher:
+                          id: 2001
+                          fullName: Петров Павел Петрович
+                        deadline: '2026-11-12T09:00:00Z'
+                        cost: 60
+                        state: OPEN
+                        status: OVERDUE
+                        penalty:
+                          charged: 40
+                          cap: 60
+                          step: 20
+                          intervalSeconds: 60
+                          phase: RUNNING
+                          nextAt: '2026-11-12T09:02:00Z'
+                          nextAmount: 20
+                      - assignmentId: 7010
+                        checkpoint:
+                          id: 502
+                          title: Курсовой проект. Этап 1
+                        teacher:
+                          id: 2001
+                          fullName: Петров Павел Петрович
+                        deadline: '2026-11-20T20:59:00Z'
+                        cost: 100
+                        state: OPEN
+                        status: IN_PROGRESS
+                        penalty:
+                          charged: 0
+                          cap: 100
+                          step: 20
+                          intervalSeconds: 60
+                          phase: BEFORE_DEADLINE
+                          nextAt: '2026-11-20T20:59:00Z'
+                          nextAmount: 20
+                    nextCursor: null
+                    membershipState: ACTIVE
+                pending:
+                  value:
+                    items: []
+                    nextCursor: null
+                    membershipState: PENDING
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/assignments/{assignmentId}:
+    get:
+      tags: [checkpoint]
+      operationId: getAssignment
+      summary: Назначение
+      description: |
+        Задача студента целиком: точка, статус, блок штрафа (см. `Penalty`), комментарий возврата, последняя
+        сдача. Экраны «Задача» (студент), сдача из строки точки (преподаватель) и «Материалы сдачи»
+        (`/admin/submissions/:assignmentId`, только чтение).
+
+        Доступ: студент-владелец, автор точки (даже если группа уже недоступна), администратор — только
+        чтение (мастер-R3). Остальным — `403 FORBIDDEN`.
+      x-roles: [STUDENT, TEACHER, ADMIN]
+      x-status: planned
+      parameters:
+        - $ref: '#/components/parameters/AssignmentId'
+      responses:
+        '200':
+          description: Назначение.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+              examples:
+                beforeDeadline:
+                  summary: До дедлайна (AE1, 11:30 МСК)
+                  $ref: '#/components/examples/AssignmentBeforeDeadline'
+                running:
+                  summary: Штраф идёт (AE1, после слотов 0 и 1)
+                  $ref: '#/components/examples/AssignmentRunning'
+                zeroBalance:
+                  summary: АР 0 (AE4, после слота 0)
+                  $ref: '#/components/examples/AssignmentZeroBalance'
+                capReached:
+                  summary: Потолок (AE1, после слота 2)
+                  $ref: '#/components/examples/AssignmentCapReached'
+                stopped:
+                  summary: Сдано (AE2)
+                  $ref: '#/components/examples/AssignmentStopped'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/assignments/{assignmentId}/submission:
+    post:
+      tags: [checkpoint]
+      operationId: submitAssignment
+      summary: Сдать работу
+      description: |
+        Сдача из `OPEN`, в том числе после дедлайна; останавливает штраф (мастер-R10). Ровно одна из частей:
+        `link` (http или https) или `file` (до 10 МБ; pdf, docx, zip, png, jpg — мастер-KTD12). Ни одной или
+        обе — `400`. Ответ — назначение в `SUBMITTED` с `phase: STOPPED`.
+
+        Доступ: только студент-владелец.
+      x-roles: [STUDENT]
+      x-status: planned
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - $ref: '#/components/parameters/AssignmentId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubmissionUpload'
+            encoding:
+              file:
+                contentType: application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/zip, image/png, image/jpeg
+      responses:
+        '200':
+          description: Сдано.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+              examples:
+                stopped:
+                  $ref: '#/components/examples/AssignmentStopped'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/InvalidState'
+        '413':
+          description: Файл больше 10 МБ.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: about:blank
+                title: Content Too Large
+                status: 413
+                code: FILE_TOO_LARGE
+                detail: Файл больше 10 МБ.
+        '415':
+          description: Тип файла вне белого списка.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: about:blank
+                title: Unsupported Media Type
+                status: 415
+                code: FILE_TYPE_NOT_ALLOWED
+                detail: 'Допустимы pdf, docx, zip, png, jpg.'
+
+  /api/v1/assignments/{assignmentId}/submission/file:
+    get:
+      tags: [checkpoint]
+      operationId: downloadSubmissionFile
+      summary: Файл сдачи
+      description: |
+        Файл последней сдачи с `Content-Disposition: attachment` и исходным именем. Если последняя сдача —
+        ссылка или сдачи нет, — `404`.
+
+        Доступ: студент-владелец, автор точки, администратор — как у чтения назначения.
+      x-roles: [STUDENT, TEACHER, ADMIN]
+      x-status: planned
+      parameters:
+        - $ref: '#/components/parameters/AssignmentId'
+      responses:
+        '200':
+          description: Файл.
+          headers:
+            Content-Disposition:
+              description: '`attachment; filename*=UTF-8''''<имя>`'
+              schema:
+                type: string
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/assignments/{assignmentId}:return:
+    post:
+      tags: [checkpoint]
+      operationId: returnAssignment
+      summary: Вернуть на доработку
+      description: |
+        `SUBMITTED` → `OPEN` с обязательным комментарием (мастер-R14). Уже списанное не обнуляется; после
+        дедлайна штраф возобновляется с ближайшего необработанного слота (мастер-AE3). Не из `SUBMITTED` —
+        `409 INVALID_STATE`.
+
+        Доступ: только автор точки, даже если её группы ему уже недоступны. Администратор — `403`.
+      x-roles: [TEACHER]
+      x-status: planned
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - $ref: '#/components/parameters/AssignmentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnAssignmentRequest'
+            example:
+              comment: Нет тестов на удаление корня.
+      responses:
+        '200':
+          description: Назначение после возврата.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+              examples:
+                returnedAfterDeadline:
+                  $ref: '#/components/examples/AssignmentReturned'
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/InvalidState'
+
+  /api/v1/activities:
+    get:
+      tags: [activity]
+      operationId: listActivities
+      summary: Активности
+      description: |
+        Студенту — активности, целевые для его группы (мастер-R17), с его записью и начислением.
+        Преподавателю — созданные им. Список целиком: сначала будущие по возрастанию времени начала, затем
+        прошедшие от недавних.
+
+        Доступ: студент — активности своей группы; преподаватель — свои, даже если их группы уже недоступны.
+      x-roles: [STUDENT, TEACHER]
+      x-status: planned
+      responses:
+        '200':
+          description: Активности.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityList'
+              examples:
+                student:
+                  value:
+                    items:
+                      - id: 603
+                        title: Субботник в кампусе
+                        description: Уборка территории у главного корпуса.
+                        type: SOCIAL
+                        currency: BOA
+                        startsAt: '2026-11-14T07:00:00Z'
+                        maxPoints: 100
+                        groups:
+                          - id: 11
+                            name: ИВТ-21
+                            faculty:
+                              id: 1
+                              code: ФИТ
+                              name: Факультет информационных технологий
+                        author:
+                          id: 2001
+                          fullName: Петров Павел Петрович
+                        enrollmentOpen: true
+                        confirmationOpen: false
+                        enrolledCount: 12
+                        confirmedCount: 0
+                        enrolled: true
+                        myAward: null
+                      - id: 601
+                        title: Помощь в организации конференции
+                        description: Регистрация участников и навигация на конференции «IT-весна».
+                        type: SOCIAL
+                        currency: BOA
+                        startsAt: '2026-11-03T09:00:00Z'
+                        maxPoints: 50
+                        groups:
+                          - id: 11
+                            name: ИВТ-21
+                            faculty:
+                              id: 1
+                              code: ФИТ
+                              name: Факультет информационных технологий
+                        author:
+                          id: 2001
+                          fullName: Петров Павел Петрович
+                        enrollmentOpen: false
+                        confirmationOpen: true
+                        enrolledCount: 6
+                        confirmedCount: 6
+                        enrolled: true
+                        myAward:
+                          level: 100
+                          amount: 50
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [activity]
+      operationId: createActivity
+      summary: Создать активность
+      description: |
+        Тип, целевые группы, время начала в будущем, максимум баллов — целое ≥ 2, чтобы любой уровень давал
+        хотя бы 1 балл (мастер-R17); максимум 1 — `400` по полю `maxPoints`.
+
+        Доступ: допущенный преподаватель; каждая группа — из доступных (`403 GROUP_NOT_ACCESSIBLE`).
+      x-roles: [TEACHER]
+      x-status: planned
+      security:
+        - session: []
+          csrf: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityCreate'
+            example:
+              title: Олимпиада по программированию
+              description: Командная олимпиада факультета, задачи на алгоритмы.
+              type: ACADEMIC
+              groupIds: [11, 12]
+              startsAt: '2026-11-21T08:00:00Z'
+              maxPoints: 75
+      responses:
+        '201':
+          description: Активность создана.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+              example:
+                id: 602
+                title: Олимпиада по программированию
+                description: Командная олимпиада факультета, задачи на алгоритмы.
+                type: ACADEMIC
+                currency: BUA
+                startsAt: '2026-11-21T08:00:00Z'
+                maxPoints: 75
+                groups:
+                  - id: 11
+                    name: ИВТ-21
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+                  - id: 12
+                    name: ИВТ-22
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+                author:
+                  id: 2001
+                  fullName: Петров Павел Петрович
+                enrollmentOpen: false
+                confirmationOpen: false
+                enrolledCount: 0
+                confirmedCount: 0
+                enrolled: null
+                myAward: null
+        '400':
+          description: Поля не прошли проверку.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblem'
+              example:
+                type: about:blank
+                title: Bad Request
+                status: 400
+                code: VALIDATION_FAILED
+                detail: Проверьте поля формы.
+                fieldErrors:
+                  - field: maxPoints
+                    code: TOO_SMALL
+                    message: Максимум — не меньше 2 баллов.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/GroupForbidden'
+
+  /api/v1/activities/{activityId}:
+    get:
+      tags: [activity]
+      operationId: getActivity
+      summary: Активность
+      description: |
+        Доступ: студент, чья группа среди целевых; автор активности. Остальным — `403 FORBIDDEN`.
+      x-roles: [STUDENT, TEACHER]
+      x-status: planned
+      parameters:
+        - $ref: '#/components/parameters/ActivityId'
+      responses:
+        '200':
+          description: Активность.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+              example:
+                id: 603
+                title: Субботник в кампусе
+                description: Уборка территории у главного корпуса.
+                type: SOCIAL
+                currency: BOA
+                startsAt: '2026-11-14T07:00:00Z'
+                maxPoints: 100
+                groups:
+                  - id: 11
+                    name: ИВТ-21
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+                author:
+                  id: 2001
+                  fullName: Петров Павел Петрович
+                enrollmentOpen: true
+                confirmationOpen: false
+                enrolledCount: 12
+                confirmedCount: 0
+                enrolled: false
+                myAward: null
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/activities/{activityId}/enrollment:
+    put:
+      tags: [activity]
+      operationId: enrollInActivity
+      summary: Записаться
+      description: |
+        Запись на `SOCIAL`-активность до времени начала (мастер-R18); повторная запись ничего не меняет.
+        `ACADEMIC` — `409 INVALID_STATE` (записи нет); в момент начала и позже — `422 ENROLLMENT_CLOSED`;
+        без `ACTIVE`-членства — `422 MEMBERSHIP_NOT_ACTIVE` (мастер-R32).
+
+        Доступ: студент, чья группа среди целевых.
+      x-roles: [STUDENT]
+      x-status: planned
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - $ref: '#/components/parameters/ActivityId'
+      responses:
+        '200':
+          description: 'Активность с `enrolled: true`.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+              example:
+                id: 603
+                title: Субботник в кампусе
+                description: Уборка территории у главного корпуса.
+                type: SOCIAL
+                currency: BOA
+                startsAt: '2026-11-14T07:00:00Z'
+                maxPoints: 100
+                groups:
+                  - id: 11
+                    name: ИВТ-21
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+                author:
+                  id: 2001
+                  fullName: Петров Павел Петрович
+                enrollmentOpen: true
+                confirmationOpen: false
+                enrolledCount: 13
+                confirmedCount: 0
+                enrolled: true
+                myAward: null
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/InvalidState'
+        '422':
+          $ref: '#/components/responses/EnrollmentRejected'
+    delete:
+      tags: [activity]
+      operationId: cancelEnrollment
+      summary: Отменить запись
+      description: |
+        Отмена до времени начала; без записи ничего не меняет. В момент начала и позже —
+        `422 ENROLLMENT_CLOSED`.
+
+        Доступ: студент, чья группа среди целевых.
+      x-roles: [STUDENT]
+      x-status: planned
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - $ref: '#/components/parameters/ActivityId'
+      responses:
+        '200':
+          description: 'Активность с `enrolled: false`.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+              example:
+                id: 603
+                title: Субботник в кампусе
+                description: Уборка территории у главного корпуса.
+                type: SOCIAL
+                currency: BOA
+                startsAt: '2026-11-14T07:00:00Z'
+                maxPoints: 100
+                groups:
+                  - id: 11
+                    name: ИВТ-21
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+                author:
+                  id: 2001
+                  fullName: Петров Павел Петрович
+                enrollmentOpen: true
+                confirmationOpen: false
+                enrolledCount: 12
+                confirmedCount: 0
+                enrolled: false
+                myAward: null
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/InvalidState'
+        '422':
+          $ref: '#/components/responses/EnrollmentRejected'
+
+  /api/v1/activities/{activityId}/participants:
+    get:
+      tags: [activity]
+      operationId: listActivityParticipants
+      summary: Участники для подтверждения
+      description: |
+        У `SOCIAL` — записавшиеся, у `ACADEMIC` — студенты целевых групп с `ACTIVE`-членством (мастер-R19);
+        у каждого — подтверждённый уровень и сумма, если есть. По группе, затем по ФИО; список целиком.
+
+        Доступ: только автор активности, даже если её группы ему уже недоступны.
+      x-roles: [TEACHER]
+      x-status: planned
+      parameters:
+        - $ref: '#/components/parameters/ActivityId'
+      responses:
+        '200':
+          description: Участники.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantList'
+              example:
+                activityId: 603
+                type: SOCIAL
+                maxPoints: 100
+                items:
+                  - student:
+                      id: 1002
+                      fullName: Кузнецов Дмитрий Андреевич
+                    group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    enrolled: true
+                    confirmed: null
+                  - student:
+                      id: 1001
+                      fullName: Смирнова Анна Олеговна
+                    group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    enrolled: true
+                    confirmed:
+                      level: 75
+                      amount: 75
+                      confirmedAt: '2026-11-14T12:10:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/activities/{activityId}/participation:preview:
+    post:
+      tags: [activity]
+      operationId: previewParticipation
+      summary: Предпросмотр подтверждения
+      description: |
+        То же тело и те же проверки, что у подтверждения, но без записи: суммы по студентам и бюджет по
+        группам до отправки (экран «Подтверждение участия»). Нехватка бюджета — не ошибка, а
+        `withinBudget: false` и `shortfall` по группам. Ошибки состава — как у подтверждения
+        (`409 ALREADY_CONFIRMED`, `422 NOT_ENROLLED`, `422 STUDENT_NOT_ELIGIBLE`, `409 INVALID_STATE` до начала).
+        Изменяющий метод только потому, что несёт тело; CSRF нужен.
+
+        Доступ: только автор активности, даже если её группы ему уже недоступны.
+      x-roles: [TEACHER]
+      x-status: planned
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - $ref: '#/components/parameters/ActivityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipationRequest'
+            example:
+              items:
+                - studentId: 1001
+                  level: 50
+                - studentId: 1003
+                  level: 100
+      responses:
+        '200':
+          description: Предпросмотр.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipationPreview'
+              examples:
+                rounding:
+                  summary: AE9 — максимум 75, уровень 50 → 38
+                  value:
+                    currency: BUA
+                    awards:
+                      - studentId: 1001
+                        groupId: 11
+                        level: 50
+                        amount: 38
+                      - studentId: 1003
+                        groupId: 11
+                        level: 100
+                        amount: 75
+                    alreadyConfirmed: []
+                    total: 113
+                    budgets:
+                      - groupId: 11
+                        groupName: ИВТ-21
+                        needed: 113
+                        remaining: 1000
+                        shortfall: 0
+                    withinBudget: true
+                overBudget:
+                  summary: AE8 — ИВТ-21, нужно 100, остаток 50
+                  value:
+                    currency: BOA
+                    awards:
+                      - studentId: 1001
+                        groupId: 11
+                        level: 50
+                        amount: 50
+                      - studentId: 1002
+                        groupId: 11
+                        level: 50
+                        amount: 50
+                    alreadyConfirmed: []
+                    total: 100
+                    budgets:
+                      - groupId: 11
+                        groupName: ИВТ-21
+                        needed: 100
+                        remaining: 50
+                        shortfall: 50
+                    withinBudget: false
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ParticipationConflict'
+        '422':
+          $ref: '#/components/responses/ParticipantsRejected'
+
+  /api/v1/activities/{activityId}/participation:
+    post:
+      tags: [activity]
+      operationId: confirmParticipation
+      summary: Подтвердить участие
+      description: |
+        Подтверждение участников и уровней после времени начала (мастер-R19, R20) одной транзакцией по
+        протоколу мастер-U9. Начисление — `round_half_up(максимум × уровень / 100)`, валюта по типу.
+
+        Состав запроса:
+        - повторы `studentId` — `400`;
+        - студент, уже подтверждённый с тем же уровнем, — в `alreadyConfirmed`, бюджет не расходует,
+          проводок нет: повтор запроса безопасен;
+        - уже подтверждённый с другим уровнем — весь запрос `409 ALREADY_CONFIRMED` со `studentIds`;
+        - студент вне целевых групп или с `PENDING`-членством — `422 STUDENT_NOT_ELIGIBLE`;
+        - незаписанный на `SOCIAL` — `422 NOT_ENROLLED` (мастер-AE10); на `ACADEMIC` запись не нужна.
+
+        Бюджет: если новые начисления превышают остаток хотя бы одной группы, — весь запрос
+        `422 BUDGET_EXCEEDED` с группами, где не хватает (мастер-AE8); ничего не начислено. До времени
+        начала — `409 INVALID_STATE`.
+
+        Доступ: только автор активности, даже если её группы ему уже недоступны; бюджет — групп этой
+        активности.
+      x-roles: [TEACHER]
+      x-status: planned
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - $ref: '#/components/parameters/ActivityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipationRequest'
+            example:
+              items:
+                - studentId: 1001
+                  level: 50
+                - studentId: 1003
+                  level: 100
+      responses:
+        '200':
+          description: Начислено.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipationResult'
+              examples:
+                confirmed:
+                  value:
+                    currency: BUA
+                    awards:
+                      - studentId: 1001
+                        groupId: 11
+                        level: 50
+                        amount: 38
+                      - studentId: 1003
+                        groupId: 11
+                        level: 100
+                        amount: 75
+                    alreadyConfirmed: []
+                    total: 113
+                repeated:
+                  summary: Повтор того же запроса — ничего не начислено
+                  value:
+                    currency: BUA
+                    awards: []
+                    alreadyConfirmed:
+                      - studentId: 1001
+                        groupId: 11
+                        level: 50
+                        amount: 38
+                      - studentId: 1003
+                        groupId: 11
+                        level: 100
+                        amount: 75
+                    total: 0
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ParticipationConflict'
+        '422':
+          description: Бюджет или состав участников.
+          content:
+            application/problem+json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/BudgetProblem'
+                  - $ref: '#/components/schemas/StudentsProblem'
+              examples:
+                budgetExceeded:
+                  summary: AE8
+                  value:
+                    type: about:blank
+                    title: Unprocessable Content
+                    status: 422
+                    code: BUDGET_EXCEEDED
+                    detail: Не хватает бюджета группы ИВТ-21.
+                    budgets:
+                      - groupId: 11
+                        groupName: ИВТ-21
+                        needed: 100
+                        remaining: 50
+                        shortfall: 50
+                notEnrolled:
+                  $ref: '#/components/examples/NotEnrolled'
+                notEligible:
+                  $ref: '#/components/examples/StudentNotEligible'
+
+  /api/v1/budgets:
+    get:
+      tags: [activity]
+      operationId: listBudgets
+      summary: Бюджет по группам
+      description: |
+        Лимит, расход и остаток за месяц по Europe/Moscow (мастер-R20, R21). Группы — доступные плюс группы
+        своих активностей (мастер-KTD23: по своим ресурсам автор видит бюджет и после потери доступа).
+        По умолчанию — текущий месяц.
+
+        Доступ: преподаватель, только свой бюджет.
+      x-roles: [TEACHER]
+      x-status: planned
+      parameters:
+        - $ref: '#/components/parameters/Month'
+      responses:
+        '200':
+          description: Бюджет.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetList'
+              example:
+                month: 2026-11
+                items:
+                  - group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    limit: 1000
+                    spent: 950
+                    remaining: 50
+                  - group:
+                      id: 12
+                      name: ИВТ-22
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    limit: 1000
+                    spent: 0
+                    remaining: 1000
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/me/awards:
+    get:
+      tags: [activity]
+      operationId: listMyAwards
+      summary: История моих начислений
+      description: |
+        Начисления текущего преподавателя (мастер-R21), новые сверху, курсор по `(время подтверждения desc,
+        id desc)`. Фильтры группы и месяца (Europe/Moscow) входят в курсор.
+
+        Доступ: преподаватель, только свои начисления.
+      x-roles: [TEACHER]
+      x-status: planned
+      parameters:
+        - name: groupId
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Id'
+        - $ref: '#/components/parameters/Month'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Страница начислений.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherAwardPage'
+              example:
+                items:
+                  - id: 9101
+                    activity:
+                      id: 601
+                      title: Помощь в организации конференции
+                      type: SOCIAL
+                    student:
+                      id: 1001
+                      fullName: Смирнова Анна Олеговна
+                    group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    level: 100
+                    amount: 50
+                    currency: BOA
+                    confirmedAt: '2026-11-03T14:00:00Z'
+                nextCursor: null
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/me/awards/summary:
+    get:
+      tags: [activity]
+      operationId: getMyAwardsSummary
+      summary: Статистика начислений за месяц
+      description: |
+        Сумма и число начислений текущего преподавателя за месяц по группам и валютам. Сумма по группе
+        (БУА + БОА) равна расходу её бюджета за тот же месяц.
+
+        Доступ: преподаватель, только свои начисления.
+      x-roles: [TEACHER]
+      x-status: planned
+      parameters:
+        - $ref: '#/components/parameters/Month'
+      responses:
+        '200':
+          description: Статистика.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeacherAwardSummary'
+              example:
+                month: 2026-11
+                total: 950
+                count: 21
+                items:
+                  - group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    currency: BOA
+                    amount: 600
+                    count: 13
+                  - group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    currency: BUA
+                    amount: 350
+                    count: 8
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/users/{userId}/profile:
+    get:
+      tags: [profile]
+      operationId: getUserProfile
+      summary: Профиль пользователя
+      description: |
+        Профиль по роли владельца (мастер-R5): студент — ФИО, группа и факультет, балансы, активные и
+        последние завершённые задачи; преподаватель — ФИО, кафедра и факультет; администратор — ФИО и роль.
+        История проводок — `GET /ledger/{userId}/entries`.
+
+        Задача в профиле зависит от смотрящего (поле `view`):
+        - `PUBLIC` — чужой профиль: название точки, дедлайн, статус и списанный штраф, без перехода;
+        - `OWN` — свой профиль: плюс `assignmentId` для перехода в задачу;
+        - `ADMIN` — администратор: плюс `assignmentId` для экрана «Материалы сдачи»
+          (`/admin/submissions/:assignmentId`).
+
+        Ссылка, файл и комментарий возврата в профиле не отдаются никогда — только `GET /assignments/{id}`
+        с проверкой прав (мастер-R3). Строку «Пароль выставлен» добавит мастер-U13.
+
+        Доступ: любой вошедший.
+      x-roles: [AUTHENTICATED]
+      x-status: planned
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Профиль.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+              examples:
+                studentPublic:
+                  summary: Студент глазами другого пользователя
+                  $ref: '#/components/examples/StudentProfilePublic'
+                studentOwn:
+                  summary: Свой профиль студента
+                  value:
+                    role: STUDENT
+                    id: 1001
+                    fullName: Смирнова Анна Олеговна
+                    group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    balances:
+                      AR: 940
+                      BUA: 120
+                      BOA: 50
+                    activeTasks:
+                      - view: OWN
+                        assignmentId: 7001
+                        title: Лабораторная 3. Деревья поиска
+                        deadline: '2026-11-12T09:00:00Z'
+                        status: OVERDUE
+                        charged: 40
+                    completedTasks:
+                      - view: OWN
+                        assignmentId: 6990
+                        title: Лабораторная 2. Сортировки
+                        deadline: '2026-10-29T09:00:00Z'
+                        status: ACCEPTED
+                        charged: 20
+                    completedTotal: 1
+                studentByAdmin:
+                  summary: Студент глазами администратора
+                  value:
+                    role: STUDENT
+                    id: 1001
+                    fullName: Смирнова Анна Олеговна
+                    group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    balances:
+                      AR: 940
+                      BUA: 120
+                      BOA: 50
+                    activeTasks:
+                      - view: ADMIN
+                        assignmentId: 7001
+                        title: Лабораторная 3. Деревья поиска
+                        deadline: '2026-11-12T09:00:00Z'
+                        status: OVERDUE
+                        charged: 40
+                    completedTasks: []
+                    completedTotal: 0
+                teacher:
+                  value:
+                    role: TEACHER
+                    id: 2001
+                    fullName: Петров Павел Петрович
+                    department:
+                      id: 101
+                      code: ПИ
+                      name: Кафедра программной инженерии
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                admin:
+                  value:
+                    role: ADMIN
+                    id: 3001
+                    fullName: Администратор стенда
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/ledger/{userId}/entries:
+    get:
+      tags: [ledger]
+      operationId: listLedgerEntries
+      summary: История проводок
+      description: |
+        История проводок студента для профиля (мастер-R6), новые сверху, курсор по `(createdAt desc, id desc)`
+        (мастер-KTD18). Источник и автор — снимок на момент проводки: переименование точки или смена ФИО
+        прошлую историю не меняют. Автор `null` — система (штраф, начисление семестра, стартовые баллы).
+        У преподавателя и администратора проводок нет — пустая страница.
+
+        Доступ: любой вошедший (профиль открыт всем, мастер-R5).
+      x-roles: [AUTHENTICATED]
+      x-status: planned
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - name: currency
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Currency'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Страница истории.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LedgerEntryPage'
+              example:
+                items:
+                  - id: 88012
+                    createdAt: '2026-11-12T09:01:00Z'
+                    currency: AR
+                    amount: -20
+                    kind: PENALTY
+                    source:
+                      type: CHECKPOINT
+                      id: 501
+                      title: Лабораторная 3. Деревья поиска
+                    author: null
+                  - id: 87410
+                    createdAt: '2026-11-03T14:00:00Z'
+                    currency: BOA
+                    amount: 50
+                    kind: ACTIVITY_AWARD
+                    source:
+                      type: ACTIVITY
+                      id: 601
+                      title: Помощь в организации конференции
+                    author:
+                      id: 2001
+                      fullName: Петров Павел Петрович
+                  - id: 80001
+                    createdAt: '2026-09-01T08:00:00Z'
+                    currency: AR
+                    amount: 1000
+                    kind: INITIAL
+                    source:
+                      type: REGISTRATION
+                      id: null
+                      title: Стартовые баллы
+                    author: null
+                nextCursor: eyJ0IjoiMjAyNi0wOS0wMVQwODowMDowMFoiLCJpZCI6ODAwMDF9
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/feed/awards:
+    get:
+      tags: [feed]
+      operationId: listAwardsFeed
+      summary: Лента наград
+      description: |
+        Проводки `ACTIVITY_AWARD` всех студентов (мастер-R23), новые сверху, курсор по `(createdAt desc,
+        id desc)`. Штрафы, начисления семестра и стартовые баллы в ленту не попадают. Новые записи фронт
+        находит опросом первой страницы и показывает плашкой «Новые награды: N».
+
+        Доступ: любой вошедший.
+      x-roles: [AUTHENTICATED]
+      x-status: planned
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Страница ленты.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AwardFeedPage'
+              example:
+                items:
+                  - entryId: 87412
+                    createdAt: '2026-11-03T14:05:00Z'
+                    student:
+                      id: 1002
+                      fullName: Кузнецов Дмитрий Андреевич
+                    amount: 38
+                    currency: BUA
+                    activity:
+                      id: 602
+                      title: Олимпиада по программированию
+                    teacher:
+                      id: 2001
+                      fullName: Петров Павел Петрович
+                  - entryId: 87410
+                    createdAt: '2026-11-03T14:00:00Z'
+                    student:
+                      id: 1001
+                      fullName: Смирнова Анна Олеговна
+                    amount: 50
+                    currency: BOA
+                    activity:
+                      id: 601
+                      title: Помощь в организации конференции
+                    teacher:
+                      id: 2001
+                      fullName: Петров Павел Петрович
+                nextCursor: eyJ0IjoiMjAyNi0xMS0wM1QxNDowMDowMFoiLCJpZCI6ODc0MTB9
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/groups/{groupId}/ratings:
+    get:
+      tags: [feed]
+      operationId: getGroupRating
+      summary: Рейтинг группы
+      description: |
+        Студенты группы с `ACTIVE`-членством и их балансы из снимка (мастер-R22, KTD3), по убыванию выбранной
+        валюты, при равенстве — по ФИО, затем по id. Список целиком.
+
+        Доступ: преподаватель, группа — из доступных (`403 GROUP_NOT_ACCESSIBLE`).
+      x-roles: [TEACHER]
+      x-status: planned
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - name: sort
+          in: query
+          required: false
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Currency'
+            default: AR
+      responses:
+        '200':
+          description: Рейтинг.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupRating'
+              example:
+                group:
+                  id: 11
+                  name: ИВТ-21
+                  faculty:
+                    id: 1
+                    code: ФИТ
+                    name: Факультет информационных технологий
+                sort: AR
+                items:
+                  - student:
+                      id: 1003
+                      fullName: Иванова Ирина Игоревна
+                    balances:
+                      AR: 1000
+                      BUA: 75
+                      BOA: 0
+                  - student:
+                      id: 1002
+                      fullName: Кузнецов Дмитрий Андреевич
+                    balances:
+                      AR: 940
+                      BUA: 38
+                      BOA: 0
+                  - student:
+                      id: 1001
+                      fullName: Смирнова Анна Олеговна
+                    balances:
+                      AR: 940
+                      BUA: 120
+                      BOA: 50
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/GroupForbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/admin/ledger/reconciliation:
+    get:
+      tags: [ledger]
+      operationId: reconcileLedger
+      summary: Сверка журнала
+      description: |
+        Пары (студент, валюта), где снимок баланса не равен сумме проводок (мастер-KTD3, U6). Пустой список —
+        инвариант держится.
+
+        Доступ: только администратор.
+      x-roles: [ADMIN]
+      x-status: planned
+      responses:
+        '200':
+          description: Результат сверки.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LedgerReconciliation'
+              examples:
+                ok:
+                  value:
+                    checkedAt: '2026-11-12T10:00:00Z'
+                    checkedPairs: 1446
+                    mismatches: []
+                broken:
+                  value:
+                    checkedAt: '2026-11-12T10:00:00Z'
+                    checkedPairs: 1446
+                    mismatches:
+                      - studentId: 1002
+                        currency: AR
+                        balance: 960
+                        ledgerSum: 940
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
+      description: Серверная сессия Spring Security в HttpOnly-cookie (мастер-KTD8, ADR003).
+    csrf:
+      type: apiKey
+      in: header
+      name: X-XSRF-TOKEN
+      description: Значение cookie `XSRF-TOKEN`; обязателен на изменяющих методах.
+
+  examples:
+    CsrfInvalid:
+      value:
+        type: about:blank
+        title: Forbidden
+        status: 403
+        code: CSRF_INVALID
+        detail: Обновите страницу и повторите действие.
+    EmailTaken:
+      value:
+        type: about:blank
+        title: Conflict
+        status: 409
+        code: EMAIL_TAKEN
+        detail: Этот email уже зарегистрирован.
+    CurrentStudent:
+      value:
+        role: STUDENT
+        id: 1001
+        fullName: Смирнова Анна Олеговна
+        email: smirnova@student.campus.test
+        mustChangePassword: false
+        group:
+          id: 11
+          name: ИВТ-21
+          faculty:
+            id: 1
+            code: ФИТ
+            name: Факультет информационных технологий
+        membershipState: ACTIVE
+    CurrentTeacher:
+      value:
+        role: TEACHER
+        id: 2001
+        fullName: Петров Павел Петрович
+        email: petrov@campus.test
+        mustChangePassword: false
+        department:
+          id: 101
+          code: ПИ
+          name: Кафедра программной инженерии
+          faculty:
+            id: 1
+            code: ФИТ
+            name: Факультет информационных технологий
+        teacherApproved: true
+    CurrentAdminMustChangePassword:
+      value:
+        role: ADMIN
+        id: 3001
+        fullName: Администратор стенда
+        email: admin@campus.test
+        mustChangePassword: true
+
+    AssignmentBeforeDeadline:
+      value:
+        id: 7001
+        checkpoint:
+          id: 501
+          title: Лабораторная 3. Деревья поиска
+          description: Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.
+          deadline: '2026-11-12T09:00:00Z'
+          cost: 60
+          author:
+            id: 2001
+            fullName: Петров Павел Петрович
+        student:
+          id: 1001
+          fullName: Смирнова Анна Олеговна
+        group:
+          id: 11
+          name: ИВТ-21
+          faculty:
+            id: 1
+            code: ФИТ
+            name: Факультет информационных технологий
+        state: OPEN
+        status: IN_PROGRESS
+        penalty:
+          charged: 0
+          cap: 60
+          step: 20
+          intervalSeconds: 60
+          phase: BEFORE_DEADLINE
+          nextAt: '2026-11-12T09:00:00Z'
+          nextAmount: 20
+        returnComment: null
+        submission: null
+        submittedAt: null
+        acceptedAt: null
+    AssignmentRunning:
+      value:
+        id: 7001
+        checkpoint:
+          id: 501
+          title: Лабораторная 3. Деревья поиска
+          description: Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.
+          deadline: '2026-11-12T09:00:00Z'
+          cost: 60
+          author:
+            id: 2001
+            fullName: Петров Павел Петрович
+        student:
+          id: 1001
+          fullName: Смирнова Анна Олеговна
+        group:
+          id: 11
+          name: ИВТ-21
+          faculty:
+            id: 1
+            code: ФИТ
+            name: Факультет информационных технологий
+        state: OPEN
+        status: OVERDUE
+        penalty:
+          charged: 40
+          cap: 60
+          step: 20
+          intervalSeconds: 60
+          phase: RUNNING
+          nextAt: '2026-11-12T09:02:00Z'
+          nextAmount: 20
+        returnComment: null
+        submission: null
+        submittedAt: null
+        acceptedAt: null
+    AssignmentZeroBalance:
+      value:
+        id: 7020
+        checkpoint:
+          id: 503
+          title: Лабораторная 4. Графы
+          description: Поиск в ширину и в глубину, кратчайшие пути.
+          deadline: '2026-11-12T09:00:00Z'
+          cost: 100
+          author:
+            id: 2001
+            fullName: Петров Павел Петрович
+        student:
+          id: 1001
+          fullName: Смирнова Анна Олеговна
+        group:
+          id: 11
+          name: ИВТ-21
+          faculty:
+            id: 1
+            code: ФИТ
+            name: Факультет информационных технологий
+        state: OPEN
+        status: OVERDUE
+        penalty:
+          charged: 10
+          cap: 100
+          step: 20
+          intervalSeconds: 60
+          phase: ZERO_BALANCE
+          nextAt: '2026-11-12T09:01:00Z'
+          nextAmount: 0
+        returnComment: null
+        submission: null
+        submittedAt: null
+        acceptedAt: null
+    AssignmentCapReached:
+      value:
+        id: 7001
+        checkpoint:
+          id: 501
+          title: Лабораторная 3. Деревья поиска
+          description: Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.
+          deadline: '2026-11-12T09:00:00Z'
+          cost: 60
+          author:
+            id: 2001
+            fullName: Петров Павел Петрович
+        student:
+          id: 1001
+          fullName: Смирнова Анна Олеговна
+        group:
+          id: 11
+          name: ИВТ-21
+          faculty:
+            id: 1
+            code: ФИТ
+            name: Факультет информационных технологий
+        state: OPEN
+        status: OVERDUE
+        penalty:
+          charged: 60
+          cap: 60
+          step: 20
+          intervalSeconds: 60
+          phase: CAP_REACHED
+          nextAt: null
+          nextAmount: null
+        returnComment: null
+        submission: null
+        submittedAt: null
+        acceptedAt: null
+    AssignmentStopped:
+      value:
+        id: 7001
+        checkpoint:
+          id: 501
+          title: Лабораторная 3. Деревья поиска
+          description: Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.
+          deadline: '2026-11-12T09:00:00Z'
+          cost: 60
+          author:
+            id: 2001
+            fullName: Петров Павел Петрович
+        student:
+          id: 1001
+          fullName: Смирнова Анна Олеговна
+        group:
+          id: 11
+          name: ИВТ-21
+          faculty:
+            id: 1
+            code: ФИТ
+            name: Факультет информационных технологий
+        state: SUBMITTED
+        status: SUBMITTED
+        penalty:
+          charged: 40
+          cap: 60
+          step: 20
+          intervalSeconds: 60
+          phase: STOPPED
+          nextAt: null
+          nextAmount: null
+        returnComment: null
+        submission:
+          kind: LINK
+          url: https://github.com/smirnova-demo/avl-tree
+          submittedAt: '2026-11-12T09:01:30Z'
+        submittedAt: '2026-11-12T09:01:30Z'
+        acceptedAt: null
+    AssignmentReturned:
+      value:
+        id: 7001
+        checkpoint:
+          id: 501
+          title: Лабораторная 3. Деревья поиска
+          description: Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.
+          deadline: '2026-11-12T09:00:00Z'
+          cost: 60
+          author:
+            id: 2001
+            fullName: Петров Павел Петрович
+        student:
+          id: 1001
+          fullName: Смирнова Анна Олеговна
+        group:
+          id: 11
+          name: ИВТ-21
+          faculty:
+            id: 1
+            code: ФИТ
+            name: Факультет информационных технологий
+        state: OPEN
+        status: OVERDUE
+        penalty:
+          charged: 40
+          cap: 60
+          step: 20
+          intervalSeconds: 60
+          phase: RUNNING
+          nextAt: '2026-11-12T09:05:00Z'
+          nextAmount: 20
+        returnComment: Нет тестов на удаление корня.
+        submission:
+          kind: LINK
+          url: https://github.com/smirnova-demo/avl-tree
+          submittedAt: '2026-11-12T09:01:30Z'
+        submittedAt: '2026-11-12T09:01:30Z'
+        acceptedAt: null
+
+    NotEnrolled:
+      summary: AE10 — студент не записан на SOCIAL
+      value:
+        type: about:blank
+        title: Unprocessable Content
+        status: 422
+        code: NOT_ENROLLED
+        detail: Студент не записан на активность.
+        studentIds: [1002]
+    StudentNotEligible:
+      value:
+        type: about:blank
+        title: Unprocessable Content
+        status: 422
+        code: STUDENT_NOT_ELIGIBLE
+        detail: Студент не из целевых групп или его членство ждёт подтверждения.
+        studentIds: [1004]
+
+    StudentProfilePublic:
+      value:
+        role: STUDENT
+        id: 1001
+        fullName: Смирнова Анна Олеговна
+        group:
+          id: 11
+          name: ИВТ-21
+          faculty:
+            id: 1
+            code: ФИТ
+            name: Факультет информационных технологий
+        balances:
+          AR: 940
+          BUA: 120
+          BOA: 50
+        activeTasks:
+          - view: PUBLIC
+            title: Лабораторная 3. Деревья поиска
+            deadline: '2026-11-12T09:00:00Z'
+            status: OVERDUE
+            charged: 40
+        completedTasks:
+          - view: PUBLIC
+            title: Лабораторная 2. Сортировки
+            deadline: '2026-10-29T09:00:00Z'
+            status: ACCEPTED
+            charged: 20
+        completedTotal: 1
+
+  parameters:
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    GroupId:
+      name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    ActivityId:
+      name: activityId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    Month:
+      name: month
+      in: query
+      required: false
+      description: Месяц по Europe/Moscow; по умолчанию текущий.
+      schema:
+        $ref: '#/components/schemas/YearMonth'
+    CheckpointId:
+      name: checkpointId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    AssignmentId:
+      name: assignmentId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    FacultyId:
+      name: facultyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: |
+        Непрозрачный курсор из `nextCursor` предыдущей страницы; без него — первая страница.
+        Курсор привязан к сортировке и фильтрам списка: курсор от другого фильтра или битый —
+        `400 VALIDATION_FAILED` с полем `cursor`.
+      schema:
+        type: string
+        minLength: 1
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Размер страницы.
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    ValidationFailed:
+      description: Запрос не прошёл проверку.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ValidationProblem'
+          example:
+            type: about:blank
+            title: Bad Request
+            status: 400
+            code: VALIDATION_FAILED
+            detail: Проверьте поля формы.
+            fieldErrors:
+              - field: cursor
+                code: INVALID
+                message: Курсор не подходит к этому списку.
+    Unauthenticated:
+      description: Нет сессии или она истекла.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Unauthorized
+            status: 401
+            code: UNAUTHENTICATED
+            detail: Войдите в систему.
+    Forbidden:
+      description: |
+        Нет прав. `code`:
+        - `FORBIDDEN` — роль или принадлежность ресурса не подходят;
+        - `GROUP_NOT_ACCESSIBLE` — группа вне доступных преподавателю (мастер-KTD23);
+        - `PASSWORD_CHANGE_REQUIRED` — сначала смените пароль (мастер-R49);
+        - `CSRF_INVALID` — нет или неверен CSRF-заголовок.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          examples:
+            forbidden:
+              value:
+                type: about:blank
+                title: Forbidden
+                status: 403
+                code: FORBIDDEN
+                detail: Недостаточно прав.
+            passwordChangeRequired:
+              value:
+                type: about:blank
+                title: Forbidden
+                status: 403
+                code: PASSWORD_CHANGE_REQUIRED
+                detail: Смените временный пароль.
+            csrfInvalid:
+              value:
+                type: about:blank
+                title: Forbidden
+                status: 403
+                code: CSRF_INVALID
+                detail: Обновите страницу и повторите действие.
+    GroupForbidden:
+      description: |
+        Нет прав, включая группу вне доступных. `code` — как у `Forbidden`.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          examples:
+            groupNotAccessible:
+              value:
+                type: about:blank
+                title: Forbidden
+                status: 403
+                code: GROUP_NOT_ACCESSIBLE
+                detail: Группа ИВТ-22 вне ваших доступных групп.
+            forbidden:
+              value:
+                type: about:blank
+                title: Forbidden
+                status: 403
+                code: FORBIDDEN
+                detail: Недостаточно прав.
+    CsrfForbidden:
+      description: Нет или неверен CSRF-заголовок (`CSRF_INVALID`).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          examples:
+            csrfInvalid:
+              $ref: '#/components/examples/CsrfInvalid'
+    NotFound:
+      description: Ресурса нет или он скрыт от вызывающего.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Not Found
+            status: 404
+            code: NOT_FOUND
+            detail: Не найдено.
+    InvalidState:
+      description: Действие недопустимо в текущем состоянии ресурса.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Conflict
+            status: 409
+            code: INVALID_STATE
+            detail: Работа уже сдана на проверку.
+
+    EnrollmentRejected:
+      description: '`ENROLLMENT_CLOSED` — время начала наступило; `MEMBERSHIP_NOT_ACTIVE` — членство ждёт подтверждения.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          examples:
+            closed:
+              value:
+                type: about:blank
+                title: Unprocessable Content
+                status: 422
+                code: ENROLLMENT_CLOSED
+                detail: Запись закрыта — активность уже началась.
+            membershipNotActive:
+              value:
+                type: about:blank
+                title: Unprocessable Content
+                status: 422
+                code: MEMBERSHIP_NOT_ACTIVE
+                detail: Членство в группе ждёт подтверждения.
+    ParticipationConflict:
+      description: '`ALREADY_CONFIRMED` — уровень уже подтверждён иначе; `INVALID_STATE` — активность ещё не началась.'
+      content:
+        application/problem+json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/StudentsProblem'
+              - $ref: '#/components/schemas/InvalidStateProblem'
+          examples:
+            alreadyConfirmed:
+              value:
+                type: about:blank
+                title: Conflict
+                status: 409
+                code: ALREADY_CONFIRMED
+                detail: Участие уже подтверждено с другим уровнем.
+                studentIds: [1001]
+            notStarted:
+              value:
+                type: about:blank
+                title: Conflict
+                status: 409
+                code: INVALID_STATE
+                detail: Подтверждать участие можно после начала активности.
+    ParticipantsRejected:
+      description: '`NOT_ENROLLED` или `STUDENT_NOT_ELIGIBLE` со `studentIds`; ничего не изменено.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/StudentsProblem'
+          examples:
+            notEnrolled:
+              $ref: '#/components/examples/NotEnrolled'
+            notEligible:
+              $ref: '#/components/examples/StudentNotEligible'
+
+  schemas:
+    Id:
+      type: integer
+      format: int64
+      minimum: 1
+
+    ProblemCode:
+      type: string
+      description: |
+        Закрытый перечень кодов ошибок; новый код — только правкой контракта.
+
+        | Код | HTTP | Когда |
+        |---|---|---|
+        | `UNAUTHENTICATED` | 401 | нет сессии |
+        | `INVALID_CREDENTIALS` | 401 | неверная пара email и пароль, в том числе неизвестный email |
+        | `FORBIDDEN` | 403 | роль или принадлежность ресурса |
+        | `GROUP_NOT_ACCESSIBLE` | 403 | группа вне доступных преподавателю |
+        | `PASSWORD_CHANGE_REQUIRED` | 403 | до смены временного пароля |
+        | `EMAIL_NOT_VERIFIED` | 403 | вход до подтверждения email (с мастер-U15), только после верного пароля |
+        | `CSRF_INVALID` | 403 | нет или неверен CSRF-заголовок |
+        | `NOT_FOUND` | 404 | ресурса нет |
+        | `INVALID_STATE` | 409 | недопустимый переход состояния |
+        | `EMAIL_TAKEN` | 409 | email уже зарегистрирован |
+        | `EMAIL_RESERVED_FOR_TEACHER` | 409 | email из списка преподавателей регистрируется студентом |
+        | `ALREADY_CONFIRMED` | 409 | участие уже подтверждено с другим уровнем |
+        | `VALIDATION_FAILED` | 400 | тело или параметры не прошли проверку |
+        | `PASSWORD_REUSED` | 400 | новый пароль совпадает с текущим |
+        | `FILE_TOO_LARGE` | 413 | файл сдачи больше 10 МБ |
+        | `FILE_TYPE_NOT_ALLOWED` | 415 | тип файла сдачи вне белого списка |
+        | `BUDGET_EXCEEDED` | 422 | подтверждение превышает остаток бюджета хотя бы одной группы |
+        | `NOT_ENROLLED` | 422 | студент не записан на `SOCIAL`-активность |
+        | `STUDENT_NOT_ELIGIBLE` | 422 | студент вне целевых групп или с `PENDING`-членством |
+        | `MEMBERSHIP_NOT_ACTIVE` | 422 | действие студента требует `ACTIVE`-членства |
+        | `ENROLLMENT_CLOSED` | 422 | запись или отмена после времени начала активности |
+      enum:
+        - UNAUTHENTICATED
+        - INVALID_CREDENTIALS
+        - FORBIDDEN
+        - GROUP_NOT_ACCESSIBLE
+        - PASSWORD_CHANGE_REQUIRED
+        - EMAIL_NOT_VERIFIED
+        - CSRF_INVALID
+        - NOT_FOUND
+        - INVALID_STATE
+        - EMAIL_TAKEN
+        - EMAIL_RESERVED_FOR_TEACHER
+        - ALREADY_CONFIRMED
+        - VALIDATION_FAILED
+        - PASSWORD_REUSED
+        - FILE_TOO_LARGE
+        - FILE_TYPE_NOT_ALLOWED
+        - BUDGET_EXCEEDED
+        - NOT_ENROLLED
+        - STUDENT_NOT_ELIGIBLE
+        - MEMBERSHIP_NOT_ACTIVE
+        - ENROLLMENT_CLOSED
+
+    Problem:
+      type: object
+      description: Ошибка по RFC 9457 (`ProblemDetail` Spring) с доменным `code`.
+      required: [type, title, status, code]
+      properties:
+        type:
+          type: string
+          description: '`about:blank`, пока у кодов нет собственных URI.'
+          examples: [about:blank]
+        title:
+          type: string
+          description: Стандартная фраза HTTP-статуса.
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: [string, 'null']
+          description: Текст для пользователя на русском.
+        instance:
+          type: [string, 'null']
+          description: Путь запроса.
+        code:
+          $ref: '#/components/schemas/ProblemCode'
+
+    FieldError:
+      type: object
+      required: [field, code, message]
+      properties:
+        field:
+          type: string
+          description: Имя поля тела или параметра; для вложенных — через точку и индекс (`items[0].level`).
+        code:
+          type: string
+          description: Машинный код нарушения (`REQUIRED`, `TOO_SHORT`, `TOO_LONG`, `INVALID`, `MISMATCH`).
+        message:
+          type: string
+          description: Текст для пользователя у поля.
+
+    ValidationProblem:
+      allOf:
+        - $ref: '#/components/schemas/Problem'
+        - type: object
+          required: [code, fieldErrors]
+          properties:
+            code:
+              const: VALIDATION_FAILED
+            fieldErrors:
+              type: array
+              minItems: 1
+              items:
+                $ref: '#/components/schemas/FieldError'
+
+    BudgetCheck:
+      type: object
+      description: Бюджет одной группы под запрос (экран «нужно, остаток, не хватает»).
+      required: [groupId, groupName, needed, remaining, shortfall]
+      properties:
+        groupId:
+          $ref: '#/components/schemas/Id'
+        groupName:
+          type: string
+        needed:
+          type: integer
+          description: Сколько требует подтверждение по новым студентам группы.
+        remaining:
+          type: integer
+          description: Остаток бюджета группы за текущий месяц.
+        shortfall:
+          type: integer
+          minimum: 0
+          description: '`max(0, needed − remaining)`; в `BudgetProblem` — только группы с `shortfall > 0`.'
+
+    BudgetProblem:
+      allOf:
+        - $ref: '#/components/schemas/Problem'
+        - type: object
+          required: [code, budgets]
+          properties:
+            code:
+              const: BUDGET_EXCEEDED
+            budgets:
+              type: array
+              minItems: 1
+              description: Только группы, по которым не хватает.
+              items:
+                $ref: '#/components/schemas/BudgetCheck'
+
+    StudentsProblem:
+      allOf:
+        - $ref: '#/components/schemas/Problem'
+        - type: object
+          required: [code, studentIds]
+          properties:
+            code:
+              enum: [NOT_ENROLLED, STUDENT_NOT_ELIGIBLE, ALREADY_CONFIRMED]
+            studentIds:
+              type: array
+              minItems: 1
+              description: Студенты, из-за которых отклонён весь запрос.
+              items:
+                $ref: '#/components/schemas/Id'
+
+
+    Currency:
+      type: string
+      description: '`AR` — академический рейтинг, `BUA` — баллы учебной активности, `BOA` — общественной.'
+      enum: [AR, BUA, BOA]
+    EntryKind:
+      type: string
+      enum: [INITIAL, SEMESTER_ACCRUAL, PENALTY, ACTIVITY_AWARD]
+    AssignmentState:
+      type: string
+      description: Хранимое состояние назначения.
+      enum: [OPEN, SUBMITTED, ACCEPTED]
+    AssignmentStatus:
+      type: string
+      description: |
+        Вычисляемый статус для показа (мастер-KTD7): `IN_PROGRESS` — «В процессе» (`OPEN` до дедлайна
+        включительно), `OVERDUE` — «Просрочено» (`OPEN` после дедлайна), `SUBMITTED` — «Сдано на проверку»,
+        `ACCEPTED` — «Принято».
+      enum: [IN_PROGRESS, SUBMITTED, OVERDUE, ACCEPTED]
+    ActivityType:
+      type: string
+      description: '`ACADEMIC` даёт БУА, `SOCIAL` даёт БОА.'
+      enum: [ACADEMIC, SOCIAL]
+    ParticipationLevel:
+      type: integer
+      format: int32
+      description: Уровень участия в процентах от максимума.
+      enum: [25, 50, 75, 100]
+    GroupMembershipState:
+      type: string
+      enum: [PENDING, ACTIVE]
+
+    UserRef:
+      type: object
+      description: Ссылка на пользователя для подписи и перехода в профиль.
+      required: [id, fullName]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        fullName:
+          type: string
+          examples: [Смирнова Анна Олеговна]
+    FacultyRef:
+      type: object
+      required: [id, code, name]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        code:
+          type: string
+          description: Короткое имя для подписей.
+          examples: [ФИТ]
+        name:
+          type: string
+          examples: [Факультет информационных технологий]
+    StudyGroupRef:
+      type: object
+      required: [id, name, faculty]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        name:
+          type: string
+          examples: [ИВТ-21]
+        faculty:
+          $ref: '#/components/schemas/FacultyRef'
+    DepartmentRef:
+      type: object
+      required: [id, code, name, faculty]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        code:
+          type: string
+          examples: [ПИ]
+        name:
+          type: string
+          examples: [Кафедра программной инженерии]
+        faculty:
+          $ref: '#/components/schemas/FacultyRef'
+
+    PasswordReusedProblem:
+      allOf:
+        - $ref: '#/components/schemas/Problem'
+        - type: object
+          required: [code]
+          properties:
+            code:
+              const: PASSWORD_REUSED
+
+    Email:
+      type: string
+      format: email
+      maxLength: 254
+      description: Сравнивается без учёта регистра.
+    Password:
+      type: string
+      minLength: 8
+      maxLength: 72
+      description: От 8 символов и не больше 72 байт в UTF-8 (предел BCrypt); байты проверяет сервер.
+    FullName:
+      type: string
+      minLength: 1
+      maxLength: 200
+      description: ФИО одной строкой; пробелы по краям сервер отбрасывает.
+
+    EmailVerificationMode:
+      type: string
+      description: '`campus.mail.email-verification` стенда: `REQUIRED` — `required`, `OFF` — `off`.'
+      enum: [REQUIRED, OFF]
+    AuthConfig:
+      type: object
+      required: [demo, emailVerification]
+      properties:
+        demo:
+          type: boolean
+          description: Профиль `demo` — данные пересоздаются при каждом запуске (мастер-R47).
+        emailVerification:
+          $ref: '#/components/schemas/EmailVerificationMode'
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          $ref: '#/components/schemas/Email'
+        password:
+          type: string
+          minLength: 1
+          maxLength: 1024
+
+    CurrentStudent:
+      type: object
+      description: Варианты `CurrentUser` плоские, без `allOf`, чтобы линтер ловил лишние поля в примерах.
+      required: [role, id, fullName, email, mustChangePassword, group, membershipState]
+      properties:
+        role:
+          const: STUDENT
+        id:
+          $ref: '#/components/schemas/Id'
+        fullName:
+          type: string
+        email:
+          $ref: '#/components/schemas/Email'
+        mustChangePassword:
+          type: boolean
+          description: Вход с временным паролем или первый вход администратора — до смены доступно немногое (мастер-R49).
+        group:
+          $ref: '#/components/schemas/StudyGroupRef'
+        membershipState:
+          $ref: '#/components/schemas/GroupMembershipState'
+    CurrentTeacher:
+      type: object
+      required: [role, id, fullName, email, mustChangePassword, department, teacherApproved]
+      properties:
+        role:
+          const: TEACHER
+        id:
+          $ref: '#/components/schemas/Id'
+        fullName:
+          type: string
+        email:
+          $ref: '#/components/schemas/Email'
+        mustChangePassword:
+          type: boolean
+          description: Вход с временным паролем или первый вход администратора — до смены доступно немногое (мастер-R49).
+        department:
+          $ref: '#/components/schemas/DepartmentRef'
+        teacherApproved:
+          type: boolean
+          description: Есть ли `TeacherApproval`. Без допуска доступных групп нет (мастер-R2).
+    CurrentAdmin:
+      type: object
+      required: [role, id, fullName, email, mustChangePassword]
+      properties:
+        role:
+          const: ADMIN
+        id:
+          $ref: '#/components/schemas/Id'
+        fullName:
+          type: string
+        email:
+          $ref: '#/components/schemas/Email'
+        mustChangePassword:
+          type: boolean
+          description: Вход с временным паролем или первый вход администратора — до смены доступно немногое (мастер-R49).
+    CurrentUser:
+      oneOf:
+        - $ref: '#/components/schemas/CurrentStudent'
+        - $ref: '#/components/schemas/CurrentTeacher'
+        - $ref: '#/components/schemas/CurrentAdmin'
+      discriminator:
+        propertyName: role
+        mapping:
+          STUDENT: '#/components/schemas/CurrentStudent'
+          TEACHER: '#/components/schemas/CurrentTeacher'
+          ADMIN: '#/components/schemas/CurrentAdmin'
+
+    StudentRegistration:
+      type: object
+      required: [fullName, email, password, facultyId, groupId]
+      properties:
+        fullName:
+          $ref: '#/components/schemas/FullName'
+        email:
+          $ref: '#/components/schemas/Email'
+        password:
+          $ref: '#/components/schemas/Password'
+        facultyId:
+          $ref: '#/components/schemas/Id'
+        groupId:
+          $ref: '#/components/schemas/Id'
+    TeacherRegistration:
+      type: object
+      required: [fullName, email, password, departmentId]
+      properties:
+        fullName:
+          $ref: '#/components/schemas/FullName'
+        email:
+          $ref: '#/components/schemas/Email'
+        password:
+          $ref: '#/components/schemas/Password'
+        departmentId:
+          $ref: '#/components/schemas/Id'
+    RegistrationResult:
+      type: object
+      required: [userId, nextStep]
+      properties:
+        userId:
+          $ref: '#/components/schemas/Id'
+        nextStep:
+          type: string
+          description: '`LOGIN` — можно входить; `CONFIRM_EMAIL` — сначала ссылка из письма (при `REQUIRED`, мастер-U15).'
+          enum: [LOGIN, CONFIRM_EMAIL]
+    PasswordChange:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+          minLength: 1
+          maxLength: 1024
+        newPassword:
+          $ref: '#/components/schemas/Password'
+
+    FacultyList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacultyRef'
+    StudyGroupList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudyGroupRef'
+    DepartmentList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DepartmentRef'
+
+    NextCursor:
+      type: [string, 'null']
+      description: Курсор следующей страницы; `null` — страниц больше нет.
+    Instant:
+      type: string
+      format: date-time
+      description: UTC; показывается по Europe/Moscow (мастер-R41).
+    NullableInstant:
+      type: [string, 'null']
+      format: date-time
+
+    CheckpointCreate:
+      type: object
+      required: [title, description, groupIds, deadline, cost]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 10000
+        groupIds:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Id'
+        deadline:
+          $ref: '#/components/schemas/Instant'
+        cost:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Максимум АР, который можно списать с одного студента (мастер-R7).
+    Checkpoint:
+      type: object
+      required: [id, title, description, deadline, cost, penaltyStep, penaltyIntervalSeconds, groups, author, createdAt, submittedCount, totalCount]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+        description:
+          type: string
+        deadline:
+          $ref: '#/components/schemas/Instant'
+        cost:
+          type: integer
+          format: int32
+        penaltyStep:
+          type: integer
+          format: int32
+          description: Зафиксирован в точке при создании (мастер-KTD4).
+        penaltyIntervalSeconds:
+          type: integer
+          format: int32
+          description: Зафиксирован в точке при создании.
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudyGroupRef'
+        author:
+          $ref: '#/components/schemas/UserRef'
+        createdAt:
+          $ref: '#/components/schemas/Instant'
+        submittedCount:
+          type: integer
+          format: int32
+          description: Назначений в `SUBMITTED` — ждут проверки.
+        totalCount:
+          type: integer
+          format: int32
+    CheckpointList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Checkpoint'
+    CheckpointDefaults:
+      type: object
+      required: [penaltyStep, penaltyIntervalSeconds, minPenaltyIntervalSeconds]
+      properties:
+        penaltyStep:
+          type: integer
+          format: int32
+        penaltyIntervalSeconds:
+          type: integer
+          format: int32
+        minPenaltyIntervalSeconds:
+          type: integer
+          format: int32
+    CheckpointSummary:
+      type: object
+      required: [id, title, description, deadline, cost, author]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+        description:
+          type: string
+        deadline:
+          $ref: '#/components/schemas/Instant'
+        cost:
+          type: integer
+          format: int32
+        author:
+          $ref: '#/components/schemas/UserRef'
+    CheckpointTitle:
+      type: object
+      required: [id, title]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+
+    PenaltyPhase:
+      type: string
+      description: Состояние блока штрафа; таблица значений — в `Penalty`.
+      enum: [BEFORE_DEADLINE, RUNNING, ZERO_BALANCE, CAP_REACHED, STOPPED]
+    Penalty:
+      type: object
+      description: |
+        Блок штрафа (мастер-R11, KTD8 плана U3). Считает сервер; фронт не повторяет формулу, а ведёт обратный
+        отсчёт до `nextAt`. Фаза выбирается по первому подходящему условию:
+
+        | `phase` | Условие | `nextAt` | `nextAmount` |
+        |---|---|---|---|
+        | `STOPPED` | состояние `SUBMITTED` или `ACCEPTED` | `null` | `null` |
+        | `CAP_REACHED` | `charged = cap` | `null` | `null` |
+        | `BEFORE_DEADLINE` | `OPEN`, время ≤ дедлайна | дедлайн: слот 0 списывается сразу после него | `min(step, cap)` |
+        | `ZERO_BALANCE` | `OPEN`, после дедлайна, АР = 0 | начало следующего слота | `0` |
+        | `RUNNING` | `OPEN`, после дедлайна, АР > 0 | начало ближайшего необработанного слота | `min(step, cap − charged, АР)` |
+
+        Ближайший необработанный слот — текущий, если планировщик его ещё не прошёл (тогда `nextAt` в
+        прошлом, списание — при ближайшем проходе, мастер-AE3), иначе следующий. Слот с нулевой суммой
+        тоже обработан: пополнение АР внутри него штраф за этот слот не даёт (мастер-AE4).
+      required: [charged, cap, step, intervalSeconds, phase, nextAt, nextAmount]
+      properties:
+        charged:
+          type: integer
+          format: int32
+          description: Уже списано по назначению; возврат не обнуляет (мастер-R12).
+        cap:
+          type: integer
+          format: int32
+          description: Стоимость точки.
+        step:
+          type: integer
+          format: int32
+        intervalSeconds:
+          type: integer
+          format: int32
+        phase:
+          $ref: '#/components/schemas/PenaltyPhase'
+        nextAt:
+          $ref: '#/components/schemas/NullableInstant'
+        nextAmount:
+          type: [integer, 'null']
+          format: int32
+          minimum: 0
+
+    LinkSubmission:
+      type: object
+      required: [kind, url, submittedAt]
+      properties:
+        kind:
+          const: LINK
+        url:
+          type: string
+          format: uri
+        submittedAt:
+          $ref: '#/components/schemas/Instant'
+    FileSubmission:
+      type: object
+      required: [kind, fileName, sizeBytes, contentType, submittedAt]
+      properties:
+        kind:
+          const: FILE
+        fileName:
+          type: string
+        sizeBytes:
+          type: integer
+          format: int64
+        contentType:
+          type: string
+        submittedAt:
+          $ref: '#/components/schemas/Instant'
+    Submission:
+      description: Последняя сдача; после возврата остаётся видна до новой сдачи. Файл — `GET .../submission/file`.
+      oneOf:
+        - $ref: '#/components/schemas/LinkSubmission'
+        - $ref: '#/components/schemas/FileSubmission'
+      discriminator:
+        propertyName: kind
+        mapping:
+          LINK: '#/components/schemas/LinkSubmission'
+          FILE: '#/components/schemas/FileSubmission'
+    SubmissionKind:
+      type: string
+      enum: [LINK, FILE]
+    SubmissionUpload:
+      type: object
+      description: Ровно одна часть — `link` или `file`.
+      properties:
+        link:
+          type: string
+          format: uri
+          maxLength: 2000
+          description: http или https.
+        file:
+          type: string
+          format: binary
+          description: До 10 МБ; pdf, docx, zip, png, jpg.
+      oneOf:
+        - required: [link]
+        - required: [file]
+
+    Assignment:
+      type: object
+      description: |
+        Назначение целиком. Только здесь отдаются материалы сдачи и комментарий возврата — с проверкой
+        прав (мастер-R3); в профиле их нет никогда.
+      required: [id, checkpoint, student, group, state, status, penalty, returnComment, submission, submittedAt, acceptedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        checkpoint:
+          $ref: '#/components/schemas/CheckpointSummary'
+        student:
+          $ref: '#/components/schemas/UserRef'
+        group:
+          $ref: '#/components/schemas/StudyGroupRef'
+        state:
+          $ref: '#/components/schemas/AssignmentState'
+        status:
+          $ref: '#/components/schemas/AssignmentStatus'
+        penalty:
+          $ref: '#/components/schemas/Penalty'
+        returnComment:
+          type: [string, 'null']
+          description: Комментарий последнего возврата.
+        submission:
+          anyOf:
+            - $ref: '#/components/schemas/Submission'
+            - type: 'null'
+        submittedAt:
+          $ref: '#/components/schemas/NullableInstant'
+        acceptedAt:
+          $ref: '#/components/schemas/NullableInstant'
+
+    StudentTask:
+      type: object
+      required: [assignmentId, checkpoint, teacher, deadline, cost, state, status, penalty]
+      properties:
+        assignmentId:
+          $ref: '#/components/schemas/Id'
+        checkpoint:
+          $ref: '#/components/schemas/CheckpointTitle'
+        teacher:
+          $ref: '#/components/schemas/UserRef'
+        deadline:
+          $ref: '#/components/schemas/Instant'
+        cost:
+          type: integer
+          format: int32
+        state:
+          $ref: '#/components/schemas/AssignmentState'
+        status:
+          $ref: '#/components/schemas/AssignmentStatus'
+        penalty:
+          $ref: '#/components/schemas/Penalty'
+    StudentTaskPage:
+      type: object
+      required: [items, nextCursor, membershipState]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentTask'
+        nextCursor:
+          $ref: '#/components/schemas/NextCursor'
+        membershipState:
+          $ref: '#/components/schemas/GroupMembershipState'
+
+    CheckpointAssignmentRow:
+      type: object
+      required: [assignmentId, student, group, state, status, charged, submittedAt, submissionKind]
+      properties:
+        assignmentId:
+          $ref: '#/components/schemas/Id'
+        student:
+          $ref: '#/components/schemas/UserRef'
+        group:
+          $ref: '#/components/schemas/StudyGroupRef'
+        state:
+          $ref: '#/components/schemas/AssignmentState'
+        status:
+          $ref: '#/components/schemas/AssignmentStatus'
+        charged:
+          type: integer
+          format: int32
+        submittedAt:
+          $ref: '#/components/schemas/NullableInstant'
+        submissionKind:
+          anyOf:
+            - $ref: '#/components/schemas/SubmissionKind'
+            - type: 'null'
+    StatusCounts:
+      type: object
+      required: [IN_PROGRESS, SUBMITTED, OVERDUE, ACCEPTED]
+      properties:
+        IN_PROGRESS:
+          type: integer
+          format: int32
+        SUBMITTED:
+          type: integer
+          format: int32
+        OVERDUE:
+          type: integer
+          format: int32
+        ACCEPTED:
+          type: integer
+          format: int32
+    CheckpointAssignmentPage:
+      type: object
+      required: [items, nextCursor, statusCounts]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckpointAssignmentRow'
+        nextCursor:
+          $ref: '#/components/schemas/NextCursor'
+        statusCounts:
+          $ref: '#/components/schemas/StatusCounts'
+
+    AcceptAssignmentsRequest:
+      type: object
+      required: [assignmentIds]
+      properties:
+        assignmentIds:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items:
+            $ref: '#/components/schemas/Id'
+    SkippedAssignment:
+      type: object
+      required: [assignmentId, code]
+      properties:
+        assignmentId:
+          $ref: '#/components/schemas/Id'
+        code:
+          type: string
+          enum: [INVALID_STATE]
+    AcceptAssignmentsResult:
+      type: object
+      required: [accepted, skipped]
+      properties:
+        accepted:
+          type: array
+          items:
+            $ref: '#/components/schemas/Id'
+        skipped:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkippedAssignment'
+    ReturnAssignmentRequest:
+      type: object
+      required: [comment]
+      properties:
+        comment:
+          type: string
+          minLength: 1
+          maxLength: 2000
+
+    InvalidStateProblem:
+      allOf:
+        - $ref: '#/components/schemas/Problem'
+        - type: object
+          required: [code]
+          properties:
+            code:
+              const: INVALID_STATE
+    YearMonth:
+      type: string
+      pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+      description: Календарный месяц по Europe/Moscow, `YYYY-MM`.
+      examples: [2026-11]
+
+    ActivityCreate:
+      type: object
+      required: [title, description, type, groupIds, startsAt, maxPoints]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 10000
+        type:
+          $ref: '#/components/schemas/ActivityType'
+        groupIds:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Id'
+        startsAt:
+          $ref: '#/components/schemas/Instant'
+        maxPoints:
+          type: integer
+          format: int32
+          minimum: 2
+    MyAward:
+      type: object
+      required: [level, amount]
+      properties:
+        level:
+          $ref: '#/components/schemas/ParticipationLevel'
+        amount:
+          type: integer
+          format: int32
+    Activity:
+      type: object
+      required: [id, title, description, type, currency, startsAt, maxPoints, groups, author, enrollmentOpen, confirmationOpen, enrolledCount, confirmedCount, enrolled, myAward]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          $ref: '#/components/schemas/ActivityType'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        startsAt:
+          $ref: '#/components/schemas/Instant'
+        maxPoints:
+          type: integer
+          format: int32
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudyGroupRef'
+        author:
+          $ref: '#/components/schemas/UserRef'
+        enrollmentOpen:
+          type: boolean
+          description: '`SOCIAL` и время раньше начала — запись и отмена открыты.'
+        confirmationOpen:
+          type: boolean
+          description: Время начала наступило — автор подтверждает участие.
+        enrolledCount:
+          type: integer
+          format: int32
+        confirmedCount:
+          type: integer
+          format: int32
+        enrolled:
+          type: [boolean, 'null']
+          description: Записан ли смотрящий студент; `null` — у `ACADEMIC` и для преподавателя.
+        myAward:
+          description: Начисление смотрящему студенту; `null` — нет или смотрит преподаватель.
+          anyOf:
+            - $ref: '#/components/schemas/MyAward'
+            - type: 'null'
+    ActivityList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Activity'
+    ActivityRef:
+      type: object
+      required: [id, title, type]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+        type:
+          $ref: '#/components/schemas/ActivityType'
+
+    ConfirmedParticipation:
+      type: object
+      required: [level, amount, confirmedAt]
+      properties:
+        level:
+          $ref: '#/components/schemas/ParticipationLevel'
+        amount:
+          type: integer
+          format: int32
+        confirmedAt:
+          $ref: '#/components/schemas/Instant'
+    Participant:
+      type: object
+      required: [student, group, enrolled, confirmed]
+      properties:
+        student:
+          $ref: '#/components/schemas/UserRef'
+        group:
+          $ref: '#/components/schemas/StudyGroupRef'
+        enrolled:
+          type: [boolean, 'null']
+          description: '`null` у `ACADEMIC`.'
+        confirmed:
+          description: Подтверждённое участие — только просмотр; `null` — ещё не подтверждён.
+          anyOf:
+            - $ref: '#/components/schemas/ConfirmedParticipation'
+            - type: 'null'
+    ParticipantList:
+      type: object
+      required: [activityId, type, maxPoints, items]
+      properties:
+        activityId:
+          $ref: '#/components/schemas/Id'
+        type:
+          $ref: '#/components/schemas/ActivityType'
+        maxPoints:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'
+
+    ParticipationItem:
+      type: object
+      required: [studentId, level]
+      properties:
+        studentId:
+          $ref: '#/components/schemas/Id'
+        level:
+          $ref: '#/components/schemas/ParticipationLevel'
+    ParticipationRequest:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          maxItems: 500
+          description: Без повторов `studentId`.
+          items:
+            $ref: '#/components/schemas/ParticipationItem'
+    AwardLine:
+      type: object
+      required: [studentId, groupId, level, amount]
+      properties:
+        studentId:
+          $ref: '#/components/schemas/Id'
+        groupId:
+          $ref: '#/components/schemas/Id'
+        level:
+          $ref: '#/components/schemas/ParticipationLevel'
+        amount:
+          type: integer
+          format: int32
+          description: '`round_half_up(максимум × уровень / 100)`.'
+    ParticipationPreview:
+      type: object
+      required: [currency, awards, alreadyConfirmed, total, budgets, withinBudget]
+      properties:
+        currency:
+          $ref: '#/components/schemas/Currency'
+        awards:
+          type: array
+          description: Новые начисления.
+          items:
+            $ref: '#/components/schemas/AwardLine'
+        alreadyConfirmed:
+          type: array
+          description: Уже подтверждённые с тем же уровнем; бюджет не расходуют.
+          items:
+            $ref: '#/components/schemas/AwardLine'
+        total:
+          type: integer
+          format: int32
+          description: Сумма новых начислений.
+        budgets:
+          type: array
+          description: По каждой группе с новыми начислениями.
+          items:
+            $ref: '#/components/schemas/BudgetCheck'
+        withinBudget:
+          type: boolean
+    ParticipationResult:
+      type: object
+      required: [currency, awards, alreadyConfirmed, total]
+      properties:
+        currency:
+          $ref: '#/components/schemas/Currency'
+        awards:
+          type: array
+          description: Начислено этим запросом.
+          items:
+            $ref: '#/components/schemas/AwardLine'
+        alreadyConfirmed:
+          type: array
+          items:
+            $ref: '#/components/schemas/AwardLine'
+        total:
+          type: integer
+          format: int32
+          description: Начислено этим запросом — для итога «Начислено 125 БОА».
+
+    GroupBudget:
+      type: object
+      required: [group, limit, spent, remaining]
+      properties:
+        group:
+          $ref: '#/components/schemas/StudyGroupRef'
+        limit:
+          type: integer
+          format: int32
+        spent:
+          type: integer
+          format: int32
+        remaining:
+          type: integer
+          format: int32
+    BudgetList:
+      type: object
+      required: [month, items]
+      properties:
+        month:
+          $ref: '#/components/schemas/YearMonth'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupBudget'
+
+    TeacherAward:
+      type: object
+      required: [id, activity, student, group, level, amount, currency, confirmedAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        activity:
+          $ref: '#/components/schemas/ActivityRef'
+        student:
+          $ref: '#/components/schemas/UserRef'
+        group:
+          $ref: '#/components/schemas/StudyGroupRef'
+        level:
+          $ref: '#/components/schemas/ParticipationLevel'
+        amount:
+          type: integer
+          format: int32
+        currency:
+          $ref: '#/components/schemas/Currency'
+        confirmedAt:
+          $ref: '#/components/schemas/Instant'
+    TeacherAwardPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeacherAward'
+        nextCursor:
+          $ref: '#/components/schemas/NextCursor'
+    AwardSummaryLine:
+      type: object
+      required: [group, currency, amount, count]
+      properties:
+        group:
+          $ref: '#/components/schemas/StudyGroupRef'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        amount:
+          type: integer
+          format: int32
+        count:
+          type: integer
+          format: int32
+    TeacherAwardSummary:
+      type: object
+      required: [month, total, count, items]
+      properties:
+        month:
+          $ref: '#/components/schemas/YearMonth'
+        total:
+          type: integer
+          format: int32
+        count:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AwardSummaryLine'
+
+    Balances:
+      type: object
+      required: [AR, BUA, BOA]
+      properties:
+        AR:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 1000
+        BUA:
+          type: integer
+          format: int32
+          minimum: 0
+        BOA:
+          type: integer
+          format: int32
+          minimum: 0
+
+    PublicProfileTask:
+      type: object
+      description: Задача в чужом профиле — без перехода к сдаче.
+      required: [view, title, deadline, status, charged]
+      properties:
+        view:
+          const: PUBLIC
+        title:
+          type: string
+        deadline:
+          $ref: '#/components/schemas/Instant'
+        status:
+          $ref: '#/components/schemas/AssignmentStatus'
+        charged:
+          type: integer
+          format: int32
+    OwnProfileTask:
+      type: object
+      description: Задача в своём профиле — с переходом в задачу `/tasks/:assignmentId`.
+      required: [view, assignmentId, title, deadline, status, charged]
+      properties:
+        view:
+          const: OWN
+        assignmentId:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+        deadline:
+          $ref: '#/components/schemas/Instant'
+        status:
+          $ref: '#/components/schemas/AssignmentStatus'
+        charged:
+          type: integer
+          format: int32
+    AdminProfileTask:
+      type: object
+      description: Задача для администратора — со ссылкой «Материалы сдачи» `/admin/submissions/:assignmentId`.
+      required: [view, assignmentId, title, deadline, status, charged]
+      properties:
+        view:
+          const: ADMIN
+        assignmentId:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+        deadline:
+          $ref: '#/components/schemas/Instant'
+        status:
+          $ref: '#/components/schemas/AssignmentStatus'
+        charged:
+          type: integer
+          format: int32
+    ProfileTask:
+      oneOf:
+        - $ref: '#/components/schemas/PublicProfileTask'
+        - $ref: '#/components/schemas/OwnProfileTask'
+        - $ref: '#/components/schemas/AdminProfileTask'
+      discriminator:
+        propertyName: view
+        mapping:
+          PUBLIC: '#/components/schemas/PublicProfileTask'
+          OWN: '#/components/schemas/OwnProfileTask'
+          ADMIN: '#/components/schemas/AdminProfileTask'
+
+    StudentProfile:
+      type: object
+      required: [role, id, fullName, group, balances, activeTasks, completedTasks, completedTotal]
+      properties:
+        role:
+          const: STUDENT
+        id:
+          $ref: '#/components/schemas/Id'
+        fullName:
+          type: string
+        group:
+          $ref: '#/components/schemas/StudyGroupRef'
+        balances:
+          $ref: '#/components/schemas/Balances'
+        activeTasks:
+          type: array
+          description: '`OPEN` и `SUBMITTED`, сначала `OVERDUE`, затем по дедлайну.'
+          items:
+            $ref: '#/components/schemas/ProfileTask'
+        completedTasks:
+          type: array
+          description: Последние 20 `ACCEPTED`, от недавних; полный список своих — `GET /me/assignments?view=completed`.
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/ProfileTask'
+        completedTotal:
+          type: integer
+          format: int32
+    TeacherProfile:
+      type: object
+      required: [role, id, fullName, department]
+      properties:
+        role:
+          const: TEACHER
+        id:
+          $ref: '#/components/schemas/Id'
+        fullName:
+          type: string
+        department:
+          $ref: '#/components/schemas/DepartmentRef'
+    AdminProfile:
+      type: object
+      required: [role, id, fullName]
+      properties:
+        role:
+          const: ADMIN
+        id:
+          $ref: '#/components/schemas/Id'
+        fullName:
+          type: string
+    UserProfile:
+      oneOf:
+        - $ref: '#/components/schemas/StudentProfile'
+        - $ref: '#/components/schemas/TeacherProfile'
+        - $ref: '#/components/schemas/AdminProfile'
+      discriminator:
+        propertyName: role
+        mapping:
+          STUDENT: '#/components/schemas/StudentProfile'
+          TEACHER: '#/components/schemas/TeacherProfile'
+          ADMIN: '#/components/schemas/AdminProfile'
+
+    LedgerSourceType:
+      type: string
+      description: |
+        Что вызвало проводку: `REGISTRATION` — стартовые баллы, `SEMESTER` — начисление семестра,
+        `CHECKPOINT` — штраф по точке, `ACTIVITY` — начисление по активности.
+      enum: [REGISTRATION, SEMESTER, CHECKPOINT, ACTIVITY]
+    LedgerSource:
+      type: object
+      required: [type, id, title]
+      properties:
+        type:
+          $ref: '#/components/schemas/LedgerSourceType'
+        id:
+          type: [integer, 'null']
+          format: int64
+          description: id точки, активности или семестра; `null` у стартовых баллов.
+        title:
+          type: string
+          description: Снимок названия на момент проводки.
+    LedgerEntryView:
+      type: object
+      description: Строка истории — `[Дата] - [+50 БОА] - «Название» от [ФИО]` (мастер-R6).
+      required: [id, createdAt, currency, amount, kind, source, author]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        createdAt:
+          $ref: '#/components/schemas/Instant'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        amount:
+          type: integer
+          format: int32
+          description: Знаковая фактическая сумма, не 0.
+        kind:
+          $ref: '#/components/schemas/EntryKind'
+        source:
+          $ref: '#/components/schemas/LedgerSource'
+        author:
+          description: Снимок автора; `null` — система.
+          anyOf:
+            - $ref: '#/components/schemas/UserRef'
+            - type: 'null'
+    LedgerEntryPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LedgerEntryView'
+        nextCursor:
+          $ref: '#/components/schemas/NextCursor'
+
+    ActivityTitle:
+      type: object
+      required: [id, title]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+          description: Снимок названия на момент начисления.
+    AwardFeedItem:
+      type: object
+      required: [entryId, createdAt, student, amount, currency, activity, teacher]
+      properties:
+        entryId:
+          $ref: '#/components/schemas/Id'
+        createdAt:
+          $ref: '#/components/schemas/Instant'
+        student:
+          $ref: '#/components/schemas/UserRef'
+        amount:
+          type: integer
+          format: int32
+          minimum: 1
+        currency:
+          $ref: '#/components/schemas/Currency'
+        activity:
+          $ref: '#/components/schemas/ActivityTitle'
+        teacher:
+          $ref: '#/components/schemas/UserRef'
+    AwardFeedPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AwardFeedItem'
+        nextCursor:
+          $ref: '#/components/schemas/NextCursor'
+
+    RatingRow:
+      type: object
+      required: [student, balances]
+      properties:
+        student:
+          $ref: '#/components/schemas/UserRef'
+        balances:
+          $ref: '#/components/schemas/Balances'
+    GroupRating:
+      type: object
+      required: [group, sort, items]
+      properties:
+        group:
+          $ref: '#/components/schemas/StudyGroupRef'
+        sort:
+          $ref: '#/components/schemas/Currency'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RatingRow'
+
+    BalanceMismatch:
+      type: object
+      required: [studentId, currency, balance, ledgerSum]
+      properties:
+        studentId:
+          $ref: '#/components/schemas/Id'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        balance:
+          type: integer
+          format: int32
+          description: Снимок.
+        ledgerSum:
+          type: integer
+          format: int32
+          description: Сумма проводок.
+    LedgerReconciliation:
+      type: object
+      required: [checkedAt, checkedPairs, mismatches]
+      properties:
+        checkedAt:
+          $ref: '#/components/schemas/Instant'
+        checkedPairs:
+          type: integer
+          format: int32
+        mismatches:
+          type: array
+          items:
+            $ref: '#/components/schemas/BalanceMismatch'
