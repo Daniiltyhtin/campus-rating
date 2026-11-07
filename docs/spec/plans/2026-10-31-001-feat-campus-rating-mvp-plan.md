@@ -102,7 +102,7 @@ execution: code
 
 **Подтверждение регистрации (модуль 7, P2)**
 
-- R31. Вход возможен только после подтверждения email по ссылке из письма.
+- R31. Вход возможен только после подтверждения email по ссылке из письма. Подтверждение — явная настройка стенда «обязательно / выключено» (R48), без значения по умолчанию; в режиме prod выключить нельзя.
 - R32. Членство студента в группе подтверждает любой преподаватель или староста этой группы. До подтверждения студенту не создаются назначения и не начисляются баллы активности (`ACTIVITY_AWARD`). Стартовые 1000 АР (R8) и начисление семестра (R9) от подтверждения не зависят.
 
 **Опросы (модуль 5, P2)**
@@ -130,7 +130,7 @@ execution: code
 - R41. Время хранится в UTC и показывается в Europe/Moscow; месяц бюджета считается по Europe/Moscow.
 - R42. Логика рейтинга и баллов покрыта модульными тестами, основные сценарии — e2e.
 - R47. Два режима запуска. Demo: синтетический сид; при каждом запуске база и файлы сдач пересоздаются, поэтому всё, что создано поверх сида, исчезает; на форме регистрации — пометка «Демо-стенд, данные удаляются». Prod: без сида, данные сохраняются между запусками.
-- R48. Почта: на локальном стенде — Mailpit; на сервере (U22) — реальный SMTP-провайдер с отправкой от домена команды, Mailpit там не запускается и наружу не открывается.
+- R48. Почта — только реальный SMTP-провайдер с отправкой от домена команды; локального почтового ящика (Mailpit) нет. Стенд без SMTP (локальный `docker compose up`, в том числе у жюри) явно запускается с выключенным подтверждением email: аккаунт активен сразу, письма не отправляются, ссылка установки пароля импортированного студента пишется в лог backend, на форме регистрации — пометка «Подтверждение email на этом стенде выключено». Если подтверждение обязательно, а SMTP не настроен, backend не стартует.
 
 **Агентский процесс**
 
@@ -262,7 +262,7 @@ execution: code
 - KTD19. **Планировщик — `@Scheduled` без распределённой блокировки.** В compose один инстанс backend. Даже параллельный запуск безопасен благодаря ключам идемпотентности KTD3/KTD4, поэтому ShedLock не добавляем.
 - KTD20. **Приоритеты.** P0 — база (модули 1–4) и агентская обвязка; P1 — модули 8 и 6; P2 — 7, 5, 10; P3 — 9; P4 — 11. Юнит следующего приоритета не начинается, пока юниты предыдущего не зелёные. Исключение — параллельная работа второго разработчика. (session-settled: user-directed — chosen over «все доп. модули одинаково обязательны».)
 - KTD21. **ИИ — Spring AI 2.0 с OpenAI-совместимым провайдером за флагом.** Ключ, URL и модель задаются через окружение; без ключа эндпоинт отвечает 404, а кнопка скрыта. Промпт лежит в ресурсах и покрыт тестом с заглушкой модели.
-- KTD22. **Режимы запуска и почта через профили Spring.** Профиль `demo` (по умолчанию в `docker-compose.yml`) включает контекст Liquibase `demo` и `spring.liquibase.drop-first`, а `FileStorage` очищает том при старте: каждый запуск даёт чистый синтетический стенд (R47). Профиль `prod` не загружает демо-данные и ничего не удаляет. Почта — `spring.mail.*` из окружения: локально Mailpit, на сервере — SMTP-провайдер из `docker-compose.server.yml`, где Mailpit не объявлен (R48). Цена: перепутанный профиль на проде стирает данные — поэтому `drop-first` включается только в `demo`, а серверный override явно задаёт профиль и проверяется тестом конфигурации. Подробнее — ADR008 (`docs/spec/architecture-decisions/adr008-run-modes-and-mail.md`).
+- KTD22. **Режимы запуска и почта через профили Spring.** Профиль `demo` (по умолчанию в `docker-compose.yml`) включает контекст Liquibase `demo` и `spring.liquibase.drop-first`, а `FileStorage` очищает том при старте: каждый запуск даёт чистый синтетический стенд (R47). Профиль `prod` не загружает демо-данные и ничего не удаляет. Почта — `spring.mail.*` из окружения, только SMTP-провайдер; Mailpit не используется (R48). Подтверждение email — обязательная настройка `campus.mail.email-verification` (`required` или `off`) без значения по умолчанию: без неё backend не стартует; `required` без `spring.mail.host` и `off` в профиле `prod` тоже останавливают старт. `docker-compose.yml` явно задаёт `off`, `docker-compose.server.yml` — `required` и SMTP. Цена: перепутанный профиль на проде стирает данные — поэтому `drop-first` включается только в `demo`, а серверный override явно задаёт профиль и проверяется тестом конфигурации. Подробнее — ADR008 (`docs/spec/architecture-decisions/adr008-run-modes-and-mail.md`).
 - KTD23. **Доступ преподавателя: список почт и доступные группы.** Список преподавателей (`TeacherAllowlist`) и выдачи групп (`TeacherGroupGrant`) живут в `identity`. Регистрация `TEACHER` проверяет email по списку без учёта регистра. Доступные группы считает одна функция `identity` (`TeacherScope`: группы факультета кафедры ∪ выданные); `checkpoint`, `activity`, `poll`, `feed` и `analytics` вызывают её и не дублируют правило. Проверка владельца ресурса (R3) остаётся отдельной. Цена: смена кафедры или выдачи меняет доступ сразу, уже созданные точки и активности остаются у автора. (session-settled: user-directed — chosen over открытой саморегистрации на закрытом стенде и над ручным подтверждением каждого преподавателя.) Подробнее — ADR007 (`docs/spec/architecture-decisions/adr007-teacher-access.md`).
 
 ### High-Level Technical Design
@@ -275,8 +275,7 @@ flowchart TB
   N -->|/api| A[backend: Spring Boot]
   A --> P[(postgres 18)]
   A --> V[(том uploads)]
-  A -->|SMTP, локально| M[mailpit: UI 8025]
-  A -.->|SMTP, сервер U22| S[SMTP-провайдер]
+  A -.->|SMTP, если подтверждение required| S[SMTP-провайдер]
   A -.->|по флагу| L[LLM провайдер]
 ```
 
@@ -493,7 +492,7 @@ erDiagram
   - `e2e/package.json`, `e2e/playwright.config.ts`, `e2e/tests/smoke.spec.ts`;
   - `tools/crap.py`, `.github/workflows/ci.yml`, `.gitignore`, `README.md`.
 - **Approach:**
-  1. Compose: `postgres` с healthcheck; `backend` с `depends_on: condition: service_healthy` и профилем `demo` (KTD22: контекст `demo` и `drop-first`); `web` (nginx отдаёт SPA и проксирует `/api`); `mailpit`; том `uploads`. Образы зафиксированы по версиям, сборка внутри Dockerfile (`npm ci`, `mvnw package`).
+  1. Compose: `postgres` с healthcheck; `backend` с `depends_on: condition: service_healthy` и профилем `demo` (KTD22: контекст `demo` и `drop-first`); `web` (nginx отдаёт SPA и проксирует `/api`); том `uploads`; Mailpit нет, `EMAIL_VERIFICATION=off` задан явно (R48). Образы зафиксированы по версиям, сборка внутри Dockerfile (`npm ci`, `mvnw package`).
   2. Maven: Boot parent 4.1.x, BOM Modulith и Spring AI, плагины JaCoCo (check на `*.domain`), PMD CPD, PIT в профиле `quality`. Surefire для unit-тестов, Failsafe для `*IT`.
   3. Базовый класс интеграционных тестов с Testcontainers PostgreSQL 18 и бином `Clock`, который тест может сдвигать.
   4. Frontend: Vite + TS, Mantine AppShell с адаптивной навигацией (боковая панель на десктопе, нижняя на мобильном), React Router, TanStack Query, Vitest.
@@ -506,8 +505,9 @@ erDiagram
   - Смоук PIT на одном тривиальном доменном классе подтверждает совместимость с JUnit 6.
   - Юнит выполнен через `implement-unit` → `review-unit` → `agent-log`: есть diff, ревью с решением и запись журнала. Это первый сквозной прогон скиллов U1.
   - Повторный `docker compose up` в профиле `demo` снова даёт только сид: пользователь, созданный между запусками, исчезает (R47).
+  - `MailModeConfigTest`: без `campus.mail.email-verification` контекст не поднимается; `required` без `spring.mail.host` — не поднимается; `off` в профиле `prod` — не поднимается (R48).
   - Changeset из пустой папки модуля, добавленный в двух ветках с разными метками, применяется в любом порядке слияния; changeset с `context: demo` не применяется в тестах.
-- **Verification.** Чистый клон → `docker compose up` → приложение открывается на `http://localhost:8080`, а Mailpit на `:8025`; CI зелёный. `docker-compose.e2e.yml` переопределяет значения по умолчанию для штрафа (интервал 4 с, poll-period 1 с); e2e-стек запускается отдельным проектом compose с чистым томом командой из Verification Contract, Playwright стеком не управляет.
+- **Verification.** Чистый клон → `docker compose up` → приложение открывается на `http://localhost:8080`; CI зелёный. `docker-compose.e2e.yml` переопределяет значения по умолчанию для штрафа (интервал 4 с, poll-period 1 с); e2e-стек запускается отдельным проектом compose с чистым томом командой из Verification Contract, Playwright стеком не управляет.
 
 ### U3. API-контракт базы
 
@@ -744,7 +744,7 @@ erDiagram
 
   Формат файлов:
   - группы — `faculty_code,group_code,group_name`;
-  - студенты — `email,full_name,faculty_code,group_code`. Пароля в файле нет: студент получает письмо (локально — в Mailpit, R48) с одноразовой ссылкой установки пароля;
+  - студенты — `email,full_name,faculty_code,group_code`. Пароля в файле нет: студент получает письмо с одноразовой ссылкой установки пароля; при выключенном подтверждении письма нет, ссылка пишется в лог backend (R48);
   - список преподавателей — `email`. Импорт только пополняет список; удаление — вручную на экране «Импорт».
 
   Дополнительные группы преподавателя выдаются и снимаются в «Справочниках» (KTD23). Просмотр материалов сдачи — отдельный экран только для чтения.
@@ -788,16 +788,17 @@ erDiagram
 - **Goal.** Вход только после подтверждения email, баллы только после подтверждения членства.
 - **Requirements.** R31, R32, R16; KTD11.
 - **Dependencies.** U5, U13.
-- **Files:** `backend/.../identity/internal/EmailVerification.java`, `backend/.../identity/internal/MembershipApproval.java`, `backend/src/main/resources/db/changelog/identity/<ts>-verification.sql`, `frontend/src/features/auth/VerifyEmailPage.tsx`, `frontend/src/features/groups/PendingMembers.tsx`, `backend/src/test/java/ru/campusrating/identity/VerificationIT.java`, `e2e/tests/base/registration.spec.ts` (обновление), `e2e/fixtures/mailpit.ts`.
-- **Approach.** Токен подтверждения одноразовый, срок 24 часа, письмо уходит через настроенный SMTP (локально — Mailpit, KTD22). Регистрация студента с этого юнита создаёт `PENDING`-членство и по-прежнему начисляет `INITIAL` (R32); подтверждение сохраняет время активации и публикует `MembershipActivated`.
+- **Files:** `backend/.../identity/internal/EmailVerification.java`, `backend/.../identity/internal/MembershipApproval.java`, `backend/src/main/resources/db/changelog/identity/<ts>-verification.sql`, `frontend/src/features/auth/VerifyEmailPage.tsx`, `frontend/src/features/groups/PendingMembers.tsx`, `backend/src/test/java/ru/campusrating/identity/VerificationIT.java`, `e2e/tests/base/registration.spec.ts` (обновление), `e2e/fixtures/greenmail.ts`.
+- **Approach.** Токен подтверждения одноразовый, срок 24 часа, письмо уходит через SMTP-провайдера (KTD22). При `email-verification: off` аккаунт активен сразу, письмо не отправляется; подтверждение членства работает в обоих режимах. Регистрация студента с этого юнита создаёт `PENDING`-членство и по-прежнему начисляет `INITIAL` (R32); подтверждение сохраняет время активации и публикует `MembershipActivated`.
 - **Test scenarios:**
   - Вход до подтверждения email отклоняется с понятным сообщением.
   - Просроченный или использованный токен отклоняется.
   - Староста подтверждает студента своей группы, но не чужой.
   - Covers AE11. Подтверждённый студент получает назначения только по непросроченным точкам.
   - `PENDING`-студента нельзя выбрать участником активности, но начисление семестра он получает.
-  - e2e полного пути: регистрация → письмо в Mailpit → подтверждение email → вход → подтверждение членства старостой → назначение по открытой точке.
-- **Verification.** Письмо видно в Mailpit, ссылка из него активирует аккаунт.
+  - `off`: вход сразу после регистрации, письмо не отправлено; `required`: вход до подтверждения отклоняется.
+  - e2e полного пути (стек `docker-compose.e2e.yml` с `required` и контейнером GreenMail): регистрация → письмо в GreenMail → подтверждение email → вход → подтверждение членства старостой → назначение по открытой точке.
+- **Verification.** На сервере (U22) письмо приходит на настоящий ящик, ссылка из него активирует аккаунт; локально с `off` регистрация проходит без письма.
 
 ### U16. Опросы (P2)
 
@@ -839,12 +840,13 @@ erDiagram
 - **Files:** `backend/.../notification/`, `backend/src/main/resources/db/changelog/notification/<ts>-notification.sql`, `frontend/src/features/settings/NotificationSettings.tsx`, `backend/src/test/java/ru/campusrating/notification/NotificationIT.java`.
 - **Approach.** Слушатель `UserEvent` фильтрует по типам из R37 и настройкам пользователя и отправляет письмо. Уникальная запись доставки по ключу события предотвращает обычные повторы; после сбоя между приёмом письма SMTP и фиксацией записи возможен дубль — это принятая цена (R37).
 - **Test scenarios:**
-  - Начисление баллов отправляет одно письмо в Mailpit (Testcontainers Mailpit или GreenMail).
+  - Начисление баллов отправляет одно письмо в GreenMail.
+  - При `email-verification: off` (SMTP нет) уведомления не отправляются и не падают.
   - Выключенный канал не отправляет.
   - Повтор события после успешной фиксации доставки не дублирует письмо.
   - Сбой после приёма письма транспортом и до фиксации: при повторе уходит второе письмо, событие не теряется.
   - Ошибка SMTP не ломает основную транзакцию.
-- **Verification.** Письма видны в Mailpit на демо.
+- **Verification.** Письма приходят на настоящий ящик на сервере (U22).
 
 ### U19. ИИ-черновик задания (P4)
 
@@ -898,12 +900,12 @@ erDiagram
 - **Dependencies.** U2, U15 (письма подтверждения); R37 (U18) — если сделан.
 - **Files:** `docker-compose.server.yml`, `deploy/README.md`, `.env.server.example`, `docs/deploy.md`, `backend/src/test/java/ru/campusrating/RunModeConfigTest.java`.
 - **Approach.**
-  - Override поверх `docker-compose.yml`: явный профиль (`demo` для стенда хакатона), SMTP-провайдер вместо Mailpit, наружу открыт только `web` за HTTPS.
+  - Override поверх `docker-compose.yml`: явный профиль (`demo` для стенда хакатона), `EMAIL_VERIFICATION=required` и SMTP-провайдер, наружу открыт только `web` за HTTPS.
   - Домен и DNS — в Cloudflare: записи SPF, DKIM и DMARC провайдера отправки. Cloudflare Email Routing только принимает почту, отправляет провайдер.
   - Секреты (SMTP, ключ LLM) — только переменные окружения на сервере, в репозитории — `.env.server.example` без значений.
   - Перезапуск стека в профиле `demo` возвращает стенд к сиду (R47); сброс по расписанию не делается — перед защитой и после хакатона стенд перезапускается или удаляется вручную.
 - **Test scenarios:**
-  - `docker compose -f docker-compose.yml -f docker-compose.server.yml config` не содержит сервиса `mailpit` и опубликованных портов, кроме `web`.
+  - `docker compose -f docker-compose.yml -f docker-compose.server.yml config` задаёт `EMAIL_VERIFICATION=required` и не публикует портов, кроме `web`.
   - `RunModeConfigTest`: профиль `prod` не включает `drop-first` и контекст `demo`; профиль `demo` включает оба.
   - Регистрация на стенде отправляет письмо на настоящий ящик, оно не попадает в спам (SPF, DKIM, DMARC проходят по заголовкам).
   - Перезапуск стенда: созданный пользователь исчез, демо-аккаунты на месте.
