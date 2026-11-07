@@ -19,8 +19,9 @@ public abstract class PostgresIntegrationTest {
         POSTGRES.start();
     }
 
+    // final: иначе Spring Framework 7.1 примет класс за конфигурацию теста по умолчанию.
     @TestConfiguration(proxyBeanMethods = false)
-    static class TimeConfiguration {
+    static final class TimeConfiguration {
         @Bean
         MutableClock testClock() {
             return new MutableClock(Instant.parse("2026-11-07T09:00:00Z"));
