@@ -15,7 +15,8 @@ class ModularityTest {
                 .containsExactlyInAnyOrder("identity", "directory", "ledger", "checkpoint",
                         "activity", "profile", "feed", "poll", "admin", "notification",
                         "analytics", "ai", "settings", "shared");
-        assertThat(modules.getModuleByName("shared").orElseThrow().isOpen()).isTrue();
+        assertThat(modules.stream().filter(module -> module.isOpen())
+                .map(module -> module.getIdentifier().toString())).containsExactly("shared");
         modules.verify();
     }
 

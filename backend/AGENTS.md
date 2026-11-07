@@ -55,8 +55,8 @@ Java 25, Spring Boot 4.1, Spring Modulith 2.1, PostgreSQL 18, Liquibase, Maven (
 
 | Что | Команда |
 |---|---|
-| Unit, интеграция, модульность, контракт, JaCoCo, CPD | `./backend/mvnw -f backend/pom.xml verify` |
-| Мутации и CRAP по `*.domain` | `./backend/mvnw -f backend/pom.xml -Pquality verify` и `node tools/crap.mjs backend/target/site/jacoco/jacoco.xml` |
+| Unit, интеграция, модульность, контракт, JaCoCo, CPD, CRAP | `./backend/mvnw -f backend/pom.xml verify` и `node tools/crap.mjs backend/target/site/jacoco/jacoco.xml` |
+| Мутации по `*.domain` | `./backend/mvnw -f backend/pom.xml -Pquality verify` |
 | Один модульный тест | `./backend/mvnw -f backend/pom.xml -Dtest=MoscowTimeTest test` |
 
 Тесты `*IT` требуют Docker. Профиль `quality` (PIT) запускается локально ревьюером, в CI не используется. На Windows — `backend/mvnw.cmd`.

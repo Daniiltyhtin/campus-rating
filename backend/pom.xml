@@ -131,7 +131,7 @@
               <includes><include>**/domain/**</include></includes>
               <rules>
                 <rule>
-                  <element>BUNDLE</element>
+                  <element>PACKAGE</element>
                   <limits>
                     <limit>
                       <counter>LINE</counter>
@@ -203,6 +203,7 @@
               <mutationThreshold>70</mutationThreshold>
               <excludedTestClasses>
                 <param>*IT</param>
+                <param>*IT$*</param>
               </excludedTestClasses>
               <outputFormats>
                 <param>HTML</param>

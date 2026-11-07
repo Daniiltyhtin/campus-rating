@@ -21,7 +21,12 @@ public final class MutableClock extends Clock {
         this.zone = Objects.requireNonNull(zone);
     }
 
+    public void set(Instant instant) {
+        this.instant.set(Objects.requireNonNull(instant));
+    }
+
     public void advance(Duration duration) {
+        Objects.requireNonNull(duration);
         instant.updateAndGet(current -> current.plus(duration));
     }
 

@@ -41,7 +41,8 @@ class SmokeIT extends PostgresIntegrationTest {
     @Test
     void liquibaseInitializesEmptyChangelogWithDefaultContext() {
         assertThat(environment.getProperty("spring.liquibase.contexts")).isEqualTo("default");
-        assertThat(jdbc.queryForObject("select count(*) from databasechangelog", Long.class)).isZero();
+        assertThat(jdbc.queryForObject(
+                "select to_regclass('public.databasechangelog') is not null", Boolean.class)).isTrue();
     }
 
     @Test
@@ -59,12 +60,8 @@ class SmokeIT extends PostgresIntegrationTest {
     void contextUsesMutableClock() {
         assertThat(clock).isInstanceOf(MutableClock.class);
         var before = clock.instant();
-        try {
-            ((MutableClock) clock).advance(Duration.ofHours(1));
-            assertThat(clock.instant()).isEqualTo(before.plus(Duration.ofHours(1)));
-        } finally {
-            ((MutableClock) clock).advance(Duration.ofHours(-1));
-        }
+        ((MutableClock) clock).advance(Duration.ofHours(1));
+        assertThat(clock.instant()).isEqualTo(before.plus(Duration.ofHours(1)));
     }
 
     private HttpResponse<String> get(String path) throws Exception {

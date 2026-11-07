@@ -98,6 +98,16 @@ class MailModeConfigTest {
                 });
     }
 
+    @Test
+    void emptyEnvironmentVariableStopsStartupAndNamesProperty() {
+        runner.withInitializer(context -> context.getEnvironment().getPropertySources().addFirst(
+                        new SystemEnvironmentPropertySource("mailTestEnvironment",
+                                Map.of("EMAIL_VERIFICATION", ""))))
+                .run(context -> assertThat(context.getStartupFailure()).isNotNull()
+                        .hasStackTraceContaining(MODE)
+                        .hasStackTraceContaining("must be required or off"));
+    }
+
     @TestConfiguration(proxyBeanMethods = false)
     @ConfigurationPropertiesScan("ru.campusrating.shared.mail")
     @ComponentScan("ru.campusrating.shared.mail")
