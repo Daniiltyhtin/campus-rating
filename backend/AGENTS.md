@@ -25,6 +25,7 @@ Java 25, Spring Boot 4.1, Spring Modulith 2.1, PostgreSQL 18, Liquibase, Maven (
 
 - Liquibase, formatted SQL: `src/main/resources/db/changelog/<module>/<yyyyMMddHHmm>-<desc>.sql`, id changeset'а `<автор>:<метка>`.
 - Master-changelog подключает папки через `includeAll`; новый файл master не трогает.
+- Технические таблицы (реестр событий Modulith `event_publication`) — в `db/changelog/shared/`; папка подключается первой.
 - Применённый changeset не редактируется — исправление новым changeset'ом.
 - Демо-данные — `context: demo`, идемпотентны (`ON CONFLICT DO NOTHING`).
 - Контексты Liquibase задаются всегда: `application.yml` — `default`, `application-demo.yml` — `default,demo` и `drop-first`. Тесты и `prod` идут с `default`. Без контекста Liquibase выполнил бы и `context: demo`.
@@ -43,12 +44,20 @@ Java 25, Spring Boot 4.1, Spring Modulith 2.1, PostgreSQL 18, Liquibase, Maven (
 
 ## Тесты
 
-- Доменные функции — модульные тесты без Spring.
-- Всё с SQL, транзакциями и блокировками — интеграционные тесты `*IT` на Testcontainers PostgreSQL 18. Мок `JdbcTemplate` или репозитория для этого не годится: он не видит транзакций и ограничений.
-- Время в тестах — сдвигаемый `Clock` из базового класса интеграционных тестов.
 - Тест вызывает код так, как его вызывает пользователь, и проверяет видимый результат.
-- Пороги: JaCoCo ≥ 80% строк и CRAP ≤ 10 в `*.domain`; PIT ≥ 70% в `ledger.domain`, `checkpoint.domain`, `activity.domain`.
+- Доменные функции — модульные тесты без Spring. Пороги: JaCoCo ≥ 80% строк и CRAP ≤ 10 в `*.domain`; PIT ≥ 70% в `ledger.domain`, `checkpoint.domain`, `activity.domain`.
+- SQL, транзакции и блокировки — интеграционные тесты `*IT` на Testcontainers PostgreSQL 18, без моков `JdbcTemplate` и репозиториев: они не видят транзакций и ограничений. Наследуй `support/PostgresIntegrationTest`: один контейнер на JVM, сдвигаемый `Clock` сбрасывается перед тестом. Пока контейнер общий, параллельный запуск JUnit не включать.
+- HTTP: `MockMvcTester` для срезов, `RestTestClient` для настоящего HTTP; `TestRestTemplate` не использовать.
+- События модулей — `@ApplicationModuleTest` и `Scenario` из `spring-modulith-starter-test`.
 
 ## Команды
 
-Появятся в мастер-U2: `./mvnw verify` (unit, интеграция, модульность, контракт, JaCoCo, CPD) и `./mvnw -Pquality verify` (PIT). На Windows — `mvnw.cmd`.
+Команды из корня репозитория:
+
+| Что | Команда |
+|---|---|
+| Unit, интеграция, модульность, контракт, JaCoCo, CPD, CRAP | `./backend/mvnw -f backend/pom.xml verify` и `node tools/crap.mjs backend/target/site/jacoco/jacoco.xml` |
+| Мутации по `*.domain` | `./backend/mvnw -f backend/pom.xml -Pquality verify` |
+| Один модульный тест | `./backend/mvnw -f backend/pom.xml -Dtest=MoscowTimeTest test` |
+
+Тесты `*IT` требуют Docker. Профиль `quality` (PIT) запускается локально ревьюером, в CI не используется. На Windows — `backend/mvnw.cmd`.
