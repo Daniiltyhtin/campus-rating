@@ -12,15 +12,39 @@ rules:
     allowAdditionalProperties: false
   no-invalid-schema-examples: error
 
+  rule/operation-access:
+    subject:
+      type: Operation
+    assertions:
+      requireAny: [x-roles, x-public]
+      mutuallyExclusive: [x-roles, x-public]
+    message: У операции ровно одно из x-roles (роли с сессией) или x-public true.
+    severity: error
+
   rule/operation-x-roles:
     subject:
       type: Operation
       property: x-roles
     assertions:
-      defined: true
       nonEmpty: true
-      enum: [PUBLIC, AUTHENTICATED, STUDENT, TEACHER, ADMIN]
-    message: У операции должен быть x-roles из PUBLIC, AUTHENTICATED, STUDENT, TEACHER, ADMIN.
+      enum: [AUTHENTICATED, STUDENT, TEACHER, ADMIN]
+      maxLength: 4 # массив до 4 ролей; строка-роль длиннее 4 символов и падает
+    where:
+      - subject:
+          type: Operation
+          property: x-roles
+        assertions:
+          defined: true
+    message: x-roles — массив из AUTHENTICATED, STUDENT, TEACHER, ADMIN.
+    severity: error
+
+  rule/operation-x-public:
+    subject:
+      type: Operation
+      property: x-public
+    assertions:
+      const: true
+    message: x-public задаётся только как true.
     severity: error
 
   rule/operation-x-status:
@@ -30,7 +54,8 @@ rules:
     assertions:
       defined: true
       enum: [planned, implemented]
-    message: У операции должен быть x-status planned или implemented.
+      minLength: 7 # строка; массив короче 7 элементов и падает
+    message: У операции должен быть x-status — строка planned или implemented.
     severity: error
 
   rule/public-overrides-security:
@@ -42,10 +67,9 @@ rules:
     where:
       - subject:
           type: Operation
-          property: x-roles
+          property: x-public
         assertions:
           defined: true
-          enum: [PUBLIC]
     message: Публичная операция задаёт security сама — [] или только csrf.
     severity: error
 
@@ -57,11 +81,26 @@ rules:
     where:
       - subject:
           type: Operation
+          property: x-public
+        assertions:
+          defined: true
+    message: Публичная операция не требует сессии.
+    severity: error
+
+  rule/private-security-explicit:
+    subject:
+      type: Operation
+      property: security
+    assertions:
+      defined: true
+      nonEmpty: true
+    where:
+      - subject:
+          type: Operation
           property: x-roles
         assertions:
           defined: true
-          enum: [PUBLIC]
-    message: Публичная операция не требует сессии.
+    message: Непубличная операция задаёт непустой security с сессией явно.
     severity: error
 
   rule/private-requires-session:
@@ -75,7 +114,6 @@ rules:
           property: x-roles
         assertions:
           defined: true
-          enum: [AUTHENTICATED, STUDENT, TEACHER, ADMIN]
     message: Непубличная операция требует сессию.
     severity: error
 
@@ -90,7 +128,6 @@ rules:
           property: x-roles
         assertions:
           defined: true
-          enum: [AUTHENTICATED, STUDENT, TEACHER, ADMIN]
     message: Непубличная операция описывает ответы 401 и 403.
     severity: error
 
@@ -101,7 +138,8 @@ rules:
       property: security
     assertions:
       defined: true
-    message: Изменяющая операция задаёт security с csrf.
+      nonEmpty: true
+    message: Изменяющая операция задаёт непустой security с csrf.
     severity: error
 
   rule/mutating-requires-csrf:

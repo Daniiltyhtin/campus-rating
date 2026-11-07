@@ -1,6 +1,6 @@
 # Швы между модулями
 
-Сигнатуры и гарантии публичных интерфейсов, через которые модули разных дорожек вызывают друг друга. HTTP-контракт — [`openapi.yaml`](openapi.yaml), здесь — Java-уровень внутри монолита. Источник решений — план U3 (`docs/spec/plans/2026-11-07-002-feat-u3-api-contract-plan.md`, KTD15) и мастер-план (KTD2, KTD3, KTD5, KTD11, KTD23, диаграмма зависимостей модулей).
+Сигнатуры и гарантии публичных интерфейсов, через которые модули вызывают друг друга — прежде всего модули разных дорожек. HTTP-контракт — [`openapi.yaml`](openapi.yaml), здесь — Java-уровень внутри монолита. Источник решений — план U3 (`docs/spec/plans/2026-11-07-002-feat-u3-api-contract-plan.md`, KTD15) и мастер-план (KTD2, KTD3, KTD5, KTD11, KTD23, диаграмма зависимостей модулей).
 
 ## Правила
 
@@ -8,7 +8,33 @@
 - **Кто пишет код.** Интерфейс создаёт владелец в своём юните. До готовности реализации потребитель в своих тестах использует двойник по сигнатуре из этого документа: Mockito-мок или `@MockitoBean` в `*IT`. В `src/main` заглушек нет.
 - **Направления зависимостей** — только по диаграмме мастер-плана: `ledger` → `settings`; `identity` → `directory`, `ledger`; `checkpoint` → `identity`, `ledger`, `settings`; `activity` → `identity`, `ledger`, `settings`; `profile` → `identity`, `ledger`, `checkpoint`, `directory`; `feed` → `ledger`, `identity`. Названия групп и ФИО модули `checkpoint`, `activity` и `feed` берут у `identity` (`GroupMembers`): у них нет зависимости от `directory`. Нарушение ловит `ModularityTest` (мастер-U2).
 - **Идентификаторы** в сигнатурах — `long`. Общих типов вроде `StudentId` между модулями нет, чтобы модули не тянули зависимость ради типа.
-- **Ошибки** — исключение `ru.campusrating.shared.error.ApiException` с `ProblemCode` из контракта (зеркало перечисления `ProblemCode`). Его и `@RestControllerAdvice`, превращающий исключение в `application/problem+json`, создаёт мастер-U4: это первый юнит с API, а мастер-U5 от него зависит. Шов бросает `ApiException` с кодом, указанным в его описании. Контроллер код не переводит.
+- **Ошибки** — исключения `shared.error` (ниже). Их и `@RestControllerAdvice`, превращающий исключение в `application/problem+json`, создаёт мастер-U4: это первый юнит с API, а мастер-U5 от него зависит. Шов и модуль бросают исключение с кодом, указанным в описании; контроллер код не переводит.
+
+```java
+package ru.campusrating.shared.error;
+
+public enum ProblemCode {            // зеркало ProblemCode контракта, у каждого — HTTP-статус из его таблицы
+    UNAUTHENTICATED(401), /* … */ ENROLLMENT_CLOSED(422);
+    public int status() { … }
+}
+
+public class ApiException extends RuntimeException {           // Problem без обязательных расширений
+    public ApiException(ProblemCode code, String detail) { … }  // detail — текст для пользователя
+}
+public final class ValidationFailedException extends ApiException {      // ValidationProblem
+    public ValidationFailedException(String detail, List<FieldError> fieldErrors) { … }
+}
+public final class BudgetExceededException extends ApiException {        // BudgetProblem
+    public BudgetExceededException(String detail, List<BudgetCheck> budgets) { … }
+}
+public final class StudentsRejectedException extends ApiException {      // StudentsProblem
+    public StudentsRejectedException(ProblemCode code, String detail, List<Long> studentIds) { … }
+}                                                                        // code: NOT_ENROLLED, STUDENT_NOT_ELIGIBLE, ALREADY_CONFIRMED
+public record FieldError(String field, String code, String message) {}
+public record BudgetCheck(long groupId, String groupName, int needed, int remaining, int shortfall) {}
+```
+
+  Обработчик кладёт расширения (`fieldErrors`, `budgets`, `studentIds`) в свойства `ProblemDetail`. Ошибки Bean Validation (`MethodArgumentNotValidException`, `HandlerMethodValidationException`) он сам переводит в `VALIDATION_FAILED` с `fieldErrors`. Ошибки Spring Security (`401`, `403`, CSRF) переводит `SecurityConfig` мастер-U5 через `AuthenticationEntryPoint` и `AccessDeniedHandler` в те же коды.
 - **Время** — `Instant` из инжектируемого `Clock` (мастер-KTD6), месяц и дата по Москве — `shared.domain.MoscowTime` (план U2).
 - **Изменение шва** — правкой этого документа в PR с ревью владельца и потребителей, как у контракта.
 
@@ -23,6 +49,30 @@
 5. Commit делает вызывающий. Любое исключение откатывает и доменную запись, и проводки.
 
 Нарушение порядка, например баланс раньше бюджета, — повод для `request changes` на ревью (мастер-KTD5).
+
+## 0. `DirectoryApi` — справочники
+
+- **Владелец:** `directory`, мастер-U4, дорожка A.
+- **Потребители:** `identity` (U5 — проверка группы и факультета при регистрации, кафедра преподавателя, курс группы для `TeacherScope`), `profile` (U10 — кафедра и факультет преподавателя).
+
+```java
+package ru.campusrating.directory;
+
+public interface DirectoryApi {
+    Optional<GroupInfo> group(long groupId);
+    Map<Long, GroupInfo> groups(Collection<Long> groupIds);
+    List<GroupInfo> groupsOfFaculty(long facultyId);
+    List<GroupInfo> allGroups();                      // для выдач COURSE: курс считает identity
+    Optional<DepartmentInfo> department(long departmentId);
+}
+
+public record FacultyInfo(long id, String code, String name) {}
+public record GroupInfo(long id, String name, FacultyInfo faculty, int admissionYear) {}
+public record DepartmentInfo(long id, String code, String name, FacultyInfo faculty) {}
+```
+
+- **Гарантии.** Только чтение. Справочники меняются редко (мастер-U13), поэтому кэш на запрос допустим. Курс группы из `admissionYear` и учебного года считает `identity` (мастер-KTD23), а не `directory`.
+- **Тестовый двойник:** мок по демо-данным контракта — ФИТ (1): ИВТ-21 (11), ИВТ-22 (12); кафедра ПИ (101).
 
 ## 1. `LedgerApi` — журнал проводок
 
@@ -44,7 +94,7 @@ public interface LedgerApi {
                                         Optional<String> cursor, int limit);
     LedgerPage<AwardEntryView> awards(Optional<String> cursor, int limit); // только ACTIVITY_AWARD
 
-    List<BalanceMismatch> reconcile();
+    ReconciliationResult reconcile();
 }
 
 public enum Currency { AR, BUA, BOA }
@@ -69,6 +119,7 @@ public record AwardEntryView(long entryId, Instant createdAt, long studentId, in
                              Currency currency, Source source, Author author) {}
 public record LedgerPage<T>(List<T> items, @Nullable String nextCursor) {}
 public record BalanceMismatch(long studentId, Currency currency, int balance, int ledgerSum) {}
+public record ReconciliationResult(Instant checkedAt, int checkedPairs, List<BalanceMismatch> mismatches) {}
 ```
 
 **Гарантии и правила.**
@@ -78,9 +129,12 @@ public record BalanceMismatch(long studentId, Currency currency, int balance, in
   - `semester:{semesterId}:{studentId}`;
   - `penalty:{assignmentId}:{slot}`;
   - `award:{activityId}:{studentId}`.
+- **Обязательные поля по виду.** У `ACTIVITY_AWARD` обязательны `author` и `source.id`, у `PENALTY` — `source.id`. Иначе `post` бросает `IllegalArgumentException`: это ошибка вызывающего, а не пользователя.
 - **Снимки.** `Source.title` и `Author.fullName` записываются в проводку при её создании. Журнал не зависит от `checkpoint`, `activity` и `identity` и не читает их при показе истории: переименование точки или смена ФИО прошлое не меняют. Автор `null` означает систему: штраф, семестр, стартовые баллы.
 - **Только через `post`.** Запись в таблицы журнала и балансов закрыта границей модуля (мастер-KTD3). Чтение балансов для рейтинга и профиля идёт из снимка, без `SUM` по журналу.
-- **Курсоры** `history` и `awards` — непрозрачные строки по `(createdAt desc, id desc)`. Битый курсор — `ApiException(VALIDATION_FAILED)` по полю `cursor`.
+- **Курсоры** `history` и `awards` — непрозрачные строки по `(createdAt desc, id desc)`. Битый курсор — `ValidationFailedException` по полю `cursor`.
+- **Чтение истории.** Контроллер `/ledger/{userId}/entries` живёт в `ledger` (мастер-U10, дорожка B) и не проверяет существование пользователя: `ledger` не зависит от `identity`. Неизвестный id даёт пустую страницу. Вход проверяет `SecurityConfig`, `CurrentUser` здесь не нужен. ФИО студентов для ленты `feed` берёт у `identity` по `studentId`, то есть текущее, а не снимок: в проводке хранится снимок автора, а не студента.
+- **Блок штрафа.** `checkpoint` читает `balances(studentId)` один раз на запрос `listMyAssignments` и `getAssignment`, а не на каждое назначение.
 - **Тестовый двойник** для дорожки B до мастер-U6: мок `post` возвращает `Posted` с `amount = nominalAmount`; `balances` — фиксированные значения из примеров контракта.
 
 ## 2. `CurrentUser` — кто вошёл
@@ -97,12 +151,12 @@ public interface CurrentUser {
 }
 
 public enum Role { STUDENT, TEACHER, ADMIN }
-public enum MembershipState { PENDING, ACTIVE }
+public enum GroupMembershipState { PENDING, ACTIVE }
 
 public record AuthenticatedUser(long id, Role role, String fullName, boolean mustChangePassword,
                                 boolean teacherApproved,            // false у не-преподавателя
                                 @Nullable Membership membership) {} // только у студента
-public record Membership(long groupId, MembershipState state, @Nullable Instant activatedAt) {}
+public record Membership(long groupId, GroupMembershipState state, @Nullable Instant activatedAt) {}
 ```
 
 - **Гарантии.** Значения берутся из сессии и базы на момент запроса. Блокировку по `mustChangePassword` (`403 PASSWORD_CHANGE_REQUIRED`) делает фильтр безопасности `identity`, а не модули: при работающем фильтре `require()` пользователя с этим флагом в чужой модуль не вернёт. Роль операции проверяет `SecurityConfig` по `x-roles` контракта. Принадлежность ресурса проверяет модуль-владелец сам: автор точки, автор активности, владелец назначения.
@@ -141,7 +195,7 @@ public interface TeacherScope {
 ## 4. `GroupMembers` — состав групп и подписи
 
 - **Владелец:** `identity`, мастер-U5, дорожка B.
-- **Потребители:** `checkpoint` (U7 — назначения и встречная сверка), `activity` (U9 — участники, допуск к подтверждению, группировка бюджета), `profile` (U10), `feed` (U11 — рейтинг и подписи ленты).
+- **Потребители:** `checkpoint` (U7 — назначения и встречная сверка), `activity` (U9 — участники, допуск к подтверждению, группировка бюджета), `profile` (U10 — владелец профиля через `card`), `feed` (U11 — рейтинг и подписи ленты).
 
 ```java
 package ru.campusrating.identity;
@@ -156,12 +210,17 @@ public interface GroupMembers {
     Map<Long, UserRef> users(Collection<Long> userIds);
     /** Название и факультет группы для ответов API; читает directory. */
     Map<Long, GroupRef> groups(Collection<Long> groupIds);
+    /** Кто владелец профиля: роль, группа студента или кафедра преподавателя; пусто — нет пользователя. */
+    Optional<UserCard> card(long userId);
 }
 
-public record StudentMember(long studentId, String fullName, long groupId, MembershipState state,
+public record StudentMember(long studentId, String fullName, long groupId, GroupMembershipState state,
                             @Nullable Instant activatedAt) {}
 public record UserRef(long id, String fullName) {}
 public record GroupRef(long id, String name, long facultyId, String facultyCode, String facultyName) {}
+public record UserCard(long id, Role role, String fullName,
+                       @Nullable Long groupId,          // у студента
+                       @Nullable Long departmentId) {}  // у преподавателя; кафедру и факультет profile читает в DirectoryApi
 ```
 
 - **Гарантии.** Минимальные таблицы `app_user` и `group_membership` создаёт мастер-U4 (A), мастер-U5 их расширяет. Методы только читают и работают и в транзакции вызывающего, и без неё. Для студента с `PENDING`-членством `activeStudents` его не вернёт, а `membership` вернёт с `state = PENDING`: по нему `activity` отвечает `STUDENT_NOT_ELIGIBLE` или `MEMBERSHIP_NOT_ACTIVE`.
@@ -199,15 +258,14 @@ package ru.campusrating.checkpoint;
 public interface StudentAssignments {
     /** OPEN и SUBMITTED: сначала OVERDUE, затем по дедлайну. */
     List<StudentAssignmentView> active(long studentId);
-    /** ACCEPTED, от недавних. */
-    List<StudentAssignmentView> lastCompleted(long studentId, int limit);
-    int completedCount(long studentId);
+    /** Все ACCEPTED, по acceptedAt desc. */
+    List<StudentAssignmentView> completed(long studentId);
 }
 
 public enum AssignmentStatus { IN_PROGRESS, SUBMITTED, OVERDUE, ACCEPTED }
 
 public record StudentAssignmentView(long assignmentId, String title, Instant deadline,
-                                    AssignmentStatus status, int charged) {}
+                                    AssignmentStatus status, int charged, @Nullable Instant acceptedAt) {}
 ```
 
 - **Гарантии.** Статус вычисляется на `Clock` вызова (мастер-KTD7). Материалов сдачи и комментария возврата в типе нет: профиль не может их отдать по ошибке (KTD9 плана U3). Представление `PUBLIC`, `OWN` или `ADMIN` выбирает `profile` по смотрящему: `assignmentId` он отдаёт только себе и администратору.
@@ -227,8 +285,10 @@ public record CheckpointCreated(long checkpointId) {}   // внутри доро
 
 | Событие | Публикует | Слушает | Что делает слушатель |
 |---|---|---|---|
-| `MembershipActivated` | `identity`: при регистрации студента, пока нет мастер-U15, членство сразу `ACTIVE`; потом — при подтверждении членства | `checkpoint` (U7) | создаёт назначения по точкам группы с дедлайном позже `activatedAt` (мастер-R16, AE11) |
-| `CheckpointCreated` | `checkpoint` при создании точки | `checkpoint` (U7) | читает `GroupMembers.activeStudents(groups)` и создаёт недостающие назначения |
+| `MembershipActivated` | `identity`: при регистрации студента, пока нет мастер-U15, членство сразу `ACTIVE`; потом — при подтверждении членства | `checkpoint` (U7) | создаёт назначения по точкам группы, подходящим под правило ниже |
+| `CheckpointCreated` | `checkpoint` при создании точки | `checkpoint` (U7) | читает `GroupMembers.activeStudents(groups)` и создаёт недостающие назначения по тому же правилу |
+
+**Правило обеих сверок:** назначение (точка, студент) создаётся, только если `activatedAt` студента раньше дедлайна точки (мастер-R16, AE11). Время обработки события не участвует. Поэтому отложенная или повторная доставка `CheckpointCreated` не даст просроченного назначения новичку, активированному после дедлайна. Проверка — сценарий в `CheckpointIT`: слушатель `CheckpointCreated` задержан до активации студента после дедлайна, назначения нет.
 
 - **Гонка точки и активации** (мастер-U7). Точка создаётся, а членство активируется параллельно. Каждая сторона видит данные другой только после её commit, поэтому одна из двух сверок обязательно увидит пару (точка, студент). Обе вставляют назначение с `ON CONFLICT (checkpoint_id, student_id) DO NOTHING`, так что двойная сверка безопасна. Проверка — тест гонки с барьерами в `CheckpointIT`.
 - **Повтор доставки.** Реестр публикаций может доставить событие повторно после сбоя слушателя. Оба слушателя идемпотентны по той же уникальной паре.
@@ -237,10 +297,11 @@ public record CheckpointCreated(long checkpointId) {}   // внутри доро
 
 | Потребитель | Ждёт | До готовности |
 |---|---|---|
+| U5 (B): регистрация, `TeacherScope` | `DirectoryApi` (U4, A) | мок по демо-справочникам |
 | U5 (B): стартовые 1000 АР | `LedgerApi` (U6, A, 0,5 дня) | мок `post` |
 | U7 (A): создание точки, назначения, доступ | `CurrentUser`, `TeacherScope`, `GroupMembers` (U5, B) | моки; `@MockitoBean` в `CheckpointIT` |
 | U9 (B): начисления, бюджет | `LedgerApi` (U6), `SettingsApi` (U4) | моки |
-| U10 (B): профиль | `StudentAssignments` (U7, A), `LedgerApi` | моки по примерам контракта |
+| U10 (B): профиль | `StudentAssignments` (U7, A), `LedgerApi`, `DirectoryApi` (U4, A) | моки по примерам контракта |
 | U11 (B): лента и рейтинг | `LedgerApi` | мок `awards`, `balances` |
 
 Стыковка — вечер 09.11 (мастер-Sequencing): двойники заменяются реализациями, интеграционные тесты потребителей гоняются против настоящих бинов.

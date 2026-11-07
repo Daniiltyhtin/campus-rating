@@ -10,7 +10,7 @@
 
 - Начните с `info.description`: там соглашения по путям, типам, ошибкам, CSRF и смене пароля.
 - Каждая операция:
-  - `x-roles` — кто её вызывает;
+  - `x-roles` — какие роли с сессией её вызывают; публичная операция вместо него помечена `x-public: true`;
   - строка «Доступ:» в описании — правило принадлежности ресурса (мастер-R3, KTD23);
   - `x-status` — `planned` или `implemented`.
 - Ошибки — `Problem` с `code` из `ProblemCode`; таблица кодов и статусов — в описании `ProblemCode`. Варианты с обязательными данными: `ValidationProblem` (`fieldErrors`), `BudgetProblem` (`budgets`), `StudentsProblem` (`studentIds`).
@@ -30,26 +30,29 @@ npx --yes @redocly/cli@2.76.0 lint --config docs/spec/api/redocly.yaml docs/spec
 ```
 
 Правила проекта (`rule/*` в `redocly.yaml`) — все с `severity: error`. Они требуют:
-- у каждой операции `operationId`, `x-roles` из допустимых значений и `x-status`;
+- у каждой операции `operationId`, `x-status` (строка `planned` или `implemented`) и ровно одно из двух: `x-roles` — массив из `AUTHENTICATED`, `STUDENT`, `TEACHER`, `ADMIN` — или `x-public: true`;
 - у публичной операции — `security` без сессии: `[]` для чтения, `[{csrf: []}]` для входа и регистрации;
-- у непубличной — сессию и ответы `401`, `403`;
-- у изменяющей — CSRF; у чтения — без CSRF;
+- у непубличной — явный непустой `security` с сессией и ответы `401`, `403`; глобальный `security` — только запасной;
+- у изменяющей — непустой `security` с CSRF; у чтения — без CSRF;
 - у успешного ответа — пример.
+
+`x-public` отделён от `x-roles`, чтобы смешанный массив вроде `[PUBLIC, STUDENT]` не выпадал из обеих групп правил. Форма расширений проверяется по длине: `maxLength: 4` у `x-roles` отличает массив от строки-роли, `minLength: 7` у `x-status` — строку от массива.
 
 Примеры проверяются по схемам, и лишнее поле в них — ошибка.
 
 **Предел проверки примеров.** Лишнее поле не ловится в схемах, собранных через `allOf`; отсутствие обязательного поля ловится. Поэтому схемы, где лишнее поле означает утечку, плоские, без `allOf`:
-- представления профиля и задач в нём (`PublicProfileTask` не может получить `assignmentId` или ссылку);
+- представления профиля и задач в нём; у них ещё и `additionalProperties: false`, так что `PublicProfileTask` не может получить `assignmentId` или ссылку и по самой схеме;
 - варианты `CurrentUser`.
 
 Через `allOf` собраны только варианты `Problem`.
 
-Каждое правило проверено негативным прогоном на копии контракта: линтер падал с ненулевым кодом. В частности, ловятся:
-- операция без `x-roles`, с ролью вне перечня, без `403`;
-- `PUBLIC` с сессией или без `security`;
-- `POST` без CSRF;
-- пример не того типа, с лишним полем, без обязательного поля варианта `Problem`;
-- `url` или `assignmentId` в задаче чужого профиля;
+Каждое правило проверено негативным прогоном на копии контракта: 29 нарушений, на каждом линтер падал с ненулевым кодом. В частности, ловятся:
+- операция без `x-roles` и `x-public` или с обоими; роль вне перечня, `PUBLIC` в `x-roles`, роль строкой, `x-status` массивом, `x-public: false`;
+- непубличная операция без явного `security`, с `security: []`, без сессии, без `403`;
+- публичная с сессией или без `security`;
+- `POST` с `security: []` или без CSRF; `GET` с CSRF;
+- пример не того типа, с лишним полем, без обязательного поля, без обязательного поля варианта `Problem`;
+- `url` или `assignmentId` в задаче чужого профиля, сдача с неверным `kind`;
 - неизвестный `code`.
 
 ## Как расширять
@@ -68,11 +71,11 @@ npx --yes @redocly/cli@2.76.0 lint --config docs/spec/api/redocly.yaml docs/spec
 
 | R | Сценарий (мастер-U) | Операции контракта | Шов, событие, фон | Владелец проверки |
 |---|---|---|---|---|
-| R1 | Регистрация студента; группы фильтруются по факультету; группа не того факультета — ошибка поля (U5) | `registerStudent`, `listFaculties`, `listFacultyGroups` | — | U5: `RegistrationIT`, `RegisterForm.test` |
-| R2 | Преподаватель регистрируется без допуска, плашка «ждёт подтверждения»; email из списка не регистрируется студентом (U5) | `registerTeacher`, `listFacultyDepartments`, `getCurrentUser` (`teacherApproved`), `registerStudent` (`EMAIL_RESERVED_FOR_TEACHER`), `listAccessibleGroups` (пусто) | `TeacherScope` пуст без допуска | U5 |
+| R1 | Регистрация студента; группы фильтруются по факультету; группа не того факультета — ошибка поля (U5) | `registerStudent`, `listFaculties`, `listFacultyGroups` | `DirectoryApi.group` | U5: `RegistrationIT`, `RegisterForm.test` |
+| R2 | Преподаватель регистрируется без допуска, плашка «ждёт подтверждения»; email из списка не регистрируется студентом (U5) | `registerTeacher`, `listFacultyDepartments`, `getCurrentUser` (`teacherApproved`), `registerStudent` (`EMAIL_RESERVED_FOR_TEACHER`), `listAccessibleGroups` (пусто) | `TeacherScope` пуст без допуска; `DirectoryApi.department` | U5 |
 | R3 | Роли и принадлежность ресурса: чужой преподаватель, студент чужой группы (U5, U7, U9, U11) | все операции: `x-roles`, «Доступ:», `403 FORBIDDEN`, `GROUP_NOT_ACCESSIBLE` | `CurrentUser`, `TeacherScope`; авторство проверяет модуль-владелец | каждый юнит; сводно — U12 |
 | R4 | Справочники загружены в demo (U4) | `listFaculties`, `listFacultyGroups`, `listFacultyDepartments` | сид Liquibase `context: demo` | U4: `DirectoryApiIT` |
-| R5 | Профиль открыт всем вошедшим; задача в чужом профиле без перехода, у администратора — «Материалы сдачи» (U10) | `getUserProfile` (`PUBLIC`, `OWN`, `ADMIN`), `getAssignment` | `StudentAssignments`, `LedgerApi.balances`, `GroupMembers` | U10: `ProfileIT` |
+| R5 | Профиль открыт всем вошедшим; задача в чужом профиле без перехода, у администратора — «Материалы сдачи» (U10) | `getUserProfile` (`PUBLIC`, `OWN`, `ADMIN`), `getAssignment` | `GroupMembers.card`, `StudentAssignments`, `LedgerApi.balances`, `DirectoryApi.department` | U10: `ProfileIT` |
 | R6 | Строка истории в формате R6; штраф — источник точка, автор «Система» (U10) | `listLedgerEntries` | `LedgerApi.history`, снимки источника и автора | U10: `ProfileIT`, `HistoryItem.test` |
 | R7 | Точка на две группы: назначения только `ACTIVE`; шаг и интервал зафиксированы; недоступная группа — `403` (U7) | `createCheckpoint`, `getCheckpointDefaults`, `getCheckpoint` | `TeacherScope.requireAccessible`, `GroupMembers.activeStudents`, `SettingsApi`, `CheckpointCreated` | U7: `CheckpointIT` |
 | R8 | Регистрация студента даёт `INITIAL` +1000 (U5) | `registerStudent` | `LedgerApi.post` | U5: `RegistrationIT` |
@@ -83,7 +86,7 @@ npx --yes @redocly/cli@2.76.0 lint --config docs/spec/api/redocly.yaml docs/spec
 | R13 | Пропущенные слоты не списываются (U8) | — | `PenaltyJob` | U8: AE7 |
 | R14 | Страница точки, массовый приём с итогом, возврат с комментарием (U7) | `listMyCheckpoints`, `listCheckpointAssignments`, `acceptAssignments`, `returnAssignment` | — | U7: `CheckpointIT` |
 | R15 | Мои задачи со статусами; при `PENDING` — «Членство ждёт подтверждения» (U7) | `listMyAssignments`, `getAssignment` | — | U7: `AssignmentStatusPolicyTest`, `TaskList.test` |
-| R16 | Новичок получает назначения только по точкам с будущим дедлайном; гонка с созданием точки (U7) | — | `MembershipActivated`, `CheckpointCreated` | U7: `CheckpointIT` (AE11, гонка) |
+| R16 | Новичок получает назначения только по точкам с дедлайном позже активации; гонка с созданием точки; отложенная доставка `CheckpointCreated` (U7) | — | `MembershipActivated`, `CheckpointCreated`, правило `activatedAt` < дедлайна | U7: `CheckpointIT` (AE11, гонка, задержка) |
 | R17 | Создание активности: максимум ≥ 2; недоступная группа — `403`; студент другой группы не видит (U9) | `createActivity`, `listActivities`, `getActivity` | `TeacherScope.requireAccessible` | U9: `ActivityIT` |
 | R18 | Запись и отмена на `SOCIAL` до начала (U9) | `enrollInActivity`, `cancelEnrollment` | `GroupMembers.membership` | U9: `ActivityIT` |
 | R19 | Подтверждение после начала, округление, только записавшиеся на `SOCIAL`, повтор с тем же уровнем безопасен (U9) | `listActivityParticipants`, `previewParticipation`, `confirmParticipation` | `GroupMembers`, `LedgerApi.post` | U9: `AwardCalculatorTest`, `ActivityIT` |

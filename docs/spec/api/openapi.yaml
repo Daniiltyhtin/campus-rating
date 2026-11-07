@@ -16,7 +16,9 @@ info:
       Токен выдаёт `GET /api/v1/auth/csrf`: фронт вызывает его при старте и после входа, выхода и смены пароля.
     - Пока у пользователя `mustChangePassword`, все непубличные операции, кроме `GET /auth/me`,
       `POST /auth/password` и `POST /auth/logout`, отвечают `403 PASSWORD_CHANGE_REQUIRED` (мастер-R49).
-    - `x-roles` — кто вызывает операцию; строка «Доступ:» в описании — правило принадлежности ресурса.
+    - `x-roles` — какие роли с сессией вызывают операцию (`AUTHENTICATED` — любая); публичная операция вместо
+      него помечена `x-public: true`. Строка «Доступ:» в описании — правило принадлежности ресурса.
+    - В описаниях пути сокращены без префикса `/api/v1`.
     - `x-status` — `planned` до реализации, `implemented` после; меняет юнит, реализующий операцию.
 servers:
   - url: /
@@ -50,7 +52,7 @@ paths:
         поэтому после них фронт вызывает операцию снова.
 
         Доступ: все, включая гостя.
-      x-roles: [PUBLIC]
+      x-public: true
       x-status: planned
       security: []
       responses:
@@ -72,7 +74,7 @@ paths:
         «Подтверждение email на этом стенде выключено» (мастер-R47, R48).
 
         Доступ: все, включая гостя.
-      x-roles: [PUBLIC]
+      x-public: true
       x-status: planned
       security: []
       responses:
@@ -105,7 +107,7 @@ paths:
         выход → `GET /auth/csrf` → вход.
 
         Доступ: все, включая гостя; нужен CSRF-заголовок.
-      x-roles: [PUBLIC]
+      x-public: true
       x-status: planned
       security:
         - csrf: []
@@ -198,6 +200,8 @@ paths:
         Доступ: любой вошедший.
       x-roles: [AUTHENTICATED]
       x-status: planned
+      security:
+        - session: []
       responses:
         '200':
           description: Текущий пользователь.
@@ -266,7 +270,7 @@ paths:
         `TOO_LONG` по полю `password`.
 
         Доступ: все, включая гостя; нужен CSRF-заголовок.
-      x-roles: [PUBLIC]
+      x-public: true
       x-status: planned
       security:
         - csrf: []
@@ -354,7 +358,7 @@ paths:
         Пароль — как у регистрации студента.
 
         Доступ: все, включая гостя; нужен CSRF-заголовок.
-      x-roles: [PUBLIC]
+      x-public: true
       x-status: planned
       security:
         - csrf: []
@@ -473,6 +477,8 @@ paths:
         Доступ: преподаватель, только свои.
       x-roles: [TEACHER]
       x-status: planned
+      security:
+        - session: []
       responses:
         '200':
           description: Доступные группы.
@@ -513,7 +519,7 @@ paths:
         Для формы регистрации; по названию.
 
         Доступ: все, включая гостя.
-      x-roles: [PUBLIC]
+      x-public: true
       x-status: planned
       security: []
       responses:
@@ -541,7 +547,7 @@ paths:
         Только группы этого факультета, по названию (мастер-R1).
 
         Доступ: все, включая гостя.
-      x-roles: [PUBLIC]
+      x-public: true
       x-status: planned
       security: []
       parameters:
@@ -579,7 +585,7 @@ paths:
         Для формы регистрации преподавателя; по названию.
 
         Доступ: все, включая гостя.
-      x-roles: [PUBLIC]
+      x-public: true
       x-status: planned
       security: []
       parameters:
@@ -616,6 +622,8 @@ paths:
         Доступ: преподаватель, только свои точки — в том числе для групп, которые уже недоступны.
       x-roles: [TEACHER]
       x-status: planned
+      security:
+        - session: []
       responses:
         '200':
           description: Точки преподавателя.
@@ -739,6 +747,8 @@ paths:
         Доступ: преподаватель.
       x-roles: [TEACHER]
       x-status: planned
+      security:
+        - session: []
       responses:
         '200':
           description: Параметры штрафа.
@@ -765,6 +775,8 @@ paths:
         Остальным — `403 FORBIDDEN`.
       x-roles: [TEACHER, ADMIN]
       x-status: planned
+      security:
+        - session: []
       parameters:
         - $ref: '#/components/parameters/CheckpointId'
       responses:
@@ -789,12 +801,18 @@ paths:
                       id: 1
                       code: ФИТ
                       name: Факультет информационных технологий
+                  - id: 12
+                    name: ИВТ-22
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
                 author:
                   id: 2001
                   fullName: Петров Павел Петрович
                 createdAt: '2026-11-05T07:30:00Z'
                 submittedCount: 3
-                totalCount: 24
+                totalCount: 48
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '403':
@@ -810,12 +828,14 @@ paths:
       description: |
         Таблица точки у преподавателя (мастер-R14): студенты со статусами, фильтры по статусу и группе,
         курсор по `(ФИО, id)`. `statusCounts` считается по всей точке с фильтром группы, но без фильтра
-        статуса — для чипов фильтра.
+        статуса — для чипов фильтра. Группа вне групп точки — пустая страница и нулевые счётчики.
 
         Доступ: автор точки, даже если её группы ему уже недоступны; администратор — только чтение.
         Остальным — `403 FORBIDDEN`, даже если группа доступна.
       x-roles: [TEACHER, ADMIN]
       x-status: planned
+      security:
+        - session: []
       parameters:
         - $ref: '#/components/parameters/CheckpointId'
         - name: status
@@ -957,7 +977,7 @@ paths:
         Задачи студента (мастер-R15).
         - `view=active` — `OPEN` и `SUBMITTED` целиком, без пагинации (`cursor` и `limit` не применяются,
           `nextCursor` всегда `null`): сначала `OVERDUE`, затем по дедлайну.
-        - `view=completed` — `ACCEPTED`, курсор по `(время приёма desc, id desc)`.
+        - `view=completed` — `ACCEPTED`, курсор по `(acceptedAt desc, id desc)`.
 
         Без `ACTIVE`-членства назначений нет: пустой список и `membershipState: PENDING` — экран пишет
         «Членство ждёт подтверждения» вместо пустого списка.
@@ -965,6 +985,8 @@ paths:
         Доступ: студент, только свои назначения.
       x-roles: [STUDENT]
       x-status: planned
+      security:
+        - session: []
       parameters:
         - name: view
           in: query
@@ -1004,6 +1026,7 @@ paths:
                           phase: RUNNING
                           nextAt: '2026-11-12T09:02:00Z'
                           nextAmount: 20
+                        acceptedAt: null
                       - assignmentId: 7010
                         checkpoint:
                           id: 502
@@ -1023,6 +1046,7 @@ paths:
                           phase: BEFORE_DEADLINE
                           nextAt: '2026-11-20T20:59:00Z'
                           nextAmount: 20
+                        acceptedAt: null
                     nextCursor: null
                     membershipState: ACTIVE
                 pending:
@@ -1051,6 +1075,8 @@ paths:
         чтение (мастер-R3). Остальным — `403 FORBIDDEN`.
       x-roles: [STUDENT, TEACHER, ADMIN]
       x-status: planned
+      security:
+        - session: []
       parameters:
         - $ref: '#/components/parameters/AssignmentId'
       responses:
@@ -1167,6 +1193,8 @@ paths:
         Доступ: студент-владелец, автор точки, администратор — как у чтения назначения.
       x-roles: [STUDENT, TEACHER, ADMIN]
       x-status: planned
+      security:
+        - session: []
       parameters:
         - $ref: '#/components/parameters/AssignmentId'
       responses:
@@ -1242,13 +1270,16 @@ paths:
       operationId: listActivities
       summary: Активности
       description: |
-        Студенту — активности, целевые для его группы (мастер-R17), с его записью и начислением.
+        Студенту — активности, целевые для его группы (мастер-R17), с его записью и начислением; при
+        `PENDING`-членстве тоже: видеть может, записаться — нет (`MEMBERSHIP_NOT_ACTIVE`).
         Преподавателю — созданные им. Список целиком: сначала будущие по возрастанию времени начала, затем
         прошедшие от недавних.
 
         Доступ: студент — активности своей группы; преподаватель — свои, даже если их группы уже недоступны.
       x-roles: [STUDENT, TEACHER]
       x-status: planned
+      security:
+        - session: []
       responses:
         '200':
           description: Активности.
@@ -1333,8 +1364,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ActivityCreate'
             example:
-              title: Олимпиада по программированию
-              description: Командная олимпиада факультета, задачи на алгоритмы.
+              title: Хакатон факультета
+              description: Командный хакатон, тема объявляется на открытии.
               type: ACADEMIC
               groupIds: [11, 12]
               startsAt: '2026-11-21T08:00:00Z'
@@ -1347,9 +1378,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/Activity'
               example:
-                id: 602
-                title: Олимпиада по программированию
-                description: Командная олимпиада факультета, задачи на алгоритмы.
+                id: 604
+                title: Хакатон факультета
+                description: Командный хакатон, тема объявляется на открытии.
                 type: ACADEMIC
                 currency: BUA
                 startsAt: '2026-11-21T08:00:00Z'
@@ -1403,9 +1434,12 @@ paths:
       operationId: getActivity
       summary: Активность
       description: |
-        Доступ: студент, чья группа среди целевых; автор активности. Остальным — `403 FORBIDDEN`.
+        Доступ: студент, чья группа среди целевых, в том числе с `PENDING`-членством; автор активности.
+        Остальным — `403 FORBIDDEN`.
       x-roles: [STUDENT, TEACHER]
       x-status: planned
+      security:
+        - session: []
       parameters:
         - $ref: '#/components/parameters/ActivityId'
       responses:
@@ -1510,8 +1544,8 @@ paths:
       operationId: cancelEnrollment
       summary: Отменить запись
       description: |
-        Отмена до времени начала; без записи ничего не меняет. В момент начала и позже —
-        `422 ENROLLMENT_CLOSED`.
+        Отмена до времени начала; без записи ничего не меняет. `ACADEMIC` — `409 INVALID_STATE` (записи нет);
+        в момент начала и позже — `422 ENROLLMENT_CLOSED`. Членство не проверяется.
 
         Доступ: студент, чья группа среди целевых.
       x-roles: [STUDENT]
@@ -1561,7 +1595,7 @@ paths:
         '409':
           $ref: '#/components/responses/InvalidState'
         '422':
-          $ref: '#/components/responses/EnrollmentRejected'
+          $ref: '#/components/responses/EnrollmentClosed'
 
   /api/v1/activities/{activityId}/participants:
     get:
@@ -1575,6 +1609,8 @@ paths:
         Доступ: только автор активности, даже если её группы ему уже недоступны.
       x-roles: [TEACHER]
       x-status: planned
+      security:
+        - session: []
       parameters:
         - $ref: '#/components/parameters/ActivityId'
       responses:
@@ -1649,12 +1685,23 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ParticipationRequest'
-            example:
-              items:
-                - studentId: 1001
-                  level: 50
-                - studentId: 1003
-                  level: 100
+            examples:
+              rounding:
+                summary: Активность 602 (ACADEMIC, максимум 75)
+                value:
+                  items:
+                    - studentId: 1001
+                      level: 50
+                    - studentId: 1003
+                      level: 100
+              overBudget:
+                summary: Активность 603 (SOCIAL, максимум 100), у ИВТ-21 остаток 50
+                value:
+                  items:
+                    - studentId: 1001
+                      level: 50
+                    - studentId: 1002
+                      level: 50
       responses:
         '200':
           description: Предпросмотр.
@@ -1850,6 +1897,8 @@ paths:
         Доступ: преподаватель, только свой бюджет.
       x-roles: [TEACHER]
       x-status: planned
+      security:
+        - session: []
       parameters:
         - $ref: '#/components/parameters/Month'
       responses:
@@ -1896,11 +1945,14 @@ paths:
       summary: История моих начислений
       description: |
         Начисления текущего преподавателя (мастер-R21), новые сверху, курсор по `(время подтверждения desc,
-        id desc)`. Фильтры группы и месяца (Europe/Moscow) входят в курсор.
+        id desc)`. Фильтры группы и месяца (Europe/Moscow) входят в курсор; группа без начислений — пустая
+        страница. Начисления не фильтруются по текущим доступным группам: снятый доступ историю не скрывает.
 
         Доступ: преподаватель, только свои начисления.
       x-roles: [TEACHER]
       x-status: planned
+      security:
+        - session: []
       parameters:
         - name: groupId
           in: query
@@ -1952,12 +2004,14 @@ paths:
       operationId: getMyAwardsSummary
       summary: Статистика начислений за месяц
       description: |
-        Сумма и число начислений текущего преподавателя за месяц по группам и валютам. Сумма по группе
-        (БУА + БОА) равна расходу её бюджета за тот же месяц.
+        Сумма и число начислений текущего преподавателя за месяц по группам и валютам, включая группы,
+        доступ к которым уже снят. Сумма по группе (БУА + БОА) равна расходу её бюджета за тот же месяц.
 
         Доступ: преподаватель, только свои начисления.
       x-roles: [TEACHER]
       x-status: planned
+      security:
+        - session: []
       parameters:
         - $ref: '#/components/parameters/Month'
       responses:
@@ -2006,7 +2060,7 @@ paths:
       summary: Профиль пользователя
       description: |
         Профиль по роли владельца (мастер-R5): студент — ФИО, группа и факультет, балансы, активные и
-        последние завершённые задачи; преподаватель — ФИО, кафедра и факультет; администратор — ФИО и роль.
+        завершённые задачи; преподаватель — ФИО, кафедра и факультет; администратор — ФИО и роль.
         История проводок — `GET /ledger/{userId}/entries`.
 
         Задача в профиле зависит от смотрящего (поле `view`):
@@ -2021,6 +2075,8 @@ paths:
         Доступ: любой вошедший.
       x-roles: [AUTHENTICATED]
       x-status: planned
+      security:
+        - session: []
       parameters:
         - $ref: '#/components/parameters/UserId'
       responses:
@@ -2065,7 +2121,6 @@ paths:
                         deadline: '2026-10-29T09:00:00Z'
                         status: ACCEPTED
                         charged: 20
-                    completedTotal: 1
                 studentByAdmin:
                   summary: Студент глазами администратора
                   value:
@@ -2091,7 +2146,6 @@ paths:
                         status: OVERDUE
                         charged: 40
                     completedTasks: []
-                    completedTotal: 0
                 teacher:
                   value:
                     role: TEACHER
@@ -2126,11 +2180,14 @@ paths:
         История проводок студента для профиля (мастер-R6), новые сверху, курсор по `(createdAt desc, id desc)`
         (мастер-KTD18). Источник и автор — снимок на момент проводки: переименование точки или смена ФИО
         прошлую историю не меняют. Автор `null` — система (штраф, начисление семестра, стартовые баллы).
-        У преподавателя и администратора проводок нет — пустая страница.
+        У преподавателя, администратора и несуществующего id — пустая страница: модуль `ledger` не зависит
+        от `identity` и пользователей не проверяет (мастер-KTD2).
 
         Доступ: любой вошедший (профиль открыт всем, мастер-R5).
       x-roles: [AUTHENTICATED]
       x-status: planned
+      security:
+        - session: []
       parameters:
         - $ref: '#/components/parameters/UserId'
         - name: currency
@@ -2188,8 +2245,6 @@ paths:
           $ref: '#/components/responses/Unauthenticated'
         '403':
           $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
 
   /api/v1/feed/awards:
     get:
@@ -2204,6 +2259,8 @@ paths:
         Доступ: любой вошедший.
       x-roles: [AUTHENTICATED]
       x-status: planned
+      security:
+        - session: []
       parameters:
         - $ref: '#/components/parameters/Cursor'
         - $ref: '#/components/parameters/Limit'
@@ -2262,14 +2319,15 @@ paths:
         Доступ: преподаватель, группа — из доступных (`403 GROUP_NOT_ACCESSIBLE`).
       x-roles: [TEACHER]
       x-status: planned
+      security:
+        - session: []
       parameters:
         - $ref: '#/components/parameters/GroupId'
         - name: sort
           in: query
           required: false
           schema:
-            allOf:
-              - $ref: '#/components/schemas/Currency'
+            $ref: '#/components/schemas/Currency'
             default: AR
       responses:
         '200':
@@ -2330,6 +2388,8 @@ paths:
         Доступ: только администратор.
       x-roles: [ADMIN]
       x-status: planned
+      security:
+        - session: []
       responses:
         '200':
           description: Результат сверки.
@@ -2693,7 +2753,6 @@ components:
             deadline: '2026-10-29T09:00:00Z'
             status: ACCEPTED
             charged: 20
-        completedTotal: 1
 
   parameters:
     UserId:
@@ -2793,7 +2852,9 @@ components:
             detail: Войдите в систему.
     Forbidden:
       description: |
-        Нет прав. `code`:
+        Нет прав. Какие коды возможны у конкретной операции, следует из её метода и описания:
+        `PASSWORD_CHANGE_REQUIRED` не отдают `GET /auth/me`, `POST /auth/password` и `POST /auth/logout`,
+        `CSRF_INVALID` — только изменяющие методы. `code`:
         - `FORBIDDEN` — роль или принадлежность ресурса не подходят;
         - `GROUP_NOT_ACCESSIBLE` — группа вне доступных преподавателю (мастер-KTD23);
         - `PASSWORD_CHANGE_REQUIRED` — сначала смените пароль (мастер-R49);
@@ -2878,7 +2939,7 @@ components:
             title: Conflict
             status: 409
             code: INVALID_STATE
-            detail: Работа уже сдана на проверку.
+            detail: Действие недоступно в текущем состоянии.
 
     EnrollmentRejected:
       description: '`ENROLLMENT_CLOSED` — время начала наступило; `MEMBERSHIP_NOT_ACTIVE` — членство ждёт подтверждения.'
@@ -2901,6 +2962,18 @@ components:
                 status: 422
                 code: MEMBERSHIP_NOT_ACTIVE
                 detail: Членство в группе ждёт подтверждения.
+    EnrollmentClosed:
+      description: '`ENROLLMENT_CLOSED` — время начала наступило.'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          example:
+            type: about:blank
+            title: Unprocessable Content
+            status: 422
+            code: ENROLLMENT_CLOSED
+            detail: Запись закрыта — активность уже началась.
     ParticipationConflict:
       description: '`ALREADY_CONFIRMED` — уровень уже подтверждён иначе; `INVALID_STATE` — активность ещё не началась.'
       content:
@@ -3400,7 +3473,8 @@ components:
           type: integer
           format: int32
           minimum: 1
-          description: Максимум АР, который можно списать с одного студента (мастер-R7).
+          maximum: 1000
+          description: Максимум АР, который можно списать с одного студента (мастер-R7); больше 1000 АР не бывает.
     Checkpoint:
       type: object
       required: [id, title, description, deadline, cost, penaltyStep, penaltyIntervalSeconds, groups, author, createdAt, submittedCount, totalCount]
@@ -3572,21 +3646,25 @@ components:
       type: string
       enum: [LINK, FILE]
     SubmissionUpload:
-      type: object
-      description: Ровно одна часть — `link` или `file`.
-      properties:
-        link:
-          type: string
-          format: uri
-          maxLength: 2000
-          description: http или https.
-        file:
-          type: string
-          format: binary
-          description: До 10 МБ; pdf, docx, zip, png, jpg.
+      description: Ровно одна часть — `link` или `file`; вторая запрещена (`false`), чтобы типы фронта исключали обе сразу.
       oneOf:
-        - required: [link]
-        - required: [file]
+        - type: object
+          required: [link]
+          properties:
+            link:
+              type: string
+              format: uri
+              maxLength: 2000
+              description: http или https.
+            file: false
+        - type: object
+          required: [file]
+          properties:
+            file:
+              type: string
+              format: binary
+              description: До 10 МБ; pdf, docx, zip, png, jpg.
+            link: false
 
     Assignment:
       type: object
@@ -3623,7 +3701,7 @@ components:
 
     StudentTask:
       type: object
-      required: [assignmentId, checkpoint, teacher, deadline, cost, state, status, penalty]
+      required: [assignmentId, checkpoint, teacher, deadline, cost, state, status, penalty, acceptedAt]
       properties:
         assignmentId:
           $ref: '#/components/schemas/Id'
@@ -3642,6 +3720,8 @@ components:
           $ref: '#/components/schemas/AssignmentStatus'
         penalty:
           $ref: '#/components/schemas/Penalty'
+        acceptedAt:
+          $ref: '#/components/schemas/NullableInstant'
     StudentTaskPage:
       type: object
       required: [items, nextCursor, membershipState]
@@ -3786,6 +3866,8 @@ components:
           type: integer
           format: int32
           minimum: 2
+          maximum: 10000
+          description: Верхний предел держит суммы подтверждения (до 500 студентов) в `int32`.
     MyAward:
       type: object
       required: [level, amount]
@@ -4090,6 +4172,7 @@ components:
 
     PublicProfileTask:
       type: object
+      additionalProperties: false
       description: Задача в чужом профиле — без перехода к сдаче.
       required: [view, title, deadline, status, charged]
       properties:
@@ -4106,6 +4189,7 @@ components:
           format: int32
     OwnProfileTask:
       type: object
+      additionalProperties: false
       description: Задача в своём профиле — с переходом в задачу `/tasks/:assignmentId`.
       required: [view, assignmentId, title, deadline, status, charged]
       properties:
@@ -4124,6 +4208,7 @@ components:
           format: int32
     AdminProfileTask:
       type: object
+      additionalProperties: false
       description: Задача для администратора — со ссылкой «Материалы сдачи» `/admin/submissions/:assignmentId`.
       required: [view, assignmentId, title, deadline, status, charged]
       properties:
@@ -4154,7 +4239,8 @@ components:
 
     StudentProfile:
       type: object
-      required: [role, id, fullName, group, balances, activeTasks, completedTasks, completedTotal]
+      additionalProperties: false
+      required: [role, id, fullName, group, balances, activeTasks, completedTasks]
       properties:
         role:
           const: STUDENT
@@ -4173,13 +4259,9 @@ components:
             $ref: '#/components/schemas/ProfileTask'
         completedTasks:
           type: array
-          description: Последние 20 `ACCEPTED`, от недавних; полный список своих — `GET /me/assignments?view=completed`.
-          maxItems: 20
+          description: Все `ACCEPTED`, от недавно принятых; за семестр их десятки.
           items:
             $ref: '#/components/schemas/ProfileTask'
-        completedTotal:
-          type: integer
-          format: int32
     TeacherProfile:
       type: object
       required: [role, id, fullName, department]
