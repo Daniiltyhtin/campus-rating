@@ -241,7 +241,7 @@ execution: code
 - KTD12. **Файлы сдачи — на томе Docker через порт `FileStorage`.** Лимит 10 МБ и белый список типов (pdf, docx, zip, png, jpg). Порт позволяет позже заменить том на S3 без изменения доменного кода. Цена: том не разделяется между инстансами и не попадает в дамп базы.
 - KTD13. **Схема — Liquibase в формате formatted SQL.**
   - Changeset'ы лежат в `db/changelog/<module>/<yyyyMMddHHmm>-<desc>.sql` с id `<автор>:<метка>`. Master-changelog подключает папки модулей через `includeAll` в порядке зависимостей (`settings`, `directory`, `identity`, `ledger`, `checkpoint`, `activity`, `feed`, `poll`, `admin`, `notification`, затем `demo`). Новый файл master не трогает, поэтому параллельные ветки не конфликтуют. Liquibase применяет любой ещё не применённый changeset независимо от того, в каком порядке ветки влиты.
-  - Демо-данные помечены `context: demo`; compose запускает backend с этим контекстом, тесты — без него. Справочные данные — `runOnChange`. Демо-пароли видны только в README.
+  - Демо-данные помечены `context: demo`. Контексты задаются всегда: без контекста Liquibase выполняет все changeset'ы, включая `context: demo`. Базовая конфигурация — `default`, профиль `demo` (compose) — `default,demo`; тесты и `prod` идут с `default` и демо-данных не получают. Справочные данные — `runOnChange`. Демо-пароли видны только в README.
   - Применённый changeset не редактируется (контрольная сумма), исправление — новым changeset'ом. Тесты на Testcontainers и CI всегда накатывают changelog на пустую базу, поэтому сломанная история обнаруживается сразу, а не на чужой машине.
   - (session-settled: user-directed — chosen over Flyway: порядок применения не зависит от порядка слияния веток, контексты для сида, откат при необходимости.) Подробнее — ADR006 (`docs/spec/architecture-decisions/adr006-liquibase.md`).
 - KTD14. **Анонимность опроса на уровне схемы.** Голос анонимного опроса хранится без автора, а отдельная запись `PollParticipation` запрещает повторное голосование. Гарантия ограничена приложением (R35): API, логи и прикладная схема не связывают автора с выбором.
@@ -469,7 +469,7 @@ U15–U19 (P2–P4) по KTD20 вне графика: берутся, тольк
      - тело отвечает на «зачем, что изменилось, чем доказано» и ссылается на U-ID и R-ID;
      - ветка на юнит `u<N>-<slug>`, мелкие коммиты, слияние в `main` только через PR с ревью;
      - без трейлеров об авторстве ИИ: участие агентов фиксирует журнал.
-  4. `ub-mode` — принципы «сначала заставь работать, потом сделай правильно, следуй практике» с адаптацией под Java: crapper — CRAP по JaCoCo (`crap4java` или `tools/crap.py`), dryer — PMD CPD, mutator — PIT. Остальные принципы без изменений.
+  4. `ub-mode` — принципы «сначала заставь работать, потом сделай правильно, следуй практике» с адаптацией под Java: crapper — CRAP по JaCoCo (`tools/crap.mjs`), dryer — PMD CPD, mutator — PIT. Остальные принципы без изменений.
   5. `implement-unit`: прочитать юнит и его R/KTD/AE, сначала расширить контракт, писать test-first, прогнать ворота, подготовить запись журнала. `review-unit`: сверка diff с R/KTD и Files юнита, Boot-4-ловушки, границы модулей, тест «прошёл бы тест, если бы функция вернула пустоту».
   6. Роли:
      - Общие скиллы `review-unit` и `write-tests` — это роли для обеих CLI, в Codex они вызываются как `$review-unit` и `$write-tests`.
@@ -507,7 +507,7 @@ U15–U19 (P2–P4) по KTD20 вне графика: берутся, тольк
   - `backend/src/test/java/ru/campusrating/ModularityTest.java`, `backend/src/test/java/ru/campusrating/support/PostgresIntegrationTest.java`, `backend/src/test/java/ru/campusrating/SmokeIT.java`;
   - `frontend/package.json`, `frontend/vite.config.ts`, `frontend/src/main.tsx`, `frontend/src/app/AppShell.tsx`;
   - `e2e/package.json`, `e2e/playwright.config.ts`, `e2e/tests/smoke.spec.ts`;
-  - `tools/crap.py`, `.github/workflows/ci.yml`, `.gitignore`, `README.md`.
+  - `tools/crap.mjs`, `.github/workflows/ci.yml`, `.gitignore`, `README.md`.
 - **Approach:**
   1. Compose: `postgres` с healthcheck; `backend` с `depends_on: condition: service_healthy` и профилем `demo` (KTD22: контекст `demo` и `drop-first`); `web` (nginx отдаёт SPA и проксирует `/api`); том `uploads`; Mailpit нет, `EMAIL_VERIFICATION=off` задан явно (R48). Образы зафиксированы по версиям, сборка внутри Dockerfile (`npm ci`, `mvnw package`).
   2. Maven: Boot parent 4.1.x, BOM Modulith и Spring AI, плагины JaCoCo (check на `*.domain`), PMD CPD, PIT в профиле `quality`. Surefire для unit-тестов, Failsafe для `*IT`.
@@ -968,7 +968,7 @@ U15–U19 (P2–P4) по KTD20 вне графика: берутся, тольк
 | Ворота | Команда | Когда |
 |---|---|---|
 | Backend: unit, интеграция, модульность, контракт, JaCoCo, CPD | `./backend/mvnw -f backend/pom.xml verify` | каждый юнит с backend |
-| Backend: мутации и CRAP по `*.domain` | `./backend/mvnw -f backend/pom.xml -Pquality verify` и `python3 tools/crap.py backend/target/site/jacoco/jacoco.xml` | юниты U6–U9, U13, U16 и перед заморозкой |
+| Backend: мутации и CRAP по `*.domain` | `./backend/mvnw -f backend/pom.xml -Pquality verify` и `node tools/crap.mjs backend/target/site/jacoco/jacoco.xml` | юниты U6–U9, U13, U16 и перед заморозкой |
 | Frontend: lint, typecheck, unit | `npm --prefix frontend run check` | каждый юнит с frontend |
 | Frontend: сборка | `npm --prefix frontend run build` | каждый юнит с frontend |
 | Контракт ↔ типы | `npm --prefix frontend run api:gen` и пустой `git diff` | когда меняется `openapi.yaml` |

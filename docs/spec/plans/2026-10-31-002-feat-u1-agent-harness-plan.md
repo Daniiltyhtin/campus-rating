@@ -271,7 +271,7 @@ docs/
   - `tools/sync-skills.mjs`, `tools/check-agent-docs.mjs`, `tools/test/sync-skills.test.mjs`, `tools/test/check-agent-docs.test.mjs`.
 - **Approach:**
   1. Каждый скилл — цепочка «вход → шаги → результат → измеримая проверка». Frontmatter только `name` и `description` (переносимый формат).
-  2. `ub-mode` — принципы «сначала заставь работать, потом сделай правильно, следуй практике» с адаптацией инструментов в `references/java-tools.md`: crapper — `tools/crap.py` по JaCoCo XML (мастер-U2), dryer — PMD CPD, mutator — PIT в профиле `quality`. До мастер-U2 эти команды помечены как «появятся в U2».
+  2. `ub-mode` — принципы «сначала заставь работать, потом сделай правильно, следуй практике» с адаптацией инструментов в `references/java-tools.md`: crapper — `tools/crap.mjs` по JaCoCo XML (мастер-U2; Node вместо Python — KTD9 плана U2), dryer — PMD CPD, mutator — PIT в профиле `quality`. До мастер-U2 эти команды помечены как «появятся в U2».
   3. `implement-unit`:
      - проверить готовность юнита по `plan-readiness.md`: достаточно ли юнита и его ссылок, чтобы не додумывать продуктовое поведение; если нет — остановиться с вопросом;
      - прочитать юнит и его R/KTD/AE (по карте заголовков, не весь план) и построить цепочку «требование → пример или граница → критерий → проверка» по `requirements-checklist.md`, используя существующие R/AE, без параллельной нумерации;
