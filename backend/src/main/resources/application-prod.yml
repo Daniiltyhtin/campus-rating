@@ -1,0 +1,4 @@
+spring:
+  liquibase:
+    contexts: default
+    drop-first: false

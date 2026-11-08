@@ -30,7 +30,9 @@ MVP университетской соцсети: академический р
 | Тесты обвязки | `node --test "tools/test/*.test.mjs"` |
 | Проверка обвязки | `node tools/check-agent-docs.mjs` |
 | Синхронизация скиллов | `node tools/sync-skills.mjs` |
-| Backend, frontend, e2e, весь стек | появятся в мастер-U2, см. Verification Contract мастер-плана |
+| Backend: проверки и CRAP | `./backend/mvnw -f backend/pom.xml verify` и `node tools/crap.mjs backend/target/site/jacoco/jacoco.xml` |
+| Backend: PIT | `./backend/mvnw -f backend/pom.xml -Pquality verify` |
+| Frontend, e2e, весь стек | появятся в мастер-U2, см. Verification Contract мастер-плана |
 
 ## Цикл работы над юнитом
 
