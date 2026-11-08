@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-campus_rating}
+      POSTGRES_USER: ${POSTGRES_USER:-campus_rating}
+      # Public credentials for the disposable local demo, without a required .env.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-campus-demo}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  backend:
+    build: ./backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-campus_rating}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-campus_rating}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-campus-demo}
+      SPRING_PROFILES_ACTIVE: demo
+      EMAIL_VERIFICATION: "off"
+    ports:
+      - "127.0.0.1:8081:8080"
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 30s
+
+  web:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+
+volumes:
+  postgres-data:
+  uploads:
