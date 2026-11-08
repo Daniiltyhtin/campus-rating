@@ -217,6 +217,7 @@ backend/src/test/java/ru/campusrating/ContractCompatibilityIT.java   # U7
 | `openapi-typescript` 7.13 не работает с TypeScript 6 | KTD16: `overrides`, запасной изолированный запуск |
 | `openapi-diff-core` не ловит изменения схем 3.1 | KTD14: пробные сравнения до выбора, иначе стоп |
 | Ресурсы позднее разрастаются (U13–U19) и ломают имена | Правило KTD2 «новый код — правкой контракта», пространства путей по модулям, `x-status` |
+| Единый `ProblemDetail` (KTD2, мастер-U3) меняет ответ на неизвестный путь `/api/…`: `application/problem+json` с `instance` вместо `path` | `SmokeIT#missingApiReturnsJsonError` мастер-U2 ждёт `application/json` и `path`; юнит, включающий `ProblemDetail` в backend, правит его в том же PR (e2e-смоук мастер-U2 проверяет только JSON и `status`) |
 | Шов нарушает направление зависимостей модулей мастер-плана | KTD15: проверка каждой сигнатуры по диаграмме; `ModularityTest` мастер-U2 ловит нарушение в коде |
 
 ---
