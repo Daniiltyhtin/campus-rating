@@ -32,3 +32,9 @@ Playwright против полного стека из `docker-compose.e2e.yml` 
 6. После прогона, в том числе при падении: `docker compose -p campus-e2e -f docker-compose.yml -f docker-compose.e2e.yml down -v`.
 
 По умолчанию `baseURL` — `http://localhost:8090`; переопределение — `E2E_BASE_URL`. Проекты Chromium — 360×800 и 1280×800. Playwright стеком не управляет. U2-смоук проверяет заглушку входа без аккаунтов; доменные сценарии и стабильные ID добавит мастер-U12. Скриншоты входа сохраняются в `test-results/`, HTML-отчёт — в `playwright-report/`, trace — при падении.
+
+## Уроки
+
+Правила — как в разделе «Уроки» корневого `AGENTS.md`.
+
+- Typecheck и lint e2e были собраны из флагов CLI с тремя правилами, чтобы не выходить за `Files`, и не ловили забытый `await` → ревьюер проверил удалением `await` → проверки — через `e2e/tsconfig.json` и `e2e/eslint.config.js` (`recommendedTypeChecked`); нужный для проверки смежный конфиг добавляется с пометкой, а не обходится флагами.
