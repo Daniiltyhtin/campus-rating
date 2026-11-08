@@ -249,3 +249,17 @@
 - **Урок ревью:** первый ревьюер проверял юниты по одному и пропустил, как тест U1 поведёт себя в мастер-U4 → нашла модель, смотревшая PR целиком против плана → в ревью спрашивать «что сломает этот тест или конфиг в следующих юнитах» (`backend/src/test/java/ru/campusrating/`); утверждения ревьюера-модели о поведении библиотек проверять запуском или по байткоду.
 - **Кругов ревью:** 2 (ревьюер по юнитам, затем ревью PR другой моделью).
 - **Коммит / PR:** ветка `u2-backend`, коммиты `56e5d92`, `dfccbe0`, `3171440`, `52bdd6c`, `79c7aab`, `0fc0f6b`, правки ревью — `de09afc`.
+
+### 2026-11-08 — U2, PR 3: Dockerfile'ы, compose и CI `stack` (U8–U9 плана U2)
+
+- **Кто / агент / модель:** Даниил / Codex (реализация, `implement-unit`) и Claude Code (ревью `review-unit`, коммиты) / gpt-6.1-sol medium
+- **Поручение:** юниты U8 (Dockerfile'ы, compose, e2e-override) и U9 (CI `stack`, README, онбординг) плана `docs/spec/plans/2026-11-07-001-feat-u2-skeleton-plan.md`.
+- **Результат с доказательствами:** ревьюер сам поднимал стек в Docker. `docker compose up --build --wait` без `.env` — три сервиса healthy; `/login`, `/tasks` — SPA; `/api/v1/does-not-exist` — 404 `application/json` от backend; `/actuator/health` — HTML SPA; `/assets/does-not-exist.js` — 404; порты только `127.0.0.1`, `EMAIL_VERIFICATION=off`; запись в `/app/uploads` от непривилегированного пользователя; таблица `u2_probe` исчезает после `docker compose restart backend`, тома на месте; стек `campus-e2e` поднимается рядом на 8090 с `CAMPUS_PENALTY_*` 4s/1s; после правки `src` backend пересобирается без загрузки зависимостей (`package` 2,3 с). HTTP-скрипт задания `stack` на локальном стеке — passed; `actionlint` — без замечаний; `check-agent-docs` — passed; `node --test` — 140/140; чистый клон → `docker compose up` → `/login` 200.
+- **Не проверено:** задание `stack` в GitHub Actions и кэш `type=gha` — после push; запуск на Windows/WSL2.
+- **Неудачные попытки:** `codex exec resume --last --sandbox …` — у `resume` нет флага `--sandbox`; песочница задаётся через `-c sandbox_mode=workspace-write`.
+- **Ошибка агента:**
+  - Codex (U8): сборка образа backend падала «Failed to validate Maven distribution SHA-256» → ревьюер поймал первой же сборкой в Docker: в `eclipse-temurin:25-jdk` нет `unzip`, Wrapper (`only-script`) переключается на `.tar.gz`, а `distributionSha256Sum` посчитан для `.zip`; на хосте и в CI `unzip` есть, Maven уже в кэше, поэтому ошибка не видна → `unzip` в стадии сборки, пункт в `docs/onboarding.md` для Linux/WSL.
+  - Ревьюер: временная правка `sed` для проверки вставила строку в обе стадии Dockerfile → заметил по `apt-get: not found` в alpine-стадии → правка сделана скриптом по одной стадии и откачена до передачи замечаний.
+- **Урок:** зелёный `./mvnw` на машине разработчика не доказывает сборку в чистом окружении: Wrapper берёт Maven из кэша, а состав инструментов образа другой → сборку образа и подъём стека проверять с нуля (`backend/Dockerfile`, `docs/onboarding.md`).
+- **Кругов ревью:** 1 (U8 — замечания: `unzip`, слой зависимостей, 404 для `/assets/`; U9 — без замечаний).
+- **Коммит / PR:** ветка `u2c-compose`, коммиты `2e4b768`, `1cc79ff`.
