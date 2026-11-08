@@ -34,7 +34,7 @@ test('valid docs and CRLF normalization; templates excluded', async t => {
 });
 for (const [label, file, content, diagnostic] of [
   ['drift', '.claude/skills/demo/SKILL.md', 'manual', /\.claude.*SKILL.md/],
-  ['budget', 'AGENTS.md', 'x'.repeat(11 * 1024), /budget/i],
+  ['budget', 'AGENTS.md', 'x'.repeat(13 * 1024), /budget/i],
   ['import', 'CLAUDE.md', '# Empty', /CLAUDE.md/],
   ['name', '.agents/skills/demo/SKILL.md', '---\nname: wrong\ndescription: Test\n---\n', /name/],
   ['duplicate', '.agents/skills/other/SKILL.md', '---\nname: demo\ndescription: Test\n---\n', /duplicate/i],
