@@ -263,3 +263,17 @@
 - **Урок:** зелёный `./mvnw` на машине разработчика не доказывает сборку в чистом окружении: Wrapper берёт Maven из кэша, а состав инструментов образа другой → сборку образа и подъём стека проверять с нуля (`backend/Dockerfile`, `docs/onboarding.md`).
 - **Кругов ревью:** 1 (U8 — замечания: `unzip`, слой зависимостей, 404 для `/assets/`; U9 — без замечаний).
 - **Коммит / PR:** ветка `u2c-compose`, коммиты `2e4b768`, `1cc79ff`.
+
+### 2026-11-08 — U2, PR 4: пересоздание в demo, порядок changeset'ов, e2e-смоук (U10–U12 плана U2)
+
+- **Кто / агент / модель:** Даниил / Codex (реализация, `implement-unit`) и Claude Code (ревью `review-unit`, коммиты) / gpt-6.1-sol medium
+- **Поручение:** юниты U10 (`DemoRecreateIT`), U11 (`ChangelogOrderIT`), U12 (e2e-смоук, задание CI `e2e` вместо `stack`) плана `docs/spec/plans/2026-11-07-001-feat-u2-skeleton-plan.md`.
+- **Результат с доказательствами:** ревьюер на хосте с Docker: `./backend/mvnw -f backend/pom.xml clean verify` — `SmokeIT` 4/4, `ChangelogOrderIT` 2/2, `DemoRecreateIT` 2/2, JaCoCo, CPD, CRAP; негативные проверки — `demo` без `drop-first` и `prod` с `drop-first` роняют `DemoRecreateIT`, master-changelog без папки `settings` роняет оба случая `ChangelogOrderIT`; `-Pquality verify` — PIT-смоук 2/2 убиты, пакеты `ledger`, `checkpoint`, `activity` без мутаций; стек `campus-e2e` (`down -v`, `up -d --build --wait`) и `npm --prefix e2e test` — 4/4 на 360 и 1280 px; `/actuator`, временно открытый через nginx, роняет 2 теста; `npm --prefix e2e run check` — ok, без `await` перед `expect` — ошибка `no-floating-promises`; `check-agent-docs` — passed.
+- **Не проверено:** задание `e2e` в GitHub Actions (bake с `!reset`/`!override` из override-файла, загрузка отчёта) — на PR; запуск на Windows/WSL2.
+- **Неудачные попытки:** нет.
+- **Ошибка агента:**
+  - Codex (U12): чтобы не выходить за `Files`, собрал typecheck и lint e2e из флагов командной строки с тремя правилами — забытый `await` не ловился (проверено: без `await` lint возвращал 0) → ревьюер на чтении diff → вспомогательные `e2e/tsconfig.json` и `e2e/eslint.config.js` с `recommendedTypeChecked`.
+  - Ревьюер: первый прогон e2e упал 4/4 — команда compose была в переменной оболочки, zsh не разбил её на слова, стек не поднялся → заметил по `command not found` в начале вывода → команда обёрнута в функцию, повтор 4/4.
+- **Урок:** запрет «не выходить за `Files`» не должен ослаблять проверку: если для неё нужен смежный конфиг, агент добавляет его с пометкой, а не обходит флагами (`.agents/skills/implement-unit/SKILL.md`, шаг 6). Красный итог тоже проверять по причине: падение без стека — не доказательство (`REVIEWING.md`, п. 5–6).
+- **Кругов ревью:** 1
+- **Коммит / PR:** ветка `u2d-tail`, коммиты `4908d2a`, `f0df063`, `e234670`.
