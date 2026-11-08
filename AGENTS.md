@@ -1,6 +1,6 @@
 # Campus Rating — инструкции для агентов
 
-MVP университетской соцсети: академический рейтинг (АР), баллы учебной (БУА) и общественной (БОА) активности, ленты. Backend — Java 25 / Spring Boot 4.1 / PostgreSQL, frontend — React 19 / Vite / Mantine, e2e — Playwright, запуск — `docker compose up`.
+MVP университетской соцсети: академический рейтинг (АР), баллы учебной (БУА) и общественной (БОА) активности, ленты. Backend — Java 25 / Spring Boot 4.1 / PostgreSQL, frontend — React 19 / Vite / Mantine, e2e — Playwright.
 
 ## С чего начинать
 
@@ -33,7 +33,8 @@ MVP университетской соцсети: академический р
 | Backend: проверки и CRAP | `./backend/mvnw -f backend/pom.xml verify` и `node tools/crap.mjs backend/target/site/jacoco/jacoco.xml` |
 | Backend: PIT | `./backend/mvnw -f backend/pom.xml -Pquality verify` |
 | Frontend | `npm --prefix frontend run check`, затем `build` |
-| e2e, compose | появятся в мастер-U2 |
+| Весь стек | `docker compose up -d --build --wait` |
+| e2e | хвост мастер-U2 |
 
 ## Цикл работы над юнитом
 

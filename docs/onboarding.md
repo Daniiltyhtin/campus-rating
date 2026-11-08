@@ -9,8 +9,11 @@
 | Git | любая свежая | клон и ветки |
 | Docker с Compose v2 | Docker Desktop или Engine | `docker compose up` поднимает весь стек |
 | JDK | 25 | backend (Maven Wrapper качает Maven сам) |
+| unzip (Linux/WSL) | из пакетного менеджера ОС | Maven Wrapper проверяет SHA-256 ZIP-дистрибутива |
 | Node.js | ≥ 22.22 (`.nvmrc`) | frontend, e2e, служебные скрипты `tools/` |
 | Агент | Claude Code или Codex CLI | работа по скиллам репозитория |
+
+На Linux/WSL для локального `./backend/mvnw` нужен `unzip` (например, `sudo apt-get install unzip` в Ubuntu). Без него Wrapper переключается на `.tar.gz`, а зафиксированный SHA-256 рассчитан для `.zip`: запуск завершится ошибкой `Failed to validate Maven distribution SHA-256`. В Dockerfile `unzip` устанавливается автоматически.
 
 Windows:
 
@@ -23,10 +26,16 @@ Windows:
 ```bash
 git clone <url репозитория> && cd campus-rating
 node tools/check-agent-docs.mjs        # обвязка агентов в порядке
-docker compose up                       # стек появляется вместе с U2
+docker compose up
 ```
 
-После U2 приложение открывается на `http://localhost:8080`. Стенд запускается в режиме `demo`: синтетические данные, база пересоздаётся при каждом запуске, подтверждение email выключено (`EMAIL_VERIFICATION=off`). Демо-аккаунты — в `README.md`. Команды отдельных частей (backend, frontend, e2e) — в `AGENTS.md`, раздел «Команды», и в Verification Contract мастер-плана.
+`.env` не нужен; Docker сам собирает образы. После готовности сервисов приложение открывается на `http://localhost:8080` со статичной заглушкой входа. Демо-аккаунты появятся в мастер-U5, синтетический сид — в мастер-U4.
+
+Стенд запускается в режиме `demo`: база пересоздаётся при каждом старте backend, подтверждение email явно выключено (`EMAIL_VERIFICATION=off`). SMTP и Mailpit не нужны. Том загрузок сохраняется; его очистка в `demo` появится в мастер-U7.
+
+Порты привязаны только к `127.0.0.1`: web — `8080`, backend — `8081`, PostgreSQL — `5433`. Для разработки frontend выполните `npm --prefix frontend ci` и `npm --prefix frontend run dev`: Vite проксирует `/api` на `http://localhost:8081`. Команды отдельных частей — в `AGENTS.md` и Verification Contract мастер-плана.
+
+Для запуска в фоне с ожиданием готовности: `docker compose up -d --build --wait`; состояние — `docker compose ps`, логи — `docker compose logs`. Остановка `docker compose down` сохраняет тома, `docker compose down -v` удаляет их вместе с БД и загрузками. Сохранённый том не защищает данные от пересоздания схемы при следующем старте backend в `demo`.
 
 ## Что прочитать
 
