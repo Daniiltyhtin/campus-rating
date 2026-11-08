@@ -61,3 +61,9 @@ Java 25, Spring Boot 4.1, Spring Modulith 2.1, PostgreSQL 18, Liquibase, Maven (
 | Один модульный тест | `./backend/mvnw -f backend/pom.xml -Dtest=MoscowTimeTest test` |
 
 Тесты `*IT` требуют Docker. Профиль `quality` (PIT) запускается локально ревьюером, в CI не используется. На Windows — `backend/mvnw.cmd`.
+
+## Уроки
+
+Правила — как в разделе «Уроки» корневого `AGENTS.md`.
+
+- Модель данных считала только стоимость записи → человек спросил про 1000+ проводок на студента → сразу оценивать самое частое чтение (списки, рейтинги), а не только запись.
