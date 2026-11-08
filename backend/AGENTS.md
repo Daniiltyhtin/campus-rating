@@ -61,3 +61,9 @@ Java 25, Spring Boot 4.1, Spring Modulith 2.1, PostgreSQL 18, Liquibase, Maven (
 | Один модульный тест | `./backend/mvnw -f backend/pom.xml -Dtest=MoscowTimeTest test` |
 
 Тесты `*IT` требуют Docker. Профиль `quality` (PIT) запускается локально ревьюером, в CI не используется. На Windows — `backend/mvnw.cmd`.
+
+## Уроки
+
+Правила — как в разделе «Уроки» корневого `AGENTS.md`.
+
+- Сборка образа падала «Failed to validate Maven distribution SHA-256»: в `eclipse-temurin:25-jdk` нет `unzip`, Wrapper берёт `.tar.gz`, а `distributionSha256Sum` посчитан для `.zip`; на хосте Maven уже в кэше, ошибка не видна → поймал ревьюер первой сборкой в Docker → в `backend/Dockerfile` `unzip` ставится в стадии сборки; сборку образа и стек проверять с нуля, а не по зелёному `./mvnw` на хосте.
