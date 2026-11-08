@@ -39,6 +39,7 @@ class ChangelogOrderIT extends PostgresIntegrationTest {
     @ValueSource(booleans = {true, false})
     void appliesBranchesInEitherMergeOrderAndFiltersDemo(boolean lateFirst) throws Exception {
         var databaseName = lateFirst ? "u2_order_late_first" : "u2_order_early_first";
+        admin.execute("drop database if exists " + databaseName);
         admin.execute("create database " + databaseName);
         var baseUrl = connectionDetails.getJdbcUrl();
         var url = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1) + databaseName;
@@ -86,7 +87,7 @@ class ChangelogOrderIT extends PostgresIntegrationTest {
                 continue;
             }
             var location = resource.getURL().toString();
-            var relative = location.substring(location.indexOf("db/changelog/") + "db/changelog/".length());
+            var relative = location.substring(location.lastIndexOf("db/changelog/") + "db/changelog/".length());
             var target = temporary.resolve(relative);
             Files.createDirectories(target.getParent());
             try (var input = resource.getInputStream()) {

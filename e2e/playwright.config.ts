@@ -6,7 +6,7 @@ export default defineConfig({
   retries: 0,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:8090',
+    baseURL: process.env.E2E_BASE_URL ?? 'http://127.0.0.1:8090',
     browserName: 'chromium',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',

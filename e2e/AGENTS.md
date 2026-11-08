@@ -31,7 +31,7 @@ Playwright против полного стека из `docker-compose.e2e.yml` 
 5. `npm --prefix e2e test`.
 6. После прогона, в том числе при падении: `docker compose -p campus-e2e -f docker-compose.yml -f docker-compose.e2e.yml down -v`.
 
-По умолчанию `baseURL` — `http://localhost:8090`; переопределение — `E2E_BASE_URL`. Проекты Chromium — 360×800 и 1280×800. Playwright стеком не управляет. U2-смоук проверяет заглушку входа без аккаунтов; доменные сценарии и стабильные ID добавит мастер-U12. Скриншоты входа сохраняются в `test-results/`, HTML-отчёт — в `playwright-report/`, trace — при падении.
+По умолчанию `baseURL` — `http://127.0.0.1:8090`; переопределение — `E2E_BASE_URL`. Проекты Chromium — 360×800 и 1280×800. Playwright стеком не управляет. U2-смоук проверяет заглушку входа без аккаунтов; доменные сценарии и стабильные ID добавит мастер-U12. Скриншоты входа сохраняются в `test-results/`, HTML-отчёт — в `playwright-report/`, trace — при падении.
 
 ## Уроки
 

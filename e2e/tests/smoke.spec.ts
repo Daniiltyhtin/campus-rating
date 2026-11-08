@@ -20,6 +20,7 @@ test('U2: nginx сохраняет API и закрывает actuator (R6, KTD11
   const html = await index.text();
   expect(html).toMatch(/<!doctype html>/i);
 
+  // С Spring Security мастер-U5 без сессии будет 401: перевести проверку на публичный GET /api/v1/auth/config из контракта.
   const missing = await request.get('/api/v1/does-not-exist');
   expect(missing.status()).toBe(404);
   // Boot error JSON now, application/problem+json after master-U3 ProblemDetail.
