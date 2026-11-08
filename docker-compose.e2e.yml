@@ -1,3 +1,5 @@
+name: campus-e2e
+
 services:
   postgres:
     ports: !reset []

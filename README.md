@@ -20,7 +20,7 @@ docker compose up
 |---|---|---|
 | web | `http://localhost:8080` | SPA и прокси `/api/` на backend |
 | backend | `http://localhost:8081` | API для разработки; Vite проксирует сюда `/api` |
-| PostgreSQL | `localhost:5433` | Подключение локальных инструментов к БД |
+| PostgreSQL | `127.0.0.1:5433` | Подключение локальных инструментов к БД |
 
 Для разработки frontend: `npm --prefix frontend ci`, затем `npm --prefix frontend run dev`. Локальный Vite использует backend запущенного стека. Необязательные параметры БД описаны в `.env.example`.
 
