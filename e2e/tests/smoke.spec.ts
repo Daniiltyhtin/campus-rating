@@ -22,8 +22,9 @@ test('U2: nginx сохраняет API и закрывает actuator (R6, KTD11
 
   const missing = await request.get('/api/v1/does-not-exist');
   expect(missing.status()).toBe(404);
-  expect(missing.headers()['content-type']).toMatch(/^application\/json/);
-  expect(await missing.json()).toMatchObject({ status: 404, path: '/api/v1/does-not-exist' });
+  // Boot error JSON now, application/problem+json after master-U3 ProblemDetail.
+  expect(missing.headers()['content-type']).toMatch(/^application\/(problem\+)?json/);
+  expect(await missing.json()).toMatchObject({ status: 404 });
 
   const actuator = await request.get('/actuator/health');
   expect(actuator.status()).toBe(200);
