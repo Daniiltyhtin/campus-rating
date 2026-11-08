@@ -10,7 +10,7 @@
 | Docker с Compose v2 | Docker Desktop или Engine | `docker compose up` поднимает весь стек |
 | JDK | 25 | backend (Maven Wrapper качает Maven сам) |
 | Node.js | ≥ 22.22 (`.nvmrc`) | frontend, e2e, служебные скрипты `tools/` |
-| Агент | Claude Code или Codex CLI | работа по скиллам репозитория |
+| Агент | любая CLI с адаптером в `docs/agent-process.md` (сейчас Claude Code или Codex) | работа по скиллам репозитория |
 
 Windows:
 
@@ -41,7 +41,7 @@ docker compose up                       # стек появляется вмес
 1. Юниты распределены по дорожкам A и B в мастер-плане (раздел «Sequencing and Team Lanes»); issue не заводятся — какой юнит берёшь, скажи команде.
 2. Ветка `u<N>-<кратко>` от свежего `main`.
 3. Крупный юнит начинается с плана в `docs/spec/plans/` (список крупных — в мастер-плане, раздел «Implementation Units»).
-4. Работа по скиллам из `.agents/skills/` (в Claude Code — `/implement-unit`, `/review-unit`, `/agent-log`):
+4. Работа по скиллам из `.agents/skills/` (как вызвать скилл в своей CLI — `docs/agent-process.md`, «Адаптеры CLI»):
    - `write-tests` — приёмочные тесты до реализации, отдельной сессией;
    - `implement-unit` — реализация: контракт, test-first, ворота качества;
    - `review-unit` — независимое ревью по `REVIEWING.md`;
