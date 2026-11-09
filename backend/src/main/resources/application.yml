@@ -1,6 +1,11 @@
 spring:
   application:
     name: campus-rating
+  modulith:
+    events:
+      jdbc:
+        schema-initialization:
+          enabled: false
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.yaml
     contexts: default
@@ -12,3 +17,7 @@ campus:
     default-step: ${CAMPUS_PENALTY_DEFAULT_STEP:20}
     default-interval: ${CAMPUS_PENALTY_DEFAULT_INTERVAL:1m}
     poll-period: ${CAMPUS_PENALTY_POLL_PERIOD:1s}
+  semester:
+    accrual: ${CAMPUS_SEMESTER_ACCRUAL:200}
+  budget:
+    monthly-limit: ${CAMPUS_BUDGET_MONTHLY_LIMIT:1000}

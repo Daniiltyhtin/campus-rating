@@ -35,7 +35,7 @@ Java 25, Spring Boot 4.1, Spring Modulith 2.1, PostgreSQL 18, Liquibase, Maven (
 ## Код
 
 - Время — только инжектируемый `Clock`, никаких `now()` без часов.
-- Имена настроек фиксированы с мастер-U2: `campus.mail.email-verification` ← `EMAIL_VERIFICATION` (`required | off`, без значения по умолчанию); `campus.penalty.default-step` ← `CAMPUS_PENALTY_DEFAULT_STEP` (20), `campus.penalty.default-interval` ← `CAMPUS_PENALTY_DEFAULT_INTERVAL` (`1m`), `campus.penalty.poll-period` ← `CAMPUS_PENALTY_POLL_PERIOD` (`1s`). Новые имена для тех же значений не заводить.
+- Настройки: `campus.mail.email-verification` ← `EMAIL_VERIFICATION` (`required | off`, без умолчания); `campus.penalty.default-step` ← `CAMPUS_PENALTY_DEFAULT_STEP` (20), `campus.penalty.default-interval` ← `CAMPUS_PENALTY_DEFAULT_INTERVAL` (`1m`), `campus.penalty.poll-period` ← `CAMPUS_PENALTY_POLL_PERIOD` (`1s`), `campus.semester.accrual` ← `CAMPUS_SEMESTER_ACCRUAL` (200), `campus.budget.monthly-limit` ← `CAMPUS_BUDGET_MONTHLY_LIMIT` (1000). Имена не менять.
 - Бизнес-правила (штраф, срезки, бюджет, статусы) — чистые функции в `domain`, без Spring и базы.
 - DTO проверяются Bean Validation на входе и разбираются в доменные типы в контроллере.
 - Ошибки — RFC 7807 `ProblemDetail` с полем `code` (`BUDGET_EXCEEDED`, `NOT_ENROLLED`, `INVALID_STATE`).
