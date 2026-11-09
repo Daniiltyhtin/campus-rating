@@ -12,6 +12,7 @@ info:
     - Идентификаторы — `int64`, баллы — целые, время — `date-time` в UTC, длительность — целые секунды.
     - Отсутствующее значение — `null` (тип `[T, "null"]`), а не пропуск поля.
     - Ошибки — `application/problem+json` со схемой `Problem` и полем `code` из закрытого перечня `ProblemCode`.
+      Любая операция может ответить `500 INTERNAL_ERROR`; в операциях он не перечисляется.
     - Сессия — cookie; изменяющие запросы несут CSRF-заголовок (схемы безопасности `session` и `csrf`).
       Токен выдаёт `GET /api/v1/auth/csrf`: фронт вызывает его при старте и после входа, выхода и смены пароля.
     - Пока у пользователя `mustChangePassword`, все непубличные операции, кроме `GET /auth/me`,
@@ -3044,6 +3045,7 @@ components:
         | `STUDENT_NOT_ELIGIBLE` | 422 | студент вне целевых групп или с `PENDING`-членством |
         | `MEMBERSHIP_NOT_ACTIVE` | 422 | действие студента требует `ACTIVE`-членства |
         | `ENROLLMENT_CLOSED` | 422 | запись или отмена после времени начала активности |
+        | `INTERNAL_ERROR` | 500 | непредвиденная ошибка сервера; подробности только в логе backend |
       enum:
         - UNAUTHENTICATED
         - INVALID_CREDENTIALS
@@ -3066,6 +3068,7 @@ components:
         - STUDENT_NOT_ELIGIBLE
         - MEMBERSHIP_NOT_ACTIVE
         - ENROLLMENT_CLOSED
+        - INTERNAL_ERROR
 
     Problem:
       type: object

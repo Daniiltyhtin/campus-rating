@@ -7,11 +7,15 @@ import java.util.Collection;
 import java.util.Map;
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -19,6 +23,8 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
     @ExceptionHandler(ApiException.class)
     public ProblemDetail api(ApiException exception, HttpServletRequest request) {
         var problem = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(exception.code().status()), exception.getMessage());
@@ -39,11 +45,17 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail bodyValidation(MethodArgumentNotValidException exception, HttpServletRequest request) {
-        var errors = exception.getBindingResult().getFieldErrors().stream()
+        var result = exception.getBindingResult();
+        var fields = result.getFieldErrors().stream()
                 .map(error -> new FieldError(error.getField(), validationCode(error.getCode(), error.contains(ConstraintViolation.class)
                         ? error.unwrap(ConstraintViolation.class) : null),
-                        error.getDefaultMessage())).toList();
-        return validation(errors, request);
+                        error.getDefaultMessage()));
+        // Ограничение уровня класса относится ко всему объекту: поле — имя объекта, чтобы fieldErrors не был пуст.
+        var global = result.getGlobalErrors().stream()
+                .map(error -> new FieldError(error.getObjectName(), validationCode(error.getCode(), error.contains(ConstraintViolation.class)
+                        ? error.unwrap(ConstraintViolation.class) : null),
+                        error.getDefaultMessage()));
+        return validation(Stream.concat(fields, global).toList(), request);
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
@@ -70,6 +82,16 @@ public class ApiExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public ProblemDetail missingResource(NoResourceFoundException exception, HttpServletRequest request) {
         return api(new ApiException(ProblemCode.NOT_FOUND, "Ресурс не найден"), request);
+    }
+
+    // Исключения Spring MVC и Spring Security идут дальше: их статусы отдают Spring и SecurityConfig (мастер-U5).
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail unexpected(Exception exception, HttpServletRequest request) throws Exception {
+        if (exception instanceof ErrorResponse || exception.getClass().getName().startsWith("org.springframework.security.")) {
+            throw exception;
+        }
+        log.error("Unhandled exception on {} {}", request.getMethod(), request.getRequestURI(), exception);
+        return api(new ApiException(ProblemCode.INTERNAL_ERROR, "Внутренняя ошибка сервера"), request);
     }
 
     private ProblemDetail validation(List<FieldError> errors, HttpServletRequest request) {
