@@ -37,6 +37,7 @@ export function AppShell({ session }: { session: Session }) {
               to={item.to}
               label={item.label}
               active={isActive(pathname, item.to)}
+              aria-current={isActive(pathname, item.to) ? 'page' : undefined}
             />
           ))}
         </MantineAppShell.Navbar>
@@ -50,6 +51,7 @@ export function AppShell({ session }: { session: Session }) {
                 to={item.to}
                 label={item.label}
                 active={isActive(pathname, item.to)}
+                aria-current={isActive(pathname, item.to) ? 'page' : undefined}
                 h="100%"
                 px={2}
                 styles={{ label: { textAlign: 'center', fontSize: 'var(--mantine-font-size-xs)' } }}
