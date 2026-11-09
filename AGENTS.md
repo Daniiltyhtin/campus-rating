@@ -32,7 +32,8 @@ MVP университетской соцсети: академический р
 | Синхронизация скиллов | `node tools/sync-skills.mjs` |
 | Backend: проверки и CRAP | `./backend/mvnw -f backend/pom.xml verify` и `node tools/crap.mjs backend/target/site/jacoco/jacoco.xml` |
 | Backend: PIT | `./backend/mvnw -f backend/pom.xml -Pquality verify` |
-| Frontend, e2e, весь стек | появятся в мастер-U2, см. Verification Contract мастер-плана |
+| Frontend | `npm --prefix frontend run check`, затем `build` |
+| e2e, compose | появятся в мастер-U2 |
 
 ## Цикл работы над юнитом
 

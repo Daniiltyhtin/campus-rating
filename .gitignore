@@ -8,6 +8,11 @@ node_modules/
 playwright-report/
 test-results/
 coverage/
+blob-report/
+
+# Tool caches
+*.tsbuildinfo
+.eslintcache
 
 # Local environment and secrets
 .env
