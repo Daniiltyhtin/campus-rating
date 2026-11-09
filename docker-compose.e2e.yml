@@ -1,0 +1,13 @@
+name: campus-e2e
+
+services:
+  postgres:
+    ports: !reset []
+  backend:
+    ports: !reset []
+    environment:
+      CAMPUS_PENALTY_DEFAULT_INTERVAL: 4s
+      CAMPUS_PENALTY_POLL_PERIOD: 1s
+  web:
+    ports: !override
+      - "127.0.0.1:8090:8080"
