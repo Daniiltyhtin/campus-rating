@@ -2387,7 +2387,7 @@ paths:
 
         Доступ: только администратор.
       x-roles: [ADMIN]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       responses:

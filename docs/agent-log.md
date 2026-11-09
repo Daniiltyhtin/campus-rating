@@ -397,3 +397,15 @@
 - **Урок:** нет новых: уроки U2 внесены в своих PR (`backend/AGENTS.md`, `frontend/AGENTS.md`, `e2e/AGENTS.md`, `REVIEWING.md`, «Уроки обвязки» в `docs/agent-process.md`). Проверка чистого клона ничего не нашла, потому что PR 3 уже собирал образы и поднимал стек с нуля.
 - **Кругов ревью:** — (итоговая запись; ревью — по PR выше).
 - **Коммит / PR:** ветка `process-u2-summary`.
+
+### 2026-11-09 — U6: журнал проводок (U2–U5 плана U6)
+
+- **Кто / агент / модель:** Даниил / Codex (реализация, `implement-unit`) и Claude Code (ревью `review-unit`, коммиты); негативный сценарий ревью — Antigravity / gpt-6.1-sol high, gemini-3.8-flash-high
+- **Поручение:** U2–U5 плана `docs/spec/plans/2026-11-09-001-feat-u6-ledger-plan.md`: правила суммы и проверки элемента, схема и `post`, чтение, сверка; контроллер истории не делается до ответа на Q1.
+- **Результат с доказательствами:** `BalanceRules`, `PostingRules`, `LedgerCursor` в `ledger.domain`; changeset `u6:ledger` (`ledger_entry`, `ledger_balance` с `CHECK` АР 0…1000); `LedgerService` — порядок внутри `post` по KTD3 плана, `MANDATORY`; `history`, `awards`, `reconcile`; `GET /api/v1/admin/ledger/reconciliation` (`x-status: implemented`). Ревьюер на хосте с Docker: `./backend/mvnw -f backend/pom.xml clean verify` — 123 теста, 0 ошибок, `LedgerIT` 16/16; `-Pquality verify` — PIT `ledger.domain` 36/36 убиты, JaCoCo домена 100%, CRAP ≤ 8; линтер контракта — valid; demo-стек — сверка `checkedPairs: 0`, `mismatches: []`. Негативные проверки: без `for update` падают 3 теста гонок; учебный diff с прямым SQL в `ledger_balance` вслепую дан второй модели — `request changes` со ссылкой на мастер-KTD3 и `backend/AGENTS.md` (DoD мастер-U6).
+- **Не проверено:** защита эндпоинта сверки ролью `ADMIN` — `SecurityConfig` мастер-U5; Q1 — за вторым разработчиком.
+- **Неудачные попытки:** нет.
+- **Ошибка агента:** Codex: тесты гонок создавали строки баланса внутри гонки — без `for update` всё оставалось зелёным → нашёл ревьюер снятием блокировки → балансы создаются до барьера, добавлен тест потерянного обновления с триггером-шлагбаумом.
+- **Урок:** тест гонки проверять снятием блокировки — внесён в `REVIEWING.md`.
+- **Кругов ревью:** 1 (1 замечание, принято).
+- **Коммит / PR:** ветка `u6-ledger` поверх #16 (U4) и #15 (U6a).
