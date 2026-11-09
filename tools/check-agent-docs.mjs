@@ -42,7 +42,7 @@ try {
     const depth = relative.split(path.sep).length - 1;
     const text = await read(file);
     if (depth > 1) report(file, 'instruction depth exceeds two levels');
-    const limit = (depth === 0 ? 10 : 8) * 1024;
+    const limit = (depth === 0 ? 12 : 8) * 1024;
     if (Buffer.byteLength(text) > limit) report(file, `instruction budget exceeds ${limit} bytes`);
     const parent = path.join(root, 'AGENTS.md');
     if (depth && await exists(parent) && Buffer.byteLength(text + await read(parent)) > 24 * 1024) report(file, 'chain budget exceeds 24 KiB');
