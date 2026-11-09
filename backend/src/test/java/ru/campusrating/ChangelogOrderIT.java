@@ -41,43 +41,47 @@ class ChangelogOrderIT extends PostgresIntegrationTest {
         var databaseName = lateFirst ? "u2_order_late_first" : "u2_order_early_first";
         admin.execute("drop database if exists " + databaseName);
         admin.execute("create database " + databaseName);
-        var baseUrl = connectionDetails.getJdbcUrl();
-        var url = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1) + databaseName;
-        var source = new DriverManagerDataSource(url,
-                connectionDetails.getUsername(), connectionDetails.getPassword());
-        var jdbc = new JdbcTemplate(source);
-        copyRealChangelog();
+        try {
+            var baseUrl = connectionDetails.getJdbcUrl();
+            var url = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1) + databaseName;
+            var source = new DriverManagerDataSource(url,
+                    connectionDetails.getUsername(), connectionDetails.getPassword());
+            var jdbc = new JdbcTemplate(source);
+            copyRealChangelog();
 
-        var first = lateFirst ? LATE : EARLY;
-        var second = lateFirst ? EARLY : LATE;
-        addFixture(first);
-        addFixture(DEMO);
-        update(url, "default");
-        assertTable(jdbc, lateFirst ? "u2_order_late" : "u2_order_early", true);
-        assertTable(jdbc, lateFirst ? "u2_order_early" : "u2_order_late", false);
-        assertTable(jdbc, "u2_order_demo", false);
-        assertChangesetCount(jdbc, lateFirst ? "late" : "early", 1);
-        assertChangesetCount(jdbc, "demo", 0);
+            var first = lateFirst ? LATE : EARLY;
+            var second = lateFirst ? EARLY : LATE;
+            addFixture(first);
+            addFixture(DEMO);
+            update(url, "default");
+            assertTable(jdbc, lateFirst ? "u2_order_late" : "u2_order_early", true);
+            assertTable(jdbc, lateFirst ? "u2_order_early" : "u2_order_late", false);
+            assertTable(jdbc, "u2_order_demo", false);
+            assertChangesetCount(jdbc, lateFirst ? "late" : "early", 1);
+            assertChangesetCount(jdbc, "demo", 0);
 
-        addFixture(second);
-        update(url, "default");
-        assertTable(jdbc, "u2_order_early", true);
-        assertTable(jdbc, "u2_order_late", true);
-        assertChangesetCount(jdbc, "early", 1);
-        assertChangesetCount(jdbc, "late", 1);
+            addFixture(second);
+            update(url, "default");
+            assertTable(jdbc, "u2_order_early", true);
+            assertTable(jdbc, "u2_order_late", true);
+            assertChangesetCount(jdbc, "early", 1);
+            assertChangesetCount(jdbc, "late", 1);
 
-        var history = jdbc.queryForList("select * from databasechangelog order by orderexecuted");
-        update(url, "default");
-        assertThat(jdbc.queryForList("select * from databasechangelog order by orderexecuted"))
-                .isEqualTo(history);
-        assertTable(jdbc, "u2_order_demo", false);
-        assertChangesetCount(jdbc, "demo", 0);
+            var history = jdbc.queryForList("select * from databasechangelog order by orderexecuted");
+            update(url, "default");
+            assertThat(jdbc.queryForList("select * from databasechangelog order by orderexecuted"))
+                    .isEqualTo(history);
+            assertTable(jdbc, "u2_order_demo", false);
+            assertChangesetCount(jdbc, "demo", 0);
 
-        update(url, "default,demo");
-        assertTable(jdbc, "u2_order_demo", true);
-        assertChangesetCount(jdbc, "demo", 1);
-        assertChangesetCount(jdbc, "early", 1);
-        assertChangesetCount(jdbc, "late", 1);
+            update(url, "default,demo");
+            assertTable(jdbc, "u2_order_demo", true);
+            assertChangesetCount(jdbc, "demo", 1);
+            assertChangesetCount(jdbc, "early", 1);
+            assertChangesetCount(jdbc, "late", 1);
+        } finally {
+            admin.execute("drop database if exists " + databaseName + " with (force)");
+        }
     }
 
     private void copyRealChangelog() throws Exception {
