@@ -22,5 +22,5 @@ CREATE TABLE ledger_balance (
     currency text NOT NULL CHECK (currency IN ('AR', 'BUA', 'BOA')),
     amount integer NOT NULL,
     PRIMARY KEY (student_id, currency),
-    CHECK (currency <> 'AR' OR amount BETWEEN 0 AND 1000)
+    CHECK (amount >= 0 AND (currency <> 'AR' OR amount <= 1000))
 );

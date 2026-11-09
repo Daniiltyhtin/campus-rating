@@ -96,6 +96,37 @@ class LedgerIT extends PostgresIntegrationTest {
     }
 
     @Test
+    void reusedKeyWithDifferentStudentCurrencyOrKindRollsBackBatch() {
+        long other = user("STUDENT");
+        post(ar(student, EntryKind.INITIAL, 100, "kind-key"), award(student, Currency.BUA, 10, "award-key"));
+        var mismatches = List.of(award(other, Currency.BUA, 10, "award-key"),
+                award(student, Currency.BOA, 10, "award-key"),
+                ar(student, EntryKind.SEMESTER_ACCRUAL, 100, "kind-key"));
+        for (var mismatch : mismatches) {
+            assertThatIllegalArgumentException().isThrownBy(() -> post(
+                    award(other, Currency.BOA, 1, "must-rollback"), mismatch));
+            assertThat(ledger.balances(student)).isEqualTo(new Balances(100, 10, 0));
+            assertThat(ledger.balances(other)).isEqualTo(new Balances(0, 0, 0));
+            assertThat(entryCount()).isEqualTo(2);
+            assertThat(jdbc.queryForObject("select count(*) from ledger_entry where student_id = ?", Integer.class, other)).isZero();
+            assertThat(jdbc.queryForObject("select count(*) from ledger_balance where student_id = ?", Integer.class, other)).isZero();
+        }
+    }
+
+    @Test
+    void concurrentFirstAwardsCreateBalanceWithoutLosingUpdates() throws Exception {
+        assertThat(jdbc.queryForObject("select count(*) from ledger_balance where student_id = ?", Integer.class, student)).isZero();
+        var barrier = new CyclicBarrier(2);
+        var results = concurrently(
+                () -> racingPost(barrier, List.of(award(student, Currency.BUA, 10, "first-ten"))),
+                () -> racingPost(barrier, List.of(award(student, Currency.BUA, 20, "first-twenty"))));
+        assertThat(results).allSatisfy(batch -> assertThat(batch).singleElement().isInstanceOf(PostingResult.Posted.class));
+        assertThat(ledger.balances(student)).isEqualTo(new Balances(0, 30, 0));
+        assertThat(entryCount()).isEqualTo(2);
+        assertThat(ledger.reconcile().mismatches()).isEmpty();
+    }
+
+    @Test
     void sameKeyRaceCreatesExactlyOnePosting() throws Exception {
         post(ar(student, EntryKind.INITIAL, 900, "race-seed"));
         var barrier = new CyclicBarrier(2);
@@ -219,6 +250,17 @@ class LedgerIT extends PostgresIntegrationTest {
     }
 
     @Test
+    void databaseRejectsNegativeActivityBalances() {
+        post(award(student, Currency.BUA, 10, "bua-seed"), award(student, Currency.BOA, 20, "boa-seed"));
+        for (var currency : List.of(Currency.BUA, Currency.BOA)) {
+            assertThatThrownBy(() -> jdbc.update(
+                    "update ledger_balance set amount = -1 where student_id = ? and currency = ?", student, currency.name()))
+                    .isInstanceOf(DataIntegrityViolationException.class);
+        }
+        assertThat(ledger.balances(student)).isEqualTo(new Balances(0, 10, 20));
+    }
+
+    @Test
     void randomOperationsKeepSnapshotEqualToJournal() {
         long other = user("STUDENT");
         var random = new Random(42);
@@ -303,6 +345,19 @@ class LedgerIT extends PostgresIntegrationTest {
     }
 
     @Test
+    void readersValidateLimitAndAcceptBoundaries() {
+        post(award(student, Currency.BOA, 10, "limit-seed"));
+        for (int limit : List.of(0, 101)) {
+            assertValidationFailure(() -> ledger.history(student, Optional.empty(), Optional.empty(), limit), "limit");
+            assertValidationFailure(() -> ledger.awards(Optional.empty(), limit), "limit");
+        }
+        for (int limit : List.of(1, 100)) {
+            assertThat(ledger.history(student, Optional.empty(), Optional.empty(), limit).items()).hasSize(1);
+            assertThat(ledger.awards(Optional.empty(), limit).items()).hasSize(1);
+        }
+    }
+
+    @Test
     void reconciliationFindsDriftAndCountsUnionIncludingMissingSides() {
         assertThat(ledger.reconcile().checkedPairs()).isZero();
         post(initial(student, "initial"), award(student, Currency.BOA, 50, "award"));
@@ -328,9 +383,13 @@ class LedgerIT extends PostgresIntegrationTest {
     }
 
     private void assertCursorFailure(Runnable read) {
+        assertValidationFailure(read, "cursor");
+    }
+
+    private void assertValidationFailure(Runnable read, String field) {
         assertThatThrownBy(read::run).isInstanceOfSatisfying(ValidationFailedException.class,
                 exception -> assertThat(exception.fieldErrors()).singleElement().satisfies(error -> {
-                    assertThat(error.field()).isEqualTo("cursor");
+                    assertThat(error.field()).isEqualTo(field);
                     assertThat(error.code()).isEqualTo("INVALID");
                 }));
     }

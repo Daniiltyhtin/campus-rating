@@ -61,7 +61,7 @@ public class LedgerService implements LedgerApi {
     }
 
     private PostingResult postOne(Posting posting, Map<BalanceKey, Integer> balances) {
-        var existing = repository.existing(posting.idempotencyKey());
+        var existing = repository.existing(posting);
         if (existing.isPresent()) {
             return existing.get();
         }

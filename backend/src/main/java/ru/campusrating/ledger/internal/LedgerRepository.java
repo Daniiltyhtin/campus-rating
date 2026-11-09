@@ -57,9 +57,16 @@ class LedgerRepository {
         return balances;
     }
 
-    Optional<PostingResult.AlreadyPosted> existing(String key) {
-        return jdbc.sql("select id, amount from ledger_entry where idempotency_key = :key").param("key", key)
-                .query((rs, row) -> new PostingResult.AlreadyPosted(rs.getLong("id"), rs.getInt("amount"))).optional();
+    Optional<PostingResult.AlreadyPosted> existing(Posting posting) {
+        return jdbc.sql("select id, amount, student_id, currency, kind from ledger_entry where idempotency_key = :key")
+                .param("key", posting.idempotencyKey()).query((rs, row) -> {
+                    if (rs.getLong("student_id") != posting.studentId()
+                            || !rs.getString("currency").equals(posting.currency().name())
+                            || !rs.getString("kind").equals(posting.kind().name())) {
+                        throw new IllegalArgumentException("Idempotency key belongs to a different student, currency or kind");
+                    }
+                    return new PostingResult.AlreadyPosted(rs.getLong("id"), rs.getInt("amount"));
+                }).optional();
     }
 
     long insert(Posting posting, int amount, Instant createdAt) {
