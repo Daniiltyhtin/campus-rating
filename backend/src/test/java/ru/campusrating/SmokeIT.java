@@ -50,10 +50,10 @@ class SmokeIT extends PostgresIntegrationTest {
         var response = get("/api/v1/does-not-exist");
         assertThat(response.statusCode()).isEqualTo(404);
         assertThat(response.headers().firstValue("content-type").orElseThrow())
-                .startsWith("application/json");
+                .startsWith("application/problem+json");
         var error = JsonMapper.builder().build().readTree(response.body());
         assertThat(error.path("status").asInt()).isEqualTo(404);
-        assertThat(error.path("path").asText()).isEqualTo("/api/v1/does-not-exist");
+        assertThat(error.path("instance").asText()).isEqualTo("/api/v1/does-not-exist");
     }
 
     @Test

@@ -1,0 +1,113 @@
+package ru.campusrating.shared.error;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.assertj.MockMvcTester;
+import org.springframework.web.bind.annotation.*;
+
+class ApiExceptionHandlerTest {
+    private MockMvcTester mvc;
+
+    @BeforeEach
+    void setUp() {
+        mvc = MockMvcTester.create(org.springframework.test.web.servlet.setup.MockMvcBuilders
+                .standaloneSetup(new ErrorsController()).setControllerAdvice(new ApiExceptionHandler()).build());
+    }
+
+    @Test
+    void domainErrorUsesProblemDetailAndInstance() {
+        mvc.get().uri("/errors/not-found").assertThat().hasStatus(404)
+                .hasContentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+                .bodyJson().isLenientlyEqualTo("""
+                        {"type":"about:blank","title":"Not Found","status":404,
+                         "detail":"Ресурс не найден","code":"NOT_FOUND","instance":"/errors/not-found"}
+                        """);
+    }
+
+    @Test
+    void extensionsArePreserved() {
+        mvc.get().uri("/errors/budget").assertThat().hasStatus(422).bodyJson()
+                .extractingPath("$.budgets[0].shortfall").isEqualTo(20);
+        mvc.get().uri("/errors/students").assertThat().hasStatus(422).bodyJson()
+                .extractingPath("$.studentIds[0]").isEqualTo(1001);
+        mvc.get().uri("/errors/validation").assertThat().hasStatus(400).bodyJson()
+                .extractingPath("$.fieldErrors[0].code").isEqualTo("MISMATCH");
+    }
+
+    @Test
+    void invalidBodyIncludesFieldErrors() {
+        mvc.post().uri("/errors/body").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"\"}")
+                .assertThat().hasStatus(400).bodyJson().isLenientlyEqualTo("""
+                        {"code":"VALIDATION_FAILED","fieldErrors":[{"field":"name","code":"REQUIRED"}]}
+                        """);
+    }
+
+    @Test
+    void invalidMethodParameterIncludesFieldErrors() {
+        mvc.get().uri("/errors/parameter").param("count", "0").assertThat().hasStatus(400)
+                .bodyJson().isLenientlyEqualTo("""
+                        {"code":"VALIDATION_FAILED","fieldErrors":[{"field":"count","code":"INVALID"}]}
+                        """);
+    }
+
+    @Test
+    void malformedParameterIsValidationProblem() {
+        mvc.get().uri("/errors/parameter").param("count", "abc").assertThat().hasStatus(400)
+                .bodyJson().isLenientlyEqualTo("""
+                        {"code":"VALIDATION_FAILED","fieldErrors":[{"field":"count","code":"INVALID"}]}
+                        """);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"ab, TOO_SHORT", "abcdef, TOO_LONG"})
+    void bodySizeViolationReportsDirection(String name, String code) {
+        mvc.post().uri("/errors/sized-body").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"" + name + "\"}")
+                .assertThat().hasStatus(400).bodyJson()
+                .extractingPath("$.fieldErrors[0].code").isEqualTo(code);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"[1], TOO_SHORT", "'[1,2,3,4]', TOO_LONG"})
+    void bodyCollectionSizeViolationReportsDirection(String items, String code) {
+        mvc.post().uri("/errors/sized-collection").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"items\":" + items + "}")
+                .assertThat().hasStatus(400).bodyJson()
+                .extractingPath("$.fieldErrors[0].code").isEqualTo(code);
+    }
+
+    @RestController
+    static class ErrorsController {
+        @GetMapping("/errors/not-found")
+        void missing() { throw new ApiException(ProblemCode.NOT_FOUND, "Ресурс не найден"); }
+        @GetMapping("/errors/budget")
+        void budget() { throw new BudgetExceededException("Недостаточно баллов",
+                List.of(new BudgetCheck(11, "ИВТ-21", 30, 10, 20))); }
+        @GetMapping("/errors/students")
+        void students() { throw new StudentsRejectedException(ProblemCode.NOT_ENROLLED,
+                "Студент не записан", List.of(1001L)); }
+        @GetMapping("/errors/validation")
+        void validation() { throw new ValidationFailedException("Поля не совпадают",
+                List.of(new FieldError("password", "MISMATCH", "Пароли не совпадают"))); }
+        @PostMapping("/errors/body")
+        void body(@Valid @RequestBody Input input) {}
+        @PostMapping("/errors/sized-body")
+        void sizedBody(@Valid @RequestBody SizedInput input) {}
+        @PostMapping("/errors/sized-collection")
+        void sizedCollection(@Valid @RequestBody SizedCollection input) {}
+        @GetMapping("/errors/parameter")
+        void parameter(@RequestParam @Min(1) int count) {}
+    }
+
+    record Input(@NotBlank String name) {}
+    record SizedInput(@Size(min = 3, max = 5) String name) {}
+    record SizedCollection(@Size(min = 2, max = 3) List<Integer> items) {}
+}

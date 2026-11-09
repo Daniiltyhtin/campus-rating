@@ -520,7 +520,7 @@ paths:
 
         Доступ: все, включая гостя.
       x-public: true
-      x-status: planned
+      x-status: implemented
       security: []
       responses:
         '200':
@@ -548,7 +548,7 @@ paths:
 
         Доступ: все, включая гостя.
       x-public: true
-      x-status: planned
+      x-status: implemented
       security: []
       parameters:
         - $ref: '#/components/parameters/FacultyId'
@@ -586,7 +586,7 @@ paths:
 
         Доступ: все, включая гостя.
       x-public: true
-      x-status: planned
+      x-status: implemented
       security: []
       parameters:
         - $ref: '#/components/parameters/FacultyId'

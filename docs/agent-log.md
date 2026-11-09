@@ -354,3 +354,17 @@
 - **Урок:** состояние UI без проверки в тесте → нашёл ревьюер → проверять через доступный атрибут, тестовый рендер — с провайдерами `main.tsx` (`frontend/AGENTS.md`, «Уроки»).
 - **Кругов ревью:** 1 — Даниил, 2 вопроса, оба приняты: тесты на `aria-current` активного пункта, `QueryClientProvider` в `src/test/render.tsx`.
 - **Коммит / PR:** ветка `u2b-frontend`, коммиты `1adc7eb`, `bab1930`, PR #10.
+
+### 2026-11-09 — U4: справочники, настройки, сид, реестр событий
+
+- **Кто / агент / модель:** Даниил / Codex (реализация, `implement-unit`) и Claude Code (ревью `review-unit`, коммиты) / gpt-6.1-sol medium
+- **Поручение:** мастер-U4 без отдельного плана; смежные файлы по швам и плану U3 — `shared.error` и `@RestControllerAdvice`, `SmokeIT` под `ProblemDetail`, `x-status: implemented` у трёх операций справочников.
+- **Результат с доказательствами:** `DirectoryApi` и три `GET` справочников; `SettingsApi` читает таблицу при каждом вызове, без строки — значение из конфигурации; changeset'ы `shared` (реестр событий), `settings`, `directory`, `identity` (минимальные `app_user`, `group_membership`), демо-сид по примерам контракта; `shared.error` — 21 код с HTTP-статусами (сверены скриптом с таблицей контракта). Схема реестра — v2 из jar `spring-modulith-events-jdbc` 2.1.2: исполнитель доказал выбор по байткоду (`useLegacyStructure=false` → v2), тело changeset'а побайтно равно ресурсу jar. Ревьюер на хосте с Docker: `./backend/mvnw -f backend/pom.xml clean verify` — 50 тестов, 0 ошибок (`DirectoryApiIT` 6/6, `SettingsIT`, `EventPublicationIT` 2/2, `SmokeIT` 4/4, `ChangelogOrderIT`, `DemoRecreateIT`, `ModularityTest`); `crap.mjs` — rc 0; линтер контракта — valid; стек `docker compose up` в demo через nginx: факультеты, группы, кафедра совпадают с примерами контракта, неизвестный факультет — 404 `application/problem+json` с `NOT_FOUND`, `abc` вместо id — 400 `VALIDATION_FAILED` с полем; после перезапуска backend сид без дублей.
+- **Не проверено:** e2e на стеке — в CI PR; `api:gen` — его ещё нет (мастер-U3, PR U3b).
+- **Неудачные попытки:** нет.
+- **Ошибка агента:**
+  - Codex: рассчитывал, что Spring сам заполнит обязательный `type` в `ProblemDetail` → поймал собственный HTTP-тест → `about:blank` задан явно.
+  - Codex: нарушение длины поля давало `INVALID`, хотя контракт перечисляет `TOO_SHORT` и `TOO_LONG` → нашёл ревьюер сверкой со схемой `FieldError` → коды по длине значения относительно `min`/`max`, test-first.
+- **Урок:** нет нового правила; заметка: `backend/AGENTS.md` после реестра имён настроек занимает 8188 из 8192 байт — следующий урок туда не поместится без сокращения.
+- **Кругов ревью:** 1 (2 замечания, оба приняты).
+- **Коммит / PR:** ветка `u4-directory`.
