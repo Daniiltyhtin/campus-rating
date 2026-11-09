@@ -65,7 +65,7 @@ execution: code
 
   Параллельная транзакция с тем же ключом ждёт на шаге 3 и после фиксации первой видит её проводку на шаге 4 (READ COMMITTED перечитывает после блокировки). Уникальный индекс — страховка, а не основной механизм.
 - KTD4. **Проверка элемента.** Знак по виду: `PENALTY` < 0, остальные > 0. Валюта по виду: `INITIAL`, `SEMESTER_ACCRUAL`, `PENALTY` — только `AR`; `ACTIVITY_AWARD` — `BUA` или `BOA`. Обязательные поля — по швам (`author` и `source.id` у `ACTIVITY_AWARD`, `source.id` у `PENALTY`). Валюта по виду — решение этого плана (в швах его нет): оно не даёт штрафу случайно уйти в БОА.
-- KTD5. **Где что лежит.** Интерфейс и типы — корень `ru.campusrating.ledger` (швы). `BalanceRules` и проверка элемента — `ledger.domain` (чистые функции, PIT ≥ 70%). Репозиторий на `JdbcClient`, сервис и контроллер — `ledger.internal`. Курсор — `base64url("<epochMicros>:<id>")` в `ledger.domain`.
+- KTD5. **Где что лежит.** Интерфейс и типы — корень `ru.campusrating.ledger` (швы). `BalanceRules` и проверка элемента — `ledger.domain` (чистые функции, PIT ≥ 70%). Репозиторий на `JdbcClient`, сервис — `ledger.internal`, контроллер — `ledger.api`. Курсор — `base64url("<filter>:<epochMicros>:<id>")` (`filter` — `history/<studentId>/<currency|ALL>` или `awards`; несовпадение фильтра — ошибка `cursor`, время — от 1970-01-01 до 9999-12-31 включительно) в `ledger.domain`.
 - KTD6. **Сверка.** Один SQL: полное внешнее соединение снимка и `sum(amount)` по `(student_id, currency)`; `checkedPairs` — число пар в объединении, `checkedAt` — из `Clock`.
 
 ### Open Questions
@@ -146,7 +146,7 @@ execution: code
 - **Goal.** Администратор видит расхождения снимка и журнала.
 - **Requirements.** R6; KTD6.
 - **Dependencies.** U3.
-- **Files:** `backend/src/main/java/ru/campusrating/ledger/internal/` (запрос и контроллер `reconcileLedger`); `docs/spec/api/openapi.yaml` (`x-status: implemented`); `LedgerIT.java`.
+- **Files:** `backend/src/main/java/ru/campusrating/ledger/internal/` (запрос), `backend/src/main/java/ru/campusrating/ledger/api/` (контроллер `reconcileLedger`); `docs/spec/api/openapi.yaml` (`x-status: implemented`); `LedgerIT.java`.
 - **Test scenarios:**
   - После операций U3 `mismatches` пусто, `checkedPairs` равно числу пар.
   - Прямой `update ledger_balance` в тесте → одна пара в `mismatches` с балансом и суммой журнала.

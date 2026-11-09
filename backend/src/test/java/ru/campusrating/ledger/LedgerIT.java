@@ -345,6 +345,26 @@ class LedgerIT extends PostgresIntegrationTest {
     }
 
     @Test
+    void readersRejectForeignFiltersAndOutOfRangeCursorTime() {
+        post(initial(student, "cursor-initial"), penalty(student, -1, "cursor-penalty"),
+                award(student, Currency.BOA, 1, "cursor-award"));
+        var arCursor = ledger.history(student, Optional.of(Currency.AR), Optional.empty(), 1).nextCursor();
+        assertThat(arCursor).isNotNull();
+        assertCursorFailure(() -> ledger.history(student, Optional.of(Currency.BOA), Optional.of(arCursor), 1));
+        assertCursorFailure(() -> ledger.history(student, Optional.empty(), Optional.of(arCursor), 1));
+        assertCursorFailure(() -> ledger.history(author, Optional.of(Currency.AR), Optional.of(arCursor), 1));
+        assertCursorFailure(() -> ledger.awards(Optional.of(arCursor), 1));
+        var awardFilter = ru.campusrating.ledger.domain.LedgerCursor.AWARDS;
+        var awardsCursor = new ru.campusrating.ledger.domain.LedgerCursor(clock.instant(), 1, awardFilter).encode();
+        assertCursorFailure(() -> ledger.history(student, Optional.empty(), Optional.of(awardsCursor), 1));
+        for (var micros : List.of(Long.MIN_VALUE, Long.MAX_VALUE)) {
+            var encoded = java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(
+                    (awardFilter + ":" + micros + ":1").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            assertCursorFailure(() -> ledger.awards(Optional.of(encoded), 1));
+        }
+    }
+
+    @Test
     void readersValidateLimitAndAcceptBoundaries() {
         post(award(student, Currency.BOA, 10, "limit-seed"));
         for (int limit : List.of(0, 101)) {
@@ -427,7 +447,13 @@ class LedgerIT extends PostgresIntegrationTest {
     private Posting penalty(long id, int amount, String key) { return ar(id, EntryKind.PENALTY, amount, key); }
 
     private Posting ar(long id, EntryKind kind, int amount, String key) {
-        return new Posting(id, Currency.AR, kind, amount, new Source(SourceType.CHECKPOINT, 42L, "Снимок точки"), null, key);
+        var type = switch (kind) {
+            case INITIAL -> SourceType.REGISTRATION;
+            case SEMESTER_ACCRUAL -> SourceType.SEMESTER;
+            case PENALTY -> SourceType.CHECKPOINT;
+            case ACTIVITY_AWARD -> SourceType.ACTIVITY;
+        };
+        return new Posting(id, Currency.AR, kind, amount, new Source(type, 42L, "Снимок точки"), null, key);
     }
 
     private Posting award(long id, Currency currency, int amount, String key) {

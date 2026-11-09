@@ -99,13 +99,14 @@ public class LedgerService implements LedgerApi {
     @Override
     public LedgerPage<LedgerEntryView> history(long studentId, Optional<Currency> currency, Optional<String> cursor, int limit) {
         requireLimit(limit);
-        return page(repository.history(studentId, currency, decode(cursor), limit + 1), limit, Entry::view);
+        var filter = LedgerCursor.historyFilter(studentId, currency);
+        return page(repository.history(studentId, currency, decode(cursor, filter), limit + 1), limit, filter, Entry::view);
     }
 
     @Override
     public LedgerPage<AwardEntryView> awards(Optional<String> cursor, int limit) {
         requireLimit(limit);
-        return page(repository.awards(decode(cursor), limit + 1), limit, entry -> {
+        return page(repository.awards(decode(cursor, LedgerCursor.AWARDS), limit + 1), limit, LedgerCursor.AWARDS, entry -> {
             var view = entry.view();
             return new AwardEntryView(view.id(), view.createdAt(), entry.studentId(), view.amount(),
                     view.currency(), view.source(), view.author());
@@ -120,9 +121,9 @@ public class LedgerService implements LedgerApi {
                 pairs.stream().filter(pair -> pair.balance() != pair.ledgerSum()).toList());
     }
 
-    private Optional<LedgerCursor> decode(Optional<String> cursor) {
+    private Optional<LedgerCursor> decode(Optional<String> cursor, String filter) {
         try {
-            return cursor.map(LedgerCursor::decode);
+            return cursor.map(value -> LedgerCursor.decode(value, filter));
         } catch (IllegalArgumentException exception) {
             throw new ValidationFailedException("Неверный курсор", List.of(new FieldError("cursor", "INVALID", "Неверный формат курсора")));
         }
@@ -135,12 +136,12 @@ public class LedgerService implements LedgerApi {
         }
     }
 
-    private <T> LedgerPage<T> page(List<Entry> entries, int limit, Function<Entry, T> mapper) {
+    private <T> LedgerPage<T> page(List<Entry> entries, int limit, String filter, Function<Entry, T> mapper) {
         var visible = entries.subList(0, Math.min(limit, entries.size()));
         String next = null;
         if (entries.size() > limit) {
             var last = visible.getLast().view();
-            next = new LedgerCursor(last.createdAt(), last.id()).encode();
+            next = new LedgerCursor(last.createdAt(), last.id(), filter).encode();
         }
         return new LedgerPage<>(visible.stream().map(mapper).toList(), next);
     }

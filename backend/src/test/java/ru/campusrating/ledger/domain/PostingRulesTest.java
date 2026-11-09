@@ -26,8 +26,8 @@ class PostingRulesTest {
     static Stream<Posting> validPostings() {
         return Stream.of(
                 posting(Currency.AR, EntryKind.INITIAL, 1000, new Source(SourceType.REGISTRATION, null, "Регистрация"), null),
-                posting(Currency.AR, EntryKind.SEMESTER_ACCRUAL, 200, SOURCE, null),
-                posting(Currency.AR, EntryKind.PENALTY, -20, SOURCE, null),
+                posting(Currency.AR, EntryKind.SEMESTER_ACCRUAL, 200, new Source(SourceType.SEMESTER, 42L, "Семестр"), null),
+                posting(Currency.AR, EntryKind.PENALTY, -20, new Source(SourceType.CHECKPOINT, 42L, "Точка"), null),
                 posting(Currency.BUA, EntryKind.ACTIVITY_AWARD, 50, SOURCE, AUTHOR),
                 posting(Currency.BOA, EntryKind.ACTIVITY_AWARD, 50, SOURCE, AUTHOR));
     }
@@ -58,6 +58,41 @@ class PostingRulesTest {
                             posting(Currency.AR, kind, 0, SOURCE, AUTHOR),
                             posting(Currency.AR, kind, kind == EntryKind.PENALTY ? 1 : -1, SOURCE, AUTHOR));
                 }));
+    }
+
+    @ParameterizedTest
+    @MethodSource("sourceAndAuthorViolations")
+    void rejectsMismatchedSourceAndAuthor(Posting posting) {
+        assertThatIllegalArgumentException().isThrownBy(() -> PostingRules.validate(posting));
+    }
+
+    static Stream<Posting> sourceAndAuthorViolations() {
+        return Stream.of(EntryKind.values()).flatMap(kind -> {
+            SourceType expected = switch (kind) {
+                case INITIAL -> SourceType.REGISTRATION;
+                case SEMESTER_ACCRUAL -> SourceType.SEMESTER;
+                case PENALTY -> SourceType.CHECKPOINT;
+                case ACTIVITY_AWARD -> SourceType.ACTIVITY;
+            };
+            var currency = kind == EntryKind.ACTIVITY_AWARD ? Currency.BOA : Currency.AR;
+            int amount = kind == EntryKind.PENALTY ? -10 : 10;
+            var sourceErrors = Stream.of(SourceType.values()).filter(type -> type != expected)
+                    .map(type -> posting(currency, kind, amount, new Source(type, 1L, "Источник"),
+                            kind == EntryKind.ACTIVITY_AWARD ? AUTHOR : null));
+            var source = new Source(expected, 1L, "Источник");
+            var authorErrors = kind == EntryKind.ACTIVITY_AWARD
+                    ? Stream.of(posting(currency, kind, amount, source, new Author(2, null)),
+                            posting(currency, kind, amount, source, new Author(2, "")),
+                            posting(currency, kind, amount, source, new Author(2, "  ")))
+                    : Stream.of(posting(currency, kind, amount, source, AUTHOR));
+            var currencyErrors = kind == EntryKind.ACTIVITY_AWARD
+                    ? Stream.<Posting>empty()
+                    : Stream.of(posting(Currency.BOA, kind, amount, source, null));
+            var validAuthor = kind == EntryKind.ACTIVITY_AWARD ? AUTHOR : null;
+            var signErrors = Stream.of(posting(currency, kind, 0, source, validAuthor),
+                    posting(currency, kind, -amount, source, validAuthor));
+            return Stream.concat(sourceErrors, Stream.concat(authorErrors, Stream.concat(currencyErrors, signErrors)));
+        });
     }
 
     private static Posting posting(Currency currency, EntryKind kind, int amount, Source source, Author author) {

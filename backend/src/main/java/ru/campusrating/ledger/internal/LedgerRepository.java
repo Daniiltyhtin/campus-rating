@@ -81,7 +81,7 @@ class LedgerRepository {
                 .param("student", posting.studentId()).param("currency", posting.currency().name())
                 .param("kind", posting.kind().name()).param("amount", amount).param("sourceType", source.type().name())
                 .param("sourceId", source.id()).param("title", source.title())
-                .param("authorId", author == null ? null : author.userId()).param("authorName", author == null ? null : author.fullName())
+                .param("authorId", author == null ? null : author.id()).param("authorName", author == null ? null : author.fullName())
                 .param("key", posting.idempotencyKey()).param("createdAt", Timestamp.from(createdAt))
                 .query(Long.class).single();
     }
