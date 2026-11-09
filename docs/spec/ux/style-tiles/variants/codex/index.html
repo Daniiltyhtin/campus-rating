@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campus Rating — C «Пульт» / D «Редакция»</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Literata:wght@500;600;700&family=PT+Sans:wght@400;700&display=swap&subset=cyrillic" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#e8e8e3;color:#202521;font:14px/1.5 system-ui,sans-serif}button,input{font:inherit}button,a,input{touch-action:manipulation}button{cursor:pointer}button:disabled{cursor:not-allowed}a{color:inherit}button:focus-visible,a:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--primary,#202521);outline-offset:3px}button{min-height:44px;min-width:44px}svg{flex-shrink:0}h1,h2,h3,p{margin:0}button[aria-busy=true]{cursor:wait}.mast{padding:32px 40px 24px;border-bottom:1px solid #b7bcb6;display:flex;justify-content:space-between;gap:24px;align-items:end}.eyebrow{font:600 11px/1.5 system-ui;letter-spacing:.16em;text-transform:uppercase}.mast h1{font-size:28px;letter-spacing:-.04em;margin:8px 0}.mast p{color:#4d554f;max-width:600px}.view-switch{display:flex;gap:4px;flex-shrink:0}.view-switch button{border:1px solid #a2a9a1;background:transparent;color:#202521;padding:8px 15px;border-radius:3px}.view-switch button[aria-pressed=true]{background:#202521;color:#fff;border-color:#202521}.gallery{padding:24px 24px 64px;max-width:1680px;margin:auto}.columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}.variant{min-width:0;background:var(--bg);color:var(--text);font:14px/1.45 var(--font);border-top:4px solid var(--primary);padding:24px}.variant-head{padding-bottom:26px;border-bottom:1px solid var(--border);margin-bottom:24px;display:grid;grid-template-columns:auto 1fr;gap:20px}.variant-letter{font:500 64px/1 var(--heading);color:var(--primary)}.variant-head h2{font:600 30px/1.2 var(--heading);margin:4px 0 10px}.variant-head p{color:var(--muted);max-width:440px}.variant-head .eyebrow{color:var(--muted)}.spec-section{margin:0 0 36px;min-width:0}.section-label{display:flex;align-items:baseline;gap:12px;padding-bottom:12px;margin-bottom:16px;border-bottom:1px solid var(--border);font:600 13px var(--font)}.section-label span{color:var(--muted);font:12px var(--mono)}.phones{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;align-items:start}.desktop-gallery{margin-top:40px;display:grid;gap:24px}.desktop-gallery .variant{padding:24px}.desk-frame{overflow:auto;max-width:100%;border:1px solid var(--border)}.desk-frame:focus-visible{outline-offset:-3px}body[data-view=c] [data-variant=d],body[data-view=d] [data-variant=c]{display:none}body:not([data-view=both]) .columns{grid-template-columns:minmax(0,1fr)}
+.c{--font:'IBM Plex Sans',sans-serif;--heading:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace;--bg:#111a1b;--surface:#1a2729;--text:#eef4ef;--muted:#b0c2be;--border:#49615e;--primary:#d0ef78;--primary-soft:#28352a;--on-primary:#182014;--danger:#ffb0a5;--danger-soft:#3b2527;--success:#8fdbb5;--success-soft:#1d342b;--st-overdue:#ffb0a5;--st-progress:#dbcef9;--st-submitted:#a9d3ff;--st-accepted:#8fdbb5;--cur-ar:#a9d3ff;--cur-bua:#8fdbb5;--cur-boa:#f3d193;--radius:2px;--shadow:none;--gap:12px;--pad:12px;--duration:90ms;--ease:steps(2,end);--skeleton:#49615e;color-scheme:dark}
+.d{--font:'PT Sans',sans-serif;--heading:'Literata',Georgia,serif;--mono:'PT Sans',sans-serif;--bg:#f4f0e6;--surface:#fffdf8;--text:#29271f;--muted:#625c51;--border:#b4aa98;--primary:#862e43;--primary-soft:#eee2dc;--on-primary:#ffffff;--danger:#9a2925;--danger-soft:#f7e8e0;--success:#246244;--success-soft:#e4eee2;--st-overdue:#9a2925;--st-progress:#624082;--st-submitted:#285a8c;--st-accepted:#246244;--cur-ar:#285a8c;--cur-bua:#246244;--cur-boa:#77500b;--radius:8px;--shadow:3px 3px 0 #d4cabb;--gap:16px;--pad:16px;--duration:180ms;--ease:ease-out;--skeleton:#d4cabb;color-scheme:light}
+.ui{color:var(--text);font:14px/1.45 var(--font)}.ui h1{font:600 20px/1.3 var(--heading);letter-spacing:-.025em}.ui h2{font:600 16px/1.35 var(--heading)}.ui h3{font:600 16px/1.35 var(--heading)}.small{font-size:12.5px}.muted,.crumbs{color:var(--muted)}.num,.amt,.v{font-family:var(--mono);font-variant-numeric:tabular-nums}.stack{display:flex;flex-direction:column;gap:var(--gap)}.tight{gap:4px}.row{display:flex;gap:10px;align-items:center;min-width:0}.wrap{flex-wrap:wrap}.between{justify-content:space-between}.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:var(--pad);box-shadow:var(--shadow);min-width:0}.tokens{display:grid;gap:16px}.sw{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:14px}.swatch{display:flex;flex-direction:column;gap:4px;font-size:12px}.swatch i{display:block;height:32px;border:1px solid var(--border);border-radius:var(--radius)}.swatch code{color:var(--muted);font:11px var(--mono)}.type-scale{display:grid;gap:18px}.type-scale>div{display:grid;gap:5px}.tag{color:var(--muted);font-size:11px}.facts{margin:0;display:grid;grid-template-columns:95px 1fr;gap:10px;font-size:13px}.facts dt{color:var(--muted)}.facts dd{margin:0}.btn,.chip,.seg button,.newbar{border:1px solid var(--border);border-radius:var(--radius);color:var(--text);background:var(--surface);padding:10px 14px;font-weight:600;transition:background var(--duration) var(--ease),box-shadow var(--duration) var(--ease),transform var(--duration) var(--ease)}.btn-primary{color:var(--on-primary);background:var(--primary);border-color:var(--primary)}.btn-subtle{background:transparent;border-color:transparent;color:var(--primary)}.btn-danger{color:var(--danger);background:var(--danger-soft);border-color:var(--danger)}.btn:disabled{color:var(--muted);background:var(--surface);border-color:var(--border);border-style:dashed}.btn:not(:disabled):hover,.chip:hover{box-shadow:inset 0 0 0 1px currentColor}.btn:active{transform:translateY(1px)}.block{width:100%}.field{display:grid;gap:6px}.field label{font-weight:600;font-size:13px}.input{width:100%;min-width:0;min-height:44px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px}.input::placeholder{color:var(--muted)}.error{border-color:var(--danger)}.err,.neg{color:var(--danger);font-size:12.5px}.drop{border:1px dashed var(--border);border-radius:var(--radius);padding:14px;color:var(--muted);min-height:44px;background:var(--surface);font-size:12.5px;text-align:left;width:100%}.seg{display:flex;background:var(--surface);border:1px solid var(--border);padding:3px;gap:3px;border-radius:var(--radius)}.seg button{flex:1;padding:8px 6px;font-size:12.5px;border-color:transparent;background:transparent}.seg button[aria-pressed=true],.chip[aria-pressed=true]{background:var(--primary-soft);color:var(--primary);border-color:var(--primary)}.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{font-size:12.5px;padding:8px 10px}.badge{font-size:11px;line-height:1.4;font-weight:600;display:inline-block;padding:4px 6px;border:1px solid currentColor;border-radius:var(--radius);white-space:nowrap;background:var(--surface)}.s-overdue{color:var(--st-overdue);border-left-width:3px}.s-progress{color:var(--st-progress);border-style:dashed}.s-submitted{color:var(--st-submitted);border-bottom-width:3px}.s-accepted{color:var(--st-accepted);border-style:double;border-width:3px;padding:2px 4px}.chk{width:44px;height:44px;flex-shrink:0;margin:0;appearance:none;border:0;position:relative;cursor:pointer;background:transparent}.chk:before{content:'';position:absolute;width:18px;height:18px;top:13px;left:13px;border:1px solid var(--muted);border-radius:2px;background:var(--surface)}.chk:checked:before{background:var(--primary);border-color:var(--primary)}.chk:checked:after{content:'';position:absolute;width:9px;height:5px;border-left:2px solid var(--on-primary);border-bottom:2px solid var(--on-primary);transform:rotate(-45deg);top:18px;left:17px}.chk:disabled:before{background:var(--primary-soft);border-style:dashed}.chk:disabled:after{border-color:var(--muted)}
+.phone{width:360px;flex:0 0 360px;min-height:720px;display:flex;flex-direction:column;position:relative;background:var(--bg);border:1px solid var(--border);box-shadow:var(--shadow)}.top{min-height:64px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);background:var(--surface)}.top:has(.icon-btn){justify-content:flex-start;padding-left:6px}.top strong{font-family:var(--heading);font-size:16px}.icon-btn{display:grid;place-items:center;background:transparent;border:0;color:var(--text);padding:0;width:44px;height:44px}.phone main{padding:16px;display:flex;flex-direction:column;gap:var(--gap);flex:1;min-width:0}.avatar{height:32px;width:32px;flex-shrink:0;border-radius:var(--radius);background:var(--primary-soft);color:var(--primary);display:grid;place-items:center;font:600 11px var(--font);border:1px solid var(--border)}.penalty{border:1px solid var(--danger);border-left:4px solid var(--danger);background:var(--danger-soft);border-radius:var(--radius);padding:12px;display:grid;gap:8px}.kv{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.bar{height:4px;background:var(--border);overflow:hidden}.bar i{display:block;height:100%;background:var(--danger)}.next{font-weight:600;color:var(--danger);font-size:13px}.returned{display:flex;flex-direction:column;gap:8px;padding:12px;border-left:2px solid var(--muted);background:var(--surface);font-size:13px}.returned .small{color:var(--muted)}.sticky-bottom{padding:14px 16px;background:var(--surface);border-top:1px solid var(--border);margin-top:auto}.toast{display:none;position:absolute;bottom:84px;left:16px;right:16px;padding:16px;background:var(--text);color:var(--bg);border-radius:var(--radius);box-shadow:var(--shadow);z-index:2;font-weight:600}.toast.show{display:block;animation:appear var(--duration) var(--ease)}.task{display:flex;flex-direction:column;gap:10px;text-decoration:none}.task .title{font-weight:600}.task .row{gap:4px}.task .row .small{font-size:11px}.task:hover{border-color:var(--primary)}.tabbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:5px 3px;background:var(--surface);border-top:1px solid var(--border);margin-top:auto}.tabbar a{min-height:56px;min-width:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:10px;color:var(--muted);text-decoration:none;border-top:2px solid transparent}.tabbar [aria-current=page]{color:var(--primary);border-color:var(--primary);background:var(--primary-soft)}.alert{display:flex;flex-direction:column;gap:10px;border:1px solid var(--border);border-radius:var(--radius);padding:12px}.danger{background:var(--danger-soft);border-color:var(--danger)}.success{background:var(--success-soft);color:var(--success);border-color:var(--success)}.balance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.bal{display:flex;flex-direction:column;gap:4px;border-top:3px solid var(--c);background:var(--surface);padding:12px 6px 12px 10px;color:var(--c)}.bal .k{font-size:12px;font-weight:700}.bal .v{font-size:25px;font-weight:600;line-height:1.2}.bal .s{font-size:10px;color:var(--muted)}.hist{padding:0}.hist>div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 12px;border-bottom:1px solid var(--border)}.hist>div:last-child{border:0}.hist .stack{min-width:0}.amt{font-size:12px;font-weight:600;white-space:nowrap}.cur-ar{color:var(--cur-ar)}.cur-bua{color:var(--cur-bua)}.cur-boa{color:var(--cur-boa)}.newbar{width:100%;color:var(--primary);background:var(--primary-soft);border-color:var(--primary);font-size:13px}.award{display:grid;grid-template-columns:32px minmax(0,1fr);gap:10px}.award .amt{grid-column:2}.link{color:var(--primary);text-underline-offset:3px}.skel{height:10px;background:var(--skeleton);border-radius:var(--radius);animation:pulse 1.5s ease-in-out infinite}.spinner{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;margin-right:6px;animation:spin 1s linear infinite}.desk{width:1180px;min-height:660px;display:grid;grid-template-columns:180px minmax(0,1fr);background:var(--bg)}.side{padding:24px 12px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:6px;background:var(--surface)}.side strong{font:600 18px var(--heading);margin:0 8px 32px}.side a{min-height:44px;display:flex;align-items:center;gap:10px;padding:10px;text-decoration:none;color:var(--muted);border-radius:var(--radius)}.side [aria-current=page]{color:var(--primary);background:var(--primary-soft);box-shadow:inset 3px 0 var(--primary)}.desk main{padding:24px;display:flex;flex-direction:column;gap:var(--gap);min-width:0}.crumbs{font-size:12px}.bulk{display:flex;align-items:center;gap:8px;background:var(--primary-soft);border:1px solid var(--border);padding:8px}.bulk strong{font-size:12px}.tbl{width:100%;border-collapse:collapse;background:var(--surface);font-size:12px}.tbl th{text-align:left;font-weight:500;color:var(--muted);padding:10px 8px;border-bottom:2px solid var(--border)}.tbl td{padding:6px 8px;border-bottom:1px solid var(--border)}.tbl td:first-child{padding:0}.tbl .sel{background:var(--primary-soft)}.tbl .badge{font-size:10px}.tbl .small{font-size:10px}.d .phone,.d .desk{border-top:3px solid var(--text)}.d .top{background:var(--bg)}.d .card{border-color:transparent}.d .task{border-top:1px solid var(--border)}.d .tbl td{padding-top:12px;padding-bottom:12px}.d .badge{border-radius:3px}.d .skel{animation:paper-pulse 2s ease-in-out infinite}.c .skel{animation:pulse 1.2s steps(2,end) infinite}.c .title{letter-spacing:-.015em}.c .facts,.c .tag{font-family:var(--mono)}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{50%{opacity:.45}}@keyframes paper-pulse{50%{opacity:.65}}@keyframes appear{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(min-width:1260px){.desk{width:100%;min-width:1180px}}@media(max-width:820px){.columns{grid-template-columns:minmax(0,1fr)}.mast{padding:24px;align-items:start;flex-direction:column}.gallery{padding:16px}.variant{padding:20px}.desktop-gallery .variant{padding:20px}}@media(max-width:420px){.mast{padding:20px 16px}.mast h1{font-size:24px}.gallery{padding:16px 0 32px}.columns{gap:24px}.variant,.desktop-gallery .variant{padding:20px 0}.variant-head,.section-label{margin-left:16px;margin-right:16px}.tokens,.controls-wrap{padding:0 16px}.variant-head{gap:12px}.variant-letter{font-size:50px}.variant-head h2{font-size:26px}.phone{border-left:0;border-right:0}.phones{gap:24px}.desktop-gallery>h2{padding:0 16px}.sw{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body data-view="both">
+<header class="mast"><div><div class="eyebrow">Campus Rating / U21b / Визуальное исследование</div><h1>Два характера. Один интерфейс.</h1><p>Сравните типографику, состояния и плотность на одинаковых данных. Телефоны — 360 px; таблицы преподавателя — ниже.</p></div><div class="view-switch" role="group" aria-label="Показать варианты"><button data-view="both" aria-pressed="true">Рядом</button><button data-view="c" aria-pressed="false">Только C</button><button data-view="d" aria-pressed="false">Только D</button></div></header>
+<main class="gallery"><div class="columns" id="columns"></div><section class="desktop-gallery" id="desktops"><h2>П1 / Точка преподавателя</h2></section></main>
+<!-- ================= Шаблоны фрагментов: одна разметка на оба варианта ================= -->
+<template id="t-tokens">
+<div class="ui tokens">
+  <div class="card stack">
+    <h3>Цвета</h3>
+    <div class="sw" data-swatches="--primary:Основной|--primary-soft:Основной, фон|--text:Текст|--muted:Вторичный текст|--bg:Фон страницы|--surface:Карточка|--border:Граница|--danger:Опасное действие|--st-overdue:Просрочено|--st-progress:В процессе|--st-submitted:Сдано на проверку|--st-accepted:Принято|--cur-ar:АР|--cur-bua:БУА|--cur-boa:БОА"></div>
+  </div>
+  <div class="card stack">
+    <h3>Шрифты</h3>
+    <div class="type-scale">
+      <div><span class="tag">Заголовок 20</span><h1>Лабораторная 3. Деревья поиска</h1></div>
+      <div><span class="tag">Подзаголовок 16</span><h2>История проводок</h2></div>
+      <div><span class="tag">Текст 14</span><span>Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.</span></div>
+      <div><span class="tag">Подпись 12.5</span><span class="small muted">Петров П. П. · Алгоритмы · ИВТ-21</span></div>
+      <div><span class="tag">Баллы</span><span class="num" style="font-size:24px">940 · 120 · 50 · −20 · +125</span></div>
+    </div>
+  </div>
+  <div class="card"><dl class="facts" data-facts></dl></div>
+</div>
+</template>
+
+<template id="t-controls">
+<div class="ui stack" style="width:100%">
+  <div class="card stack">
+    <div class="row wrap">
+      <button class="btn btn-primary" type="button">Сдать работу</button>
+      <button class="btn btn-default" type="button">Отмена</button>
+      <button class="btn btn-subtle" type="button">Показать ещё</button>
+      <button class="btn btn-danger" type="button">Вернуть…</button>
+    </div>
+    <div class="row wrap">
+      <button class="btn btn-primary" type="button">Принять 3 работы</button>
+      <button class="btn btn-primary" type="button" disabled>Начислить 125 БОА</button>
+      <button class="btn btn-primary" type="button" aria-busy="true"><span class="spinner"></span>Сохраняем…</button>
+    </div>
+  </div>
+  <div class="card stack">
+    <div class="field"><label>Ссылка на работу</label><input class="input" type="url" placeholder="https://"></div>
+    <div class="field"><label>Файл</label><div class="drop input error" style="display:flex;align-items:center">lab3-report.exe</div><span class="err">Файл не того типа: нужен pdf, docx, zip, png или jpg</span></div>
+    <div class="seg" role="group"><button type="button" aria-pressed="true">Активные · 3</button><button type="button" aria-pressed="false">Завершённые · 7</button></div>
+    <div class="chips"><button class="chip" type="button" aria-pressed="false">Все · 36</button><button class="chip" type="button" aria-pressed="true">Сдано · 5</button><button class="chip" type="button" aria-pressed="false">Просрочено · 9</button><button class="chip" type="button" aria-pressed="false">Принято · 22</button></div>
+    <div class="row wrap"><span class="badge s-overdue">Просрочено</span><span class="badge s-progress">В процессе</span><span class="badge s-submitted">Сдано на проверку</span><span class="badge s-accepted">Принято</span></div>
+    <label class="row"><input class="chk" type="checkbox" checked> Выбрать все сданные</label>
+  </div>
+</div>
+</template>
+
+<template id="t-task">
+<div class="phone ui">
+  <div class="top"><button class="icon-btn" aria-label="Назад к задачам"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M12 4l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg></button><strong>Задача</strong></div>
+  <main>
+    <div class="stack tight">
+      <span class="badge s-overdue" style="align-self:flex-start">Просрочено</span>
+      <h1>Лабораторная 3. Деревья поиска</h1>
+      <span class="small muted">Петров П. П. · Алгоритмы · ИВТ-21</span>
+    </div>
+    <div class="penalty">
+      <div class="kv"><span>Дедлайн</span><strong>02.11, 12:00</strong></div>
+      <div class="kv"><span>Списано</span><strong><span class="num">40</span> из <span class="num">60</span> АР</strong></div>
+      <div class="bar" aria-hidden="true"><i data-w="67%"></i></div>
+      <div class="next">Следующее списание <span class="num">−20</span> АР через <span class="num">0:42</span></div>
+      <span class="small muted">Сдайте работу — штраф остановится.</span>
+    </div>
+    <div class="returned"><span class="small">Работу вернули — статус «Просрочено», штраф идёт</span><span>«Нет тестов на удаление корня» — Петров П. П., 02.11 11:30</span></div>
+    <div class="field"><label>Ссылка на работу</label><input class="input" type="url" placeholder="https://"></div>
+    <div class="field"><label>или файл</label><div class="drop">Прикрепить файл · pdf, docx, zip, png, jpg до 10 МБ</div></div>
+  </main>
+  <div class="sticky-bottom"><button class="btn btn-primary block" type="button" data-toast="Работа сдана на проверку. Штраф остановлен">Сдать работу</button></div>
+  <div class="toast" role="status"></div>
+</div>
+</template>
+
+<template id="t-tasks">
+<div class="phone ui">
+  <div class="top"><strong>Мои задачи</strong><span class="avatar">АС</span></div>
+  <main>
+    <div class="seg" role="group"><button type="button" aria-pressed="true">Активные · 3</button><button type="button" aria-pressed="false">Завершённые · 7</button></div>
+    <a class="card task" href="#"><div class="row between"><span class="badge s-overdue">Просрочено</span><span class="small muted">списано 40 из 60</span></div><span class="title">Лабораторная 3. Деревья поиска</span><span class="small muted">Петров П. П. · Алгоритмы · Дедлайн 02.11, 12:00</span><div class="bar"><i data-w="67%"></i></div></a>
+    <a class="card task" href="#"><div class="row between"><span class="badge s-progress">В процессе</span><span class="small muted">стоимость 40</span></div><span class="title">Эссе по истории науки</span><span class="small muted">Иванова И. И. · История · Дедлайн 05.11, 23:59 · через 3 дня</span></a>
+    <a class="card task" href="#"><div class="row between"><span class="badge s-submitted">Сдано на проверку</span><span class="small muted">списано 0</span></div><span class="title">Курсовой проект, этап 1</span><span class="small muted">Петров П. П. · Алгоритмы · Сдано 01.11, 18:20</span></a>
+    <a class="card task" href="#"><div class="row between"><span class="badge s-accepted">Принято</span><span class="small muted">списано 20</span></div><span class="title">Лабораторная 2. Хеш-таблицы</span><span class="small muted">Петров П. П. · Алгоритмы · Принято 28.10</span></a>
+  </main>
+  <nav class="tabbar" data-nav="1"></nav>
+</div>
+<div class="phone ui">
+  <div class="top"><strong>Состояния</strong></div>
+  <main>
+    <span class="small muted">Загрузка</span>
+    <div class="card stack"><div class="skel" style="width:30%"></div><div class="skel" style="width:85%;height:14px"></div><div class="skel" style="width:60%"></div></div>
+    <div class="card stack"><div class="skel" style="width:30%"></div><div class="skel" style="width:70%;height:14px"></div><div class="skel" style="width:50%"></div></div>
+    <span class="small muted">Пусто</span>
+    <div class="card stack" style="align-items:center;text-align:center;padding:22px 16px">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/></svg>
+      <strong>Новых задач нет</strong><span class="small muted">Когда преподаватель создаст точку для вашей группы, она появится здесь</span>
+    </div>
+    <span class="small muted">Ошибка</span>
+    <div class="alert danger"><strong>Не удалось загрузить задачи</strong><span class="small">Проверьте соединение и попробуйте ещё раз.</span><button class="btn btn-default" type="button" style="align-self:flex-start">Повторить</button></div>
+  </main>
+</div>
+</template>
+
+<template id="t-profile">
+<div class="phone ui">
+  <div class="top"><strong>Профиль</strong><span class="avatar">АС</span></div>
+  <main>
+    <div class="row"><span class="avatar" style="width:48px;height:48px;font-size:15px">АС</span><div class="stack tight"><h2>Смирнова Анна Олеговна</h2><span class="small muted">ФИТ · ИВТ-21</span></div></div>
+    <div class="balance">
+      <div class="bal" style="--c:var(--cur-ar)"><span class="k">АР</span><span class="v" data-count="940">940</span><span class="s">из 1000</span></div>
+      <div class="bal" style="--c:var(--cur-bua)"><span class="k">БУА</span><span class="v" data-count="120">120</span><span class="s">учебная</span></div>
+      <div class="bal" style="--c:var(--cur-boa)"><span class="k">БОА</span><span class="v" data-count="50">50</span><span class="s">общественная</span></div>
+    </div>
+    <div class="seg" role="group"><button type="button" aria-pressed="true">История</button><button type="button" aria-pressed="false">Задачи</button></div>
+    <div class="card hist">
+      <div><div class="stack tight"><span>Штраф «Лабораторная 3»</span><span class="small muted">02.11, 12:02</span></div><span class="amt neg">−20 АР</span></div>
+      <div><div class="stack tight"><span>Штраф «Лабораторная 3»</span><span class="small muted">02.11, 12:01</span></div><span class="amt neg">−20 АР</span></div>
+      <div><div class="stack tight"><span>«Помощь в организации конференции»</span><span class="small muted">от Иванова И. И. · 01.11</span></div><span class="amt cur-boa">+50 БОА</span></div>
+      <div><div class="stack tight"><span>«Олимпиада по программированию», 75 %</span><span class="small muted">от Петрова П. П. · 30.10</span></div><span class="amt cur-bua">+120 БУА</span></div>
+      <div><div class="stack tight"><span>Штраф «Лабораторная 2»</span><span class="small muted">27.10, 18:01</span></div><span class="amt neg">−20 АР</span></div>
+    </div>
+  </main>
+  <nav class="tabbar" data-nav="4"></nav>
+</div>
+<div class="phone ui">
+  <div class="top"><strong>Лента наград</strong><span class="avatar">АС</span></div>
+  <main>
+    <button class="newbar" type="button">Новые награды: 2 — показать</button>
+    <div class="card award"><span class="avatar">СА</span><div class="stack tight" style="flex:1"><span><a class="link" href="#">Смирнова А. О.</a> · «Помощь в организации конференции»</span><span class="small muted">от Иванова И. И. · 2 ч назад</span></div><span class="amt cur-boa">+50 БОА</span></div>
+    <div class="card award"><span class="avatar">КД</span><div class="stack tight" style="flex:1"><span><a class="link" href="#">Кузнецов Д. А.</a> · «Доклад на семинаре», 50 %</span><span class="small muted">от Петрова П. П. · 5 ч назад</span></div><span class="amt cur-bua">+38 БУА</span></div>
+    <div class="card award"><span class="avatar">ОЕ</span><div class="stack tight" style="flex:1"><span><a class="link" href="#">Орлова Е. В.</a> · «Волонтёр дня открытых дверей»</span><span class="small muted">от Сидорова С. С. · вчера</span></div><span class="amt cur-boa">+100 БОА</span></div>
+    <div class="card stack"><div class="skel" style="width:70%"></div><div class="skel" style="width:40%"></div></div>
+  </main>
+  <nav class="tabbar" data-nav="3"></nav>
+</div>
+</template>
+
+<template id="t-confirm">
+<div class="phone ui">
+  <div class="top"><button class="icon-btn" aria-label="Назад"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M12 4l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg></button><strong>Подтверждение участия</strong></div>
+  <main>
+    <div class="stack tight"><h1>Субботник в кампусе</h1><span class="small muted">Общественная · <span class="cur cur-boa">БОА</span> · до 50 · началась 09.11, 10:00 · только записавшиеся (4)</span></div>
+    <div class="alert danger">
+      <strong>Бюджет на ноябрь не позволяет</strong>
+      <div class="kv small"><span>ИВТ-21: нужно <b class="num">75</b>, остаток <b class="num">40</b></span><b style="color:var(--danger)">не хватает 35</b></div>
+      <div class="kv small"><span>ИВТ-22: нужно <b class="num">50</b>, остаток <b class="num">600</b></span><span style="color:var(--success)">хватает</span></div>
+      <span class="small">Подтверждение проходит целиком или не проходит. Снизьте уровень или уберите студентов ИВТ-21.</span>
+    </div>
+    <div class="card hist">
+      <div><div class="stack tight"><span>Смирнова А. О. · ИВТ-21</span><span class="small muted">100 % · +50</span></div><input class="chk" type="checkbox" checked aria-label="Смирнова"></div>
+      <div><div class="stack tight"><span>Белова О. С. · ИВТ-21</span><span class="small muted">50 % · +25</span></div><input class="chk" type="checkbox" checked aria-label="Белова"></div>
+      <div><div class="stack tight"><span>Волков М. И. · ИВТ-22</span><span class="small muted">100 % · +50</span></div><input class="chk" type="checkbox" checked aria-label="Волков"></div>
+      <div><div class="stack tight"><span>Морозова В. Д. · ИВТ-22</span><span class="small muted">Подтверждено 09.11 · 75 % · +38 — только просмотр</span></div><span class="badge s-accepted">Начислено</span></div>
+    </div>
+  </main>
+  <div class="sticky-bottom stack tight"><span class="small muted" style="text-align:center">3 студента · бюджет списывается с групп студентов</span><button class="btn btn-primary block" type="button" data-toast="Начислено 125 БОА">Начислить 125 БОА</button></div>
+  <div class="toast" role="status"></div>
+</div>
+</template>
+
+<template id="t-desk">
+<div class="desk ui">
+  <nav class="side" data-side></nav>
+  <main>
+    <span class="crumbs">Точки / Лабораторная 3</span>
+    <div class="row between wrap"><div class="stack tight"><h1>Лабораторная 3. Деревья поиска</h1><span class="small muted">ИВТ-21, ИВТ-22 · дедлайн 02.11, 12:00 · стоимость 60 АР · штраф 20 АР каждую минуту (зафиксирован при создании)</span></div><button class="btn btn-default" type="button">Редактировать описание</button></div>
+    <div class="alert success small">Принято 2 из 3. Новиков А. П. пропущен: работу уже вернули, статус «Просрочено».</div>
+    <div class="chips"><button class="chip" type="button" aria-pressed="true">Все · 36</button><button class="chip" type="button" aria-pressed="false">Сдано · 5</button><button class="chip" type="button" aria-pressed="false">Просрочено · 9</button><button class="chip" type="button" aria-pressed="false">Принято · 22</button></div>
+    <div class="bulk"><strong>Выбрано 3 работы</strong><button class="btn btn-subtle" type="button">Снять выбор</button><span style="flex:1"></span><button class="btn btn-danger" type="button">Вернуть…</button><button class="btn btn-primary" type="button">Принять 3 работы</button></div>
+    <table class="tbl">
+      <thead><tr><th style="width:44px"></th><th>Студент</th><th>Группа</th><th>Статус</th><th>Сдано</th><th>Списано</th></tr></thead>
+      <tbody>
+        <tr class="sel"><td><input class="chk" type="checkbox" checked aria-label="Егорова"></td><td><a class="link" href="#">Егорова Мария Сергеевна</a></td><td>ИВТ-21</td><td><span class="badge s-submitted">Сдано на проверку</span></td><td>02.11 11:58 · <a class="link" href="#">отчёт.pdf</a></td><td class="num">0</td></tr>
+        <tr class="sel"><td><input class="chk" type="checkbox" checked aria-label="Кузнецов"></td><td><a class="link" href="#">Кузнецов Дмитрий Андреевич</a></td><td>ИВТ-21</td><td><span class="badge s-submitted">Сдано на проверку</span></td><td>02.11 12:31 · <a class="link" href="#">github.com/kuz/lab3 ↗</a></td><td><span class="num">60</span> <span class="small muted">(потолок)</span></td></tr>
+        <tr class="sel"><td><input class="chk" type="checkbox" checked aria-label="Новиков"></td><td><a class="link" href="#">Новиков Артём Павлович</a></td><td>ИВТ-22</td><td><span class="badge s-overdue">Просрочено</span></td><td class="muted">—</td><td><span class="num">20</span> <span class="small muted">· возвращено 02.11 12:10</span></td></tr>
+        <tr><td><input class="chk" type="checkbox" aria-label="Волков"></td><td><a class="link" href="#">Волков Максим Игоревич</a></td><td>ИВТ-22</td><td><span class="badge s-overdue">Просрочено</span></td><td class="muted">—</td><td><span class="num">60</span> <span class="small muted">(потолок)</span></td></tr>
+        <tr><td><input class="chk" type="checkbox" aria-label="Белова" disabled></td><td><a class="link" href="#">Белова Ольга Сергеевна</a></td><td>ИВТ-21</td><td><span class="badge s-accepted">Принято</span></td><td>31.10 17:05 · <a class="link" href="#">gitlab.com/belova/lab3 ↗</a></td><td class="num">0</td></tr>
+        <tr><td><input class="chk" type="checkbox" aria-label="Орлова"></td><td><a class="link" href="#">Орлова Елена Викторовна</a></td><td>ИВТ-22</td><td><span class="badge s-progress">В процессе</span></td><td class="muted">—</td><td class="num">0</td></tr>
+      </tbody>
+    </table>
+  </main>
+</div>
+</template>
+
+<script>
+const variants={c:{name:'Пульт',caption:'Тёмный инструментальный интерфейс',description:'Графитовая сетка, светящиеся акценты и точные числа. Компактный ритм для работы с данными.',facts:['IBM Plex Sans / IBM Plex Mono','2 px','Без теней; линии и тонировка','Лайм; моноширинные числа','90 мс, два шага; скелетон 1,2 с','Компактная: интервалы 12 px']},d:{name:'Редакция',caption:'Спокойная редакционная система',description:'Бумажные поверхности, выразительная антиква и бордовые пометки. Пространство для вдумчивого чтения.',facts:['PT Sans / Literata','8 px; бейджи 3 px','Жёсткая тень со сдвигом 3 px','Бордо; антиква в заголовках','180 мс, затухание; скелетон 2 с','Свободная: интервалы 16 px']}};
+const sections=[['tokens','01','Токены и типографика'],['controls','02','Элементы управления'],['task','03','С3 / Задача'],['tasks','04','С2 / Мои задачи и состояния'],['profile','05','С1 / Профиль · С5 / Лента наград'],['confirm','06','П2 / Подтверждение участия']];
+function heading(key){const v=variants[key];return `<header class="variant-head"><span class="variant-letter">${key.toUpperCase()}</span><div><div class="eyebrow">${v.caption}</div><h2>«${v.name}»</h2><p>${v.description}</p></div></header>`}
+for(const key of Object.keys(variants)){const column=document.createElement('article');column.className='variant '+key;column.dataset.variant=key;column.innerHTML=heading(key);for(const [id,n,label] of sections){const section=document.createElement('section');section.className='spec-section';section.innerHTML=`<h3 class="section-label"><span>${n}</span>${label}</h3>`;const content=document.createElement('div');content.className=id==='tokens'?'':id==='controls'?'controls-wrap':'phones';content.append(document.getElementById('t-'+id).content.cloneNode(true));section.append(content);column.append(section)}document.getElementById('columns').append(column);const desktop=document.createElement('article');desktop.className='variant '+key;desktop.dataset.variant=key;desktop.innerHTML=heading(key)+'<div class="desk-frame" tabindex="0" role="region" aria-label="Таблица преподавателя — прокрутка по горизонтали"></div>';desktop.querySelector('.desk-frame').append(document.getElementById('t-desk').content.cloneNode(true));document.getElementById('desktops').append(desktop)}
+const paths=['M3 10 12 3l9 7v10h-6v-6H9v6H3z','M6 3h12v18H6z M9 8h6 M9 12h6 M9 16h4','m12 3 2.5 6 6.5 1-5 4 1.5 7-5.5-4-5.5 4L8 14l-5-4 6.5-1z','M8 3h8v7a4 4 0 0 1-8 0z M8 5H4v3a4 4 0 0 0 4 4 M16 5h4v3a4 4 0 0 1-4 4 M12 14v6 M8 21h8','M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0 M4 21v-2a8 8 0 0 1 16 0v2'];
+function icon(i){return `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="${paths[i]}"/></svg>`}
+document.querySelectorAll('[data-nav]').forEach(nav=>{nav.setAttribute('aria-label','Навигация студента');['Главная','Задачи','Активности','Награды','Профиль'].forEach((label,i)=>nav.insertAdjacentHTML('beforeend',`<a href="#" ${i===Number(nav.dataset.nav)?'aria-current="page"':''}>${icon(i)}${label}</a>`))});
+document.querySelectorAll('[data-side]').forEach(nav=>{nav.setAttribute('aria-label','Навигация преподавателя');nav.innerHTML='<strong>Campus Rating</strong>';['Главная','Точки','Активности','Группы','Профиль'].forEach((label,i)=>nav.insertAdjacentHTML('beforeend',`<a href="#" ${i===1?'aria-current="page"':''}>${icon(i)}${label}</a>`))});
+function hex(css){const probe=document.createElement('span');probe.style.color=css;document.body.append(probe);const rgb=getComputedStyle(probe).color.match(/\d+/g).slice(0,3);probe.remove();return '#'+rgb.map(n=>Number(n).toString(16).padStart(2,'0')).join('')}
+document.querySelectorAll('[data-swatches]').forEach(el=>{const style=getComputedStyle(el);for(const item of el.dataset.swatches.split('|')){const [token,label]=item.split(':');const value=hex(style.getPropertyValue(token).trim());const swatch=document.createElement('div');swatch.className='swatch';swatch.innerHTML=`<i style="background:var(${token})" aria-hidden="true"></i><span>${label}</span><code>${value}</code>`;el.append(swatch)}});
+document.querySelectorAll('[data-facts]').forEach(el=>{const key=el.closest('[data-variant]').dataset.variant;['Шрифты','Радиус','Глубина','Акценты','Анимация','Плотность'].forEach((label,i)=>el.insertAdjacentHTML('beforeend',`<dt>${label}</dt><dd>${variants[key].facts[i]}</dd>`))});
+document.querySelectorAll('[data-w]').forEach(el=>el.style.width=el.dataset.w);
+document.querySelectorAll('.field').forEach((field,i)=>{const input=field.querySelector('input');if(input){input.id='field-'+i;field.querySelector('label').htmlFor=input.id}const drop=field.querySelector('.drop:not(.error)');if(drop){const button=document.createElement('button');button.type='button';button.className=drop.className;button.textContent=drop.textContent;const file=document.createElement('input');file.type='file';file.accept='.pdf,.docx,.zip,.png,.jpg';file.hidden=true;button.addEventListener('click',()=>file.click());drop.replaceWith(button);field.append(file)}const error=field.querySelector('.error');if(error){error.setAttribute('role','textbox');error.setAttribute('aria-invalid','true');error.setAttribute('aria-label','Файл');field.querySelector('.err').id='error-'+i;error.setAttribute('aria-describedby','error-'+i)}});
+document.querySelectorAll('.view-switch button').forEach(button=>button.addEventListener('click',()=>{document.body.dataset.view=button.dataset.view;document.querySelectorAll('.view-switch button').forEach(b=>b.setAttribute('aria-pressed',String(b===button)))}));
+document.querySelectorAll('.seg,.chips').forEach(group=>{group.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;group.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});group.addEventListener('keydown',e=>{if(!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;const buttons=[...group.querySelectorAll('button')];const index=buttons.indexOf(document.activeElement);if(index<0)return;e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?buttons.length-1:(index+(e.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length;buttons[next].focus();buttons[next].click()})});
+document.querySelectorAll('[data-toast]').forEach(button=>button.addEventListener('click',()=>{const toast=button.closest('.phone').querySelector('.toast');clearTimeout(toast.timer);toast.textContent=button.dataset.toast;toast.classList.add('show');toast.timer=setTimeout(()=>toast.classList.remove('show'),4500)}));
+document.querySelectorAll('a[href="#"]').forEach(a=>a.addEventListener('click',e=>e.preventDefault()));
+</script></body></html>
