@@ -1,12 +1,12 @@
 # Campus Rating — инструкции для агентов
 
-MVP университетской соцсети: академический рейтинг (АР), баллы учебной (БУА) и общественной (БОА) активности, ленты. Backend — Java 25 / Spring Boot 4.1 / PostgreSQL, frontend — React 19 / Vite / Mantine, e2e — Playwright.
+Соцсеть вуза: академический рейтинг (АР), баллы учебной (БУА) и общественной (БОА) активности, ленты. Java 25 / Spring Boot 4.1 / PostgreSQL; React 19 / Vite / Mantine; Playwright.
 
 ## С чего начинать
 
 - Спека — источник правды: `docs/spec/README.md`. Мастер-план: `docs/spec/plans/2026-10-31-001-feat-campus-rating-mvp-plan.md`, планы юнитов — рядом.
 - Термины и имена в коде — только из `docs/spec/glossary.md`.
-- План большой: строй карту `rg -n '^#{1,3} ' <план>` и читай только Goal Capsule, свой юнит и его R/KTD/AE.
+- Карта плана: `rg -n '^#{1,3} ' <план>`; читай Goal Capsule, свой юнит и его R/KTD/AE.
 - Если код расходится со спекой, сначала правится спека отдельным PR, потом код.
 - Процесс работы с агентами, роли, хуки и MCP — `docs/agent-process.md`.
 
@@ -14,7 +14,7 @@ MVP университетской соцсети: академический р
 
 | Путь | Что |
 |---|---|
-| `backend/` | Spring Boot, модули по фичам (свои правила в `backend/AGENTS.md`) |
+| `backend/` | Spring Boot (`backend/AGENTS.md`) |
 | `frontend/` | React SPA (`frontend/AGENTS.md`) |
 | `e2e/` | Playwright (`e2e/AGENTS.md`) |
 | `docs/spec/` | спека, ADR в `architecture-decisions/`, API-контракт в `api/` |
@@ -34,7 +34,7 @@ MVP университетской соцсети: академический р
 | Backend: PIT | `./backend/mvnw -f backend/pom.xml -Pquality verify` |
 | Frontend | `npm --prefix frontend run check`, затем `build` |
 | Весь стек | `docker compose up -d --build --wait` |
-| e2e | хвост мастер-U2 |
+| e2e | `docker compose -p campus-e2e -f docker-compose.yml -f docker-compose.e2e.yml down -v`, затем то же с `up -d --build --wait`, затем `npm --prefix e2e test` |
 
 ## Цикл работы над юнитом
 

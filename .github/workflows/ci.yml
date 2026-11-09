@@ -63,59 +63,60 @@ jobs:
       - name: Build frontend
         run: npm --prefix frontend run build
 
-  stack:
+  e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      COMPOSE_PROJECT_NAME: campus-rating
+      COMPOSE_PROJECT_NAME: campus-e2e
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - name: Install e2e dependencies
+        run: npm --prefix e2e ci
+      - name: Check e2e
+        run: npm --prefix e2e run check
+      - name: Install Chromium
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
       - uses: docker/setup-buildx-action@v4
-      - name: Build stack images
+      - name: Remove previous e2e volumes
+        run: docker compose -p campus-e2e -f docker-compose.yml -f docker-compose.e2e.yml down -v
+      - name: Build e2e images
         uses: docker/bake-action@v6
         with:
           source: .
-          files: docker-compose.yml
+          files: |
+            docker-compose.yml
+            docker-compose.e2e.yml
           targets: backend,web
           load: true
           set: |
-            backend.tags=campus-rating-backend:latest
-            web.tags=campus-rating-web:latest
+            backend.tags=campus-e2e-backend:latest
+            web.tags=campus-e2e-web:latest
             backend.cache-from=type=gha,scope=stack-backend
             backend.cache-to=type=gha,scope=stack-backend,mode=max
             web.cache-from=type=gha,scope=stack-web
             web.cache-to=type=gha,scope=stack-web,mode=max
-      - name: Start stack
-        run: docker compose up -d --no-build --wait --wait-timeout 180
-      - name: Check HTTP routing
-        run: |
-          node --input-type=module <<'JS'
-          import assert from 'node:assert/strict';
-
-          async function request(path, status, contentType) {
-            const response = await fetch(`http://127.0.0.1:8080${path}`, {
-              signal: AbortSignal.timeout(10000),
-            });
-            assert.equal(response.status, status, path);
-            assert.ok(response.headers.get('content-type')?.startsWith(contentType), path);
-            return response.text();
-          }
-
-          const index = await request('/', 200, 'text/html');
-          assert.match(index, /<!doctype html>/i);
-          const missing = JSON.parse(await request('/api/v1/does-not-exist', 404, 'application/json'));
-          assert.equal(missing.status, 404);
-          assert.equal(missing.path, '/api/v1/does-not-exist');
-          assert.equal(await request('/actuator/health', 200, 'text/html'), index);
-          await request('/assets/does-not-exist.js', 404, 'text/html');
-          console.log('Stack HTTP checks passed');
-          JS
-      - name: Show stack logs on failure
+      - name: Start e2e stack
+        run: docker compose -p campus-e2e -f docker-compose.yml -f docker-compose.e2e.yml up -d --no-build --wait --wait-timeout 180
+      - name: Run e2e smoke
+        run: npm --prefix e2e test
+      - name: Upload Playwright report on failure
         if: failure()
-        run: docker compose logs --no-color
-      - name: Stop stack and remove volumes
+        uses: actions/upload-artifact@v6
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+          retention-days: 7
+      - name: Show e2e stack logs on failure
+        if: failure()
+        run: docker compose -p campus-e2e -f docker-compose.yml -f docker-compose.e2e.yml logs --no-color
+      - name: Stop e2e stack and remove volumes
         if: always()
-        run: docker compose down -v
+        run: docker compose -p campus-e2e -f docker-compose.yml -f docker-compose.e2e.yml down -v
