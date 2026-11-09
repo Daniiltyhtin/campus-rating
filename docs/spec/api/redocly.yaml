@@ -6,6 +6,7 @@ extends:
 rules:
   info-license: off # хакатонный проект без лицензии
   operation-operationId: error
+  paths-kebab-case: error # действия — подпуть через /, без двоеточия (KTD1 плана U3)
   operation-4xx-response: off # у публичного чтения (csrf, справочники) ошибок нет; 401/403 требует rule/private-401-403
   no-invalid-media-type-examples:
     severity: error

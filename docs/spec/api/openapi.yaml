@@ -906,7 +906,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/checkpoints/{checkpointId}/assignments:accept:
+  /api/v1/checkpoints/{checkpointId}/assignments/accept:
     post:
       tags: [checkpoint]
       operationId: acceptAssignments
@@ -1217,7 +1217,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/assignments/{assignmentId}:return:
+  /api/v1/assignments/{assignmentId}/return:
     post:
       tags: [checkpoint]
       operationId: returnAssignment
@@ -1659,7 +1659,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /api/v1/activities/{activityId}/participation:preview:
+  /api/v1/activities/{activityId}/participation/preview:
     post:
       tags: [activity]
       operationId: previewParticipation
