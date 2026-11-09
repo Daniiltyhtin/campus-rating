@@ -366,3 +366,20 @@
 - **Урок:** нет. Противоречие источников найдено при планировании: контроллер `/ledger/{userId}/entries` в таблице модулей плана U3 отдан мастер-U6 (A), а в `module-seams.md` — мастер-U10 (B) → вынесено в Q1 плана U6, решают оба разработчика.
 - **Кругов ревью:** —
 - **Коммит / PR:** ветка `u6a-ledger-api`.
+
+### 2026-11-09 — U2 целиком: итог мастер-U2
+
+- **Кто / агент / модель:** Даниил и Максим / Codex (реализация PR 1, 3, 4), Claude Code (PR 0 и PR 2, ревью, коммиты), Antigravity (независимое ревью PR) / gpt-6.1-sol medium, claude-opus-5-5, gemini-4-argon-medium, gemini-3.8-flash-high
+- **Поручение:** приёмка «U2 целиком» по плану `docs/spec/plans/2026-11-07-001-feat-u2-skeleton-plan.md`: PR 0 и четыре PR с кодом в `main`, CI на `main` зелёный, чистый клон → `docker compose up` → заглушка входа, команда CRAP — `tools/crap.mjs`.
+- **Результат с доказательствами:**
+  - В `main`: PR 0 — #5 (07.11), PR 1 — #7 (07.11), PR 2 — #10 (09.11), PR 3 — #11 (09.11), PR 4 — #12 (09.11); следом контракт U3a — #6.
+  - CI на `main` после #6 (`ff9c5e7`): `harness`, `backend`, `frontend`, `e2e` — success; `stack` заменён на `e2e` в PR 4 (KTD11).
+  - Чистый клон `ff9c5e7` с GitHub во временную папку, свой проект compose и тома: `node tools/check-agent-docs.mjs` — passed; `node --test "tools/test/*.test.mjs"` — 140/140; `./backend/mvnw -f backend/pom.xml verify` — rc 0, 4 отчёта `*IT`; `node tools/crap.mjs backend/target/site/jacoco/jacoco.xml` — rc 0; `npm --prefix frontend run check` и `build` — rc 0; `docker compose build --no-cache` — rc 0 (2 мин 44 с); `docker compose up -d --wait` — `postgres`, `backend`, `web` healthy; `http://localhost:8080/` — 200 `text/html`, `/api/v1/nope` — 404 `application/json`; стек `campus-e2e` (`down -v`, `up -d --build --wait`) и `npm --prefix e2e test` — 4/4 («главная страница открывает форму входа» и «nginx сохраняет API и закрывает actuator» на 360 и 1280 px); `git status` после всех сборок — пустой.
+  - CRAP: `crap.py` остался только в пометках о замене в плане U2 (Product Contract, KTD9); мастер-план и скилл `ub-mode` указывают на `tools/crap.mjs`.
+  - Ревью другой моделью по PR: #7 — 13 находок, приняты 11; #11 — 10, приняты 4; #12 — 11, приняты 3 (разбор в комментарии PR #12: `drop database if exists` и `lastIndexOf` в `ChangelogOrderIT`, `baseURL` `127.0.0.1:8090`, комментарий в смоуке для мастер-U5; параллельные воркеры Playwright отложены в мастер-U12). Ревью второго разработчика: #10 — 2 вопроса приняты; #11 — 3 заметки, 2 записаны в мастер-U7 и U22; #12 — 1 мелочь исправлена.
+- **Не проверено:** чистый клон на Windows/WSL2 — проверен только на Linux; страница входа вручную в браузере — только Playwright и `curl`.
+- **Неудачные попытки:** нет новых (сбой `gemini-4-argon-medium` — в записи ревью PR #11).
+- **Ошибка агента:** нет новых. Срок: план U2 ждал PR backend, frontend и compose в `main` к утру 08.11 — влиты утром 09.11.
+- **Урок:** нет новых: уроки U2 внесены в своих PR (`backend/AGENTS.md`, `frontend/AGENTS.md`, `e2e/AGENTS.md`, `REVIEWING.md`, «Уроки обвязки» в `docs/agent-process.md`). Проверка чистого клона ничего не нашла, потому что PR 3 уже собирал образы и поднимал стек с нуля.
+- **Кругов ревью:** — (итоговая запись; ревью — по PR выше).
+- **Коммит / PR:** ветка `process-u2-summary`.
