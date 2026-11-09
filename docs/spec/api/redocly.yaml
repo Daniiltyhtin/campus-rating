@@ -1,0 +1,187 @@
+# Линтер контракта: npx --yes @redocly/cli@2.76.0 lint --config docs/spec/api/redocly.yaml docs/spec/api/openapi.yaml
+# Правила проекта — план U3 (KTD13). Все с severity error: предупреждение не роняет CI.
+extends:
+  - recommended
+
+rules:
+  info-license: off # хакатонный проект без лицензии
+  operation-operationId: error
+  paths-kebab-case: error # действия — подпуть через /, без двоеточия (KTD1 плана U3)
+  operation-4xx-response: off # у публичного чтения (csrf, справочники) ошибок нет; 401/403 требует rule/private-401-403
+  no-invalid-media-type-examples:
+    severity: error
+    allowAdditionalProperties: false
+  no-invalid-schema-examples: error
+
+  rule/operation-access:
+    subject:
+      type: Operation
+    assertions:
+      requireAny: [x-roles, x-public]
+      mutuallyExclusive: [x-roles, x-public]
+    message: У операции ровно одно из x-roles (роли с сессией) или x-public true.
+    severity: error
+
+  rule/operation-x-roles:
+    subject:
+      type: Operation
+      property: x-roles
+    assertions:
+      nonEmpty: true
+      enum: [AUTHENTICATED, STUDENT, TEACHER, ADMIN]
+      maxLength: 4 # массив до 4 ролей; строка-роль длиннее 4 символов и падает
+    where:
+      - subject:
+          type: Operation
+          property: x-roles
+        assertions:
+          defined: true
+    message: x-roles — массив из AUTHENTICATED, STUDENT, TEACHER, ADMIN.
+    severity: error
+
+  rule/operation-x-public:
+    subject:
+      type: Operation
+      property: x-public
+    assertions:
+      const: true
+    message: x-public задаётся только как true.
+    severity: error
+
+  rule/operation-x-status:
+    subject:
+      type: Operation
+      property: x-status
+    assertions:
+      defined: true
+      enum: [planned, implemented]
+      minLength: 7 # строка; массив короче 7 элементов и падает
+    message: У операции должен быть x-status — строка planned или implemented.
+    severity: error
+
+  rule/public-overrides-security:
+    subject:
+      type: Operation
+      property: security
+    assertions:
+      defined: true
+    where:
+      - subject:
+          type: Operation
+          property: x-public
+        assertions:
+          defined: true
+    message: Публичная операция задаёт security сама — [] или только csrf.
+    severity: error
+
+  rule/public-without-session:
+    subject:
+      type: SecurityRequirement
+    assertions:
+      disallowed: [session]
+    where:
+      - subject:
+          type: Operation
+          property: x-public
+        assertions:
+          defined: true
+    message: Публичная операция не требует сессии.
+    severity: error
+
+  rule/private-security-explicit:
+    subject:
+      type: Operation
+      property: security
+    assertions:
+      defined: true
+      nonEmpty: true
+    where:
+      - subject:
+          type: Operation
+          property: x-roles
+        assertions:
+          defined: true
+    message: Непубличная операция задаёт непустой security с сессией явно.
+    severity: error
+
+  rule/private-requires-session:
+    subject:
+      type: SecurityRequirement
+    assertions:
+      required: [session]
+    where:
+      - subject:
+          type: Operation
+          property: x-roles
+        assertions:
+          defined: true
+    message: Непубличная операция требует сессию.
+    severity: error
+
+  rule/private-401-403:
+    subject:
+      type: Responses
+    assertions:
+      required: ['401', '403']
+    where:
+      - subject:
+          type: Operation
+          property: x-roles
+        assertions:
+          defined: true
+    message: Непубличная операция описывает ответы 401 и 403.
+    severity: error
+
+  rule/mutating-overrides-security:
+    subject:
+      type: Operation
+      filterInParentKeys: [post, put, patch, delete]
+      property: security
+    assertions:
+      defined: true
+      nonEmpty: true
+    message: Изменяющая операция задаёт непустой security с csrf.
+    severity: error
+
+  rule/mutating-requires-csrf:
+    subject:
+      type: SecurityRequirement
+    assertions:
+      required: [csrf]
+    where:
+      - subject:
+          type: Operation
+          filterInParentKeys: [post, put, patch, delete]
+        assertions:
+          defined: true
+    message: Изменяющая операция требует CSRF-заголовок.
+    severity: error
+
+  rule/read-without-csrf:
+    subject:
+      type: SecurityRequirement
+    assertions:
+      disallowed: [csrf]
+    where:
+      - subject:
+          type: Operation
+          filterInParentKeys: [get]
+        assertions:
+          defined: true
+    message: Чтение не требует CSRF-заголовка.
+    severity: error
+
+  rule/success-example:
+    subject:
+      type: MediaType
+      filterOutParentKeys: [application/octet-stream]
+    assertions:
+      requireAny: [example, examples]
+    where:
+      - subject:
+          type: Response
+          matchParentKeys: /^2\d\d$/
+        assertions:
+          defined: true
+    message: У успешного ответа есть пример.
+    severity: error
