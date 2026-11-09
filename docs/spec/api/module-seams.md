@@ -14,7 +14,7 @@
 package ru.campusrating.shared.error;
 
 public enum ProblemCode {            // зеркало ProblemCode контракта, у каждого — HTTP-статус из его таблицы
-    UNAUTHENTICATED(401), /* … */ ENROLLMENT_CLOSED(422);
+    UNAUTHENTICATED(401), /* … */ ENROLLMENT_CLOSED(422), INTERNAL_ERROR(500);
     public int status() { … }
 }
 
@@ -34,7 +34,7 @@ public record FieldError(String field, String code, String message) {}
 public record BudgetCheck(long groupId, String groupName, int needed, int remaining, int shortfall) {}
 ```
 
-  Обработчик кладёт расширения (`fieldErrors`, `budgets`, `studentIds`) в свойства `ProblemDetail`. Ошибки Bean Validation (`MethodArgumentNotValidException`, `HandlerMethodValidationException`) он сам переводит в `VALIDATION_FAILED` с `fieldErrors`. Ошибки Spring Security (`401`, `403`, CSRF) переводит `SecurityConfig` мастер-U5 через `AuthenticationEntryPoint` и `AccessDeniedHandler` в те же коды.
+  Обработчик кладёт расширения (`fieldErrors`, `budgets`, `studentIds`) в свойства `ProblemDetail`. Ошибки Bean Validation (`MethodArgumentNotValidException`, `HandlerMethodValidationException`) он сам переводит в `VALIDATION_FAILED` с `fieldErrors`. Ошибки Spring Security (`401`, `403`, CSRF) переводит `SecurityConfig` мастер-U5 через `AuthenticationEntryPoint` и `AccessDeniedHandler` в те же коды. Любое другое исключение обработчик пишет в лог и отдаёт как `500 INTERNAL_ERROR` без текста исключения. Исключения Spring MVC со своим статусом (`ErrorResponse`: 405, 415 и т. п.) и исключения из пакета `org.springframework.security` он пропускает дальше, поэтому отказ `@PreAuthorize` дойдёт до `AccessDeniedHandler`, а не станет 500.
 - **Время** — `Instant` из инжектируемого `Clock` (мастер-KTD6), месяц и дата по Москве — `shared.domain.MoscowTime` (план U2).
 - **Изменение шва** — правкой этого документа в PR с ревью владельца и потребителей, как у контракта.
 
@@ -245,6 +245,7 @@ public interface SettingsApi {
 ```
 
 - **Гарантии.** Значение читается при каждом вызове: изменение администратора действует без рестарта (мастер-KTD10). Кэшировать значения в потребителе нельзя. Шаг и интервал копируются в точку при её создании.
+- **Хранение.** Строка таблицы `settings` перекрывает значение по умолчанию из `campus.*`; нет строки — действует умолчание. Ключи: `penaltyStep`, `penaltyInterval`, `penaltyPollPeriod`, `semesterAccrual`, `monthlyBudgetLimit`. Числа — десятичной строкой, длительности — ISO-8601 (`PT1M`), а не формат Spring (`1m`). Пишет в таблицу только администрирование (мастер-U13) и проверяет значение до записи: битая строка ломает чтение, умолчание её не скрывает.
 - **Тестовый двойник:** мок со значениями по умолчанию; e2e ускоряет штраф через `docker-compose.e2e.yml`.
 
 ## 6. `StudentAssignments` — задачи студента для профиля

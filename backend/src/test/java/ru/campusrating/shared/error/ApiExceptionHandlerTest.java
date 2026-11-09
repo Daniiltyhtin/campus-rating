@@ -1,6 +1,15 @@
 package ru.campusrating.shared.error;
 
+import jakarta.validation.Constraint;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.Payload;
 import jakarta.validation.Valid;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Objects;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -84,8 +93,37 @@ class ApiExceptionHandlerTest {
                 .extractingPath("$.fieldErrors[0].code").isEqualTo(code);
     }
 
+    @Test
+    void classLevelViolationIsReportedAgainstObject() {
+        mvc.post().uri("/errors/passwords").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"password\":\"secret1\",\"repeat\":\"secret2\"}")
+                .assertThat().hasStatus(400).bodyJson().isLenientlyEqualTo("""
+                        {"code":"VALIDATION_FAILED","fieldErrors":[{"field":"passwords","code":"INVALID","message":"Пароли не совпадают"}]}
+                        """);
+    }
+
+    @Test
+    void unexpectedExceptionIsInternalErrorWithoutDetails() {
+        mvc.get().uri("/errors/crash").assertThat().hasStatus(500)
+                .hasContentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+                .bodyJson().isLenientlyEqualTo("""
+                        {"type":"about:blank","status":500,"code":"INTERNAL_ERROR",
+                         "detail":"Внутренняя ошибка сервера","instance":"/errors/crash"}
+                        """);
+    }
+
+    @Test
+    void springMvcErrorsKeepTheirStatus() {
+        mvc.post().uri("/errors/not-found").assertThat().hasStatus(405);
+        mvc.post().uri("/errors/body").contentType(MediaType.TEXT_PLAIN).content("x").assertThat().hasStatus(415);
+    }
+
     @RestController
     static class ErrorsController {
+        @GetMapping("/errors/crash")
+        void crash() { throw new IllegalStateException("секрет в сообщении"); }
+        @PostMapping("/errors/passwords")
+        void passwords(@Valid @RequestBody Passwords input) {}
         @GetMapping("/errors/not-found")
         void missing() { throw new ApiException(ProblemCode.NOT_FOUND, "Ресурс не найден"); }
         @GetMapping("/errors/budget")
@@ -105,6 +143,25 @@ class ApiExceptionHandlerTest {
         void sizedCollection(@Valid @RequestBody SizedCollection input) {}
         @GetMapping("/errors/parameter")
         void parameter(@RequestParam @Min(1) int count) {}
+    }
+
+    @Matching
+    record Passwords(String password, String repeat) {}
+
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Constraint(validatedBy = MatchingValidator.class)
+    @interface Matching {
+        String message() default "Пароли не совпадают";
+        Class<?>[] groups() default {};
+        Class<? extends Payload>[] payload() default {};
+    }
+
+    public static class MatchingValidator implements ConstraintValidator<Matching, Passwords> {
+        @Override
+        public boolean isValid(Passwords value, ConstraintValidatorContext context) {
+            return Objects.equals(value.password(), value.repeat());
+        }
     }
 
     record Input(@NotBlank String name) {}
