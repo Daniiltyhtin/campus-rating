@@ -104,7 +104,7 @@ public enum SourceType { REGISTRATION, SEMESTER, CHECKPOINT, ACTIVITY }
 public record Posting(long studentId, Currency currency, EntryKind kind, int nominalAmount,
                       Source source, @Nullable Author author, String idempotencyKey) {}
 public record Source(SourceType type, @Nullable Long id, String title) {}   // title — снимок
-public record Author(long userId, String fullName) {}                       // снимок ФИО
+public record Author(long id, String fullName) {}                           // снимок ФИО
 
 public sealed interface PostingResult {
     record Posted(long entryId, int amount, int balanceAfter) implements PostingResult {}
