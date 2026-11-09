@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.ErrorResponse;
@@ -62,7 +65,9 @@ public class ApiExceptionHandler {
     public ProblemDetail parameterValidation(HandlerMethodValidationException exception, HttpServletRequest request) {
         var errors = exception.getParameterValidationResults().stream()
                 .flatMap(result -> result.getResolvableErrors().stream().map(error -> new FieldError(
-                        result.getMethodParameter().getParameterName(),
+                        // У @Valid @RequestBody рядом с ограничением параметра ошибки — поля тела, а не имя параметра.
+                        error instanceof org.springframework.validation.FieldError field ? field.getField()
+                                : result.getMethodParameter().getParameterName(),
                         validationCode(error.getCodes()[0], result.unwrap(error, ConstraintViolation.class)),
                         error.getDefaultMessage())))
                 .toList();
@@ -77,6 +82,21 @@ public class ApiExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ProblemDetail unreadableBody(HttpMessageNotReadableException exception, HttpServletRequest request) {
         return validation(List.of(new FieldError("body", "INVALID", "Неверный формат запроса")), request);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ProblemDetail missingParameter(MissingServletRequestParameterException exception, HttpServletRequest request) {
+        return validation(List.of(new FieldError(exception.getParameterName(), "REQUIRED", "Обязательный параметр")), request);
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ProblemDetail missingPart(MissingServletRequestPartException exception, HttpServletRequest request) {
+        return validation(List.of(new FieldError(exception.getRequestPartName(), "REQUIRED", "Обязательная часть запроса")), request);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ProblemDetail uploadTooLarge(MaxUploadSizeExceededException exception, HttpServletRequest request) {
+        return api(new ApiException(ProblemCode.FILE_TOO_LARGE, "Файл больше 10 МБ"), request);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)

@@ -5,24 +5,41 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
-import org.springframework.test.context.TestPropertySource;
 import ru.campusrating.support.PostgresIntegrationTest;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@TestPropertySource(properties = "spring.liquibase.contexts=default,demo")
+// Контекст demo в общей базе запрещён (backend/AGENTS.md): берём только сид справочников и убираем его за собой.
 class DirectoryApiIT extends PostgresIntegrationTest {
+    private static final ClassPathResource SEED = new ClassPathResource("db/changelog/demo/202611090900-demo-directory.sql");
+
     @Autowired private DirectoryApi directory;
     @Autowired private JdbcTemplate jdbc;
     @LocalServerPort private int port;
+
+    @BeforeEach
+    void seedDirectory() throws Exception {
+        try (var connection = jdbc.getDataSource().getConnection()) {
+            ScriptUtils.executeSqlScript(connection, SEED);
+        }
+    }
+
+    @AfterEach
+    void removeDirectory() {
+        jdbc.update("delete from department where id = 101");
+        jdbc.update("delete from study_group where id in (11, 12)");
+        jdbc.update("delete from faculty where id in (1, 2)");
+    }
 
     @Test
     void facultiesAndDepartmentsMatchContract() throws Exception {
@@ -86,9 +103,8 @@ class DirectoryApiIT extends PostgresIntegrationTest {
     @Test
     void repeatedDemoSeedDoesNotDuplicateRowsOrReuseSeedIds() throws Exception {
         try (var connection = jdbc.getDataSource().getConnection()) {
-            var seed = new ClassPathResource("db/changelog/demo/202611090900-demo-directory.sql");
-            ScriptUtils.executeSqlScript(connection, seed);
-            ScriptUtils.executeSqlScript(connection, seed);
+            ScriptUtils.executeSqlScript(connection, SEED);
+            ScriptUtils.executeSqlScript(connection, SEED);
         }
         assertThat(jdbc.queryForObject("select count(*) from faculty", Integer.class)).isEqualTo(2);
         assertThat(jdbc.queryForObject("select count(*) from study_group", Integer.class)).isEqualTo(2);
@@ -102,7 +118,6 @@ class DirectoryApiIT extends PostgresIntegrationTest {
     }
 
     @Test
-    @org.springframework.transaction.annotation.Transactional
     void minimalIdentityTablesSupportActiveAndPendingMemberships() {
         var activeId = jdbc.queryForObject("""
                 insert into app_user (email, role, full_name)
@@ -112,16 +127,21 @@ class DirectoryApiIT extends PostgresIntegrationTest {
                 insert into app_user (email, role, full_name)
                 values ('pending-u4@example.test', 'STUDENT', 'Ожидающий студент') returning id
                 """, Long.class);
-        jdbc.update("""
-                insert into group_membership (student_id, group_id, state, activated_at)
-                values (?, 11, 'ACTIVE', timestamptz '2026-11-01 00:00:00+00'), (?, 11, 'PENDING', null)
-                """, activeId, pendingId);
-        assertThat(jdbc.queryForList("""
-                select student_id from group_membership where group_id = 11 and state = 'ACTIVE'
-                """, Long.class)).contains(activeId).doesNotContain(pendingId);
-        assertThat(jdbc.queryForObject("""
-                select activated_at is null from group_membership where student_id = ?
-                """, Boolean.class, pendingId)).isTrue();
+        try {
+            jdbc.update("""
+                    insert into group_membership (student_id, group_id, state, activated_at)
+                    values (?, 11, 'ACTIVE', timestamptz '2026-11-01 00:00:00+00'), (?, 11, 'PENDING', null)
+                    """, activeId, pendingId);
+            assertThat(jdbc.queryForList("""
+                    select student_id from group_membership where group_id = 11 and state = 'ACTIVE'
+                    """, Long.class)).contains(activeId).doesNotContain(pendingId);
+            assertThat(jdbc.queryForObject("""
+                    select activated_at is null from group_membership where student_id = ?
+                    """, Boolean.class, pendingId)).isTrue();
+        } finally {
+            jdbc.update("delete from group_membership where student_id in (?, ?)", activeId, pendingId);
+            jdbc.update("delete from app_user where id in (?, ?)", activeId, pendingId);
+        }
     }
 
     private JsonNode get(String path) throws Exception {
