@@ -118,8 +118,35 @@ class ApiExceptionHandlerTest {
         mvc.post().uri("/errors/body").contentType(MediaType.TEXT_PLAIN).content("x").assertThat().hasStatus(415);
     }
 
+    @Test
+    void bodyFieldNameSurvivesMethodValidation() {
+        mvc.post().uri("/errors/checked-body/0").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"\"}")
+                .assertThat().hasStatus(400).bodyJson().extractingPath("$.fieldErrors[*].field").asArray()
+                .containsExactlyInAnyOrder("id", "name");
+    }
+
+    @Test
+    void missingParameterPartAndOversizedUploadKeepContractCodes() {
+        mvc.get().uri("/errors/parameter").assertThat().hasStatus(400).bodyJson().isLenientlyEqualTo("""
+                {"code":"VALIDATION_FAILED","fieldErrors":[{"field":"count","code":"REQUIRED"}]}
+                """);
+        mvc.post().uri("/errors/upload").multipart().param("note", "x").assertThat().hasStatus(400).bodyJson()
+                .isLenientlyEqualTo("""
+                {"code":"VALIDATION_FAILED","fieldErrors":[{"field":"file","code":"REQUIRED"}]}
+                """);
+        mvc.get().uri("/errors/too-large").assertThat().hasStatus(413)
+                .hasContentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON)
+                .bodyJson().extractingPath("$.code").isEqualTo("FILE_TOO_LARGE");
+    }
+
     @RestController
     static class ErrorsController {
+        @PostMapping("/errors/checked-body/{id}")
+        void checkedBody(@PathVariable @Min(1) long id, @Valid @RequestBody Input input) {}
+        @PostMapping("/errors/upload")
+        void upload(@RequestPart("file") org.springframework.web.multipart.MultipartFile file) {}
+        @GetMapping("/errors/too-large")
+        void tooLarge() { throw new org.springframework.web.multipart.MaxUploadSizeExceededException(10 * 1024 * 1024); }
         @GetMapping("/errors/crash")
         void crash() { throw new IllegalStateException("секрет в сообщении"); }
         @PostMapping("/errors/passwords")
