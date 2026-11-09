@@ -40,3 +40,7 @@ React 19, Vite, TypeScript, Mantine, React Router, TanStack Query, Vitest. До�
 | Dev-сервер, `/api` → `http://localhost:8081` | `npm --prefix frontend run dev` |
 
 Появится в мастер-U3: `npm run api:gen`. Компоненты с `useMediaQuery` тестируются через `setViewportWidth` из `src/test/setup.ts`; страницы — через `renderApp` из `src/test/render.tsx`.
+
+## Уроки
+
+- Подсветка активного пункта меню и провайдер TanStack Query в тестовом рендере не проверялись — все тесты проходили и без них → нашёл ревьюер PR #10 → каждое состояние, меняющее вид, проверять тестом через доступный атрибут (`aria-current`, `aria-disabled`), а `renderApp` держать с теми же провайдерами, что `main.tsx` (`src/app/AppShell.tsx`, `src/test/render.tsx`).

@@ -57,6 +57,25 @@ describe('AppShell', () => {
     expect(linkNames(side)).toEqual(['Справочники', 'Импорт', 'Семестры', 'Настройки', 'Старосты']);
   });
 
+  it('отмечает текущим только пункт открытого раздела', async () => {
+    renderApp('/tasks/42', student);
+
+    const side = await screen.findByRole('navigation', { name: 'Боковое меню' });
+    expect(within(side).getByRole('link', { name: 'Задачи' })).toHaveAttribute('aria-current', 'page');
+    for (const name of ['Главная', 'Активности', 'Награды', 'Профиль']) {
+      expect(within(side).getByRole('link', { name })).not.toHaveAttribute('aria-current');
+    }
+  });
+
+  it('отмечает «Главную» текущей только на корне', async () => {
+    setViewportWidth(360);
+    renderApp('/', student);
+
+    const bottom = await screen.findByRole('navigation', { name: 'Нижнее меню' });
+    expect(within(bottom).getByRole('link', { name: 'Главная' })).toHaveAttribute('aria-current', 'page');
+    expect(within(bottom).getByRole('link', { name: 'Задачи' })).not.toHaveAttribute('aria-current');
+  });
+
   it('показывает заглушку раздела внутри AppShell', async () => {
     renderApp('/tasks', student);
 
