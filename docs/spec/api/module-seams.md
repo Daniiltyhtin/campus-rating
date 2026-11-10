@@ -14,7 +14,7 @@
 package ru.campusrating.shared.error;
 
 public enum ProblemCode {            // зеркало ProblemCode контракта, у каждого — HTTP-статус из его таблицы
-    UNAUTHENTICATED(401), /* … */ ENROLLMENT_CLOSED(422);
+    UNAUTHENTICATED(401), /* … */ ENROLLMENT_CLOSED(422), INTERNAL_ERROR(500);
     public int status() { … }
 }
 
@@ -34,7 +34,7 @@ public record FieldError(String field, String code, String message) {}
 public record BudgetCheck(long groupId, String groupName, int needed, int remaining, int shortfall) {}
 ```
 
-  Обработчик кладёт расширения (`fieldErrors`, `budgets`, `studentIds`) в свойства `ProblemDetail`. Ошибки Bean Validation (`MethodArgumentNotValidException`, `HandlerMethodValidationException`) он сам переводит в `VALIDATION_FAILED` с `fieldErrors`. Ошибки Spring Security (`401`, `403`, CSRF) переводит `SecurityConfig` мастер-U5 через `AuthenticationEntryPoint` и `AccessDeniedHandler` в те же коды.
+  Обработчик кладёт расширения (`fieldErrors`, `budgets`, `studentIds`) в свойства `ProblemDetail`. Ошибки Bean Validation (`MethodArgumentNotValidException`, `HandlerMethodValidationException`) он сам переводит в `VALIDATION_FAILED` с `fieldErrors`. Ошибки Spring Security (`401`, `403`, CSRF) переводит `SecurityConfig` мастер-U5 через `AuthenticationEntryPoint` и `AccessDeniedHandler` в те же коды. Любое другое исключение обработчик пишет в лог и отдаёт как `500 INTERNAL_ERROR` без текста исключения. Исключения Spring MVC со своим статусом (`ErrorResponse`: 405, 415 и т. п.) и исключения из пакета `org.springframework.security` он пропускает дальше, поэтому отказ `@PreAuthorize` дойдёт до `AccessDeniedHandler`, а не станет 500.
 - **Время** — `Instant` из инжектируемого `Clock` (мастер-KTD6), месяц и дата по Москве — `shared.domain.MoscowTime` (план U2).
 - **Изменение шва** — правкой этого документа в PR с ревью владельца и потребителей, как у контракта.
 
@@ -44,8 +44,8 @@ public record BudgetCheck(long groupId, String groupName, int needed, int remain
 
 1. Модуль-владелец (`checkpoint`, `activity`, `identity`) открывает транзакцию (`@Transactional`).
 2. Он берёт `SELECT … FOR UPDATE` своих строк по возрастанию id. Назначения — для сдачи, приёма, возврата и штрафа. Строки бюджета `(преподаватель, группа, месяц)` — по возрастанию id группы, только `activity`.
-3. Под блокировкой он перепроверяет состояние и пишет доменные изменения.
-4. Последним шагом он вызывает `LedgerApi.post(...)` одной пачкой. `LedgerApi` присоединяется к транзакции вызывающего (`Propagation.MANDATORY`): без открытой транзакции он падает, собственного commit не делает. Балансы он блокирует сам, по возрастанию `(studentId, currency)`.
+3. До `post` он блокирует доменные строки и перепроверяет состояние. Изменения по фактической сумме (у штрафа — `charged` и последний оплаченный слот) записывает после `post`: `Posted` — по `amount`, `Zero` — слот обработан без суммы, `AlreadyPosted` — без изменений.
+4. После блокировок и перепроверки он вызывает `LedgerApi.post(...)` одной пачкой. `LedgerApi` присоединяется к транзакции вызывающего (`Propagation.MANDATORY`): без открытой транзакции он падает, собственного commit не делает. Балансы он блокирует сам, по возрастанию `(studentId, currency)`.
 5. Commit делает вызывающий. Любое исключение откатывает и доменную запись, и проводки.
 
 Нарушение порядка, например баланс раньше бюджета, — повод для `request changes` на ревью (мастер-KTD5).
@@ -104,7 +104,7 @@ public enum SourceType { REGISTRATION, SEMESTER, CHECKPOINT, ACTIVITY }
 public record Posting(long studentId, Currency currency, EntryKind kind, int nominalAmount,
                       Source source, @Nullable Author author, String idempotencyKey) {}
 public record Source(SourceType type, @Nullable Long id, String title) {}   // title — снимок
-public record Author(long userId, String fullName) {}                       // снимок ФИО
+public record Author(long id, String fullName) {}                           // снимок ФИО
 
 public sealed interface PostingResult {
     record Posted(long entryId, int amount, int balanceAfter) implements PostingResult {}
@@ -123,16 +123,16 @@ public record ReconciliationResult(Instant checkedAt, int checkedPairs, List<Bal
 ```
 
 **Гарантии и правила.**
-- **Знак и срезка.** `nominalAmount` знаковый: штраф отрицательный, остальное положительное. Фактическую сумму под блокировкой баланса считает `BalanceRules`. АР не выходит за 0…1000 (мастер-R9, R11). БУА и БОА не срезаются. Сумма, срезанная до 0, даёт `Zero`, проводки нет. По `Posted.amount` штраф узнаёт, сколько реально списано, и добавляет модуль к `charged` назначения.
-- **Идемпотентность.** Уникальный `idempotencyKey` (мастер-KTD3). Повтор возвращает `AlreadyPosted` с исходной суммой и баланс не меняет. Формат ключей:
+- **Знак и срезка.** `nominalAmount` знаковый: штраф отрицательный, остальное положительное. Фактическую сумму под блокировкой баланса считает `BalanceRules`. АР не выходит за 0…1000 (мастер-R9, R11). БУА и БОА не срезаются. Сумма, срезанная до 0, даёт `Zero`: проводки нет, ключ идемпотентности не фиксируется, повтор пересчитает сумму заново. Факт обработки слота штрафа или пары семестр–студент хранит вызывающий модуль (мастер-U8, R9). По `Posted.amount` штраф узнаёт, сколько реально списано, и добавляет модуль к `charged` назначения.
+- **Идемпотентность.** Уникальный `idempotencyKey` (мастер-KTD3). Повтор возвращает `AlreadyPosted` с исходной суммой и баланс не меняет. Другой студент, валюта или вид при том же ключе — `IllegalArgumentException` (ошибка вызывающего). Формат ключей:
   - `initial:{studentId}`;
   - `semester:{semesterId}:{studentId}`;
   - `penalty:{assignmentId}:{slot}`;
   - `award:{activityId}:{studentId}`.
-- **Обязательные поля по виду.** У `ACTIVITY_AWARD` обязательны `author` и `source.id`, у `PENALTY` — `source.id`. Иначе `post` бросает `IllegalArgumentException`: это ошибка вызывающего, а не пользователя.
+- **Обязательные поля по виду.** Тип источника соответствует виду: `INITIAL` → `REGISTRATION`, `SEMESTER_ACCRUAL` → `SEMESTER`, `PENALTY` → `CHECKPOINT`, `ACTIVITY_AWARD` → `ACTIVITY`. У `ACTIVITY_AWARD` обязательны `author` с непустым `fullName` и `source.id`, у `PENALTY` — `source.id`; у остальных видов `author = null` (система). Иначе `post` бросает `IllegalArgumentException`: это ошибка вызывающего, а не пользователя.
 - **Снимки.** `Source.title` и `Author.fullName` записываются в проводку при её создании. Журнал не зависит от `checkpoint`, `activity` и `identity` и не читает их при показе истории: переименование точки или смена ФИО прошлое не меняют. Автор `null` означает систему: штраф, семестр, стартовые баллы.
 - **Только через `post`.** Запись в таблицы журнала и балансов закрыта границей модуля (мастер-KTD3). Чтение балансов для рейтинга и профиля идёт из снимка, без `SUM` по журналу.
-- **Курсоры** `history` и `awards` — непрозрачные строки по `(createdAt desc, id desc)`. Битый курсор — `ValidationFailedException` по полю `cursor`.
+- **Курсоры** `history` и `awards` — непрозрачные строки по `(createdAt desc, id desc)`, привязанные к списку: `history` — к студенту и валюте (или всем валютам), `awards` — к ленте наград. Битый курсор, чужой фильтр или время вне 1970-01-01…9999-12-31 — `ValidationFailedException` по полю `cursor`.
 - **Чтение истории.** Контроллер `/ledger/{userId}/entries` живёт в `ledger` (мастер-U10, дорожка B) и не проверяет существование пользователя: `ledger` не зависит от `identity`. Неизвестный id даёт пустую страницу. Вход проверяет `SecurityConfig`, `CurrentUser` здесь не нужен. ФИО студентов для ленты `feed` берёт у `identity` по `studentId`, то есть текущее, а не снимок: в проводке хранится снимок автора, а не студента.
 - **Блок штрафа.** `checkpoint` читает `balances(studentId)` один раз на запрос `listMyAssignments` и `getAssignment`, а не на каждое назначение.
 - **Тестовый двойник** для дорожки B до мастер-U6: мок `post` возвращает `Posted` с `amount = nominalAmount`; `balances` — фиксированные значения из примеров контракта.
@@ -245,6 +245,7 @@ public interface SettingsApi {
 ```
 
 - **Гарантии.** Значение читается при каждом вызове: изменение администратора действует без рестарта (мастер-KTD10). Кэшировать значения в потребителе нельзя. Шаг и интервал копируются в точку при её создании.
+- **Хранение.** Строка таблицы `settings` перекрывает значение по умолчанию из `campus.*`; нет строки — действует умолчание. Ключи: `penaltyStep`, `penaltyInterval`, `penaltyPollPeriod`, `semesterAccrual`, `monthlyBudgetLimit`. Числа — десятичной строкой, длительности — ISO-8601 (`PT1M`), а не формат Spring (`1m`). Пишет в таблицу только администрирование (мастер-U13) и проверяет значение до записи: битая строка ломает чтение, умолчание её не скрывает.
 - **Тестовый двойник:** мок со значениями по умолчанию; e2e ускоряет штраф через `docker-compose.e2e.yml`.
 
 ## 6. `StudentAssignments` — задачи студента для профиля

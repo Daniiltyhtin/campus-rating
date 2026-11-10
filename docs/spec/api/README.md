@@ -60,7 +60,7 @@ npx --yes @redocly/cli@2.76.0 lint --config docs/spec/api/redocly.yaml docs/spec
 1. Правка `openapi.yaml` в PR юнита до кода: операция с `x-status: planned`, роли, «Доступ:», ответы, примеры на демо-данных. Новый код ошибки — только в `ProblemCode` и его таблице.
 2. Линтер зелёный.
 3. После мастер-U2 и U7 плана U3: `npm --prefix frontend run api:gen` перегенерирует типы и примеры для моков; пустой `git diff` проверяет CI.
-4. Реализация. Юнит, реализовавший операцию, переводит её в `x-status: implemented`. `ContractCompatibilityIT` требует, чтобы такие операции были в springdoc и совпадали по схемам.
+4. Реализация. Юнит, реализовавший операцию, переводит её в `x-status: implemented`. `ContractCompatibilityIT` требует, чтобы такие операции были в springdoc и совпадали по схемам. DTO ответа — record: все его поля обязательны, поле со значением `[T, "null"]` в контракте помечается JSpecify `@Nullable`, иначе тест падает на `nullable`. Ограничения значений сравниваются только у параметров и тел запросов (Bean Validation), в ответах — нет.
 5. Изменение шва — правкой `module-seams.md` с ревью владельца и потребителей.
 
 Администрирование (мастер-U13), подтверждение email и членства (мастер-U15) и модули P2–P4 добавляют свои операции так же.
@@ -77,10 +77,10 @@ npx --yes @redocly/cli@2.76.0 lint --config docs/spec/api/redocly.yaml docs/spec
 | R4 | Справочники загружены в demo (U4) | `listFaculties`, `listFacultyGroups`, `listFacultyDepartments` | сид Liquibase `context: demo` | U4: `DirectoryApiIT` |
 | R5 | Профиль открыт всем вошедшим; задача в чужом профиле без перехода, у администратора — «Материалы сдачи» (U10) | `getUserProfile` (`PUBLIC`, `OWN`, `ADMIN`), `getAssignment` | `GroupMembers.card`, `StudentAssignments`, `LedgerApi.balances`, `DirectoryApi.department` | U10: `ProfileIT` |
 | R6 | Строка истории в формате R6; штраф — источник точка, автор «Система» (U10) | `listLedgerEntries` | `LedgerApi.history`, снимки источника и автора | U10: `ProfileIT`, `HistoryItem.test` |
-| R7 | Точка на две группы: назначения только `ACTIVE`; шаг и интервал зафиксированы; недоступная группа — `403` (U7) | `createCheckpoint`, `getCheckpointDefaults`, `getCheckpoint` | `TeacherScope.requireAccessible`, `GroupMembers.activeStudents`, `SettingsApi`, `CheckpointCreated` | U7: `CheckpointIT` |
+| R7 | Точка на две группы: назначения только `ACTIVE`; шаг и интервал зафиксированы; недоступная группа — `403`; автор меняет название и описание, остальное — `400` (U7) | `createCheckpoint`, `getCheckpointDefaults`, `getCheckpoint`, `updateCheckpoint` | `TeacherScope.requireAccessible`, `GroupMembers.activeStudents`, `SettingsApi`, `CheckpointCreated` | U7: `CheckpointIT` |
 | R8 | Регистрация студента даёт `INITIAL` +1000 (U5) | `registerStudent` | `LedgerApi.post` | U5: `RegistrationIT` |
 | R9 | Начисление семестра со срезкой, повтор ничего не меняет (U8) | — (запуск вручную — мастер-U13) | `SemesterAccrualJob` → `LedgerApi.post` | U8: `SemesterAccrualIT` |
-| R10 | Сдача из `OPEN`, в том числе после дедлайна, останавливает штраф; повторная — `INVALID_STATE`; файл 11 МБ или `.exe` отклоняется (U7) | `submitAssignment`, `downloadSubmissionFile` | — | U7: `CheckpointIT` |
+| R10 | Сдача из `OPEN`, в том числе после дедлайна, останавливает штраф; повторная — `INVALID_STATE`; файл 11 МБ или `.exe` отклоняется; каждая сдача — новая версия, все версии видят владелец, автор точки и администратор (U7) | `submitAssignment`, `getAssignment` (`submissions`), `downloadSubmissionFile`, `downloadSubmissionVersionFile` | — | U7: `CheckpointIT` |
 | R11 | Списание по слотам; блок штрафа показывает следующее списание (U8) | `getAssignment`, `listMyAssignments` (`penalty`) | `PenaltyJob` → `LedgerApi.post` | U8: `PenaltyPolicyTest`, `PenaltyJobIT` |
 | R12 | Потолок по фактически списанному; возврат не обнуляет (U8) | `returnAssignment`, `penalty.charged` | `PenaltyJob` | U8 |
 | R13 | Пропущенные слоты не списываются (U8) | — | `PenaltyJob` | U8: AE7 |
