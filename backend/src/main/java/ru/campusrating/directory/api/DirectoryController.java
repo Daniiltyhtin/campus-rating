@@ -1,5 +1,7 @@
 package ru.campusrating.directory.api;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Min;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,6 +44,8 @@ public class DirectoryController {
         }
     }
 
+    @Schema(requiredProperties = "items")
     public record Items<T>(List<T> items) {}
-    public record StudyGroupView(long id, String name, FacultyInfo faculty) {}
+    @Schema(requiredProperties = {"id", "name", "faculty"})
+    public record StudyGroupView(@Min(1) long id, String name, FacultyInfo faculty) {}
 }
