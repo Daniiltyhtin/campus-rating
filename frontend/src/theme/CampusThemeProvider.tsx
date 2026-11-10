@@ -1,6 +1,7 @@
 import { MantineProvider, createTheme } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
 import type { ReactNode } from 'react';
+import { useEffect } from 'react';
 import { contrastVariablesResolver, cssVariablesResolver, theme } from './theme';
 import { AppearanceContext } from './useCampusAppearance';
 import type { CampusAppearance } from './useCampusAppearance';
@@ -10,6 +11,7 @@ const contrastTheme = createTheme({ ...theme, fontSizes: { xs: '0.8125rem', sm: 
 export function CampusThemeProvider({ children }: { children: ReactNode }) {
   const [stored, setStored] = useLocalStorage<CampusAppearance>({ key: 'campus-appearance', defaultValue: 'light', getInitialValueInEffect: false });
   const appearance = stored === 'dark' || stored === 'contrast' ? stored : 'light';
+  useEffect(() => { document.documentElement.dataset.theme = appearance === 'contrast' ? 'high-contrast' : appearance; }, [appearance]);
   return <AppearanceContext.Provider value={{ appearance, setAppearance: setStored }}>
     <MantineProvider theme={appearance === 'contrast' ? contrastTheme : theme}
       forceColorScheme={appearance === 'dark' ? 'dark' : 'light'}
