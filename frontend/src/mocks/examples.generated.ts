@@ -1066,6 +1066,117 @@ export const examples: ExampleOperation[] = [
     ]
   },
   {
+    "path": "/api/v1/checkpoints/{checkpointId}",
+    "method": "patch",
+    "operationId": "updateCheckpoint",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "id": 501,
+          "title": "Лабораторная 3. АВЛ-деревья",
+          "description": "Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.",
+          "deadline": "2026-11-12T09:00:00Z",
+          "cost": 60,
+          "penaltyStep": 20,
+          "penaltyIntervalSeconds": 60,
+          "groups": [
+            {
+              "id": 11,
+              "name": "ИВТ-21",
+              "faculty": {
+                "id": 1,
+                "code": "ФИТ",
+                "name": "Факультет информационных технологий"
+              }
+            }
+          ],
+          "author": {
+            "id": 2001,
+            "fullName": "Петров Павел Петрович"
+          },
+          "createdAt": "2026-11-05T07:30:00Z",
+          "submittedCount": 3,
+          "totalCount": 24
+        }
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      }
+    ]
+  },
+  {
     "path": "/api/v1/checkpoints/{checkpointId}/assignments",
     "method": "get",
     "operationId": "listCheckpointAssignments",
@@ -1483,6 +1594,7 @@ export const examples: ExampleOperation[] = [
           },
           "returnComment": null,
           "submission": null,
+          "submissions": [],
           "submittedAt": null,
           "acceptedAt": null
         }
@@ -1529,6 +1641,7 @@ export const examples: ExampleOperation[] = [
           },
           "returnComment": null,
           "submission": null,
+          "submissions": [],
           "submittedAt": null,
           "acceptedAt": null
         }
@@ -1575,6 +1688,7 @@ export const examples: ExampleOperation[] = [
           },
           "returnComment": null,
           "submission": null,
+          "submissions": [],
           "submittedAt": null,
           "acceptedAt": null
         }
@@ -1621,6 +1735,7 @@ export const examples: ExampleOperation[] = [
           },
           "returnComment": null,
           "submission": null,
+          "submissions": [],
           "submittedAt": null,
           "acceptedAt": null
         }
@@ -1667,11 +1782,99 @@ export const examples: ExampleOperation[] = [
           },
           "returnComment": null,
           "submission": {
+            "id": 9001,
             "kind": "LINK",
             "url": "https://github.com/smirnova-demo/avl-tree",
-            "submittedAt": "2026-11-12T09:01:30Z"
+            "submittedAt": "2026-11-12T09:01:30Z",
+            "returnComment": null,
+            "returnedAt": null
           },
+          "submissions": [
+            {
+              "id": 9001,
+              "kind": "LINK",
+              "url": "https://github.com/smirnova-demo/avl-tree",
+              "submittedAt": "2026-11-12T09:01:30Z",
+              "returnComment": null,
+              "returnedAt": null
+            }
+          ],
           "submittedAt": "2026-11-12T09:01:30Z",
+          "acceptedAt": null
+        }
+      },
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "id": 7001,
+          "checkpoint": {
+            "id": 501,
+            "title": "Лабораторная 3. Деревья поиска",
+            "description": "Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.",
+            "deadline": "2026-11-12T09:00:00Z",
+            "cost": 60,
+            "author": {
+              "id": 2001,
+              "fullName": "Петров Павел Петрович"
+            }
+          },
+          "student": {
+            "id": 1001,
+            "fullName": "Смирнова Анна Олеговна"
+          },
+          "group": {
+            "id": 11,
+            "name": "ИВТ-21",
+            "faculty": {
+              "id": 1,
+              "code": "ФИТ",
+              "name": "Факультет информационных технологий"
+            }
+          },
+          "state": "SUBMITTED",
+          "status": "SUBMITTED",
+          "penalty": {
+            "charged": 60,
+            "cap": 60,
+            "step": 20,
+            "intervalSeconds": 60,
+            "phase": "STOPPED",
+            "nextAt": null,
+            "nextAmount": null
+          },
+          "returnComment": null,
+          "submission": {
+            "id": 9002,
+            "kind": "FILE",
+            "fileName": "Отчёт АВЛ.pdf",
+            "sizeBytes": 482113,
+            "contentType": "application/pdf",
+            "submittedAt": "2026-11-12T09:20:00Z",
+            "returnComment": null,
+            "returnedAt": null
+          },
+          "submissions": [
+            {
+              "id": 9002,
+              "kind": "FILE",
+              "fileName": "Отчёт АВЛ.pdf",
+              "sizeBytes": 482113,
+              "contentType": "application/pdf",
+              "submittedAt": "2026-11-12T09:20:00Z",
+              "returnComment": null,
+              "returnedAt": null
+            },
+            {
+              "id": 9001,
+              "kind": "LINK",
+              "url": "https://github.com/smirnova-demo/avl-tree",
+              "submittedAt": "2026-11-12T09:01:30Z",
+              "returnComment": "Нет тестов на удаление корня.",
+              "returnedAt": "2026-11-12T09:05:10Z"
+            }
+          ],
+          "submittedAt": "2026-11-12T09:20:00Z",
           "acceptedAt": null
         }
       },
@@ -1779,10 +1982,23 @@ export const examples: ExampleOperation[] = [
           },
           "returnComment": null,
           "submission": {
+            "id": 9001,
             "kind": "LINK",
             "url": "https://github.com/smirnova-demo/avl-tree",
-            "submittedAt": "2026-11-12T09:01:30Z"
+            "submittedAt": "2026-11-12T09:01:30Z",
+            "returnComment": null,
+            "returnedAt": null
           },
+          "submissions": [
+            {
+              "id": 9001,
+              "kind": "LINK",
+              "url": "https://github.com/smirnova-demo/avl-tree",
+              "submittedAt": "2026-11-12T09:01:30Z",
+              "returnComment": null,
+              "returnedAt": null
+            }
+          ],
           "submittedAt": "2026-11-12T09:01:30Z",
           "acceptedAt": null
         }
@@ -1963,6 +2179,73 @@ export const examples: ExampleOperation[] = [
     ]
   },
   {
+    "path": "/api/v1/assignments/{assignmentId}/submissions/{submissionId}/file",
+    "method": "get",
+    "operationId": "downloadSubmissionVersionFile",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/octet-stream",
+        "body": ""
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      }
+    ]
+  },
+  {
     "path": "/api/v1/assignments/{assignmentId}/return",
     "method": "post",
     "operationId": "returnAssignment",
@@ -2009,10 +2292,23 @@ export const examples: ExampleOperation[] = [
           },
           "returnComment": "Нет тестов на удаление корня.",
           "submission": {
+            "id": 9001,
             "kind": "LINK",
             "url": "https://github.com/smirnova-demo/avl-tree",
-            "submittedAt": "2026-11-12T09:01:30Z"
+            "submittedAt": "2026-11-12T09:01:30Z",
+            "returnComment": "Нет тестов на удаление корня.",
+            "returnedAt": "2026-11-12T09:05:10Z"
           },
+          "submissions": [
+            {
+              "id": 9001,
+              "kind": "LINK",
+              "url": "https://github.com/smirnova-demo/avl-tree",
+              "submittedAt": "2026-11-12T09:01:30Z",
+              "returnComment": "Нет тестов на удаление корня.",
+              "returnedAt": "2026-11-12T09:05:10Z"
+            }
+          ],
           "submittedAt": "2026-11-12T09:01:30Z",
           "acceptedAt": null
         }
