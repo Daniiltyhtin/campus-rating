@@ -38,8 +38,9 @@ public class RegistrationService {
     @Transactional
     public long student(String email, String fullName, String password, long facultyId, long groupId) {
         if (repository.allowlisted(email)) throw new ApiException(ProblemCode.EMAIL_RESERVED_FOR_TEACHER, "Email зарезервирован для преподавателя");
+        requireFreeEmail(email);
         var group = directory.group(groupId).orElseThrow(() -> Passwords.invalid("groupId", "INVALID", "Группа не найдена"));
-        if (group.faculty().id() != facultyId) throw Passwords.invalid("groupId", "INVALID", "Группа не принадлежит факультету");
+        if (group.faculty().id() != facultyId) throw Passwords.invalid("groupId", "MISMATCH", "Группа не принадлежит факультету");
         long id = create(email, fullName, password, Role.STUDENT, null, false);
         var time = clock.instant().truncatedTo(ChronoUnit.MICROS);
         repository.addMembership(id, groupId, GroupMembershipState.ACTIVE, time);
@@ -50,6 +51,7 @@ public class RegistrationService {
 
     @Transactional
     public long teacher(String email, String fullName, String password, long departmentId) {
+        requireFreeEmail(email);
         if (directory.department(departmentId).isEmpty()) throw Passwords.invalid("departmentId", "INVALID", "Кафедра не найдена");
         return create(email, fullName, password, Role.TEACHER, departmentId, false);
     }
@@ -62,7 +64,7 @@ public class RegistrationService {
     private long create(String email, String fullName, String password, Role role, Long department, boolean change) {
         if (fullName.strip().isEmpty()) throw Passwords.invalid("fullName", "REQUIRED", "Укажите ФИО");
         if (email.strip().isEmpty()) throw Passwords.invalid("email", "REQUIRED", "Укажите email");
-        if (repository.byEmail(email).isPresent()) throw emailTaken();
+        requireFreeEmail(email);
         String hash = passwords.hash(password, "password");
         try {
             return repository.insert(email.strip().toLowerCase(Locale.ROOT), fullName.strip(), hash, role, department, change);
@@ -74,6 +76,9 @@ public class RegistrationService {
     static Posting initial(long id) {
         return new Posting(id, Currency.AR, EntryKind.INITIAL, 1000,
                 new Source(SourceType.REGISTRATION, null, "Регистрация"), null, "initial:" + id);
+    }
+    private void requireFreeEmail(String email) {
+        if (repository.byEmail(email).isPresent()) throw emailTaken();
     }
     private ApiException emailTaken() { return new ApiException(ProblemCode.EMAIL_TAKEN, "Этот email уже зарегистрирован"); }
 }

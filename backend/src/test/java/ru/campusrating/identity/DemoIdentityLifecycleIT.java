@@ -27,6 +27,9 @@ class DemoIdentityLifecycleIT {
                 assertDemoAccounts(restarted);
                 assertThat(jdbc.queryForObject("select count(*) from app_user where id in (1001,1002,1003,1004,2001,2002,3001)",
                         Integer.class)).isEqualTo(7);
+                assertThat(jdbc.queryForObject("select count(*) from teacher_approval where teacher_id=2001 and approved_by is null and approved_at is not null",
+                        Integer.class)).isEqualTo(1);
+                assertThat(jdbc.queryForObject("select count(*) from teacher_approval where teacher_id=2002", Integer.class)).isZero();
                 assertThat(jdbc.queryForObject("select count(*) from ledger_entry where student_id=1001 and kind='INITIAL'",
                         Integer.class)).isEqualTo(1);
                 assertThat(restarted.getBean(LedgerApi.class).reconcile().mismatches()).isEmpty();

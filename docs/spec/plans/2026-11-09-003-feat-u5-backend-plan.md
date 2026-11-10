@@ -107,7 +107,7 @@ Demo-пользователи и список преподавателей — �
 | R50 | Первый prod ADMIN создаётся один раз и требует смены; существующий ADMIN не получает новый пароль при повторном старте |
 | R47 / R48 | config показывает demo/emailVerification; demo seed идемпотентен, demo accounts входят, после logout cookie не открывает API |
 | Швы | GroupMembers возвращает ACTIVE-студентов, membership видит PENDING; users/groups/cards соответствуют запрошенным ids; смена допуска видна без нового login |
-| KTD23 / допуск | Demo-сид допускает 2001 с `approved_at` от Clock и `approved_by` NULL; строка допуска без `approved_at` отклонена NOT NULL |
+| KTD23 / допуск | Demo-сид допускает 2001 с заполненным `approved_at` и `approved_by` NULL, 2002 без допуска; строка допуска без `approved_at` отклонена NOT NULL |
 | Legacy-строка без hash | Вход отклонён INVALID_CREDENTIALS, никакого пароля по умолчанию |
 
 ## Verification Contract

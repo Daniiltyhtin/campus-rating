@@ -42,9 +42,19 @@ class RegistrationIT extends IdentityAcceptanceSupport {
 
     @Test
     void groupFromDifferentFacultyIsRejectedBeforeAnyWrites() {
-        assertProblem(browser().post("/api/v1/auth/register/student", studentBody(email("wrong-group"), faculty, otherGroup)),
-                400, "VALIDATION_FAILED");
+        var reply = browser().post("/api/v1/auth/register/student", studentBody(email("wrong-group"), faculty, otherGroup));
+        assertProblem(reply, 400, "VALIDATION_FAILED");
+        assertThat(reply.body().path("fieldErrors").get(0).path("field").asText()).isEqualTo("groupId");
+        assertThat(reply.body().path("fieldErrors").get(0).path("code").asText()).isEqualTo("MISMATCH");
         assertThat(jdbc.queryForObject("select count(*) from app_user where email=?", Integer.class, email("wrong-group"))).isZero();
+    }
+
+    @Test
+    void takenEmailIsReportedBeforeGroupValidation() {
+        var browser = browser();
+        registerStudent(browser, "taken");
+        assertProblem(browser.post("/api/v1/auth/register/student", studentBody(email("taken"), faculty, otherGroup)),
+                409, "EMAIL_TAKEN");
     }
 
     @Test

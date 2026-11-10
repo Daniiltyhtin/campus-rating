@@ -32,7 +32,7 @@ class TeacherScopeIT extends IdentityAcceptanceSupport {
         var browser = browser();
         long teacher = registerTeacher(browser, "teacher");
         login(browser, email("teacher"));
-        jdbc.update("insert into teacher_approval(teacher_id) values (?)", teacher);
+        jdbc.update("insert into teacher_approval(teacher_id, approved_at) values (?, now())", teacher);
         assertThat(browser.get("/api/v1/auth/me").body().path("teacherApproved").asBoolean()).isTrue();
         assertThat(scope.accessibleGroupIds(teacher)).contains(group).doesNotContain(otherGroup);
         jdbc.update("insert into teacher_grant(teacher_id,kind,group_id) values (?,'GROUP',?)", teacher, otherGroup);
@@ -48,7 +48,7 @@ class TeacherScopeIT extends IdentityAcceptanceSupport {
     @Test
     void courseGrantsFollowMoscowSeptemberBoundaryAndExcludeInvalidCourses() {
         long teacher = registerTeacher(browser(), "teacher");
-        jdbc.update("insert into teacher_approval(teacher_id) values (?)", teacher);
+        jdbc.update("insert into teacher_approval(teacher_id, approved_at) values (?, now())", teacher);
         long previous = group(otherFaculty, 2025, "previous");
         long future = group(otherFaculty, 2027, "future");
         long seventh = group(otherFaculty, 2020, "seventh");
@@ -74,5 +74,14 @@ class TeacherScopeIT extends IdentityAcceptanceSupport {
                 .isInstanceOf(DataIntegrityViolationException.class);
         assertThatThrownBy(() -> jdbc.update("insert into teacher_grant(teacher_id,kind,course) values (?,'COURSE',7)", teacher))
                 .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void approvalRecordsWhenAndOptionallyWho() {
+        long teacher = registerTeacher(browser(), "teacher");
+        assertThatThrownBy(() -> jdbc.update("insert into teacher_approval(teacher_id) values (?)", teacher))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        jdbc.update("insert into teacher_approval(teacher_id, approved_at) values (?, now())", teacher);
+        assertThat(jdbc.queryForObject("select approved_by from teacher_approval where teacher_id=?", Long.class, teacher)).isNull();
     }
 }
