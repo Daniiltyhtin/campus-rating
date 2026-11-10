@@ -1,10 +1,13 @@
 import type { RouteObject } from 'react-router';
 import { LoginPlaceholder } from '../features/auth/LoginPlaceholder';
-import { SectionPlaceholder, SessionGate } from './routeElements';
+import { RouteLoading, SectionPlaceholder, SessionGate } from './routeElements';
 
 export const routes: RouteObject[] = [
   {
-    children: [{ path: 'login', element: <LoginPlaceholder /> }],
+    hydrateFallbackElement: <RouteLoading />,
+    children: [{ path: 'login', element: <LoginPlaceholder /> }, {
+      path: 'styleguide', lazy: async () => ({ Component: (await import('../features/styleguide/StyleguidePage')).StyleguidePage }),
+    }],
   },
   {
     element: <SessionGate />,
