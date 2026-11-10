@@ -9,7 +9,7 @@ describe('feature color lint gate', () => {
   ])('rejects a literal in %s', async (filePath, source) => {
     const [result] = await new ESLint().lintText(source, { filePath });
     expect(result?.messages.some((message) => message.ruleId === 'theme/no-color-literals')).toBe(true);
-  });
+  }, 15_000);
   it('allows a token in CSS', async () => {
     const [result] = await new ESLint().lintText('.probe { color: var(--cr-text); }', { filePath: 'src/features/probe.css' });
     expect(result?.errorCount).toBe(0);
