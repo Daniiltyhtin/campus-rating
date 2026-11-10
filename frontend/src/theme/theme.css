@@ -8,10 +8,13 @@ a { color: var(--cr-link); }
 .cr-kicker { color: var(--cr-muted); font-weight: 700; }
 .cr-article { border-block-start: var(--cr-rule-width) solid var(--cr-rule); padding-block: var(--mantine-spacing-md); min-width: 0; }
 .cr-card { border-block-start: var(--cr-rule-width) solid var(--cr-rule); padding-block: var(--mantine-spacing-lg); }
-.cr-caption { color: var(--cr-muted); }
-.cr-number { font-family: var(--mantine-font-family-headings); font-variant-numeric: tabular-nums; }
+.cr-caption { color: var(--cr-muted); font-size: var(--mantine-font-size-sm); }
+.cr-number { font-family: var(--mantine-font-family-headings); font-variant-numeric: lining-nums tabular-nums; }
+.cr-balances { border-block-start: var(--cr-rule-width) solid var(--cr-text); padding-block-start: var(--mantine-spacing-md); }
+.cr-return-comment { margin: 0; padding: var(--mantine-spacing-md); background: var(--cr-selection); font-family: var(--mantine-font-family-headings); font-style: italic; border-radius: var(--mantine-radius-md); }
 .cr-template-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--mantine-spacing-xl); }
 .cr-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+.cr-table tbody tr { height: var(--cr-row-height); }
 .cr-table th, .cr-table td { overflow-wrap: anywhere; padding: var(--mantine-spacing-sm); border-block-end: var(--cr-rule-width) solid var(--cr-rule); text-align: start; }
 .cr-table caption { text-align: start; font-family: var(--mantine-font-family-headings); font-size: var(--mantine-h2-font-size); padding-block: var(--mantine-spacing-md); }
 .cr-status { display: inline-flex; padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm); border-radius: var(--cr-status-radius); font-weight: var(--cr-status-weight); border: var(--cr-status-border) solid currentColor; font-size: var(--mantine-font-size-sm); }
@@ -35,6 +38,7 @@ html[data-theme='high-contrast'] a { text-decoration: underline; }
   .cr-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .cr-table, .cr-table tbody, .cr-table tr { display: block; width: 100%; }
   .cr-table tr { padding-block: var(--mantine-spacing-sm); border-block-end: var(--cr-rule-width) solid var(--cr-rule); }
+  .cr-table tbody tr { height: auto; min-height: var(--cr-row-height); }
   .cr-table td { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--mantine-spacing-sm); border: 0; }
   .cr-table td::before { content: attr(data-label); color: var(--cr-muted); }
 }

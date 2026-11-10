@@ -34,9 +34,10 @@ export function StyleguidePage() {
       <ListLayout title="Список задач" state={state} items={tasks} keyForItem={(item) => item.id} renderItem={(item) => <Stack gap="xs">
         <Title order={3}>{item.title}</Title><Text className="cr-caption">{item.teacher} · {item.deadline}</Text>
         <Group><span className="cr-status cr-status-overdue">Просрочено</span><Text className="cr-ar">Списано 40 из 60 АР</Text></Group>
+        <blockquote className="cr-return-comment" aria-label="Комментарий возврата">Нет тестов на удаление корня.</blockquote>
         <Button variant="outline">Открыть задачу</Button></Stack>} />
       <CardLayout title="Карточка студента"><Stack><Title order={3}>Смирнова Анна Олеговна</Title><Text className="cr-caption">ФИТ · ИВТ-21</Text>
-        <Group gap="xl"><Stack gap="xs"><Text className="cr-kicker">АР</Text><Title order={2} className="cr-number cr-ar">940</Title></Stack>
+        <Group gap="xl" className="cr-balances"><Stack gap="xs"><Text className="cr-kicker">АР</Text><Title order={2} className="cr-number cr-ar">940</Title></Stack>
           <Stack gap="xs"><Text className="cr-kicker">БУА</Text><Title order={2} className="cr-number cr-bua">120</Title></Stack>
           <Stack gap="xs"><Text className="cr-kicker">БОА</Text><Title order={2} className="cr-number cr-boa">50</Title></Stack></Group>
         <Text>Баллы и статусы всегда подписаны — смысл не передаётся одним цветом.</Text></Stack></CardLayout>

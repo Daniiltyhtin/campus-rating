@@ -5,17 +5,17 @@ const blue: MantineColorsTuple = ['#e8eefc', '#d6e2fc', '#bfd1fb', '#9bbcff', '#
 
 export const palettes = {
   light: { body: '#f5f6f8', surface: '#ffffff', text: '#161b22', muted: '#57606a', rule: '#d6dbe1', link: '#2450c4',
-    button: '#2450c4', buttonText: '#ffffff', selection: '#eef0f3', field: '#7d8590',
+    button: '#2450c4', buttonText: '#ffffff', selection: '#eef0f3', field: '#7d8590', track: '#e1e5ea', primarySoft: '#e8eefc',
     overdue: '#b42318', overdueBg: '#fdecea', accepted: '#18753c', acceptedBg: '#e6f4ea',
     submitted: '#8a4b00', submittedBg: '#fff3dc', progress: '#1d4fb8', progressBg: '#e8effc',
     ar: '#2450c4', bua: '#0b6e69', boa: '#a3480a' },
   dark: { body: '#0f1419', surface: '#161c23', text: '#e6edf3', muted: '#9da7b3', rule: '#2d3640', link: '#8fb1ff',
-    button: '#7aa2ff', buttonText: '#0b1530', selection: '#1e252e', field: '#6b7685',
+    button: '#7aa2ff', buttonText: '#0b1530', selection: '#1e252e', field: '#6b7685', track: '#2d3640', primarySoft: '#1a2540',
     overdue: '#ff9b8f', overdueBg: '#3a1d1b', accepted: '#7fd19b', acceptedBg: '#15301f',
     submitted: '#f0c27a', submittedBg: '#362a14', progress: '#a8c1ff', progressBg: '#1c2742',
     ar: '#8fb1ff', bua: '#5fd0c6', boa: '#f0a46b' },
   contrast: { body: '#ffffff', surface: '#ffffff', text: '#000000', muted: '#333333', rule: '#595959', link: '#0033a0',
-    button: '#0033a0', buttonText: '#ffffff', selection: '#f0f0f0', field: '#000000',
+    button: '#0033a0', buttonText: '#ffffff', selection: '#f0f0f0', field: '#000000', track: '#c4c4c4', primarySoft: '#e5ecff',
     overdue: '#a00000', overdueBg: '#ffe5e5', accepted: '#00561e', acceptedBg: '#e0f5e5',
     submitted: '#6b3600', submittedBg: '#fff0d0', progress: '#002f8f', progressBg: '#e5ecff',
     ar: '#0033a0', bua: '#00563f', boa: '#7a3300' },
@@ -24,6 +24,7 @@ export const palettes = {
 export const theme = createTheme({
   primaryColor: 'campus', primaryShade: 6, colors: { campus: blue },
   fontFamily: '"PT Sans", system-ui, sans-serif',
+  fontSizes: { xs: '0.6875rem', sm: '0.8125rem', md: '0.9375rem', lg: '1.0625rem', xl: '1.25rem' },
   headings: { fontFamily: '"Literata", Georgia, serif', fontWeight: '600',
     sizes: { h1: { fontSize: '2.5rem', lineHeight: '1.12' }, h2: { fontSize: '1.75rem', lineHeight: '1.2' } } },
   defaultRadius: 'sm', radius: { xs: '0.25rem', sm: '0.375rem', md: '0.5rem', lg: '0.625rem', xl: '0.75rem' },
@@ -47,16 +48,17 @@ export const theme = createTheme({
     SegmentedControl: SegmentedControl.extend({ styles: { root: { background: 'transparent', borderBottom: 'var(--cr-rule-width) solid var(--cr-rule)' },
       indicator: { background: 'transparent', boxShadow: 'none', borderBottom: '3px solid var(--cr-link)', borderRadius: 0 },
       label: { minHeight: 'var(--cr-touch-target)', display: 'flex', alignItems: 'center', justifyContent: 'center' } } }),
-    Checkbox: Checkbox.extend({ styles: { body: { minHeight: 'var(--cr-touch-target)', alignItems: 'center' },
+    Checkbox: Checkbox.extend({ vars: () => ({ root: { '--checkbox-size': 'var(--cr-checkbox-size)' } }),
+      styles: { body: { minHeight: 'var(--cr-touch-target)', alignItems: 'center' },
       label: { minHeight: 'var(--cr-touch-target)', display: 'flex', alignItems: 'center' } } }),
   },
 });
 
 function variables(p: typeof palettes.light) {
-  return { '--mantine-color-body': p.body, '--mantine-color-text': p.text,
+  return { '--mantine-color-body': p.body, '--mantine-color-text': p.text, '--cr-bg': p.body,
     '--cr-surface': p.surface, '--cr-text': p.text, '--cr-muted': p.muted, '--cr-rule': p.rule, '--cr-link': p.link,
     '--cr-button': p.button, '--cr-button-text': p.buttonText, '--cr-selection': p.selection,
-    '--cr-field': p.field,
+    '--cr-field': p.field, '--cr-track': p.track, '--cr-primary-soft': p.primarySoft,
     '--mantine-color-campus-filled': p.button, '--mantine-color-campus-filled-hover': p.button,
     '--cr-status-overdue': p.overdue, '--cr-status-overdue-bg': p.overdueBg,
     '--cr-status-accepted': p.accepted, '--cr-status-accepted-bg': p.acceptedBg,
@@ -67,12 +69,14 @@ function variables(p: typeof palettes.light) {
 
 export const cssVariablesResolver: CSSVariablesResolver = () => ({
   variables: { '--cr-touch-target': '44px', '--cr-rule-width': '1px', '--cr-motion-duration': '120ms',
-    '--cr-status-weight': '400', '--cr-status-border': '0px', '--cr-status-radius': '999px', '--cr-body-size': '15px', '--cr-selected-width': '2px' },
+    '--cr-status-weight': '400', '--cr-status-border': '0px', '--cr-status-radius': '999px', '--cr-body-size': '15px', '--cr-selected-width': '2px',
+    '--cr-checkbox-size': '18px', '--cr-row-height': '52px' },
   light: variables(palettes.light), dark: variables(palettes.dark),
 });
 
 export const contrastVariablesResolver: CSSVariablesResolver = () => ({
   variables: { '--cr-touch-target': '52px', '--cr-rule-width': '2px', '--cr-motion-duration': '120ms',
-    '--cr-status-weight': '700', '--cr-status-border': '2px', '--cr-status-radius': '999px', '--cr-body-size': '17px', '--cr-selected-width': '3px' },
+    '--cr-status-weight': '700', '--cr-status-border': '2px', '--cr-status-radius': '999px', '--cr-body-size': '17px', '--cr-selected-width': '3px',
+    '--cr-checkbox-size': '22px', '--cr-row-height': '60px' },
   light: variables(palettes.contrast), dark: variables(palettes.contrast),
 });
