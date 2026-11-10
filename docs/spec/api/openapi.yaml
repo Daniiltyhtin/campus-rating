@@ -981,7 +981,7 @@ paths:
 
         Доступ: только автор точки, даже если её группы ему уже недоступны. Администратор — `403`.
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
           csrf: []
@@ -1136,7 +1136,7 @@ paths:
         Доступ: студент-владелец, автор точки (даже если группа уже недоступна), администратор — только
         чтение (мастер-R3). Остальным — `403 FORBIDDEN`.
       x-roles: [STUDENT, TEACHER, ADMIN]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
@@ -1187,7 +1187,7 @@ paths:
 
         Доступ: только студент-владелец.
       x-roles: [STUDENT]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
           csrf: []
@@ -1258,7 +1258,7 @@ paths:
 
         Доступ: студент-владелец, автор точки, администратор — как у чтения назначения.
       x-roles: [STUDENT, TEACHER, ADMIN]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
@@ -1294,7 +1294,7 @@ paths:
 
         Доступ: студент-владелец, автор точки, администратор — как у чтения назначения.
       x-roles: [STUDENT, TEACHER, ADMIN]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
@@ -1332,7 +1332,7 @@ paths:
 
         Доступ: только автор точки, даже если её группы ему уже недоступны. Администратор — `403`.
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
           csrf: []
