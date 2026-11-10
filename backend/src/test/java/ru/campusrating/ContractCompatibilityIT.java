@@ -142,7 +142,7 @@ class ContractCompatibilityIT extends PostgresIntegrationTest {
 
     private Comparison compare(JsonNode before, JsonNode after) throws Exception {
         String os = System.getProperty("os.name").toLowerCase().contains("windows") ? "win32" : "linux";
-        var binary = Path.of("target/tools/" + os + "-x64/oasdiff" + (os.equals("win32") ? ".exe" : "")).toAbsolutePath();
+        var binary = Path.of("../.tools/oasdiff/" + os + "-x64/oasdiff" + (os.equals("win32") ? ".exe" : "")).toAbsolutePath();
         assertThat(Files.isRegularFile(binary)).as("Run node tools/install-oasdiff.mjs before verify").isTrue();
         var directory = Files.createTempDirectory(temporary, "compare-");
         var base = directory.resolve("base.json");
