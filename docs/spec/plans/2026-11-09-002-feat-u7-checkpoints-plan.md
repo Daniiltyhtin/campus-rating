@@ -182,7 +182,7 @@ execution: code
 - KTD10. **Контракт и код после U3b.** U3b (ветка `u3b-api-client`) добавляет генерацию и проверку совместимости:
   - любая правка `openapi.yaml` сопровождается `npm --prefix frontend run api:gen` и коммитом `frontend/src/api/schema.d.ts` и `frontend/src/mocks/examples.generated.ts`: CI `frontend` падает на непустом `git diff`. Кто из PR U7a и U3b вливается вторым, тот перезапускает `api:gen`;
   - `ContractCompatibilityIT` в `verify` сравнивает вывод springdoc с контрактом по операциям `x-status: implemented`: параметры, тела запросов, схемы 2xx, типы, `nullable`, `required`, `oneOf`, имена полей. Поэтому DTO контроллеров U4–U6 пишутся строго по схемам контракта, а `x-status: implemented` ставится в том же PR, что и контроллер;
-  - тело `submitAssignment` (multipart, `oneOf` «ссылка или файл») из сравнения исключено — имена частей `link` и `file` проверяет собственный IT сдачи; параметры и ответ `submitAssignment` сравниваются.
+  - по обновлённому KTD14 U3 тело `submitAssignment` (multipart, `oneOf` «ссылка или файл») сравнивается полностью: контроллер явно описывает `oneOf` через `@Schema`. Собственный IT дополнительно проверяет реальные части `link` и `file`; исключения requestBody не вводятся. Native gate реализуется отдельным PR23 после принятия этого решения.
 - KTD9. **Доступ.** Роль проверяет `SecurityConfig` мастер-U5 по `x-roles`; модуль проверяет владельца: студент — `assignment.student_id`, преподаватель — `checkpoint.author_id`, администратор — только чтение. До слияния мастер-U5 `*IT` используют `@MockitoBean` `CurrentUser`, `TeacherScope`, `GroupMembers` (швы, демо-данные контракта).
 
 ### Open Questions

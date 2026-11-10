@@ -20,7 +20,7 @@ execution: code
   - операция требует поведения, которого нет в R мастер-плана;
   - шов требует изменить мастер-KTD3, KTD5, KTD23 или направление зависимостей модулей мастер-плана;
   - U7 не может стартовать, потому что мастер-U2 ещё не влит;
-  - обнаружена конструкция 3.1 в сравниваемой части, которую нельзя перевести без потери смысла по KTD14.
+  - закреплённый инструмент сравнения не проходит пробные сравнения KTD14.
 - **Ветка.** `u3-contract` от `main`. U1–U6 — один PR (U3a); U7 — отдельный PR (U3b) после слияния мастер-U2. Файлы скелета мастер-U2 (`backend/`, `frontend/`, `e2e/`, `.github/`) до его слияния не трогаются.
 
 ---
@@ -73,7 +73,7 @@ execution: code
 - `docs/spec/ux/screen-map.md`: маршруты экранов, пять состояний блока штрафа, ошибка бюджета «нужно, остаток, не хватает», итог массового приёма.
 - Глоссарий: имена схем и перечислений.
 - Spring Security: SPA-интеграция CSRF (отложенная загрузка токена, обновление после входа и выхода), `docs.spring.io/spring-security/reference/servlet/exploits/csrf.html`.
-- Версии на 07.11.2026: `@redocly/cli` 2.76 (Node ≥ 22.12), `openapi-typescript` 7.13 (peer TypeScript `^5`), `openapi-fetch` 0.17, `msw` 3.0.4, `openapi-diff-core` 2.1.7 (известны проблемы сравнения типов 3.1, issue OpenAPITools/openapi-diff#745), springdoc 3.2.
+- Версии на 07.11.2026: `@redocly/cli` 2.76 (Node ≥ 22.12), `openapi-typescript` 7.13 (peer TypeScript `^5`), `openapi-fetch` 0.17, `msw` 3.0.4, `openapi-diff-core` 2.1.7 (известны проблемы сравнения типов 3.1, issue OpenAPITools/openapi-diff#745; с 09.11 заменён на `oasdiff` 1.37.0, KTD14), springdoc 3.2.
 
 ---
 
@@ -109,17 +109,12 @@ execution: code
 - KTD11. **Массовый приём.** `assignmentIds[]` дедуплицируется; id не из этой точки — весь запрос `400 VALIDATION_FAILED` до изменений (автор точки и так видит её назначения, раскрывать нечего). Ответ — `200` с `accepted[]` и `skipped[]` (id и код причины, `INVALID_STATE`): частичный успех — штатный итог мастер-R14.
 - KTD12. **Роли и правила доступа в контракте.** У каждой операции `x-roles` — массив из `AUTHENTICATED`, `STUDENT`, `TEACHER`, `ADMIN` — или, у публичной, `x-public: true` (отдельное поле: смешанный `[PUBLIC, STUDENT]` выпадал бы из правил линтера), и строка описания «Доступ: …» с правилом принадлежности. Разделение проверок (мастер-KTD23, ADR007): создание точки, активности и чтение рейтинга группы — по доступным группам; приём, возврат, подтверждение участия и чтение своих назначений и участников — по авторству ресурса, даже если группа уже недоступна; бюджет — доступные группы плюс группы своих активностей. Каждая непубличная операция перечисляет `401` и `403`.
 - KTD13. **Линтер — Redocly CLI 2.76** с набором `recommended` и правилами проекта в `docs/spec/api/redocly.yaml`, все правила проекта с `severity: error`, включая проверку примеров (`no-invalid-media-type-examples`, по умолчанию `warn`). Правила проекта — configurable rules: у операции есть `operationId`, `x-status` и ровно одно из `x-roles` (допустимые значения, массив) или `x-public: true`; непубличная задаёт явный непустой `security` с сессией и ответы `401` и `403`; публичная — `security` без сессии; изменяющая — CSRF, чтение — без него; у успешного ответа есть пример. Полный список и негативные прогоны — `docs/spec/api/README.md`. До U7 запускается через `npx --yes @redocly/cli@2.76.0`, без `package.json`.
-- KTD14. **Совместимость backend с контрактом (U7).** У каждой операции контракта — `x-status: planned | implemented`; юнит, реализующий операцию, переводит её в `implemented` своим PR. `ContractCompatibilityIT` наследует `support/PostgresIntegrationTest`, читает контракт относительно корня репозитория и берёт `/v3/api-docs` настоящим HTTP-запросом через `RestTestClient`. Проверки:
+- KTD14. **Совместимость backend с контрактом (U7).** У каждой операции контракта — `x-status: planned | implemented`; юнит, реализующий операцию, переводит её в `implemented` своим PR. `ContractCompatibilityIT` берёт `/v3/api-docs` поднятого приложения и требует:
   1. каждая операция springdoc есть в контракте (метод и полный путь);
-  2. каждая `implemented`-операция контракта есть в springdoc; все нарушения проверок 1–2 перечисляются одним сообщением;
-  3. для пересечения `implemented`-операций с springdoc — совместимость только параметров, тел запросов и схем ответов `2xx` по `openapi-diff-core` 2.1.7; ошибки, `security`, описания и примеры убираются с обеих сторон. Ограничения значений (`minimum`, `maximum`, `exclusive*`, `minLength`, `maxLength`, `pattern`, `minItems`, `maxItems`) убираются только из схем `2xx`; в параметрах и телах запросов сравниваются;
-  4. изменение `nullable` в сравниваемых схемах — падение независимо от политики openapi-diff.
+  2. каждая `implemented`-операция контракта есть в springdoc;
+  3. для пересечения — совместимость параметров, тел запросов и схем ответов `2xx` по `oasdiff` 1.37.0 (`breaking --format json --fail-on WARN`).
 
-  `springdoc-openapi` линии 3.x и `openapi-diff-core` — только `test`-зависимости: в production `/v3/api-docs` не появляется, enforcer запрещает Jackson 2 в compile/runtime. Совместимость springdoc с Boot 4.1.2 подтверждает IT на настоящем приложении. В тесте `springdoc.api-docs.version=openapi_3_0`, `springdoc.default-produces-media-type=application/json`. Контракт остаётся 3.1; перед сравнением тест переводит его в 3.0.3: `type: [T, "null"]` → `type: T` с `nullable: true`, строковый `contentMediaType` → `format: binary`, скалярный `const` → одноэлементный `enum` с типом. Другие конструкции 3.1, не переводимые без потери смысла и встречающиеся в сравниваемых частях, вызывают явное падение с названием конструкции; boolean-схема запрещённой multipart-части вне сравнения тела не обходится молча. Inline-ветки `oneOf` получают стабильные технические ссылки: openapi-diff 2.1.7 сравнивает содержимое общих вариантов через ссылки.
-
-  Соглашение DTO: отсутствующее значение передаётся как `null`, поле не пропускается. Jackson приложения не настроен на `NON_NULL`/`default-property-inclusion`; сериализация null проверяется в `ContractSpringdocConfigurationTest`. Тестовый бин springdoc отмечает все свойства record как `required`, включая обобщённые record. `nullable: true` определяется JSpecify `@Nullable` на типе компонента штатным `springdoc.model-converters.java-nullable-property-customizer.enabled=true`; общий компонент по nullable-ссылке не меняется.
-
-  Именованный список исключений в тесте содержит ровно запись `submitAssignment → requestBody → контракт oneOf файл/ссылка запрещает вторую часть, springdoc @RequestPart описывает плоский объект`. Параметры и ответы этой операции сравниваются; пока операция `planned` или отсутствует в пересечении, исключение на результат не влияет. Конвертер и правило `nullable` покрываются модульными тестами без Spring: типы ответа/запроса/параметра, добавление и снятие null, добавление варианта oneOf и смена типа внутри, переименование поля, multipart oneOf → объект, идентичные схемы и переименование компонента. Негативные прогоны самого IT выполняет ревьюер локально.
+  Multipart-тело `submitAssignment` сравнивается полностью: контроллер явно описывает `oneOf` и запрет второй части через `@Schema`; исключения request body не вводятся. Негативные пробы на смену типа поля, `null`, `oneOf`, `required` и multipart закреплены в тестах инструмента; при неспособности ловить их — стоп и вопрос, сравнение только по `operationId` равноценной заменой не считается.
 - KTD15. **Швы — документ с сигнатурами, код пишут владельцы.** `module-seams.md` задаёт сигнатуры на уровне Java-типов, транзакционные гарантии и правила вызова. Интерфейсы создают владельцы в своих юнитах; до готовности потребитель в своих тестах использует тестовый двойник по сигнатуре, в `main` заглушек нет. Направления зависимостей — по диаграмме мастер-плана: `ledger` не зависит от `identity`, `checkpoint`, `activity`, поэтому всё, что журнал показывает в истории, он получает при проводке снимком (название источника, ФИО автора).
 - KTD16. **Клиент и моки (U7).** `openapi-typescript` 7.13 генерирует `frontend/src/api/schema.d.ts`; он объявляет peer TypeScript `^5`, а фронт на TypeScript 6 — установка с `overrides` на TypeScript проекта, запасной путь — изолированный `npx` с TypeScript 5.9 в скрипте `api:gen`. Клиент — `openapi-fetch` 0.17 с промежуточным слоем: CSRF-заголовок на изменяющих методах, разбор `Problem` в ошибку с `code`; сдача — `bodySerializer` с `FormData` без ручного `Content-Type`. `api:gen` также генерирует `frontend/src/api/problemCodes.generated.ts` — перечень кодов ошибок для прод-клиента — и `frontend/src/mocks/examples.generated.ts` — разыменованные примеры ответов: браузерный MSW не читает YAML. MSW подключается в `main.tsx` по флагу до рендера, worker — `frontend/public/mockServiceWorker.js` от `msw init`.
 
@@ -220,7 +215,7 @@ backend/src/test/java/ru/campusrating/ContractCompatibilityIT.java   # U7
 |---|---|
 | Контракт понят исполнителем B иначе, ревью 08.11 затягивается | Матрица сценариев и примеры на демо-данных (U6); вопросы — в PR, правки до начала мастер-U5 |
 | `openapi-typescript` 7.13 не работает с TypeScript 6 | KTD16: `overrides`, запасной изолированный запуск |
-| `openapi-diff-core` 2.1.7 читает `type`, а парсер 3.1 заполняет `types`; nullable считается совместимым | KTD14: сравнение в 3.0.3, явный отказ от непереводимых конструкций, отдельное правило nullable и модульные регрессии |
+| Регрессия сравнения схем 3.1 | KTD14: закреплённые негативные пробы в каждом verify, иначе стоп |
 | Ресурсы позднее разрастаются (U13–U19) и ломают имена | Правило KTD2 «новый код — правкой контракта», пространства путей по модулям, `x-status` |
 | Единый `ProblemDetail` (KTD2, мастер-U3) меняет ответ на неизвестный путь `/api/…`: `application/problem+json` с `instance` вместо `path` | `SmokeIT#missingApiReturnsJsonError` мастер-U2 ждёт `application/json` и `path`; юнит, включающий `ProblemDetail` в backend, правит его в том же PR (e2e-смоук мастер-U2 проверяет только JSON и `status`) |
 | Шов нарушает направление зависимостей модулей мастер-плана | KTD15: проверка каждой сигнатуры по диаграмме; `ModularityTest` мастер-U2 ловит нарушение в коде |
@@ -349,15 +344,15 @@ backend/src/test/java/ru/campusrating/ContractCompatibilityIT.java   # U7
 - **Goal.** Контракт подключён к коду: фронт типизирован и работает против моков, backend проверяется на совместимость, CI ловит расхождения.
 - **Requirements.** R9, R10; KTD13, KTD14, KTD16.
 - **Dependencies.** U1–U6; слияние мастер-U2.
-- **Files:** `frontend/package.json`, `frontend/package-lock.json`, `frontend/src/main.tsx`, `frontend/public/mockServiceWorker.js`, `frontend/src/api/schema.d.ts`, `frontend/src/api/client.ts`, `frontend/src/api/client.test.ts`, `frontend/src/mocks/examples.generated.ts`, `frontend/src/mocks/handlers.ts`, `frontend/src/mocks/browser.ts`, `frontend/src/mocks/server.ts`, `frontend/src/mocks/handlers.test.ts`, `backend/pom.xml`, `backend/src/test/java/ru/campusrating/ContractCompatibilityIT.java`, `.github/workflows/ci.yml`, `frontend/AGENTS.md`, `docs/spec/api/openapi.yaml` (только `x-status`).
+- **Files:** `frontend/package.json`, `frontend/package-lock.json`, `frontend/src/main.tsx`, `frontend/public/mockServiceWorker.js`, `frontend/src/api/schema.d.ts`, `frontend/src/api/problemCodes.generated.ts`, `frontend/src/api/client.ts`, `frontend/src/api/client.test.ts`, `frontend/src/mocks/examples.generated.ts`, `frontend/src/mocks/handlers.ts`, `frontend/src/mocks/browser.ts`, `frontend/src/mocks/server.ts`, `frontend/src/mocks/handlers.test.ts`, `tools/install-oasdiff.mjs`, `frontend/scripts/generate-examples.mjs`, `backend/pom.xml`, `backend/src/test/java/ru/campusrating/ContractCompatibilityIT.java`, `.github/workflows/ci.yml`, `frontend/AGENTS.md`, `docs/spec/api/openapi.yaml` (только `x-status`).
 - **Approach:**
   1. Скрипт `api:gen` по KTD16: типы и модуль примеров; оба файла генерируемые, руками не правятся.
   2. `client.ts` по KTD16.
   3. MSW: обработчики отвечают примерами; списки с курсором отдают две страницы (`page1` с `nextCursor`, `page2` с `null`); изменяющие операции отвечают примером состояния после действия.
-  4. `ContractCompatibilityIT` по KTD14; регрессии конвертера и nullable — без Spring.
+  4. `ContractCompatibilityIT` по KTD14, сначала пробные сравнения инструмента.
   5. CI: в задание `frontend` — линтер контракта и `api:gen` с проверкой пустого `git diff`; в `backend` — `ContractCompatibilityIT` в составе `verify`.
 - **Patterns to follow.** `frontend/AGENTS.md`, задания CI и скрипты `frontend/package.json` из скелета мастер-U2.
-- **Execution note.** Учесть результаты проб: openapi-diff 2.1.7 сравнивает схемы в 3.0.3; nullable проверяется отдельно (KTD14).
+- **Execution note.** Начать с пробных сравнений `oasdiff` 1.37.0: от них зависит, как устроен `ContractCompatibilityIT`.
 - **Test scenarios:**
   - `client.ts`: `POST`, `PUT`, `PATCH`, `DELETE` добавляют `X-XSRF-TOKEN` из cookie, `GET` — нет.
   - `client.ts`: сдача отправляет `multipart/form-data` с частью `file`, без ручного `Content-Type`, с CSRF-заголовком.
@@ -392,3 +387,9 @@ backend/src/test/java/ru/campusrating/ContractCompatibilityIT.java   # U7
 **PR U3b (U7):**
 - Ворота U7 зелёные локально и в CI.
 - Нет ручных правок генерируемых файлов, временных контроллеров и правок из негативных проверок.
+
+## Согласованная замена KTD14 (09.11)
+
+Команда согласовала oasdiff 1.37.0 после провала исходной пробы openapi-diff-core 2.1.7: три несовместимые мутации OpenAPI 3.1 давали NO_CHANGES. oasdiff прошёл 9/9 проб, включая совместимые контрпримеры. Продуктовые требования и набор сравниваемых операций не меняются.
+
+Установка: вспомогательный tools/install-oasdiff.mjs скачивает закреплённый release для Windows/Linux amd64, сверяет закреплённый SHA-256 и устанавливает бинарник в backend/target/tools. CI backend вызывает установку до verify; локально та же команда. Отсутствие или сбой инструмента делает проверку красной. Схемы передаются локальными JSON-файлами; внешние ссылки отключены. Негативные пробы остаются в ContractCompatibilityIT. Multipart сравнивается полностью: контроллер submitAssignment обязан явно описать oneOf из контракта; исключения для request body не вводятся.
