@@ -41,7 +41,9 @@ jobs:
         with:
           node-version: '22'
       - name: Verify backend
-        run: ./backend/mvnw -f backend/pom.xml verify
+        run: |
+          node tools/install-oasdiff.mjs
+          ./backend/mvnw -f backend/pom.xml verify
       - name: Check CRAP
         run: node tools/crap.mjs backend/target/site/jacoco/jacoco.xml
 
@@ -59,8 +61,9 @@ jobs:
         run: npm --prefix frontend ci
       - name: Lint API contract
         run: npx --no-install --prefix frontend redocly lint --config docs/spec/api/redocly.yaml docs/spec/api/openapi.yaml
-      - name: Check generated API artifacts
+      - name: Check generated API files
         run: |
+          git ls-files --error-unmatch frontend/src/api/schema.d.ts frontend/src/api/problemCodes.generated.ts frontend/src/mocks/examples.generated.ts
           npm --prefix frontend run api:gen
           git diff --exit-code -- frontend/src/api/schema.d.ts frontend/src/api/problemCodes.generated.ts frontend/src/mocks/examples.generated.ts
       - name: Check frontend
