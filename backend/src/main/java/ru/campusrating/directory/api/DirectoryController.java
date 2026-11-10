@@ -42,6 +42,8 @@ public class DirectoryController {
         }
     }
 
+    @io.swagger.v3.oas.annotations.media.Schema(requiredProperties = "items")
     public record Items<T>(List<T> items) {}
-    public record StudyGroupView(long id, String name, FacultyInfo faculty) {}
+    @io.swagger.v3.oas.annotations.media.Schema(requiredProperties = {"id", "name", "faculty"})
+    public record StudyGroupView(@jakarta.validation.constraints.Min(1) long id, String name, FacultyInfo faculty) {}
 }

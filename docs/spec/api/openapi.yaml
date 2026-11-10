@@ -54,7 +54,7 @@ paths:
 
         Доступ: все, включая гостя.
       x-public: true
-      x-status: planned
+      x-status: implemented
       security: []
       responses:
         '204':
@@ -76,7 +76,7 @@ paths:
 
         Доступ: все, включая гостя.
       x-public: true
-      x-status: planned
+      x-status: implemented
       security: []
       responses:
         '200':
@@ -109,7 +109,7 @@ paths:
 
         Доступ: все, включая гостя; нужен CSRF-заголовок.
       x-public: true
-      x-status: planned
+      x-status: implemented
       security:
         - csrf: []
       requestBody:
@@ -175,7 +175,7 @@ paths:
 
         Доступ: любой вошедший.
       x-roles: [AUTHENTICATED]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
           csrf: []
@@ -200,7 +200,7 @@ paths:
 
         Доступ: любой вошедший.
       x-roles: [AUTHENTICATED]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       responses:
@@ -272,7 +272,7 @@ paths:
 
         Доступ: все, включая гостя; нужен CSRF-заголовок.
       x-public: true
-      x-status: planned
+      x-status: implemented
       security:
         - csrf: []
       requestBody:
@@ -360,7 +360,7 @@ paths:
 
         Доступ: все, включая гостя; нужен CSRF-заголовок.
       x-public: true
-      x-status: planned
+      x-status: implemented
       security:
         - csrf: []
       requestBody:
@@ -417,7 +417,7 @@ paths:
 
         Доступ: любой вошедший, в том числе с `mustChangePassword`.
       x-roles: [AUTHENTICATED]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
           csrf: []
@@ -477,7 +477,7 @@ paths:
 
         Доступ: преподаватель, только свои.
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       responses:

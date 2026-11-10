@@ -436,3 +436,15 @@
 - **Урок:** нового правила нет; после документационного merge сверяется diff от проверенного SHA по `REVIEWING.md`.
 - **Кругов ревью:** 1 независимый проход в этой сессии; после интеграции — проверка неизменности кода.
 - **Коммит / PR:** PR #17; интеграционный merge-коммит по поручению о слиянии.
+
+### 2026-11-10 — Backend U5: identity, сессии и доступ
+
+- **Кто / агент / модель:** Максим / Codex / GPT-6; отдельный tester разрешён человеком.
+- **Поручение:** docs/spec/plans/2026-11-09-003-feat-u5-backend-plan.md; исполнитель не меняет независимые acceptance-тесты.
+- **Результат с доказательствами:** Maven 3.9.16 / Java 25 в Docker: mvn -f backend/pom.xml verify — BUILD SUCCESS, 132 unit +64 IT, 0 failures/errors. Независимые identity acceptance —22/22; HTTP-сессии, CSRF, смена пароля и отзыв другой сессии, допуски, атомарное начисление и откат, bootstrap prod, перезапуск demo. Modularity, ContractCompatibilityIT, миграции, JaCoCo и CPD прошли. node tools/crap.mjs backend/target/site/jacoco/jacoco.xml — rc 0, максимум нового identity domain 9.0016. Логи u5-verify-final.log находятся в backend/target дерева U3b; XML-отчёты — target этого дерева.
+- **Не проверено:** независимое ревью, PIT профиля quality (локально выполняет ревьюер), CI на конкретном SHA, frontend auth вне этого юнита.
+- **Неудачные попытки:** два независимых теста читали поле CGLIB-прокси и получали null; lifecycle использовал defaults ниже application.yml. Только автор тестов исправил accessor и приоритет тестовых аргументов; assertions сохранены.
+- **Ошибка агента:** первая SecurityConfig требовала HttpSecurity в non-web запуске старого DemoRecreateIT; servlet-chain теперь условный. Springdoc описывал серверный CsrfToken как обязательный query-параметр; параметр скрыт аннотацией. Полный verify выявил оба дефекта, повторный прошёл. Для старого non-web теста добавлены синтетические bootstrap-настройки; это вспомогательный файл сверх списка исходного плана.
+- **Урок:** слушателя Spring AOP проверять через метод, а не поле proxy; тестовые параметры SpringApplicationBuilder передавать с приоритетом над application.yml.
+- **Кругов ревью:** 0 независимых; авторская проверка и отдельный tester.
+- **Коммит / PR:** нет, реализация в рабочем дереве u5-identity-backend.
