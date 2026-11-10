@@ -46,9 +46,9 @@ export function TeacherTableLayout<T>({ caption, rows, columns, keyForRow, state
   keyForRow: (row: T) => number | string; state: LoadState;
   isSelected?: (row: T) => boolean;
 }) {
-  return <AsyncContent state={state}><table className="cr-table"><caption>{caption}</caption>
-    <thead><tr>{columns.map((column) => <th scope="col" key={column.key}>{column.title}</th>)}</tr></thead>
-    <tbody>{rows.map((row) => <tr key={keyForRow(row)} aria-selected={isSelected?.(row)}>{columns.map((column) =>
-      <td key={column.key} data-label={column.title}>{column.render(row)}</td>)}</tr>)}</tbody>
+  return <AsyncContent state={state}><table className="cr-table" role="table"><caption>{caption}</caption>
+    <thead role="rowgroup"><tr role="row">{columns.map((column) => <th scope="col" role="columnheader" key={column.key}>{column.title}</th>)}</tr></thead>
+    <tbody role="rowgroup">{rows.map((row) => <tr role="row" key={keyForRow(row)} data-selected={isSelected?.(row) || undefined}>{columns.map((column) =>
+      <td role="cell" key={column.key} data-label={column.title}>{column.render(row)}</td>)}</tr>)}</tbody>
   </table></AsyncContent>;
 }

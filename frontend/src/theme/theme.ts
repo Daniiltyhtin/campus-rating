@@ -22,7 +22,7 @@ export const palettes = {
 };
 
 export const theme = createTheme({
-  primaryColor: 'campus', primaryShade: 6, colors: { campus: blue },
+  primaryColor: 'brand', primaryShade: 6, colors: { brand: blue },
   fontFamily: '"PT Sans", system-ui, sans-serif',
   fontSizes: { xs: '0.6875rem', sm: '0.8125rem', md: '0.9375rem', lg: '1.0625rem', xl: '1.25rem' },
   headings: { fontFamily: '"Literata", Georgia, serif', fontWeight: '600',
@@ -59,7 +59,8 @@ function variables(p: typeof palettes.light) {
     '--cr-surface': p.surface, '--cr-text': p.text, '--cr-muted': p.muted, '--cr-rule': p.rule, '--cr-link': p.link,
     '--cr-button': p.button, '--cr-button-text': p.buttonText, '--cr-selection': p.selection,
     '--cr-field': p.field, '--cr-track': p.track, '--cr-primary-soft': p.primarySoft,
-    '--mantine-color-campus-filled': p.button, '--mantine-color-campus-filled-hover': p.button,
+    '--mantine-color-brand-filled': p.button, '--mantine-color-brand-filled-hover': p.button,
+    '--cr-surface-2': p.selection, '--cr-primary': p.button, '--cr-on-primary': p.buttonText,
     '--cr-status-overdue': p.overdue, '--cr-status-overdue-bg': p.overdueBg,
     '--cr-status-accepted': p.accepted, '--cr-status-accepted-bg': p.acceptedBg,
     '--cr-status-submitted': p.submitted, '--cr-status-submitted-bg': p.submittedBg,

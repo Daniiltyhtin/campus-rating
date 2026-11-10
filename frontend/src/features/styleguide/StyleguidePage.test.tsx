@@ -1,9 +1,11 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { renderApp } from '../../test/render';
 
 describe('styleguide', () => {
+  afterEach(() => localStorage.removeItem('campus-appearance'));
+
   it('opens without changing access to product pages and presents all templates', async () => {
     const router = renderApp('/styleguide');
     expect(await screen.findByRole('heading', { name: 'Редакция' })).toBeInTheDocument();
@@ -13,6 +15,8 @@ describe('styleguide', () => {
     expect(screen.getByRole('heading', { name: 'Форма' })).toBeInTheDocument();
     expect(screen.getByRole('table', { name: 'Работы студентов' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /Название/ })).toBeInTheDocument();
+    await router.navigate('/');
+    await waitFor(() => expect(router.state.location.pathname).toBe('/login'));
   });
 
   it('shows loading, empty and error states and retries', async () => {
@@ -40,6 +44,5 @@ describe('styleguide', () => {
     expect(screen.getByRole('checkbox', { name: 'Смирнова Анна Олеговна' })).toBeChecked();
     await user.click(screen.getByRole('button', { name: 'Снять выбор' }));
     expect(screen.getByRole('button', { name: 'Принять' })).toBeDisabled();
-    localStorage.removeItem('campus-appearance');
   });
 });
