@@ -1,64 +1,71 @@
-import createClient from 'openapi-fetch';
+import createClient, { type Middleware } from 'openapi-fetch';
 import type { components, paths } from './schema';
+import { problemCodes } from './problemCodes.generated';
 
-export type ApiProblem = components['schemas']['Problem'] & {
-  budgets?: components['schemas']['BudgetCheck'][];
-  fieldErrors?: components['schemas']['FieldError'][];
-  studentIds?: number[];
-};
+type Problem = components['schemas']['Problem'];
+type ApiProblem = components['schemas']['BudgetProblem'] | (Omit<Problem, 'code'> & {
+  code: Exclude<Problem['code'], 'BUDGET_EXCEEDED'>;
+});
 
 export class ApiError extends Error {
-  constructor(public readonly status: number, public readonly problem?: ApiProblem) {
-    super(problem?.detail ?? `Ошибка запроса (${status})`);
+  readonly code: ApiProblem['code'];
+  constructor(readonly problem: ApiProblem) {
+    super(problem.detail ?? problem.title);
     this.name = 'ApiError';
+    this.code = problem.code;
   }
 }
 
-function csrfCookie() {
-  const value = document.cookie.split(';').map((item) => item.trim()).find((item) => item.startsWith('XSRF-TOKEN='));
-  return value ? decodeURIComponent(value.slice('XSRF-TOKEN='.length)) : undefined;
+function isProblem(value: unknown): value is ApiProblem {
+  if (!value || typeof value !== 'object') return false;
+  const p = value as Record<string, unknown>;
+  if (typeof p.type !== 'string' || typeof p.title !== 'string' || typeof p.status !== 'number' || typeof p.code !== 'string' || !problemCodes.some((code) => code === p.code)) return false;
+  if (p.detail != null && typeof p.detail !== 'string') return false;
+  if (p.code !== 'BUDGET_EXCEEDED') return true;
+  return Array.isArray(p.budgets) && p.budgets.length > 0 && p.budgets.every((budget: unknown) => {
+    if (!budget || typeof budget !== 'object') return false;
+    const b = budget as Record<string, unknown>;
+    return typeof b.groupId === 'number' && typeof b.groupName === 'string'
+      && ['needed', 'remaining', 'shortfall'].every((key) => typeof b[key] === 'number');
+  });
 }
 
-async function requireSuccess(response: Response) {
-  if (!response.ok) {
-    let problem: ApiProblem | undefined;
-    if (response.headers.get('Content-Type')?.split(';')[0] === 'application/problem+json') {
-      problem = await response.clone().json() as ApiProblem;
-    }
-    throw new ApiError(response.status, problem);
-  }
-  return response;
-}
-
-export function createSecureFetch(transport: typeof fetch = globalThis.fetch): typeof fetch {
-  return async (input, init) => {
-    const request = new Request(input, { ...init, credentials: 'include' });
-    const url = new URL(request.url);
-    const refresh = () => transport(new Request(new URL('/api/v1/auth/csrf', url), { credentials: 'include' })).then(requireSuccess);
+export const csrfMiddleware: Middleware = {
+  onRequest({ request }) {
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
-      if (!csrfCookie()) await refresh();
-      const token = csrfCookie();
-      if (!token) throw new Error('Сервер не выдал CSRF-токен');
-      request.headers.set('X-XSRF-TOKEN', token);
-    } else {
-      request.headers.delete('X-XSRF-TOKEN');
+      const cookie = document.cookie.split('; ').find((part) => part.startsWith('XSRF-TOKEN='));
+      if (cookie) request.headers.set('X-XSRF-TOKEN', decodeURIComponent(cookie.slice('XSRF-TOKEN='.length)));
     }
-    const response = await requireSuccess(await transport(request));
-    if (request.method === 'POST' && /^\/api\/v1\/auth\/(login|logout|password)$/.test(url.pathname)) await refresh();
+    return request;
+  },
+  async onResponse({ response }) {
+    if (!response.ok && response.headers.get('content-type')?.split(';')[0] === 'application/problem+json') {
+      const problem: unknown = await response.clone().json();
+      if (isProblem(problem)) throw new ApiError(problem);
+      throw new Error('Некорректный ответ application/problem+json');
+    }
     return response;
-  };
-}
+  },
+};
 
-export function createApiClient(options: { baseUrl?: string; fetch?: typeof fetch } = {}) {
-  return createClient<paths>({ baseUrl: options.baseUrl ?? window.location.origin, fetch: createSecureFetch(options.fetch) });
-}
-
-export function multipartBody(body: { link?: string; file?: Blob | string }) {
-  const data = new FormData();
-  if (body.link !== undefined) data.set('link', body.link);
-  if (body.file instanceof Blob) data.set('file', body.file);
-  else if (body.file !== undefined) throw new TypeError('Для загрузки нужен File или Blob');
-  return data;
+export function createApiClient(baseUrl = window.location.origin) {
+  const client = createClient<paths>({ baseUrl, credentials: 'same-origin' });
+  client.use(csrfMiddleware);
+  return client;
 }
 
 export const api = createApiClient();
+
+export function submitAssignment(client: ReturnType<typeof createApiClient>, assignmentId: number,
+  body: components['schemas']['SubmissionUpload']) {
+  return client.POST('/api/v1/assignments/{assignmentId}/submission', {
+    params: { path: { assignmentId } },
+    body,
+    bodySerializer(value) {
+      const form = new FormData();
+      if (value.file !== undefined) form.append('file', value.file);
+      else form.append('link', value.link);
+      return form;
+    },
+  });
+}

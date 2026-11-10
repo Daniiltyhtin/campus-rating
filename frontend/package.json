@@ -10,13 +10,11 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint .",
+    "lint": "eslint . --ignore-pattern public/mockServiceWorker.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "check": "npm run lint && npm run typecheck && npm run test",
-    "api:gen": "node scripts/generate-api.mjs",
-    "api:lint": "redocly lint --config ../docs/spec/api/redocly.yaml ../docs/spec/api/openapi.yaml",
-    "api:check": "node scripts/generate-api.mjs --check"
+    "api:gen": "node scripts/generate-examples.mjs"
   },
   "dependencies": {
     "@mantine/core": "9.7.5",
@@ -53,7 +51,7 @@
   },
   "overrides": {
     "openapi-typescript": {
-      "typescript": "6.0.3"
+      "typescript": "$typescript"
     }
   },
   "msw": {

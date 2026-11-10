@@ -1,67 +1,59 @@
-// @vitest-environment node
-import { describe, expect, it, vi } from 'vitest';
-import { ApiError, createApiClient, createSecureFetch, multipartBody } from './client';
+import { File as NodeFile } from 'node:buffer';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { http, HttpResponse } from 'msw';
+import { server } from '../mocks/server';
+import { ApiError, createApiClient, csrfMiddleware, submitAssignment } from './client';
 
-vi.hoisted(() => {
-  vi.stubGlobal('document', { cookie: '' });
-  vi.stubGlobal('window', { location: { origin: 'http://localhost' } });
+beforeAll(() => { vi.stubGlobal('File', NodeFile); server.listen({ onUnhandledFrame: 'error' }); });
+afterEach(() => { server.resetHandlers(); document.cookie = 'XSRF-TOKEN=; Max-Age=0'; });
+afterAll(() => { server.close(); vi.unstubAllGlobals(); });
+
+describe('CSRF', () => {
+  it.each(['POST', 'PUT', 'PATCH', 'DELETE', 'GET'])('%s uses the cookie only for mutations', async (method) => {
+    document.cookie = 'XSRF-TOKEN=token%2Bvalue';
+    const request = new Request('http://localhost/api/v1/test', { method });
+    await csrfMiddleware.onRequest!({ request } as Parameters<NonNullable<typeof csrfMiddleware.onRequest>>[0]);
+    expect(request.headers.get('X-XSRF-TOKEN')).toBe(method === 'GET' ? null : 'token+value');
+  });
+  it('does not invent a token when the cookie is absent', async () => {
+    const request = new Request('http://localhost/api/v1/test', { method: 'POST' });
+    await csrfMiddleware.onRequest!({ request } as Parameters<NonNullable<typeof csrfMiddleware.onRequest>>[0]);
+    expect(request.headers.has('X-XSRF-TOKEN')).toBe(false);
+  });
 });
 
-describe('API transport', () => {
-  it.each(['POST', 'PUT', 'PATCH', 'DELETE'])('%s sends the current decoded CSRF cookie', async (method) => {
-    document.cookie = 'XSRF-TOKEN=token%2Bvalue; path=/';
-    const transport = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 }));
-    await createSecureFetch(transport)(new Request('http://localhost/api/v1/example', { method }));
-    const request = transport.mock.calls[0]?.[0] as Request;
-    expect(request.headers.get('X-XSRF-TOKEN')).toBe('token+value');
-    expect(request.credentials).toBe('include');
-  });
-
-  it('GET does not send a CSRF header', async () => {
-    document.cookie = 'XSRF-TOKEN=token; path=/';
-    const transport = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}'));
-    await createSecureFetch(transport)(new Request('http://localhost/api/v1/example'));
-    expect((transport.mock.calls[0]?.[0] as Request).headers.has('X-XSRF-TOKEN')).toBe(false);
-  });
-
-  it('loads CSRF before the first mutation and refreshes it after login', async () => {
-    document.cookie = 'XSRF-TOKEN=; max-age=0; path=/';
-    const urls: string[] = [];
-    const transport = vi.fn<typeof fetch>().mockImplementation(async (input) => {
-      const request = input as Request;
-      urls.push(new URL(request.url).pathname);
-      if (request.url.endsWith('/csrf')) document.cookie = 'XSRF-TOKEN=fresh; path=/';
-      else expect(request.headers.get('X-XSRF-TOKEN')).toBe('fresh');
-      return new Response(null, { status: 204 });
-    });
-    await createSecureFetch(transport)(new Request('http://localhost/api/v1/auth/login', { method: 'POST' }));
-    expect(urls).toEqual(['/api/v1/auth/csrf', '/api/v1/auth/login', '/api/v1/auth/csrf']);
-  });
-
-  it('preserves the budget details in a typed domain error', async () => {
-    const problem = { type: 'about:blank', title: 'Unprocessable Content', status: 422,
-      code: 'BUDGET_EXCEEDED', budgets: [{ groupId: 11, groupName: 'ИВТ-21', needed: 100, remaining: 50, shortfall: 50 }] };
-    const transport = vi.fn<typeof fetch>().mockResolvedValue(Response.json(problem, {
-      status: 422, headers: { 'Content-Type': 'application/problem+json' },
-    }));
-    const api = createApiClient({ baseUrl: 'http://localhost', fetch: transport });
-    const error = await api.GET('/api/v1/feed/awards').catch((value: unknown) => value);
-    expect(error).toBeInstanceOf(ApiError);
-    expect(error).toMatchObject({ status: 422, problem });
-  });
-
-  it('sends a real multipart file with an automatically generated boundary', async () => {
-    document.cookie = 'XSRF-TOKEN=upload-token; path=/';
-    const transport = vi.fn<typeof fetch>().mockResolvedValue(Response.json({}));
-    const api = createApiClient({ baseUrl: 'http://localhost', fetch: transport });
-    await api.POST('/api/v1/assignments/{assignmentId}/submission', {
-      params: { path: { assignmentId: 101 } },
-      body: { file: new File(['report'], 'report.pdf', { type: 'application/pdf' }) },
-      bodySerializer: multipartBody,
-    });
-    const request = transport.mock.calls[0]?.[0] as Request;
-    expect(request.headers.get('Content-Type')).toMatch(/^multipart\/form-data; boundary=/);
+it('sends a file as multipart with an automatic boundary and CSRF', async () => {
+  document.cookie = 'XSRF-TOKEN=upload-token';
+  server.use(http.post('http://localhost/api/v1/assignments/1/submission', async ({ request }) => {
     expect(request.headers.get('X-XSRF-TOKEN')).toBe('upload-token');
-    expect(await request.text()).toContain('filename="report.pdf"');
-  });
+    expect(request.headers.get('content-type')).toMatch(/^multipart\/form-data; boundary=/);
+    const file = (await request.formData()).get('file') as File;
+    expect(file.name).toBe('answer.txt');
+    expect(await file.text()).toBe('answer');
+    return HttpResponse.json({ id: 1 });
+  }));
+  await submitAssignment(createApiClient('http://localhost'), 1, { file: new File(['answer'], 'answer.txt') });
+});
+
+it('throws a typed budget problem with its budgets', async () => {
+  const budgets = [{ groupId: 11, groupName: 'ИВТ-21', needed: 200, remaining: 100, shortfall: 100 }];
+  server.use(http.get('http://localhost/api/v1/feed/awards', () => HttpResponse.json(
+    { type: 'about:blank', status: 422, title: 'Бюджет исчерпан', code: 'BUDGET_EXCEEDED', budgets },
+    { status: 422, headers: { 'Content-Type': 'application/problem+json' } },
+  )));
+  const error = await createApiClient('http://localhost').GET('/api/v1/feed/awards').catch((error: unknown) => error);
+  expect(error).toBeInstanceOf(ApiError);
+  if (!(error instanceof ApiError)) throw new Error('Expected ApiError');
+  expect(error.code).toBe('BUDGET_EXCEEDED');
+  if (error.problem.code === 'BUDGET_EXCEEDED') expect(error.problem.budgets).toEqual(budgets);
+});
+
+it('rejects a budget problem without budgets instead of typing it', async () => {
+  server.use(http.get('http://localhost/api/v1/feed/awards', () => HttpResponse.json(
+    { type: 'about:blank', status: 422, title: 'Бюджет исчерпан', code: 'BUDGET_EXCEEDED' },
+    { status: 422, headers: { 'Content-Type': 'application/problem+json' } },
+  )));
+  const error = await createApiClient('http://localhost').GET('/api/v1/feed/awards').catch((error: unknown) => error);
+  expect(error).toBeInstanceOf(Error);
+  expect(error).not.toBeInstanceOf(ApiError);
 });

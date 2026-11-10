@@ -15,7 +15,6 @@ function matches(query: string) {
   return viewportWidth >= pixels;
 }
 
-if (typeof window !== 'undefined') {
 window.matchMedia = (query: string): MediaQueryList => ({
   matches: matches(query),
   media: query,
@@ -34,7 +33,6 @@ window.ResizeObserver = class {
 };
 
 Element.prototype.scrollIntoView = () => {};
-}
 
 afterEach(() => {
   setViewportWidth(DESKTOP_WIDTH);

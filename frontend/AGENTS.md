@@ -37,11 +37,11 @@ React 19, Vite, TypeScript, Mantine, React Router, TanStack Query, Vitest. До�
 | Установка зависимостей | `npm --prefix frontend ci` |
 | ESLint, `tsc --noEmit`, Vitest | `npm --prefix frontend run check` |
 | Сборка в `frontend/dist` | `npm --prefix frontend run build` |
+| Генерация типов и разыменованных примеров из контракта | `npm --prefix frontend run api:gen` |
+| Dev-сервер с MSW до рендера, без backend | `VITE_API_MOCKS=true npm --prefix frontend run dev` |
 | Dev-сервер, `/api` → `http://localhost:8081` | `npm --prefix frontend run dev` |
 
-`npm --prefix frontend run api:gen` обновляет типы и примеры MSW; оба генерируемых файла не править вручную. `api:lint` проверяет контракт. Моки включаются только в dev при `VITE_API_MOCKING=true` в окружении запуска, до рендера. Браузерный worker — `public/mockServiceWorker.js`, обновляется командой `node node_modules/msw/cli/index.js init public --save` из `frontend/`.
-
-Компоненты с `useMediaQuery` тестируются через `setViewportWidth` из `src/test/setup.ts`; страницы — через `renderApp` из `src/test/render.tsx`.
+Результаты `api:gen` (`src/api/schema.d.ts`, `src/api/problemCodes.generated.ts`, `src/mocks/examples.generated.ts`) генерируются без дат и проверяются в CI; бинарные поля имеют тип `Blob`. Компоненты с `useMediaQuery` тестируются через `setViewportWidth` из `src/test/setup.ts`; страницы — через `renderApp` из `src/test/render.tsx`.
 
 ## Уроки
 
