@@ -12,5 +12,6 @@
 | [ADR006](adr006-liquibase.md) | Liquibase и formatted SQL | accepted | KTD13 |
 | [ADR007](adr007-teacher-access.md) | Доступ преподавателя: список почт и доступные группы | accepted | KTD23 |
 | [ADR008](adr008-run-modes-and-mail.md) | Режимы запуска и почта | accepted | KTD22 |
+| [ADR009](adr009-visual-style.md) | Визуальный стиль: «Редакция» в цветах «Кафедры» | accepted | — (U21b) |
 
 Новые ADR оформляются по [шаблону](adr000-template.md). По KTD16 при замене решения новый ADR получает статус `supersedes ADRxxx`, заменённый — `superseded by ADRyyy`. Старый документ не удаляется; соответствующий KTD мастер-плана и индекс обновляются в том же PR.

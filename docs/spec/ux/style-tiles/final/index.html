@@ -1,0 +1,1461 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campus Rating — финальный стиль</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,600;7..72,700&family=PT+Sans:wght@400;700&display=swap&subset=cyrillic" rel="stylesheet">
+<style>
+body{margin:0;background:#d5d9de;font-family:'PT Sans',system-ui,sans-serif}
+a{color:#2450c4}a:hover{color:#1d43a8}
+.board{padding:32px;overflow-x:auto}
+.board>h2{margin:0 0 12px;font:700 13px 'PT Sans',sans-serif;color:#3d444d}
+</style>
+</head>
+<body>
+<section class="board"><h2>Финальный стиль: светлая, тёмная, высокий контраст</h2>
+
+<div style="width: 1600px; height: 1640px; box-sizing: border-box; padding: 48px 48px 40px; background: #e3e6ea; font-family: 'PT Sans', system-ui, sans-serif; color: #161b22; display: flex; flex-direction: column; gap: 28px">
+  <header style="display: flex; flex-direction: column; gap: 8px; border-top: 3px solid #161b22; padding-top: 16px">
+    <span style="font-size: 12px; font-weight: 700; color: #57606a">Campus Rating · U21b · финальная версия стиля</span>
+    <h1 style="margin: 0; font-family: Literata, Georgia, serif; font-weight: 700; font-size: 48px; line-height: 1.05; letter-spacing: -0.01em">«Редакция» в цветах «Кафедры»</h1>
+    <p style="margin: 0; max-width: 900px; font-size: 16px; line-height: 1.5; color: #3d444d">Финальная версия U21b. Газетная полоса «Редакции» — линейки вместо коробок, Literata в заголовках и баллах, PT Sans в интерфейсе — в холодных цветах «Кафедры». Цвет только там, где он что-то значит: статусы — мягкие пилюли, итог действия — зелёные галочка и первые слова без фона, панель выбора — серая, выбранная строка — чекбокс и линия под ней. Три темы: светлая, тёмная и высококонтрастная для слабовидящих (крупнее шрифт, выше кнопки, контраст текста не ниже 7:1).</p>
+  </header>
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; flex-grow: 1">
+    
+      <section style="background: #f5f6f8; color: #161b22; border-radius: 10px; padding: 24px; display: flex; flex-direction: column; gap: 20px; font-size: 15px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #161b22; padding-bottom: 10px">
+          <h2 style="margin: 0; font-family: Literata, Georgia, serif; font-size: 22px; font-weight: 600">Светлая</h2>
+          <span style="font-size: 13px; color: #57606a">холодная бумага</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #f5f6f8; border: 1px solid #7d8590"></div>
+              <span style="font-size: 13px; line-height: 1.2">Бумага</span>
+              <span style="font-size: 12px; color: #57606a; font-variant-numeric: tabular-nums">#f5f6f8</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #161b22; border: 1px solid #7d8590"></div>
+              <span style="font-size: 13px; line-height: 1.2">Текст</span>
+              <span style="font-size: 12px; color: #57606a; font-variant-numeric: tabular-nums">#161b22</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #57606a; border: 1px solid #7d8590"></div>
+              <span style="font-size: 13px; line-height: 1.2">Вторичный</span>
+              <span style="font-size: 12px; color: #57606a; font-variant-numeric: tabular-nums">#57606a</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #2450c4; border: 1px solid #7d8590"></div>
+              <span style="font-size: 13px; line-height: 1.2">Синий</span>
+              <span style="font-size: 12px; color: #57606a; font-variant-numeric: tabular-nums">#2450c4</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #e8eefc; border: 1px solid #7d8590"></div>
+              <span style="font-size: 13px; line-height: 1.2">Синий, фон</span>
+              <span style="font-size: 12px; color: #57606a; font-variant-numeric: tabular-nums">#e8eefc</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #d6dbe1; border: 1px solid #7d8590"></div>
+              <span style="font-size: 13px; line-height: 1.2">Линейка</span>
+              <span style="font-size: 12px; color: #57606a; font-variant-numeric: tabular-nums">#d6dbe1</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #b42318; border: 1px solid #7d8590"></div>
+              <span style="font-size: 13px; line-height: 1.2">Просрочено</span>
+              <span style="font-size: 12px; color: #57606a; font-variant-numeric: tabular-nums">#b42318</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #8a4b00; border: 1px solid #7d8590"></div>
+              <span style="font-size: 13px; line-height: 1.2">Сдано</span>
+              <span style="font-size: 12px; color: #57606a; font-variant-numeric: tabular-nums">#8a4b00</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #18753c; border: 1px solid #7d8590"></div>
+              <span style="font-size: 13px; line-height: 1.2">Принято</span>
+              <span style="font-size: 12px; color: #57606a; font-variant-numeric: tabular-nums">#18753c</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #2450c4; border: 1px solid #7d8590"></div>
+              <span style="font-size: 13px; line-height: 1.2">АР</span>
+              <span style="font-size: 12px; color: #57606a; font-variant-numeric: tabular-nums">#2450c4</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #0b6e69; border: 1px solid #7d8590"></div>
+              <span style="font-size: 13px; line-height: 1.2">БУА</span>
+              <span style="font-size: 12px; color: #57606a; font-variant-numeric: tabular-nums">#0b6e69</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #a3480a; border: 1px solid #7d8590"></div>
+              <span style="font-size: 13px; line-height: 1.2">БОА</span>
+              <span style="font-size: 12px; color: #57606a; font-variant-numeric: tabular-nums">#a3480a</span>
+            </div>
+          
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #d6dbe1; padding-top: 14px">
+          <span style="font-size: 13px; color: #57606a">Алгоритмы · ИВТ-21</span>
+          <span style="font-family: Literata, Georgia, serif; font-size: 26px; font-weight: 700; line-height: 1.15">Лабораторная 3. Деревья поиска</span>
+          <span style="line-height: 1.5">Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.</span>
+          <div style="display: flex; gap: 16px; align-items: baseline; font-family: Literata, Georgia, serif; font-size: 32px; font-weight: 600; font-variant-numeric: lining-nums tabular-nums">
+            <span style="color: #2450c4">940</span><span style="color: #0b6e69">120</span><span style="color: #a3480a">50</span><span style="color: #b42318">−20</span>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid #d6dbe1; padding-top: 16px">
+          <button type="button" style="height: 44px; padding: 0 18px; border: 0; border-radius: 6px; background: #2450c4; color: #ffffff; font: 700 15px 'PT Sans', sans-serif">Сдать работу</button>
+          <button type="button" style="height: 44px; padding: 0 18px; border: 1px solid #161b22; border-radius: 6px; background: transparent; color: #161b22; font: 700 15px 'PT Sans', sans-serif">Отмена</button>
+          <button type="button" style="height: 44px; padding: 0 18px; border: 1px solid #b42318; border-radius: 6px; background: transparent; color: #b42318; font: 700 15px 'PT Sans', sans-serif">Вернуть…</button>
+          <button type="button" style="height: 44px; padding: 0 10px; border: 0; background: transparent; color: #2450c4; font: 700 15px 'PT Sans', sans-serif; text-decoration: underline; text-underline-offset: 4px">Показать ещё</button>
+          <button type="button" disabled="" style="height: 44px; padding: 0 18px; border: 1px dashed #57606a; border-radius: 6px; background: #eef0f3; color: #57606a; font: 700 15px 'PT Sans', sans-serif">Начислить 125 БОА</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="file-l" style="font-size: 13px; font-weight: 700">Файл</label>
+          <input id="file-l" type="text" value="lab3-report.exe" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 2px solid #b42318; border-radius: 6px; background: #ffffff; color: #161b22; font: 15px 'PT Sans', sans-serif">
+          <span style="font-size: 13px; color: #b42318; font-weight: 400">Файл не того типа: нужен pdf, docx, zip, png или jpg</span>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+          <span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #fdecea; color: #b42318; border: 0px solid #b42318">Просрочено</span>
+          <span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #e8effc; color: #1d4fb8; border: 0px solid #1d4fb8">В процессе</span>
+          <span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #fff3dc; color: #8a4b00; border: 0px solid #8a4b00">Сдано на проверку</span>
+          <span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #e6f4ea; color: #18753c; border: 0px solid #18753c">Принято</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #d6dbe1; padding-top: 14px">
+          <div role="status" style="display: flex; align-items: center; gap: 10px; color: #161b22">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color: #18753c; flex-shrink: 0"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+            <span><b style="color: #18753c">Принято 2 из 3.</b> Новиков А. П. пропущен.</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 14px; border-radius: 8px; background: #eef0f3; border: 0px solid transparent">
+            <b style="white-space: nowrap">Выбрано 3</b>
+            <button type="button" style="height: 44px; padding: 0 6px; border: 0; background: transparent; color: #57606a; font: 15px 'PT Sans', sans-serif; text-decoration: underline; text-underline-offset: 4px; white-space: nowrap">Снять выбор</button>
+            <div style="flex-grow: 1"></div>
+            <button type="button" style="height: 44px; padding: 0 12px; border: 1px solid #57606a; border-radius: 6px; background: transparent; color: #161b22; font: 700 15px 'PT Sans', sans-serif">Вернуть…</button>
+            <button type="button" style="height: 44px; padding: 0 12px; border: 0; border-radius: 6px; background: #2450c4; color: #ffffff; font: 700 15px 'PT Sans', sans-serif">Принять 3</button>
+          </div>
+          <div style="display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 52px; border-bottom: 2px solid #7d8590">
+            <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center"><input type="checkbox" checked="" aria-label="Егорова" style="width: 18px; height: 18px; accent-color: #2450c4"></label>
+            <span style="font-weight: 700; color: #2450c4">Егорова Мария Сергеевна</span>
+            <span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #fff3dc; color: #8a4b00; border: 0px solid #8a4b00; white-space: nowrap">Сдано на проверку</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 22px; border-bottom: 1px solid #d6dbe1">
+          <a href="#" style="height: 44px; display: flex; align-items: center; font-weight: 700; color: #161b22; text-decoration: none; border-bottom: 3px solid #2450c4; margin-bottom: -1px">Все <span style="margin-left: 6px; color: #57606a; font-weight: 400">36</span></a>
+          <a href="#" style="height: 44px; display: flex; align-items: center; color: #57606a; text-decoration: none">Сдано <span style="margin-left: 6px">5</span></a>
+          <a href="#" style="height: 44px; display: flex; align-items: center; color: #57606a; text-decoration: none">Просрочено <span style="margin-left: 6px">9</span></a>
+        </div>
+      </section>
+    
+      <section style="background: #0f1419; color: #e6edf3; border-radius: 10px; padding: 24px; display: flex; flex-direction: column; gap: 20px; font-size: 15px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid #e6edf3; padding-bottom: 10px">
+          <h2 style="margin: 0; font-family: Literata, Georgia, serif; font-size: 22px; font-weight: 600">Тёмная</h2>
+          <span style="font-size: 13px; color: #9da7b3">ночной режим</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #0f1419; border: 1px solid #6b7685"></div>
+              <span style="font-size: 13px; line-height: 1.2">Бумага</span>
+              <span style="font-size: 12px; color: #9da7b3; font-variant-numeric: tabular-nums">#0f1419</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #e6edf3; border: 1px solid #6b7685"></div>
+              <span style="font-size: 13px; line-height: 1.2">Текст</span>
+              <span style="font-size: 12px; color: #9da7b3; font-variant-numeric: tabular-nums">#e6edf3</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #9da7b3; border: 1px solid #6b7685"></div>
+              <span style="font-size: 13px; line-height: 1.2">Вторичный</span>
+              <span style="font-size: 12px; color: #9da7b3; font-variant-numeric: tabular-nums">#9da7b3</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #7aa2ff; border: 1px solid #6b7685"></div>
+              <span style="font-size: 13px; line-height: 1.2">Синий</span>
+              <span style="font-size: 12px; color: #9da7b3; font-variant-numeric: tabular-nums">#7aa2ff</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #1a2540; border: 1px solid #6b7685"></div>
+              <span style="font-size: 13px; line-height: 1.2">Синий, фон</span>
+              <span style="font-size: 12px; color: #9da7b3; font-variant-numeric: tabular-nums">#1a2540</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #2d3640; border: 1px solid #6b7685"></div>
+              <span style="font-size: 13px; line-height: 1.2">Линейка</span>
+              <span style="font-size: 12px; color: #9da7b3; font-variant-numeric: tabular-nums">#2d3640</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #ff9b8f; border: 1px solid #6b7685"></div>
+              <span style="font-size: 13px; line-height: 1.2">Просрочено</span>
+              <span style="font-size: 12px; color: #9da7b3; font-variant-numeric: tabular-nums">#ff9b8f</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #f0c27a; border: 1px solid #6b7685"></div>
+              <span style="font-size: 13px; line-height: 1.2">Сдано</span>
+              <span style="font-size: 12px; color: #9da7b3; font-variant-numeric: tabular-nums">#f0c27a</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #7fd19b; border: 1px solid #6b7685"></div>
+              <span style="font-size: 13px; line-height: 1.2">Принято</span>
+              <span style="font-size: 12px; color: #9da7b3; font-variant-numeric: tabular-nums">#7fd19b</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #8fb1ff; border: 1px solid #6b7685"></div>
+              <span style="font-size: 13px; line-height: 1.2">АР</span>
+              <span style="font-size: 12px; color: #9da7b3; font-variant-numeric: tabular-nums">#8fb1ff</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #5fd0c6; border: 1px solid #6b7685"></div>
+              <span style="font-size: 13px; line-height: 1.2">БУА</span>
+              <span style="font-size: 12px; color: #9da7b3; font-variant-numeric: tabular-nums">#5fd0c6</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #f0a46b; border: 1px solid #6b7685"></div>
+              <span style="font-size: 13px; line-height: 1.2">БОА</span>
+              <span style="font-size: 12px; color: #9da7b3; font-variant-numeric: tabular-nums">#f0a46b</span>
+            </div>
+          
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #2d3640; padding-top: 14px">
+          <span style="font-size: 13px; color: #9da7b3">Алгоритмы · ИВТ-21</span>
+          <span style="font-family: Literata, Georgia, serif; font-size: 26px; font-weight: 700; line-height: 1.15">Лабораторная 3. Деревья поиска</span>
+          <span style="line-height: 1.5">Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.</span>
+          <div style="display: flex; gap: 16px; align-items: baseline; font-family: Literata, Georgia, serif; font-size: 32px; font-weight: 600; font-variant-numeric: lining-nums tabular-nums">
+            <span style="color: #8fb1ff">940</span><span style="color: #5fd0c6">120</span><span style="color: #f0a46b">50</span><span style="color: #ff9b8f">−20</span>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid #2d3640; padding-top: 16px">
+          <button type="button" style="height: 44px; padding: 0 18px; border: 0; border-radius: 6px; background: #7aa2ff; color: #0b1530; font: 700 15px 'PT Sans', sans-serif">Сдать работу</button>
+          <button type="button" style="height: 44px; padding: 0 18px; border: 1px solid #e6edf3; border-radius: 6px; background: transparent; color: #e6edf3; font: 700 15px 'PT Sans', sans-serif">Отмена</button>
+          <button type="button" style="height: 44px; padding: 0 18px; border: 1px solid #ff9b8f; border-radius: 6px; background: transparent; color: #ff9b8f; font: 700 15px 'PT Sans', sans-serif">Вернуть…</button>
+          <button type="button" style="height: 44px; padding: 0 10px; border: 0; background: transparent; color: #8fb1ff; font: 700 15px 'PT Sans', sans-serif; text-decoration: underline; text-underline-offset: 4px">Показать ещё</button>
+          <button type="button" disabled="" style="height: 44px; padding: 0 18px; border: 1px dashed #9da7b3; border-radius: 6px; background: #1e252e; color: #9da7b3; font: 700 15px 'PT Sans', sans-serif">Начислить 125 БОА</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="file-d" style="font-size: 13px; font-weight: 700">Файл</label>
+          <input id="file-d" type="text" value="lab3-report.exe" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 2px solid #ff9b8f; border-radius: 6px; background: #161c23; color: #e6edf3; font: 15px 'PT Sans', sans-serif">
+          <span style="font-size: 13px; color: #ff9b8f; font-weight: 400">Файл не того типа: нужен pdf, docx, zip, png или jpg</span>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+          <span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #3a1d1b; color: #ff9b8f; border: 0px solid #ff9b8f">Просрочено</span>
+          <span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #1c2742; color: #a8c1ff; border: 0px solid #a8c1ff">В процессе</span>
+          <span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #362a14; color: #f0c27a; border: 0px solid #f0c27a">Сдано на проверку</span>
+          <span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #15301f; color: #7fd19b; border: 0px solid #7fd19b">Принято</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #2d3640; padding-top: 14px">
+          <div role="status" style="display: flex; align-items: center; gap: 10px; color: #e6edf3">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color: #7fd19b; flex-shrink: 0"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+            <span><b style="color: #7fd19b">Принято 2 из 3.</b> Новиков А. П. пропущен.</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 14px; border-radius: 8px; background: #1e252e; border: 0px solid transparent">
+            <b style="white-space: nowrap">Выбрано 3</b>
+            <button type="button" style="height: 44px; padding: 0 6px; border: 0; background: transparent; color: #9da7b3; font: 15px 'PT Sans', sans-serif; text-decoration: underline; text-underline-offset: 4px; white-space: nowrap">Снять выбор</button>
+            <div style="flex-grow: 1"></div>
+            <button type="button" style="height: 44px; padding: 0 12px; border: 1px solid #9da7b3; border-radius: 6px; background: transparent; color: #e6edf3; font: 700 15px 'PT Sans', sans-serif">Вернуть…</button>
+            <button type="button" style="height: 44px; padding: 0 12px; border: 0; border-radius: 6px; background: #7aa2ff; color: #0b1530; font: 700 15px 'PT Sans', sans-serif">Принять 3</button>
+          </div>
+          <div style="display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 52px; border-bottom: 2px solid #6b7685">
+            <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center"><input type="checkbox" checked="" aria-label="Егорова" style="width: 18px; height: 18px; accent-color: #7aa2ff"></label>
+            <span style="font-weight: 700; color: #8fb1ff">Егорова Мария Сергеевна</span>
+            <span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #362a14; color: #f0c27a; border: 0px solid #f0c27a; white-space: nowrap">Сдано на проверку</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 22px; border-bottom: 1px solid #2d3640">
+          <a href="#" style="height: 44px; display: flex; align-items: center; font-weight: 700; color: #e6edf3; text-decoration: none; border-bottom: 3px solid #7aa2ff; margin-bottom: -1px">Все <span style="margin-left: 6px; color: #9da7b3; font-weight: 400">36</span></a>
+          <a href="#" style="height: 44px; display: flex; align-items: center; color: #9da7b3; text-decoration: none">Сдано <span style="margin-left: 6px">5</span></a>
+          <a href="#" style="height: 44px; display: flex; align-items: center; color: #9da7b3; text-decoration: none">Просрочено <span style="margin-left: 6px">9</span></a>
+        </div>
+      </section>
+    
+      <section style="background: #ffffff; color: #000000; border-radius: 10px; padding: 24px; display: flex; flex-direction: column; gap: 20px; font-size: 17px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 3px solid #000000; padding-bottom: 10px">
+          <h2 style="margin: 0; font-family: Literata, Georgia, serif; font-size: 22px; font-weight: 600">Высокий контраст</h2>
+          <span style="font-size: 15px; color: #333333">для слабовидящих</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #ffffff; border: 1px solid #000000"></div>
+              <span style="font-size: 15px; line-height: 1.2">Бумага</span>
+              <span style="font-size: 14px; color: #333333; font-variant-numeric: tabular-nums">#ffffff</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #000000; border: 1px solid #000000"></div>
+              <span style="font-size: 15px; line-height: 1.2">Текст</span>
+              <span style="font-size: 14px; color: #333333; font-variant-numeric: tabular-nums">#000000</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #333333; border: 1px solid #000000"></div>
+              <span style="font-size: 15px; line-height: 1.2">Вторичный</span>
+              <span style="font-size: 14px; color: #333333; font-variant-numeric: tabular-nums">#333333</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #0033a0; border: 1px solid #000000"></div>
+              <span style="font-size: 15px; line-height: 1.2">Синий</span>
+              <span style="font-size: 14px; color: #333333; font-variant-numeric: tabular-nums">#0033a0</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #e5ecff; border: 1px solid #000000"></div>
+              <span style="font-size: 15px; line-height: 1.2">Синий, фон</span>
+              <span style="font-size: 14px; color: #333333; font-variant-numeric: tabular-nums">#e5ecff</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #595959; border: 1px solid #000000"></div>
+              <span style="font-size: 15px; line-height: 1.2">Линейка</span>
+              <span style="font-size: 14px; color: #333333; font-variant-numeric: tabular-nums">#595959</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #a00000; border: 1px solid #000000"></div>
+              <span style="font-size: 15px; line-height: 1.2">Просрочено</span>
+              <span style="font-size: 14px; color: #333333; font-variant-numeric: tabular-nums">#a00000</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #6b3600; border: 1px solid #000000"></div>
+              <span style="font-size: 15px; line-height: 1.2">Сдано</span>
+              <span style="font-size: 14px; color: #333333; font-variant-numeric: tabular-nums">#6b3600</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #00561e; border: 1px solid #000000"></div>
+              <span style="font-size: 15px; line-height: 1.2">Принято</span>
+              <span style="font-size: 14px; color: #333333; font-variant-numeric: tabular-nums">#00561e</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #0033a0; border: 1px solid #000000"></div>
+              <span style="font-size: 15px; line-height: 1.2">АР</span>
+              <span style="font-size: 14px; color: #333333; font-variant-numeric: tabular-nums">#0033a0</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #00563f; border: 1px solid #000000"></div>
+              <span style="font-size: 15px; line-height: 1.2">БУА</span>
+              <span style="font-size: 14px; color: #333333; font-variant-numeric: tabular-nums">#00563f</span>
+            </div>
+          
+            <div style="display: flex; flex-direction: column; gap: 3px">
+              <div style="height: 36px; border-radius: 4px; background: #7a3300; border: 1px solid #000000"></div>
+              <span style="font-size: 15px; line-height: 1.2">БОА</span>
+              <span style="font-size: 14px; color: #333333; font-variant-numeric: tabular-nums">#7a3300</span>
+            </div>
+          
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px; border-top: 2px solid #595959; padding-top: 14px">
+          <span style="font-size: 15px; color: #333333">Алгоритмы · ИВТ-21</span>
+          <span style="font-family: Literata, Georgia, serif; font-size: 28px; font-weight: 700; line-height: 1.15">Лабораторная 3. Деревья поиска</span>
+          <span style="line-height: 1.5">Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.</span>
+          <div style="display: flex; gap: 16px; align-items: baseline; font-family: Literata, Georgia, serif; font-size: 32px; font-weight: 600; font-variant-numeric: lining-nums tabular-nums">
+            <span style="color: #0033a0">940</span><span style="color: #00563f">120</span><span style="color: #7a3300">50</span><span style="color: #a00000">−20</span>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; border-top: 2px solid #595959; padding-top: 16px">
+          <button type="button" style="height: 52px; padding: 0 18px; border: 0; border-radius: 6px; background: #0033a0; color: #ffffff; font: 700 17px 'PT Sans', sans-serif">Сдать работу</button>
+          <button type="button" style="height: 52px; padding: 0 18px; border: 2px solid #000000; border-radius: 6px; background: transparent; color: #000000; font: 700 17px 'PT Sans', sans-serif">Отмена</button>
+          <button type="button" style="height: 52px; padding: 0 18px; border: 2px solid #a00000; border-radius: 6px; background: transparent; color: #a00000; font: 700 17px 'PT Sans', sans-serif">Вернуть…</button>
+          <button type="button" style="height: 52px; padding: 0 10px; border: 0; background: transparent; color: #0033a0; font: 700 17px 'PT Sans', sans-serif; text-decoration: underline; text-underline-offset: 4px">Показать ещё</button>
+          <button type="button" disabled="" style="height: 52px; padding: 0 18px; border: 2px dashed #333333; border-radius: 6px; background: #f0f0f0; color: #333333; font: 700 17px 'PT Sans', sans-serif">Начислить 125 БОА</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="file-h" style="font-size: 15px; font-weight: 700">Файл</label>
+          <input id="file-h" type="text" value="lab3-report.exe" style="height: 52px; box-sizing: border-box; padding: 0 12px; border: 2px solid #a00000; border-radius: 6px; background: #ffffff; color: #000000; font: 17px 'PT Sans', sans-serif">
+          <span style="font-size: 15px; color: #a00000; font-weight: 700">Файл не того типа: нужен pdf, docx, zip, png или jpg</span>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+          <span style="font-size: 15px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #ffe5e5; color: #a00000; border: 2px solid #a00000">Просрочено</span>
+          <span style="font-size: 15px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #e5ecff; color: #002f8f; border: 2px solid #002f8f">В процессе</span>
+          <span style="font-size: 15px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #fff0d0; color: #6b3600; border: 2px solid #6b3600">Сдано на проверку</span>
+          <span style="font-size: 15px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #e0f5e5; color: #00561e; border: 2px solid #00561e">Принято</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; border-top: 2px solid #595959; padding-top: 14px">
+          <div role="status" style="display: flex; align-items: center; gap: 10px; color: #000000">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color: #00561e; flex-shrink: 0"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+            <span><b style="color: #00561e">Принято 2 из 3.</b> Новиков А. П. пропущен.</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 14px; border-radius: 8px; background: #f0f0f0; border: 2px solid #000000">
+            <b style="white-space: nowrap">Выбрано 3</b>
+            <button type="button" style="height: 52px; padding: 0 6px; border: 0; background: transparent; color: #333333; font: 17px 'PT Sans', sans-serif; text-decoration: underline; text-underline-offset: 4px; white-space: nowrap">Снять выбор</button>
+            <div style="flex-grow: 1"></div>
+            <button type="button" style="height: 52px; padding: 0 12px; border: 2px solid #333333; border-radius: 6px; background: transparent; color: #000000; font: 700 17px 'PT Sans', sans-serif">Вернуть…</button>
+            <button type="button" style="height: 52px; padding: 0 12px; border: 0; border-radius: 6px; background: #0033a0; color: #ffffff; font: 700 17px 'PT Sans', sans-serif">Принять 3</button>
+          </div>
+          <div style="display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 60px; border-bottom: 3px solid #000000">
+            <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center"><input type="checkbox" checked="" aria-label="Егорова" style="width: 22px; height: 22px; accent-color: #0033a0"></label>
+            <span style="font-weight: 700; color: #0033a0">Егорова Мария Сергеевна</span>
+            <span style="font-size: 15px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #fff0d0; color: #6b3600; border: 2px solid #6b3600; white-space: nowrap">Сдано на проверку</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 22px; border-bottom: 2px solid #595959">
+          <a href="#" style="height: 52px; display: flex; align-items: center; font-weight: 700; color: #000000; text-decoration: none; border-bottom: 3px solid #0033a0; margin-bottom: -1px">Все <span style="margin-left: 6px; color: #333333; font-weight: 400">36</span></a>
+          <a href="#" style="height: 52px; display: flex; align-items: center; color: #333333; text-decoration: none">Сдано <span style="margin-left: 6px">5</span></a>
+          <a href="#" style="height: 52px; display: flex; align-items: center; color: #333333; text-decoration: none">Просрочено <span style="margin-left: 6px">9</span></a>
+        </div>
+      </section>
+    
+  </div>
+</div>
+</section>
+<section class="board"><h2>С3 · Задача</h2>
+
+<div style="width: 1240px; height: 1000px; box-sizing: border-box; padding: 32px 40px; background: #e3e6ea; display: flex; gap: 40px; font-family: 'PT Sans', system-ui, sans-serif">
+  
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 12px; font-weight: 700; color: #57606a">Светлая</span>
+      <div style="width: 360px; height: 900px; box-sizing: border-box; background: #f5f6f8; color: #161b22; font-size: 15px; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 0 1px #7d8590">
+        <header style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding: 0 8px; border-top: 3px solid #161b22">
+          <button type="button" aria-label="Назад к задачам" style="width: 44px; height: 44px; border: 0; background: transparent; color: #161b22; display: flex; align-items: center; justify-content: center">
+            <svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </button>
+          <span style="font-size: 13px; color: #57606a">Мои задачи</span>
+        </header>
+
+        <main style="flex-grow: 1; overflow: hidden; padding: 4px 20px 16px; display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+              <span style="font-size: 13px; color: #57606a">Алгоритмы · ИВТ-21</span>
+              <span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #fdecea; color: #b42318; border: 0px solid #b42318">Просрочено</span>
+            </div>
+            <h1 style="margin: 0; font-family: Literata, Georgia, serif; font-size: 26px; font-weight: 700; line-height: 1.15">Лабораторная 3. Деревья поиска</h1>
+            <span style="color: #57606a">Петров П. П. · дедлайн 02.11, 12:00</span>
+          </div>
+
+          <section aria-label="Штраф" style="display: flex; flex-direction: column; gap: 10px; border-top: 2px solid #b42318; padding-top: 12px">
+            <span style="font-size: 13px; font-weight: 700; color: #b42318">Штраф идёт</span>
+            <div style="display: flex; align-items: baseline; gap: 8px">
+              <span style="font-family: Literata, Georgia, serif; font-size: 40px; font-weight: 600; line-height: 1; font-variant-numeric: lining-nums tabular-nums">40</span>
+              <span style="color: #57606a">из 60 АР списано</span>
+            </div>
+            <div aria-hidden="true" style="height: 4px; background: #e1e5ea; border-radius: 2px; overflow: hidden">
+              <div style="width: 67%; height: 4px; background: #b42318"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+              <span>Следующее списание <b style="color: #b42318">−20 АР</b></span>
+              <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap">через 0:42</span>
+            </div>
+            <span style="font-size: 13px; color: #57606a">Сдайте работу — штраф остановится.</span>
+          </section>
+
+          <section aria-label="Возврат на доработку" style="display: flex; flex-direction: column; gap: 6px; background: #eef0f3; border: 0px solid #161b22; border-radius: 8px; padding: 12px 14px">
+            <span style="font-size: 13px; font-weight: 700; color: #8a4b00">Вернули на доработку</span>
+            <p style="margin: 0; font-family: Literata, Georgia, serif; font-style: italic; font-size: 16px; line-height: 1.4">«Нет тестов на удаление корня»</p>
+            <span style="font-size: 13px; color: #57606a">Петров П. П., 02.11 11:30 · статус «Просрочено», штраф идёт</span>
+          </section>
+
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <label for="link-l" style="font-size: 13px; font-weight: 700">Ссылка на работу</label>
+            <input id="link-l" type="url" placeholder="https://" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #7d8590; border-radius: 6px; background: #ffffff; color: #161b22; font: 15px 'PT Sans', sans-serif">
+            <div style="display: flex; align-items: center; gap: 10px; color: #57606a; font-size: 13px">
+              <div style="height: 1px; flex-grow: 1; background: #d6dbe1"></div>или<div style="height: 1px; flex-grow: 1; background: #d6dbe1"></div>
+            </div>
+            <button type="button" style="height: 44px; border: 1px dashed #7d8590; border-radius: 6px; background: transparent; color: #161b22; font: 15px 'PT Sans', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px">
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12.5l5.5-5.5a3 3 0 014.2 4.2l-7.4 7.4a5 5 0 01-7-7L10.5 4.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+              Прикрепить файл
+            </button>
+            <span style="font-size: 13px; color: #57606a; text-align: center">pdf, docx, zip, png, jpg · до 10 МБ</span>
+          </div>
+        </main>
+
+        <footer style="flex-shrink: 0; padding: 12px 20px 16px; border-top: 1px solid #d6dbe1; background: #f5f6f8">
+          <button type="button" style="width: 100%; height: 50px; border: 0; border-radius: 6px; background: #2450c4; color: #ffffff; font: 700 16px 'PT Sans', sans-serif">Сдать работу</button>
+        </footer>
+      </div>
+    </div>
+  
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 12px; font-weight: 700; color: #57606a">Тёмная</span>
+      <div style="width: 360px; height: 900px; box-sizing: border-box; background: #0f1419; color: #e6edf3; font-size: 15px; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 0 1px #6b7685">
+        <header style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding: 0 8px; border-top: 3px solid #e6edf3">
+          <button type="button" aria-label="Назад к задачам" style="width: 44px; height: 44px; border: 0; background: transparent; color: #e6edf3; display: flex; align-items: center; justify-content: center">
+            <svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </button>
+          <span style="font-size: 13px; color: #9da7b3">Мои задачи</span>
+        </header>
+
+        <main style="flex-grow: 1; overflow: hidden; padding: 4px 20px 16px; display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+              <span style="font-size: 13px; color: #9da7b3">Алгоритмы · ИВТ-21</span>
+              <span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #3a1d1b; color: #ff9b8f; border: 0px solid #ff9b8f">Просрочено</span>
+            </div>
+            <h1 style="margin: 0; font-family: Literata, Georgia, serif; font-size: 26px; font-weight: 700; line-height: 1.15">Лабораторная 3. Деревья поиска</h1>
+            <span style="color: #9da7b3">Петров П. П. · дедлайн 02.11, 12:00</span>
+          </div>
+
+          <section aria-label="Штраф" style="display: flex; flex-direction: column; gap: 10px; border-top: 2px solid #ff9b8f; padding-top: 12px">
+            <span style="font-size: 13px; font-weight: 700; color: #ff9b8f">Штраф идёт</span>
+            <div style="display: flex; align-items: baseline; gap: 8px">
+              <span style="font-family: Literata, Georgia, serif; font-size: 40px; font-weight: 600; line-height: 1; font-variant-numeric: lining-nums tabular-nums">40</span>
+              <span style="color: #9da7b3">из 60 АР списано</span>
+            </div>
+            <div aria-hidden="true" style="height: 4px; background: #2d3640; border-radius: 2px; overflow: hidden">
+              <div style="width: 67%; height: 4px; background: #ff9b8f"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+              <span>Следующее списание <b style="color: #ff9b8f">−20 АР</b></span>
+              <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap">через 0:42</span>
+            </div>
+            <span style="font-size: 13px; color: #9da7b3">Сдайте работу — штраф остановится.</span>
+          </section>
+
+          <section aria-label="Возврат на доработку" style="display: flex; flex-direction: column; gap: 6px; background: #1e252e; border: 0px solid #e6edf3; border-radius: 8px; padding: 12px 14px">
+            <span style="font-size: 13px; font-weight: 700; color: #f0c27a">Вернули на доработку</span>
+            <p style="margin: 0; font-family: Literata, Georgia, serif; font-style: italic; font-size: 16px; line-height: 1.4">«Нет тестов на удаление корня»</p>
+            <span style="font-size: 13px; color: #9da7b3">Петров П. П., 02.11 11:30 · статус «Просрочено», штраф идёт</span>
+          </section>
+
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <label for="link-d" style="font-size: 13px; font-weight: 700">Ссылка на работу</label>
+            <input id="link-d" type="url" placeholder="https://" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #6b7685; border-radius: 6px; background: #161c23; color: #e6edf3; font: 15px 'PT Sans', sans-serif">
+            <div style="display: flex; align-items: center; gap: 10px; color: #9da7b3; font-size: 13px">
+              <div style="height: 1px; flex-grow: 1; background: #2d3640"></div>или<div style="height: 1px; flex-grow: 1; background: #2d3640"></div>
+            </div>
+            <button type="button" style="height: 44px; border: 1px dashed #6b7685; border-radius: 6px; background: transparent; color: #e6edf3; font: 15px 'PT Sans', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px">
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12.5l5.5-5.5a3 3 0 014.2 4.2l-7.4 7.4a5 5 0 01-7-7L10.5 4.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+              Прикрепить файл
+            </button>
+            <span style="font-size: 13px; color: #9da7b3; text-align: center">pdf, docx, zip, png, jpg · до 10 МБ</span>
+          </div>
+        </main>
+
+        <footer style="flex-shrink: 0; padding: 12px 20px 16px; border-top: 1px solid #2d3640; background: #0f1419">
+          <button type="button" style="width: 100%; height: 50px; border: 0; border-radius: 6px; background: #7aa2ff; color: #0b1530; font: 700 16px 'PT Sans', sans-serif">Сдать работу</button>
+        </footer>
+      </div>
+    </div>
+  
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 12px; font-weight: 700; color: #57606a">Высокий контраст</span>
+      <div style="width: 360px; height: 900px; box-sizing: border-box; background: #ffffff; color: #000000; font-size: 17px; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 0 1px #000000">
+        <header style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding: 0 8px; border-top: 3px solid #000000">
+          <button type="button" aria-label="Назад к задачам" style="width: 44px; height: 44px; border: 0; background: transparent; color: #000000; display: flex; align-items: center; justify-content: center">
+            <svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </button>
+          <span style="font-size: 15px; color: #333333">Мои задачи</span>
+        </header>
+
+        <main style="flex-grow: 1; overflow: hidden; padding: 4px 20px 16px; display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+              <span style="font-size: 15px; color: #333333">Алгоритмы · ИВТ-21</span>
+              <span style="font-size: 15px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #ffe5e5; color: #a00000; border: 2px solid #a00000">Просрочено</span>
+            </div>
+            <h1 style="margin: 0; font-family: Literata, Georgia, serif; font-size: 27px; font-weight: 700; line-height: 1.15">Лабораторная 3. Деревья поиска</h1>
+            <span style="color: #333333">Петров П. П. · дедлайн 02.11, 12:00</span>
+          </div>
+
+          <section aria-label="Штраф" style="display: flex; flex-direction: column; gap: 10px; border-top: 3px solid #a00000; padding-top: 12px">
+            <span style="font-size: 15px; font-weight: 700; color: #a00000">Штраф идёт</span>
+            <div style="display: flex; align-items: baseline; gap: 8px">
+              <span style="font-family: Literata, Georgia, serif; font-size: 40px; font-weight: 600; line-height: 1; font-variant-numeric: lining-nums tabular-nums">40</span>
+              <span style="color: #333333">из 60 АР списано</span>
+            </div>
+            <div aria-hidden="true" style="height: 8px; background: #c4c4c4; border-radius: 2px; overflow: hidden">
+              <div style="width: 67%; height: 8px; background: #a00000"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+              <span>Следующее списание <b style="color: #a00000">−20 АР</b></span>
+              <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap">через 0:42</span>
+            </div>
+            <span style="font-size: 15px; color: #333333">Сдайте работу — штраф остановится.</span>
+          </section>
+
+          <section aria-label="Возврат на доработку" style="display: flex; flex-direction: column; gap: 6px; background: #f0f0f0; border: 2px solid #000000; border-radius: 8px; padding: 12px 14px">
+            <span style="font-size: 15px; font-weight: 700; color: #6b3600">Вернули на доработку</span>
+            <p style="margin: 0; font-family: Literata, Georgia, serif; font-style: italic; font-size: 18px; line-height: 1.4">«Нет тестов на удаление корня»</p>
+            <span style="font-size: 15px; color: #333333">Петров П. П., 02.11 11:30 · статус «Просрочено», штраф идёт</span>
+          </section>
+
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <label for="link-h" style="font-size: 15px; font-weight: 700">Ссылка на работу</label>
+            <input id="link-h" type="url" placeholder="https://" style="height: 52px; box-sizing: border-box; padding: 0 12px; border: 2px solid #000000; border-radius: 6px; background: #ffffff; color: #000000; font: 17px 'PT Sans', sans-serif">
+            <div style="display: flex; align-items: center; gap: 10px; color: #333333; font-size: 15px">
+              <div style="height: 1px; flex-grow: 1; background: #595959"></div>или<div style="height: 1px; flex-grow: 1; background: #595959"></div>
+            </div>
+            <button type="button" style="height: 52px; border: 2px dashed #000000; border-radius: 6px; background: transparent; color: #000000; font: 17px 'PT Sans', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px">
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12.5l5.5-5.5a3 3 0 014.2 4.2l-7.4 7.4a5 5 0 01-7-7L10.5 4.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+              Прикрепить файл
+            </button>
+            <span style="font-size: 15px; color: #333333; text-align: center">pdf, docx, zip, png, jpg · до 10 МБ</span>
+          </div>
+        </main>
+
+        <footer style="flex-shrink: 0; padding: 12px 20px 16px; border-top: 2px solid #595959; background: #ffffff">
+          <button type="button" style="width: 100%; height: 56px; border: 0; border-radius: 6px; background: #0033a0; color: #ffffff; font: 700 18px 'PT Sans', sans-serif">Сдать работу</button>
+        </footer>
+      </div>
+    </div>
+  
+</div>
+</section>
+<section class="board"><h2>С1 · Профиль</h2>
+
+<div style="width: 1240px; height: 1000px; box-sizing: border-box; padding: 32px 40px; background: #e3e6ea; display: flex; gap: 40px; font-family: 'PT Sans', system-ui, sans-serif">
+  
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 12px; font-weight: 700; color: #57606a">Светлая</span>
+      <div style="width: 360px; height: 900px; box-sizing: border-box; background: #f5f6f8; color: #161b22; font-size: 15px; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 0 1px #7d8590">
+        <header style="height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 20px; border-top: 3px solid #161b22">
+          <span style="font-family: Literata, Georgia, serif; font-size: 19px; font-weight: 700">Профиль</span>
+          <button type="button" aria-label="Меню профиля" style="width: 44px; height: 44px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center">
+            <span style="width: 34px; height: 34px; border-radius: 50%; background: #e8eefc; color: #2450c4; border: 0px solid #2450c4; display: flex; align-items: center; justify-content: center; font: 700 13px 'PT Sans', sans-serif">АС</span>
+          </button>
+        </header>
+
+        <main style="flex-grow: 1; overflow: hidden; padding: 6px 20px 0; display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <h1 style="margin: 0; font-family: Literata, Georgia, serif; font-size: 26px; font-weight: 700; line-height: 1.15">Смирнова Анна Олеговна</h1>
+            <span style="color: #57606a">Студентка · ФИТ · ИВТ-21</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 2px solid #161b22; border-bottom: 1px solid #d6dbe1">
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px 8px 12px 0">
+              <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #2450c4">АР</span>
+              <span style="font-family: Literata, Georgia, serif; font-size: 32px; font-weight: 600; line-height: 1.05; font-variant-numeric: lining-nums tabular-nums">940</span>
+              <span style="font-size: 12px; color: #57606a">из 1000</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px 8px; border-left: 1px solid #d6dbe1">
+              <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #0b6e69">БУА</span>
+              <span style="font-family: Literata, Georgia, serif; font-size: 32px; font-weight: 600; line-height: 1.05; font-variant-numeric: lining-nums tabular-nums">120</span>
+              <span style="font-size: 12px; color: #57606a">учебная</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px 0 12px 8px; border-left: 1px solid #d6dbe1">
+              <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #a3480a">БОА</span>
+              <span style="font-family: Literata, Georgia, serif; font-size: 32px; font-weight: 600; line-height: 1.05; font-variant-numeric: lining-nums tabular-nums">50</span>
+              <span style="font-size: 12px; color: #57606a">общественная</span>
+            </div>
+          </div>
+
+          <nav aria-label="Разделы профиля" style="display: flex; gap: 24px; border-bottom: 1px solid #d6dbe1">
+            <a href="#" aria-current="page" style="height: 44px; display: flex; align-items: center; font-weight: 700; color: #161b22; text-decoration: none; border-bottom: 3px solid #2450c4; margin-bottom: -1px">История</a>
+            <a href="#" style="height: 44px; display: flex; align-items: center; color: #57606a; text-decoration: none">Задачи</a>
+          </nav>
+
+          <div style="display: flex; flex-direction: column">
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid #d6dbe1">
+                <span style="font-size: 12.5px; color: #57606a; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">02.11
+12:02</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">Штраф «Лабораторная 3»</span>
+                  <span style="font-size: 12.5px; color: #57606a">просрочка, 2-е списание</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #b42318">−20 АР</span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid #d6dbe1">
+                <span style="font-size: 12.5px; color: #57606a; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">02.11
+12:01</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">Штраф «Лабораторная 3»</span>
+                  <span style="font-size: 12.5px; color: #57606a">просрочка, 1-е списание</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #b42318">−20 АР</span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid #d6dbe1">
+                <span style="font-size: 12.5px; color: #57606a; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">01.11</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">«Помощь в организации конференции»</span>
+                  <span style="font-size: 12.5px; color: #57606a">от Иванова И. И.</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #a3480a">+50 БОА</span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid #d6dbe1">
+                <span style="font-size: 12.5px; color: #57606a; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">30.10</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">«Олимпиада по программированию», 75 %</span>
+                  <span style="font-size: 12.5px; color: #57606a">от Петрова П. П.</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #0b6e69">+120 БУА</span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid #d6dbe1">
+                <span style="font-size: 12.5px; color: #57606a; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">27.10
+18:01</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">Штраф «Лабораторная 2»</span>
+                  <span style="font-size: 12.5px; color: #57606a">просрочка</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #b42318">−20 АР</span>
+              </div>
+            
+          </div>
+        </main>
+
+        <nav aria-label="Основная навигация" style="flex-shrink: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid #d6dbe1; background: #f5f6f8">
+          
+            <a href="#" style="min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 11.5px; color: #57606a; font-weight: 400">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: transparent; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"></path></svg>
+              Главная
+            </a>
+          
+            <a href="#" style="min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 11.5px; color: #57606a; font-weight: 400">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: transparent; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16H5zM8.5 12l2.5 2.5 4.5-5"></path></svg>
+              Задачи
+            </a>
+          
+            <a href="#" style="min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 11.5px; color: #57606a; font-weight: 400">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: transparent; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.5 5 5.5.8-4 3.9.9 5.5L12 16.6 7.1 19.2 8 13.7 4 9.8l5.5-.8z"></path></svg>
+              Активности
+            </a>
+          
+            <a href="#" style="min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 11.5px; color: #57606a; font-weight: 400">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: transparent; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 01-8 0zM12 13v4M8 20h8M8 6H5a3 3 0 003 4M16 6h3a3 3 0 01-3 4"></path></svg>
+              Награды
+            </a>
+          
+            <a href="#" style="min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 11.5px; color: #2450c4; font-weight: 700">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: #2450c4; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 20a8 8 0 0116 0"></path></svg>
+              Профиль
+            </a>
+          
+        </nav>
+      </div>
+    </div>
+  
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 12px; font-weight: 700; color: #57606a">Тёмная</span>
+      <div style="width: 360px; height: 900px; box-sizing: border-box; background: #0f1419; color: #e6edf3; font-size: 15px; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 0 1px #6b7685">
+        <header style="height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 20px; border-top: 3px solid #e6edf3">
+          <span style="font-family: Literata, Georgia, serif; font-size: 19px; font-weight: 700">Профиль</span>
+          <button type="button" aria-label="Меню профиля" style="width: 44px; height: 44px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center">
+            <span style="width: 34px; height: 34px; border-radius: 50%; background: #1a2540; color: #8fb1ff; border: 0px solid #8fb1ff; display: flex; align-items: center; justify-content: center; font: 700 13px 'PT Sans', sans-serif">АС</span>
+          </button>
+        </header>
+
+        <main style="flex-grow: 1; overflow: hidden; padding: 6px 20px 0; display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <h1 style="margin: 0; font-family: Literata, Georgia, serif; font-size: 26px; font-weight: 700; line-height: 1.15">Смирнова Анна Олеговна</h1>
+            <span style="color: #9da7b3">Студентка · ФИТ · ИВТ-21</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 2px solid #e6edf3; border-bottom: 1px solid #2d3640">
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px 8px 12px 0">
+              <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #8fb1ff">АР</span>
+              <span style="font-family: Literata, Georgia, serif; font-size: 32px; font-weight: 600; line-height: 1.05; font-variant-numeric: lining-nums tabular-nums">940</span>
+              <span style="font-size: 12px; color: #9da7b3">из 1000</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px 8px; border-left: 1px solid #2d3640">
+              <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #5fd0c6">БУА</span>
+              <span style="font-family: Literata, Georgia, serif; font-size: 32px; font-weight: 600; line-height: 1.05; font-variant-numeric: lining-nums tabular-nums">120</span>
+              <span style="font-size: 12px; color: #9da7b3">учебная</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px 0 12px 8px; border-left: 1px solid #2d3640">
+              <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #f0a46b">БОА</span>
+              <span style="font-family: Literata, Georgia, serif; font-size: 32px; font-weight: 600; line-height: 1.05; font-variant-numeric: lining-nums tabular-nums">50</span>
+              <span style="font-size: 12px; color: #9da7b3">общественная</span>
+            </div>
+          </div>
+
+          <nav aria-label="Разделы профиля" style="display: flex; gap: 24px; border-bottom: 1px solid #2d3640">
+            <a href="#" aria-current="page" style="height: 44px; display: flex; align-items: center; font-weight: 700; color: #e6edf3; text-decoration: none; border-bottom: 3px solid #7aa2ff; margin-bottom: -1px">История</a>
+            <a href="#" style="height: 44px; display: flex; align-items: center; color: #9da7b3; text-decoration: none">Задачи</a>
+          </nav>
+
+          <div style="display: flex; flex-direction: column">
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid #2d3640">
+                <span style="font-size: 12.5px; color: #9da7b3; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">02.11
+12:02</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">Штраф «Лабораторная 3»</span>
+                  <span style="font-size: 12.5px; color: #9da7b3">просрочка, 2-е списание</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #ff9b8f">−20 АР</span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid #2d3640">
+                <span style="font-size: 12.5px; color: #9da7b3; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">02.11
+12:01</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">Штраф «Лабораторная 3»</span>
+                  <span style="font-size: 12.5px; color: #9da7b3">просрочка, 1-е списание</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #ff9b8f">−20 АР</span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid #2d3640">
+                <span style="font-size: 12.5px; color: #9da7b3; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">01.11</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">«Помощь в организации конференции»</span>
+                  <span style="font-size: 12.5px; color: #9da7b3">от Иванова И. И.</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #f0a46b">+50 БОА</span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid #2d3640">
+                <span style="font-size: 12.5px; color: #9da7b3; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">30.10</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">«Олимпиада по программированию», 75 %</span>
+                  <span style="font-size: 12.5px; color: #9da7b3">от Петрова П. П.</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #5fd0c6">+120 БУА</span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid #2d3640">
+                <span style="font-size: 12.5px; color: #9da7b3; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">27.10
+18:01</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">Штраф «Лабораторная 2»</span>
+                  <span style="font-size: 12.5px; color: #9da7b3">просрочка</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #ff9b8f">−20 АР</span>
+              </div>
+            
+          </div>
+        </main>
+
+        <nav aria-label="Основная навигация" style="flex-shrink: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid #2d3640; background: #0f1419">
+          
+            <a href="#" style="min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 11.5px; color: #9da7b3; font-weight: 400">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: transparent; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"></path></svg>
+              Главная
+            </a>
+          
+            <a href="#" style="min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 11.5px; color: #9da7b3; font-weight: 400">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: transparent; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16H5zM8.5 12l2.5 2.5 4.5-5"></path></svg>
+              Задачи
+            </a>
+          
+            <a href="#" style="min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 11.5px; color: #9da7b3; font-weight: 400">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: transparent; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.5 5 5.5.8-4 3.9.9 5.5L12 16.6 7.1 19.2 8 13.7 4 9.8l5.5-.8z"></path></svg>
+              Активности
+            </a>
+          
+            <a href="#" style="min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 11.5px; color: #9da7b3; font-weight: 400">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: transparent; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 01-8 0zM12 13v4M8 20h8M8 6H5a3 3 0 003 4M16 6h3a3 3 0 01-3 4"></path></svg>
+              Награды
+            </a>
+          
+            <a href="#" style="min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 11.5px; color: #8fb1ff; font-weight: 700">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: #7aa2ff; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 20a8 8 0 0116 0"></path></svg>
+              Профиль
+            </a>
+          
+        </nav>
+      </div>
+    </div>
+  
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 12px; font-weight: 700; color: #57606a">Высокий контраст</span>
+      <div style="width: 360px; height: 900px; box-sizing: border-box; background: #ffffff; color: #000000; font-size: 17px; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 0 1px #000000">
+        <header style="height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 20px; border-top: 3px solid #000000">
+          <span style="font-family: Literata, Georgia, serif; font-size: 19px; font-weight: 700">Профиль</span>
+          <button type="button" aria-label="Меню профиля" style="width: 44px; height: 44px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center">
+            <span style="width: 34px; height: 34px; border-radius: 50%; background: #e5ecff; color: #0033a0; border: 2px solid #0033a0; display: flex; align-items: center; justify-content: center; font: 700 13px 'PT Sans', sans-serif">АС</span>
+          </button>
+        </header>
+
+        <main style="flex-grow: 1; overflow: hidden; padding: 6px 20px 0; display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <h1 style="margin: 0; font-family: Literata, Georgia, serif; font-size: 27px; font-weight: 700; line-height: 1.15">Смирнова Анна Олеговна</h1>
+            <span style="color: #333333">Студентка · ФИТ · ИВТ-21</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 3px solid #000000; border-bottom: 2px solid #595959">
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px 8px 12px 0">
+              <span style="font-size: 14px; font-weight: 700; letter-spacing: 0.1em; color: #0033a0">АР</span>
+              <span style="font-family: Literata, Georgia, serif; font-size: 32px; font-weight: 600; line-height: 1.05; font-variant-numeric: lining-nums tabular-nums">940</span>
+              <span style="font-size: 14px; color: #333333">из 1000</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px 8px; border-left: 2px solid #595959">
+              <span style="font-size: 14px; font-weight: 700; letter-spacing: 0.1em; color: #00563f">БУА</span>
+              <span style="font-family: Literata, Georgia, serif; font-size: 32px; font-weight: 600; line-height: 1.05; font-variant-numeric: lining-nums tabular-nums">120</span>
+              <span style="font-size: 14px; color: #333333">учебная</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px 0 12px 8px; border-left: 2px solid #595959">
+              <span style="font-size: 14px; font-weight: 700; letter-spacing: 0.1em; color: #7a3300">БОА</span>
+              <span style="font-family: Literata, Georgia, serif; font-size: 32px; font-weight: 600; line-height: 1.05; font-variant-numeric: lining-nums tabular-nums">50</span>
+              <span style="font-size: 14px; color: #333333">общественная</span>
+            </div>
+          </div>
+
+          <nav aria-label="Разделы профиля" style="display: flex; gap: 24px; border-bottom: 2px solid #595959">
+            <a href="#" aria-current="page" style="height: 52px; display: flex; align-items: center; font-weight: 700; color: #000000; text-decoration: none; border-bottom: 3px solid #0033a0; margin-bottom: -1px">История</a>
+            <a href="#" style="height: 52px; display: flex; align-items: center; color: #333333; text-decoration: underline">Задачи</a>
+          </nav>
+
+          <div style="display: flex; flex-direction: column">
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 2px solid #595959">
+                <span style="font-size: 14.5px; color: #333333; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">02.11
+12:02</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">Штраф «Лабораторная 3»</span>
+                  <span style="font-size: 14.5px; color: #333333">просрочка, 2-е списание</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #a00000">−20 АР</span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 2px solid #595959">
+                <span style="font-size: 14.5px; color: #333333; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">02.11
+12:01</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">Штраф «Лабораторная 3»</span>
+                  <span style="font-size: 14.5px; color: #333333">просрочка, 1-е списание</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #a00000">−20 АР</span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 2px solid #595959">
+                <span style="font-size: 14.5px; color: #333333; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">01.11</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">«Помощь в организации конференции»</span>
+                  <span style="font-size: 14.5px; color: #333333">от Иванова И. И.</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #7a3300">+50 БОА</span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 2px solid #595959">
+                <span style="font-size: 14.5px; color: #333333; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">30.10</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">«Олимпиада по программированию», 75 %</span>
+                  <span style="font-size: 14.5px; color: #333333">от Петрова П. П.</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #00563f">+120 БУА</span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 2px solid #595959">
+                <span style="font-size: 14.5px; color: #333333; font-variant-numeric: tabular-nums; line-height: 1.3; white-space: pre-line">27.10
+18:01</span>
+                <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                  <span style="line-height: 1.3">Штраф «Лабораторная 2»</span>
+                  <span style="font-size: 14.5px; color: #333333">просрочка</span>
+                </div>
+                <span style="font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: #a00000">−20 АР</span>
+              </div>
+            
+          </div>
+        </main>
+
+        <nav aria-label="Основная навигация" style="flex-shrink: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 2px solid #595959; background: #ffffff">
+          
+            <a href="#" style="min-height: 66px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12.5px; color: #333333; font-weight: 400">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: transparent; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"></path></svg>
+              Главная
+            </a>
+          
+            <a href="#" style="min-height: 66px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12.5px; color: #333333; font-weight: 400">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: transparent; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16H5zM8.5 12l2.5 2.5 4.5-5"></path></svg>
+              Задачи
+            </a>
+          
+            <a href="#" style="min-height: 66px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12.5px; color: #333333; font-weight: 400">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: transparent; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.5 5 5.5.8-4 3.9.9 5.5L12 16.6 7.1 19.2 8 13.7 4 9.8l5.5-.8z"></path></svg>
+              Активности
+            </a>
+          
+            <a href="#" style="min-height: 66px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12.5px; color: #333333; font-weight: 400">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: transparent; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 01-8 0zM12 13v4M8 20h8M8 6H5a3 3 0 003 4M16 6h3a3 3 0 01-3 4"></path></svg>
+              Награды
+            </a>
+          
+            <a href="#" style="min-height: 66px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; font-size: 12.5px; color: #0033a0; font-weight: 700">
+              <span style="width: 28px; height: 3px; border-radius: 2px; background: #0033a0; margin-bottom: 3px"></span>
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 20a8 8 0 0116 0"></path></svg>
+              Профиль
+            </a>
+          
+        </nav>
+      </div>
+    </div>
+  
+</div>
+</section>
+<section class="board"><h2>П1 · Точка преподавателя</h2>
+
+<div style="width: 1280px; height: 2860px; box-sizing: border-box; padding: 32px 40px; background: #e3e6ea; display: flex; flex-direction: column; gap: 36px; font-family: 'PT Sans', system-ui, sans-serif">
+  
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 12px; font-weight: 700; color: #57606a">Светлая</span>
+      <div style="width: 1200px; height: 860px; box-sizing: border-box; background: #f5f6f8; color: #161b22; font-size: 14.5px; border-radius: 12px; overflow: hidden; display: flex; box-shadow: 0 0 0 1px #7d8590">
+        <nav aria-label="Навигация преподавателя" style="width: 230px; flex-shrink: 0; box-sizing: border-box; padding: 20px 14px; display: flex; flex-direction: column; gap: 2px; border-right: 1px solid #d6dbe1">
+          <span style="font-family: Literata, Georgia, serif; font-size: 19px; font-weight: 700; padding: 4px 10px 6px; border-top: 3px solid #161b22">Campus Rating</span>
+          <span style="font-size: 13px; color: #57606a; padding: 0 10px 18px">Петров П. П. · преподаватель</span>
+          
+            <a href="#" style="min-height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #161b22; font-weight: 400; background: transparent; border: 0px solid transparent">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"></path></svg>
+              Главная
+            </a>
+          
+            <a href="#" style="min-height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #2450c4; font-weight: 700; background: #e8eefc; border: 0px solid #2450c4">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"></path></svg>
+              Точки
+            </a>
+          
+            <a href="#" style="min-height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #161b22; font-weight: 400; background: transparent; border: 0px solid transparent">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.5 5 5.5.8-4 3.9.9 5.5L12 16.6 7.1 19.2 8 13.7 4 9.8l5.5-.8z"></path></svg>
+              Активности
+            </a>
+          
+            <a href="#" style="min-height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #161b22; font-weight: 400; background: transparent; border: 0px solid transparent">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11a3 3 0 100-6 3 3 0 000 6zM3 20a6 6 0 0112 0M17 11.5a2.5 2.5 0 100-5M15.5 14.6A5 5 0 0121 19.5"></path></svg>
+              Группы
+            </a>
+          
+            <a href="#" style="min-height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #161b22; font-weight: 400; background: transparent; border: 0px solid transparent">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 20a8 8 0 0116 0"></path></svg>
+              Профиль
+            </a>
+          
+        </nav>
+
+        <main style="flex-grow: 1; min-width: 0; padding: 22px 28px; display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 13px; color: #57606a">Точки · Алгоритмы</span>
+              <h1 style="margin: 0; font-family: Literata, Georgia, serif; font-size: 30px; font-weight: 700; line-height: 1.1">Лабораторная 3. Деревья поиска</h1>
+              <span style="font-size: 13px; color: #57606a">ИВТ-21, ИВТ-22 · дедлайн 02.11, 12:00 · стоимость 60 АР · штраф 20 АР каждую минуту (зафиксирован при создании)</span>
+            </div>
+            <button type="button" style="height: 44px; flex-shrink: 0; padding: 0 16px; border: 1px solid #161b22; border-radius: 6px; background: transparent; color: #161b22; font: 700 14px 'PT Sans', sans-serif">Редактировать описание</button>
+          </div>
+
+          <div role="status" style="display: flex; align-items: center; gap: 10px; padding: 4px 0; color: #161b22">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color: #18753c; flex-shrink: 0"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+            <span><b style="color: #18753c">Принято 2 из 3.</b> Новиков А. П. пропущен: работу уже вернули, статус «Просрочено».</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #d6dbe1">
+            <div style="display: flex; gap: 26px">
+              <a href="#" aria-current="page" style="height: 44px; display: flex; align-items: center; font-weight: 700; color: #161b22; text-decoration: none; border-bottom: 3px solid #2450c4; margin-bottom: -1px">Все<span style="margin-left: 6px; font-weight: 400; color: #57606a">36</span></a>
+              <a href="#" style="height: 44px; display: flex; align-items: center; color: #57606a; text-decoration: none">Сдано<span style="margin-left: 6px">5</span></a>
+              <a href="#" style="height: 44px; display: flex; align-items: center; color: #57606a; text-decoration: none">Просрочено<span style="margin-left: 6px">9</span></a>
+              <a href="#" style="height: 44px; display: flex; align-items: center; color: #57606a; text-decoration: none">Принято<span style="margin-left: 6px">22</span></a>
+            </div>
+            <span style="font-size: 13px; color: #57606a">Сначала сданные, затем по ФИО</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 16px; border-radius: 8px; background: #eef0f3; color: #161b22; border: 0px solid transparent">
+            <b>Выбрано 3 работы</b>
+            <button type="button" style="height: 44px; padding: 0 10px; border: 0; background: transparent; color: #57606a; font: 14.5px 'PT Sans', sans-serif; text-decoration: underline; text-underline-offset: 4px">Снять выбор</button>
+            <div style="flex-grow: 1"></div>
+            <button type="button" style="height: 44px; padding: 0 16px; border: 1px solid #57606a; border-radius: 6px; background: transparent; color: #161b22; font: 700 14px 'PT Sans', sans-serif">Вернуть…</button>
+            <button type="button" style="height: 44px; padding: 0 18px; border: 0; border-radius: 6px; background: #2450c4; color: #ffffff; font: 700 14px 'PT Sans', sans-serif">Принять 3 работы</button>
+          </div>
+
+          <div style="display: flex; flex-direction: column">
+            <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 36px; border-bottom: 2px solid #161b22; font-size: 13px; font-weight: 700; color: #57606a">
+              <span></span><span>Студент</span><span>Группа</span><span>Статус</span><span>Сдано</span><span style="text-align: right">Списано, АР</span>
+            </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 52px; border-bottom: 2px solid #7d8590">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" checked="" aria-label="Егорова Мария Сергеевна" style="width: 18px; height: 18px; accent-color: #2450c4">
+                </label>
+                <a href="#" style="color: #2450c4; text-decoration: none; font-weight: 700">Егорова Мария Сергеевна</a>
+                <span>ИВТ-21</span>
+                <span><span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #fff3dc; color: #8a4b00; border: 0px solid #8a4b00; white-space: nowrap">Сдано на проверку</span></span>
+                <span style="color: #161b22">02.11 11:58 · отчёт.pdf</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>0</b><span style="color: #57606a; font-size: 13px"></span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 52px; border-bottom: 2px solid #7d8590">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" checked="" aria-label="Кузнецов Дмитрий Андреевич" style="width: 18px; height: 18px; accent-color: #2450c4">
+                </label>
+                <a href="#" style="color: #2450c4; text-decoration: none; font-weight: 700">Кузнецов Дмитрий Андреевич</a>
+                <span>ИВТ-21</span>
+                <span><span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #fff3dc; color: #8a4b00; border: 0px solid #8a4b00; white-space: nowrap">Сдано на проверку</span></span>
+                <span style="color: #161b22">02.11 12:31 · github.com/kuz/lab3 ↗</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>60</b><span style="color: #57606a; font-size: 13px"> · потолок</span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 52px; border-bottom: 2px solid #7d8590">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" checked="" aria-label="Новиков Артём Павлович" style="width: 18px; height: 18px; accent-color: #2450c4">
+                </label>
+                <a href="#" style="color: #2450c4; text-decoration: none; font-weight: 700">Новиков Артём Павлович</a>
+                <span>ИВТ-22</span>
+                <span><span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #fdecea; color: #b42318; border: 0px solid #b42318; white-space: nowrap">Просрочено</span></span>
+                <span style="color: #161b22">возвращено 02.11 12:10</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>20</b><span style="color: #57606a; font-size: 13px"></span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 52px; border-bottom: 1px solid #d6dbe1">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" aria-label="Волков Максим Игоревич" style="width: 18px; height: 18px; accent-color: #2450c4">
+                </label>
+                <a href="#" style="color: #2450c4; text-decoration: none; font-weight: 700">Волков Максим Игоревич</a>
+                <span>ИВТ-22</span>
+                <span><span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #fdecea; color: #b42318; border: 0px solid #b42318; white-space: nowrap">Просрочено</span></span>
+                <span style="color: #57606a">—</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>60</b><span style="color: #57606a; font-size: 13px"> · потолок</span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 52px; border-bottom: 1px solid #d6dbe1">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" disabled="" aria-label="Белова Ольга Сергеевна" style="width: 18px; height: 18px; accent-color: #2450c4">
+                </label>
+                <a href="#" style="color: #2450c4; text-decoration: none; font-weight: 700">Белова Ольга Сергеевна</a>
+                <span>ИВТ-21</span>
+                <span><span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #e6f4ea; color: #18753c; border: 0px solid #18753c; white-space: nowrap">Принято</span></span>
+                <span style="color: #161b22">31.10 17:05 · gitlab.com/belova/lab3 ↗</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>0</b><span style="color: #57606a; font-size: 13px"></span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 52px; border-bottom: 1px solid #d6dbe1">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" aria-label="Орлова Елена Викторовна" style="width: 18px; height: 18px; accent-color: #2450c4">
+                </label>
+                <a href="#" style="color: #2450c4; text-decoration: none; font-weight: 700">Орлова Елена Викторовна</a>
+                <span>ИВТ-22</span>
+                <span><span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #e8effc; color: #1d4fb8; border: 0px solid #1d4fb8; white-space: nowrap">В процессе</span></span>
+                <span style="color: #57606a">—</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>0</b><span style="color: #57606a; font-size: 13px"></span></span>
+              </div>
+            
+          </div>
+        </main>
+      </div>
+    </div>
+  
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 12px; font-weight: 700; color: #57606a">Тёмная</span>
+      <div style="width: 1200px; height: 860px; box-sizing: border-box; background: #0f1419; color: #e6edf3; font-size: 14.5px; border-radius: 12px; overflow: hidden; display: flex; box-shadow: 0 0 0 1px #6b7685">
+        <nav aria-label="Навигация преподавателя" style="width: 230px; flex-shrink: 0; box-sizing: border-box; padding: 20px 14px; display: flex; flex-direction: column; gap: 2px; border-right: 1px solid #2d3640">
+          <span style="font-family: Literata, Georgia, serif; font-size: 19px; font-weight: 700; padding: 4px 10px 6px; border-top: 3px solid #e6edf3">Campus Rating</span>
+          <span style="font-size: 13px; color: #9da7b3; padding: 0 10px 18px">Петров П. П. · преподаватель</span>
+          
+            <a href="#" style="min-height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #e6edf3; font-weight: 400; background: transparent; border: 0px solid transparent">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"></path></svg>
+              Главная
+            </a>
+          
+            <a href="#" style="min-height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #8fb1ff; font-weight: 700; background: #1a2540; border: 0px solid #8fb1ff">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"></path></svg>
+              Точки
+            </a>
+          
+            <a href="#" style="min-height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #e6edf3; font-weight: 400; background: transparent; border: 0px solid transparent">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.5 5 5.5.8-4 3.9.9 5.5L12 16.6 7.1 19.2 8 13.7 4 9.8l5.5-.8z"></path></svg>
+              Активности
+            </a>
+          
+            <a href="#" style="min-height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #e6edf3; font-weight: 400; background: transparent; border: 0px solid transparent">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11a3 3 0 100-6 3 3 0 000 6zM3 20a6 6 0 0112 0M17 11.5a2.5 2.5 0 100-5M15.5 14.6A5 5 0 0121 19.5"></path></svg>
+              Группы
+            </a>
+          
+            <a href="#" style="min-height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #e6edf3; font-weight: 400; background: transparent; border: 0px solid transparent">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 20a8 8 0 0116 0"></path></svg>
+              Профиль
+            </a>
+          
+        </nav>
+
+        <main style="flex-grow: 1; min-width: 0; padding: 22px 28px; display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 13px; color: #9da7b3">Точки · Алгоритмы</span>
+              <h1 style="margin: 0; font-family: Literata, Georgia, serif; font-size: 30px; font-weight: 700; line-height: 1.1">Лабораторная 3. Деревья поиска</h1>
+              <span style="font-size: 13px; color: #9da7b3">ИВТ-21, ИВТ-22 · дедлайн 02.11, 12:00 · стоимость 60 АР · штраф 20 АР каждую минуту (зафиксирован при создании)</span>
+            </div>
+            <button type="button" style="height: 44px; flex-shrink: 0; padding: 0 16px; border: 1px solid #e6edf3; border-radius: 6px; background: transparent; color: #e6edf3; font: 700 14px 'PT Sans', sans-serif">Редактировать описание</button>
+          </div>
+
+          <div role="status" style="display: flex; align-items: center; gap: 10px; padding: 4px 0; color: #e6edf3">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color: #7fd19b; flex-shrink: 0"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+            <span><b style="color: #7fd19b">Принято 2 из 3.</b> Новиков А. П. пропущен: работу уже вернули, статус «Просрочено».</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2d3640">
+            <div style="display: flex; gap: 26px">
+              <a href="#" aria-current="page" style="height: 44px; display: flex; align-items: center; font-weight: 700; color: #e6edf3; text-decoration: none; border-bottom: 3px solid #7aa2ff; margin-bottom: -1px">Все<span style="margin-left: 6px; font-weight: 400; color: #9da7b3">36</span></a>
+              <a href="#" style="height: 44px; display: flex; align-items: center; color: #9da7b3; text-decoration: none">Сдано<span style="margin-left: 6px">5</span></a>
+              <a href="#" style="height: 44px; display: flex; align-items: center; color: #9da7b3; text-decoration: none">Просрочено<span style="margin-left: 6px">9</span></a>
+              <a href="#" style="height: 44px; display: flex; align-items: center; color: #9da7b3; text-decoration: none">Принято<span style="margin-left: 6px">22</span></a>
+            </div>
+            <span style="font-size: 13px; color: #9da7b3">Сначала сданные, затем по ФИО</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 16px; border-radius: 8px; background: #1e252e; color: #e6edf3; border: 0px solid transparent">
+            <b>Выбрано 3 работы</b>
+            <button type="button" style="height: 44px; padding: 0 10px; border: 0; background: transparent; color: #9da7b3; font: 14.5px 'PT Sans', sans-serif; text-decoration: underline; text-underline-offset: 4px">Снять выбор</button>
+            <div style="flex-grow: 1"></div>
+            <button type="button" style="height: 44px; padding: 0 16px; border: 1px solid #9da7b3; border-radius: 6px; background: transparent; color: #e6edf3; font: 700 14px 'PT Sans', sans-serif">Вернуть…</button>
+            <button type="button" style="height: 44px; padding: 0 18px; border: 0; border-radius: 6px; background: #7aa2ff; color: #0b1530; font: 700 14px 'PT Sans', sans-serif">Принять 3 работы</button>
+          </div>
+
+          <div style="display: flex; flex-direction: column">
+            <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 36px; border-bottom: 2px solid #e6edf3; font-size: 13px; font-weight: 700; color: #9da7b3">
+              <span></span><span>Студент</span><span>Группа</span><span>Статус</span><span>Сдано</span><span style="text-align: right">Списано, АР</span>
+            </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 52px; border-bottom: 2px solid #6b7685">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" checked="" aria-label="Егорова Мария Сергеевна" style="width: 18px; height: 18px; accent-color: #7aa2ff">
+                </label>
+                <a href="#" style="color: #8fb1ff; text-decoration: none; font-weight: 700">Егорова Мария Сергеевна</a>
+                <span>ИВТ-21</span>
+                <span><span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #362a14; color: #f0c27a; border: 0px solid #f0c27a; white-space: nowrap">Сдано на проверку</span></span>
+                <span style="color: #e6edf3">02.11 11:58 · отчёт.pdf</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>0</b><span style="color: #9da7b3; font-size: 13px"></span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 52px; border-bottom: 2px solid #6b7685">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" checked="" aria-label="Кузнецов Дмитрий Андреевич" style="width: 18px; height: 18px; accent-color: #7aa2ff">
+                </label>
+                <a href="#" style="color: #8fb1ff; text-decoration: none; font-weight: 700">Кузнецов Дмитрий Андреевич</a>
+                <span>ИВТ-21</span>
+                <span><span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #362a14; color: #f0c27a; border: 0px solid #f0c27a; white-space: nowrap">Сдано на проверку</span></span>
+                <span style="color: #e6edf3">02.11 12:31 · github.com/kuz/lab3 ↗</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>60</b><span style="color: #9da7b3; font-size: 13px"> · потолок</span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 52px; border-bottom: 2px solid #6b7685">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" checked="" aria-label="Новиков Артём Павлович" style="width: 18px; height: 18px; accent-color: #7aa2ff">
+                </label>
+                <a href="#" style="color: #8fb1ff; text-decoration: none; font-weight: 700">Новиков Артём Павлович</a>
+                <span>ИВТ-22</span>
+                <span><span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #3a1d1b; color: #ff9b8f; border: 0px solid #ff9b8f; white-space: nowrap">Просрочено</span></span>
+                <span style="color: #e6edf3">возвращено 02.11 12:10</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>20</b><span style="color: #9da7b3; font-size: 13px"></span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 52px; border-bottom: 1px solid #2d3640">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" aria-label="Волков Максим Игоревич" style="width: 18px; height: 18px; accent-color: #7aa2ff">
+                </label>
+                <a href="#" style="color: #8fb1ff; text-decoration: none; font-weight: 700">Волков Максим Игоревич</a>
+                <span>ИВТ-22</span>
+                <span><span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #3a1d1b; color: #ff9b8f; border: 0px solid #ff9b8f; white-space: nowrap">Просрочено</span></span>
+                <span style="color: #9da7b3">—</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>60</b><span style="color: #9da7b3; font-size: 13px"> · потолок</span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 52px; border-bottom: 1px solid #2d3640">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" disabled="" aria-label="Белова Ольга Сергеевна" style="width: 18px; height: 18px; accent-color: #7aa2ff">
+                </label>
+                <a href="#" style="color: #8fb1ff; text-decoration: none; font-weight: 700">Белова Ольга Сергеевна</a>
+                <span>ИВТ-21</span>
+                <span><span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #15301f; color: #7fd19b; border: 0px solid #7fd19b; white-space: nowrap">Принято</span></span>
+                <span style="color: #e6edf3">31.10 17:05 · gitlab.com/belova/lab3 ↗</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>0</b><span style="color: #9da7b3; font-size: 13px"></span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 52px; border-bottom: 1px solid #2d3640">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" aria-label="Орлова Елена Викторовна" style="width: 18px; height: 18px; accent-color: #7aa2ff">
+                </label>
+                <a href="#" style="color: #8fb1ff; text-decoration: none; font-weight: 700">Орлова Елена Викторовна</a>
+                <span>ИВТ-22</span>
+                <span><span style="font-size: 13px; font-weight: 400; padding: 3px 10px; border-radius: 999px; background: #1c2742; color: #a8c1ff; border: 0px solid #a8c1ff; white-space: nowrap">В процессе</span></span>
+                <span style="color: #9da7b3">—</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>0</b><span style="color: #9da7b3; font-size: 13px"></span></span>
+              </div>
+            
+          </div>
+        </main>
+      </div>
+    </div>
+  
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 12px; font-weight: 700; color: #57606a">Высокий контраст</span>
+      <div style="width: 1200px; height: 860px; box-sizing: border-box; background: #ffffff; color: #000000; font-size: 16.5px; border-radius: 12px; overflow: hidden; display: flex; box-shadow: 0 0 0 1px #000000">
+        <nav aria-label="Навигация преподавателя" style="width: 230px; flex-shrink: 0; box-sizing: border-box; padding: 20px 14px; display: flex; flex-direction: column; gap: 2px; border-right: 2px solid #595959">
+          <span style="font-family: Literata, Georgia, serif; font-size: 19px; font-weight: 700; padding: 4px 10px 6px; border-top: 3px solid #000000">Campus Rating</span>
+          <span style="font-size: 15px; color: #333333; padding: 0 10px 18px">Петров П. П. · преподаватель</span>
+          
+            <a href="#" style="min-height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #000000; font-weight: 400; background: transparent; border: 0px solid transparent">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"></path></svg>
+              Главная
+            </a>
+          
+            <a href="#" style="min-height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #0033a0; font-weight: 700; background: #e5ecff; border: 2px solid #0033a0">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"></path></svg>
+              Точки
+            </a>
+          
+            <a href="#" style="min-height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #000000; font-weight: 400; background: transparent; border: 0px solid transparent">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.5 5 5.5.8-4 3.9.9 5.5L12 16.6 7.1 19.2 8 13.7 4 9.8l5.5-.8z"></path></svg>
+              Активности
+            </a>
+          
+            <a href="#" style="min-height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #000000; font-weight: 400; background: transparent; border: 0px solid transparent">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11a3 3 0 100-6 3 3 0 000 6zM3 20a6 6 0 0112 0M17 11.5a2.5 2.5 0 100-5M15.5 14.6A5 5 0 0121 19.5"></path></svg>
+              Группы
+            </a>
+          
+            <a href="#" style="min-height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 10px; border-radius: 6px; text-decoration: none; color: #000000; font-weight: 400; background: transparent; border: 0px solid transparent">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 20a8 8 0 0116 0"></path></svg>
+              Профиль
+            </a>
+          
+        </nav>
+
+        <main style="flex-grow: 1; min-width: 0; padding: 22px 28px; display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 15px; color: #333333">Точки · Алгоритмы</span>
+              <h1 style="margin: 0; font-family: Literata, Georgia, serif; font-size: 30px; font-weight: 700; line-height: 1.1">Лабораторная 3. Деревья поиска</h1>
+              <span style="font-size: 15px; color: #333333">ИВТ-21, ИВТ-22 · дедлайн 02.11, 12:00 · стоимость 60 АР · штраф 20 АР каждую минуту (зафиксирован при создании)</span>
+            </div>
+            <button type="button" style="height: 52px; flex-shrink: 0; padding: 0 16px; border: 2px solid #000000; border-radius: 6px; background: transparent; color: #000000; font: 700 16px 'PT Sans', sans-serif">Редактировать описание</button>
+          </div>
+
+          <div role="status" style="display: flex; align-items: center; gap: 10px; padding: 4px 0; color: #000000">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="color: #00561e; flex-shrink: 0"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+            <span><b style="color: #00561e">Принято 2 из 3.</b> Новиков А. П. пропущен: работу уже вернули, статус «Просрочено».</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #595959">
+            <div style="display: flex; gap: 26px">
+              <a href="#" aria-current="page" style="height: 52px; display: flex; align-items: center; font-weight: 700; color: #000000; text-decoration: none; border-bottom: 3px solid #0033a0; margin-bottom: -1px">Все<span style="margin-left: 6px; font-weight: 400; color: #333333">36</span></a>
+              <a href="#" style="height: 52px; display: flex; align-items: center; color: #333333; text-decoration: underline">Сдано<span style="margin-left: 6px">5</span></a>
+              <a href="#" style="height: 52px; display: flex; align-items: center; color: #333333; text-decoration: underline">Просрочено<span style="margin-left: 6px">9</span></a>
+              <a href="#" style="height: 52px; display: flex; align-items: center; color: #333333; text-decoration: underline">Принято<span style="margin-left: 6px">22</span></a>
+            </div>
+            <span style="font-size: 15px; color: #333333">Сначала сданные, затем по ФИО</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 16px; border-radius: 8px; background: #f0f0f0; color: #000000; border: 2px solid #000000">
+            <b>Выбрано 3 работы</b>
+            <button type="button" style="height: 52px; padding: 0 10px; border: 0; background: transparent; color: #333333; font: 16.5px 'PT Sans', sans-serif; text-decoration: underline; text-underline-offset: 4px">Снять выбор</button>
+            <div style="flex-grow: 1"></div>
+            <button type="button" style="height: 52px; padding: 0 16px; border: 2px solid #333333; border-radius: 6px; background: transparent; color: #000000; font: 700 16px 'PT Sans', sans-serif">Вернуть…</button>
+            <button type="button" style="height: 52px; padding: 0 18px; border: 0; border-radius: 6px; background: #0033a0; color: #ffffff; font: 700 16px 'PT Sans', sans-serif">Принять 3 работы</button>
+          </div>
+
+          <div style="display: flex; flex-direction: column">
+            <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 36px; border-bottom: 3px solid #000000; font-size: 15px; font-weight: 700; color: #333333">
+              <span></span><span>Студент</span><span>Группа</span><span>Статус</span><span>Сдано</span><span style="text-align: right">Списано, АР</span>
+            </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 60px; border-bottom: 3px solid #000000">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" checked="" aria-label="Егорова Мария Сергеевна" style="width: 22px; height: 22px; accent-color: #0033a0">
+                </label>
+                <a href="#" style="color: #0033a0; text-decoration: underline; font-weight: 700">Егорова Мария Сергеевна</a>
+                <span>ИВТ-21</span>
+                <span><span style="font-size: 15px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #fff0d0; color: #6b3600; border: 2px solid #6b3600; white-space: nowrap">Сдано на проверку</span></span>
+                <span style="color: #000000">02.11 11:58 · отчёт.pdf</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>0</b><span style="color: #333333; font-size: 15px"></span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 60px; border-bottom: 3px solid #000000">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" checked="" aria-label="Кузнецов Дмитрий Андреевич" style="width: 22px; height: 22px; accent-color: #0033a0">
+                </label>
+                <a href="#" style="color: #0033a0; text-decoration: underline; font-weight: 700">Кузнецов Дмитрий Андреевич</a>
+                <span>ИВТ-21</span>
+                <span><span style="font-size: 15px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #fff0d0; color: #6b3600; border: 2px solid #6b3600; white-space: nowrap">Сдано на проверку</span></span>
+                <span style="color: #000000">02.11 12:31 · github.com/kuz/lab3 ↗</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>60</b><span style="color: #333333; font-size: 15px"> · потолок</span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 60px; border-bottom: 3px solid #000000">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" checked="" aria-label="Новиков Артём Павлович" style="width: 22px; height: 22px; accent-color: #0033a0">
+                </label>
+                <a href="#" style="color: #0033a0; text-decoration: underline; font-weight: 700">Новиков Артём Павлович</a>
+                <span>ИВТ-22</span>
+                <span><span style="font-size: 15px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #ffe5e5; color: #a00000; border: 2px solid #a00000; white-space: nowrap">Просрочено</span></span>
+                <span style="color: #000000">возвращено 02.11 12:10</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>20</b><span style="color: #333333; font-size: 15px"></span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 60px; border-bottom: 2px solid #595959">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" aria-label="Волков Максим Игоревич" style="width: 22px; height: 22px; accent-color: #0033a0">
+                </label>
+                <a href="#" style="color: #0033a0; text-decoration: underline; font-weight: 700">Волков Максим Игоревич</a>
+                <span>ИВТ-22</span>
+                <span><span style="font-size: 15px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #ffe5e5; color: #a00000; border: 2px solid #a00000; white-space: nowrap">Просрочено</span></span>
+                <span style="color: #333333">—</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>60</b><span style="color: #333333; font-size: 15px"> · потолок</span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 60px; border-bottom: 2px solid #595959">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" disabled="" aria-label="Белова Ольга Сергеевна" style="width: 22px; height: 22px; accent-color: #0033a0">
+                </label>
+                <a href="#" style="color: #0033a0; text-decoration: underline; font-weight: 700">Белова Ольга Сергеевна</a>
+                <span>ИВТ-21</span>
+                <span><span style="font-size: 15px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #e0f5e5; color: #00561e; border: 2px solid #00561e; white-space: nowrap">Принято</span></span>
+                <span style="color: #000000">31.10 17:05 · gitlab.com/belova/lab3 ↗</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>0</b><span style="color: #333333; font-size: 15px"></span></span>
+              </div>
+            
+              <div style="display: grid; grid-template-columns: 44px minmax(0, 2.2fr) 0.8fr 1.5fr minmax(0, 2.1fr) 1.2fr; gap: 12px; align-items: center; min-height: 60px; border-bottom: 2px solid #595959">
+                <label style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center">
+                  <input type="checkbox" aria-label="Орлова Елена Викторовна" style="width: 22px; height: 22px; accent-color: #0033a0">
+                </label>
+                <a href="#" style="color: #0033a0; text-decoration: underline; font-weight: 700">Орлова Елена Викторовна</a>
+                <span>ИВТ-22</span>
+                <span><span style="font-size: 15px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #e5ecff; color: #002f8f; border: 2px solid #002f8f; white-space: nowrap">В процессе</span></span>
+                <span style="color: #333333">—</span>
+                <span style="text-align: right; font-variant-numeric: tabular-nums"><b>0</b><span style="color: #333333; font-size: 15px"></span></span>
+              </div>
+            
+          </div>
+        </main>
+      </div>
+    </div>
+  
+</div>
+</section>
+</body>
+</html>
