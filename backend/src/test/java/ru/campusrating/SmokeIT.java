@@ -46,13 +46,14 @@ class SmokeIT extends PostgresIntegrationTest {
     }
 
     @Test
-    void missingApiReturnsJsonError() throws Exception {
+    void protectedApiRequiresAuthentication() throws Exception {
         var response = get("/api/v1/does-not-exist");
-        assertThat(response.statusCode()).isEqualTo(404);
+        assertThat(response.statusCode()).isEqualTo(401);
         assertThat(response.headers().firstValue("content-type").orElseThrow())
                 .startsWith("application/problem+json");
         var error = JsonMapper.builder().build().readTree(response.body());
-        assertThat(error.path("status").asInt()).isEqualTo(404);
+        assertThat(error.path("status").asInt()).isEqualTo(401);
+        assertThat(error.path("code").asText()).isEqualTo("UNAUTHENTICATED");
         assertThat(error.path("instance").asText()).isEqualTo("/api/v1/does-not-exist");
     }
 

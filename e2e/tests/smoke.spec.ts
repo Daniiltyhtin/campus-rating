@@ -20,12 +20,15 @@ test('U2: nginx сохраняет API и закрывает actuator (R6, KTD11
   const html = await index.text();
   expect(html).toMatch(/<!doctype html>/i);
 
-  // С Spring Security мастер-U5 без сессии будет 401: перевести проверку на публичный GET /api/v1/auth/config из контракта.
+  const config = await request.get('/api/v1/auth/config');
+  expect(config.status()).toBe(200);
+  expect(config.headers()['content-type']).toMatch(/^application\/json/);
+  expect(await config.json()).toMatchObject({ demo: true, emailVerification: 'OFF' });
+
   const missing = await request.get('/api/v1/does-not-exist');
-  expect(missing.status()).toBe(404);
-  // Boot error JSON now, application/problem+json after master-U3 ProblemDetail.
-  expect(missing.headers()['content-type']).toMatch(/^application\/(problem\+)?json/);
-  expect(await missing.json()).toMatchObject({ status: 404 });
+  expect(missing.status()).toBe(401);
+  expect(missing.headers()['content-type']).toMatch(/^application\/problem\+json/);
+  expect(await missing.json()).toMatchObject({ status: 401, code: 'UNAUTHENTICATED' });
 
   const actuator = await request.get('/actuator/health');
   expect(actuator.status()).toBe(200);

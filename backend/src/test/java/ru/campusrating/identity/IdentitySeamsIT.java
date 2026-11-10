@@ -1,0 +1,53 @@
+package ru.campusrating.identity;
+
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.campusrating.shared.error.ApiException;
+import ru.campusrating.shared.error.ProblemCode;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class IdentitySeamsIT extends IdentityAcceptanceSupport {
+    @Autowired private GroupMembers members;
+    @Autowired private CurrentUser currentUser;
+
+    @Test
+    void groupMembersDistinguishesPendingAndActiveAndReturnsCurrentLabels() {
+        long active = registerStudent(browser(), "active");
+        long pending = registerStudent(browser(), "pending");
+        long teacher = registerTeacher(browser(), "teacher");
+        jdbc.update("update group_membership set state='PENDING',activated_at=null where student_id=?", pending);
+        assertThat(members.activeStudents(List.of(group))).extracting(StudentMember::studentId).containsExactly(active);
+        assertThat(members.membership(pending)).hasValueSatisfying(member -> {
+            assertThat(member.state().name()).isEqualTo("PENDING");
+            assertThat(member.activatedAt()).isNull();
+        });
+        assertThat(members.membership(teacher)).isEmpty();
+        assertThat(members.memberships(List.of(active, pending, teacher))).containsOnlyKeys(active, pending);
+        jdbc.update("update app_user set full_name='Новое имя' where id=?", active);
+        assertThat(members.users(List.of(active, teacher))).containsOnlyKeys(active, teacher);
+        assertThat(members.users(List.of(active)).get(active).fullName()).isEqualTo("Новое имя");
+        assertThat(members.groups(List.of(group)).get(group).facultyId()).isEqualTo(faculty);
+        assertThat(members.card(active)).hasValueSatisfying(card -> {
+            assertThat(card.role().name()).isEqualTo("STUDENT");
+            assertThat(card.groupId()).isEqualTo(group);
+            assertThat(card.departmentId()).isNull();
+        });
+        assertThat(members.card(teacher)).hasValueSatisfying(card -> {
+            assertThat(card.role().name()).isEqualTo("TEACHER");
+            assertThat(card.departmentId()).isEqualTo(department);
+            assertThat(card.groupId()).isNull();
+        });
+        assertThat(members.activeStudents(List.of())).isEmpty();
+        assertThat(members.users(List.of())).isEmpty();
+    }
+
+    @Test
+    void currentUserOutsideAuthenticatedRequestDoesNotInventIdentity() {
+        assertThat(currentUser.find()).isEmpty();
+        assertThatThrownBy(currentUser::require).isInstanceOfSatisfying(ApiException.class,
+                error -> assertThat(error.code()).isEqualTo(ProblemCode.UNAUTHENTICATED));
+    }
+}

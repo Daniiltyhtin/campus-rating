@@ -41,6 +41,8 @@ class DemoRecreateIT {
                 .web(WebApplicationType.NONE)
                 .profiles(profile)
                 .run("--campus.mail.email-verification=off",
+                        "--CAMPUS_BOOTSTRAP_ADMIN_EMAIL=schema-admin@example.test",
+                        "--CAMPUS_BOOTSTRAP_ADMIN_PASSWORD=Synthetic-schema-admin-42",
                         "--spring.datasource.url=" + postgres.getJdbcUrl(),
                         "--spring.datasource.username=" + postgres.getUsername(),
                         "--spring.datasource.password=" + postgres.getPassword());

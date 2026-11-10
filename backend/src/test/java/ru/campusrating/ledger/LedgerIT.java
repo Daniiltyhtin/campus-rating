@@ -394,9 +394,29 @@ class LedgerIT extends PostgresIntegrationTest {
     }
 
     @Test
-    void reconciliationHttpMatchesContractAndUsesClock() {
+    void reconciliationHttpMatchesContractAndUsesClock() throws Exception {
         post(initial(student, "initial"));
-        var client = RestTestClient.bindToServer().baseUrl("http://127.0.0.1:" + port).build();
+        String password = "Synthetic-admin-test-42";
+        String hash = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode(password);
+        jdbc.update("update app_user set role='ADMIN', password_hash=? where id=?", hash, author);
+        String email = jdbc.queryForObject("select email from app_user where id=?", String.class, author);
+        var cookies = new java.net.CookieManager(null, java.net.CookiePolicy.ACCEPT_ALL);
+        var http = java.net.http.HttpClient.newBuilder().cookieHandler(cookies).build();
+        var base = "http://127.0.0.1:" + port;
+        var csrf = http.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(base + "/api/v1/auth/csrf"))
+                .GET().build(), java.net.http.HttpResponse.BodyHandlers.ofString());
+        assertThat(csrf.statusCode()).isEqualTo(204);
+        String token = cookies.getCookieStore().getCookies().stream().filter(cookie -> cookie.getName().equals("XSRF-TOKEN"))
+                .findFirst().orElseThrow().getValue();
+        var json = tools.jackson.databind.json.JsonMapper.builder().build();
+        var login = http.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(base + "/api/v1/auth/login"))
+                .header("Content-Type", "application/json").header("X-XSRF-TOKEN", token)
+                .POST(java.net.http.HttpRequest.BodyPublishers.ofString(json.writeValueAsString(
+                        java.util.Map.of("email", email, "password", password)))).build(),
+                java.net.http.HttpResponse.BodyHandlers.ofString());
+        assertThat(login.statusCode()).isEqualTo(200);
+        var client = RestTestClient.bindToServer(new org.springframework.http.client.JdkClientHttpRequestFactory(http))
+                .baseUrl(base).build();
         client.get().uri("/api/v1/admin/ledger/reconciliation").exchange().expectStatus().isOk()
                 .expectBody().jsonPath("$.checkedAt").isEqualTo(clock.instant().toString())
                 .jsonPath("$.checkedPairs").isEqualTo(1).jsonPath("$.mismatches").isEmpty();
