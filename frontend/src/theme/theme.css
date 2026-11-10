@@ -40,6 +40,7 @@ html[data-theme='high-contrast'] a { text-decoration: underline; }
   .cr-table tr { padding-block: var(--mantine-spacing-sm); border-block-end: var(--cr-rule-width) solid var(--cr-rule); }
   .cr-table tbody tr { height: auto; min-height: var(--cr-row-height); }
   .cr-table td { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--mantine-spacing-sm); border: 0; }
+  .cr-table tr[aria-selected='true'] td { border-block-end: 0; }
   .cr-table td::before { content: attr(data-label); color: var(--cr-muted); }
 }
 @media (prefers-reduced-motion: reduce) {
