@@ -20,7 +20,7 @@ execution: code
   - операция требует поведения, которого нет в R мастер-плана;
   - шов требует изменить мастер-KTD3, KTD5, KTD23 или направление зависимостей модулей мастер-плана;
   - U7 не может стартовать, потому что мастер-U2 ещё не влит;
-  - `openapi-diff-core` не проходит пробные сравнения KTD14.
+  - закреплённый инструмент сравнения не проходит пробные сравнения KTD14.
 - **Ветка.** `u3-contract` от `main`. U1–U6 — один PR (U3a); U7 — отдельный PR (U3b) после слияния мастер-U2. Файлы скелета мастер-U2 (`backend/`, `frontend/`, `e2e/`, `.github/`) до его слияния не трогаются.
 
 ---
@@ -112,9 +112,9 @@ execution: code
 - KTD14. **Совместимость backend с контрактом (U7).** У каждой операции контракта — `x-status: planned | implemented`; юнит, реализующий операцию, переводит её в `implemented` своим PR. `ContractCompatibilityIT` берёт `/v3/api-docs` поднятого приложения и требует:
   1. каждая операция springdoc есть в контракте (метод и полный путь);
   2. каждая `implemented`-операция контракта есть в springdoc;
-  3. для пересечения — совместимость параметров, тел запросов и схем ответов `2xx` по `openapi-diff-core` 2.1.7.
+  3. для пересечения — совместимость параметров, тел запросов и схем ответов `2xx` по `oasdiff` 1.37.0 (`breaking --format json --fail-on WARN`).
 
-  springdoc описывает multipart плоским объектом из `@RequestPart`, а контракт — `oneOf` с запретом второй части; сравнение multipart-тела `submitAssignment` в U7 решается явно (исключение из сравнения тела или `@Schema` на контроллере), а не молча. До выбора инструмента U7 гоняет пробные сравнения на смену типа поля, `null`, `oneOf`, `required` и multipart; если `openapi-diff-core` их не ловит — стоп и вопрос, сравнение только по `operationId` равноценной заменой не считается.
+  springdoc описывает multipart плоским объектом из `@RequestPart`, а контракт — `oneOf` с запретом второй части; сравнение multipart-тела `submitAssignment` в U7 решается явно (исключение из сравнения тела или `@Schema` на контроллере), а не молча. До выбора инструмента U7 гоняет пробные сравнения на смену типа поля, `null`, `oneOf`, `required` и multipart; если закреплённый инструмент их не ловит — стоп и вопрос, сравнение только по `operationId` равноценной заменой не считается.
 - KTD15. **Швы — документ с сигнатурами, код пишут владельцы.** `module-seams.md` задаёт сигнатуры на уровне Java-типов, транзакционные гарантии и правила вызова. Интерфейсы создают владельцы в своих юнитах; до готовности потребитель в своих тестах использует тестовый двойник по сигнатуре, в `main` заглушек нет. Направления зависимостей — по диаграмме мастер-плана: `ledger` не зависит от `identity`, `checkpoint`, `activity`, поэтому всё, что журнал показывает в истории, он получает при проводке снимком (название источника, ФИО автора).
 - KTD16. **Клиент и моки (U7).** `openapi-typescript` 7.13 генерирует `frontend/src/api/schema.d.ts`; он объявляет peer TypeScript `^5`, а фронт на TypeScript 6 — установка с `overrides` на TypeScript проекта, запасной путь — изолированный `npx` с TypeScript 5.9 в скрипте `api:gen`. Клиент — `openapi-fetch` 0.17 с промежуточным слоем: CSRF-заголовок на изменяющих методах, разбор `Problem` в ошибку с `code`; сдача — `bodySerializer` с `FormData` без ручного `Content-Type`. `api:gen` также генерирует `frontend/src/mocks/examples.generated.ts` — разыменованные примеры ответов: браузерный MSW не читает YAML. MSW подключается в `main.tsx` по флагу до рендера, worker — `frontend/public/mockServiceWorker.js` от `msw init`.
 
@@ -215,7 +215,7 @@ backend/src/test/java/ru/campusrating/ContractCompatibilityIT.java   # U7
 |---|---|
 | Контракт понят исполнителем B иначе, ревью 08.11 затягивается | Матрица сценариев и примеры на демо-данных (U6); вопросы — в PR, правки до начала мастер-U5 |
 | `openapi-typescript` 7.13 не работает с TypeScript 6 | KTD16: `overrides`, запасной изолированный запуск |
-| `openapi-diff-core` не ловит изменения схем 3.1 | KTD14: пробные сравнения до выбора, иначе стоп |
+| Регрессия сравнения схем 3.1 | KTD14: закреплённые негативные пробы в каждом verify, иначе стоп |
 | Ресурсы позднее разрастаются (U13–U19) и ломают имена | Правило KTD2 «новый код — правкой контракта», пространства путей по модулям, `x-status` |
 | Единый `ProblemDetail` (KTD2, мастер-U3) меняет ответ на неизвестный путь `/api/…`: `application/problem+json` с `instance` вместо `path` | `SmokeIT#missingApiReturnsJsonError` мастер-U2 ждёт `application/json` и `path`; юнит, включающий `ProblemDetail` в backend, правит его в том же PR (e2e-смоук мастер-U2 проверяет только JSON и `status`) |
 | Шов нарушает направление зависимостей модулей мастер-плана | KTD15: проверка каждой сигнатуры по диаграмме; `ModularityTest` мастер-U2 ловит нарушение в коде |
@@ -344,7 +344,7 @@ backend/src/test/java/ru/campusrating/ContractCompatibilityIT.java   # U7
 - **Goal.** Контракт подключён к коду: фронт типизирован и работает против моков, backend проверяется на совместимость, CI ловит расхождения.
 - **Requirements.** R9, R10; KTD13, KTD14, KTD16.
 - **Dependencies.** U1–U6; слияние мастер-U2.
-- **Files:** `frontend/package.json`, `frontend/package-lock.json`, `frontend/src/main.tsx`, `frontend/public/mockServiceWorker.js`, `frontend/src/api/schema.d.ts`, `frontend/src/api/client.ts`, `frontend/src/api/client.test.ts`, `frontend/src/mocks/examples.generated.ts`, `frontend/src/mocks/handlers.ts`, `frontend/src/mocks/browser.ts`, `frontend/src/mocks/server.ts`, `frontend/src/mocks/handlers.test.ts`, `backend/pom.xml`, `backend/src/test/java/ru/campusrating/ContractCompatibilityIT.java`, `.github/workflows/ci.yml`, `frontend/AGENTS.md`, `docs/spec/api/openapi.yaml` (только `x-status`).
+- **Files:** `frontend/package.json`, `frontend/package-lock.json`, `frontend/src/main.tsx`, `frontend/public/mockServiceWorker.js`, `frontend/src/api/schema.d.ts`, `frontend/src/api/client.ts`, `frontend/src/api/client.test.ts`, `frontend/src/mocks/examples.generated.ts`, `frontend/src/mocks/handlers.ts`, `frontend/src/mocks/browser.ts`, `frontend/src/mocks/server.ts`, `frontend/src/mocks/handlers.test.ts`, `tools/install-oasdiff.mjs`, `frontend/scripts/generate-api.mjs`, `backend/pom.xml`, `backend/src/test/java/ru/campusrating/ContractCompatibilityIT.java`, `.github/workflows/ci.yml`, `frontend/AGENTS.md`, `docs/spec/api/openapi.yaml` (только `x-status`).
 - **Approach:**
   1. Скрипт `api:gen` по KTD16: типы и модуль примеров; оба файла генерируемые, руками не правятся.
   2. `client.ts` по KTD16.
@@ -352,7 +352,7 @@ backend/src/test/java/ru/campusrating/ContractCompatibilityIT.java   # U7
   4. `ContractCompatibilityIT` по KTD14, сначала пробные сравнения инструмента.
   5. CI: в задание `frontend` — линтер контракта и `api:gen` с проверкой пустого `git diff`; в `backend` — `ContractCompatibilityIT` в составе `verify`.
 - **Patterns to follow.** `frontend/AGENTS.md`, задания CI и скрипты `frontend/package.json` из скелета мастер-U2.
-- **Execution note.** Начать с пробных сравнений `openapi-diff-core`: от них зависит, как устроен `ContractCompatibilityIT`.
+- **Execution note.** Начать с пробных сравнений `oasdiff` 1.37.0: от них зависит, как устроен `ContractCompatibilityIT`.
 - **Test scenarios:**
   - `client.ts`: `POST`, `PUT`, `PATCH`, `DELETE` добавляют `X-XSRF-TOKEN` из cookie, `GET` — нет.
   - `client.ts`: сдача отправляет `multipart/form-data` с частью `file`, без ручного `Content-Type`, с CSRF-заголовком.
@@ -387,3 +387,9 @@ backend/src/test/java/ru/campusrating/ContractCompatibilityIT.java   # U7
 **PR U3b (U7):**
 - Ворота U7 зелёные локально и в CI.
 - Нет ручных правок генерируемых файлов, временных контроллеров и правок из негативных проверок.
+
+## Согласованная замена KTD14 (09.11)
+
+Команда согласовала oasdiff 1.37.0 после провала исходной пробы openapi-diff-core 2.1.7: три несовместимые мутации OpenAPI 3.1 давали NO_CHANGES. oasdiff прошёл 9/9 проб, включая совместимые контрпримеры. Продуктовые требования и набор сравниваемых операций не меняются.
+
+Установка: вспомогательный tools/install-oasdiff.mjs скачивает закреплённый release для Windows/Linux amd64, сверяет закреплённый SHA-256 и устанавливает бинарник в backend/target/tools. CI backend вызывает установку до verify; локально та же команда. Отсутствие или сбой инструмента делает проверку красной. Схемы передаются локальными JSON-файлами; внешние ссылки отключены. Негативные пробы остаются в ContractCompatibilityIT. Multipart сравнивается полностью: контроллер submitAssignment обязан явно описать oneOf из контракта; исключения для request body не вводятся.
