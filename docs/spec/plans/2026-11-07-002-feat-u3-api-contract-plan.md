@@ -73,7 +73,7 @@ execution: code
 - `docs/spec/ux/screen-map.md`: маршруты экранов, пять состояний блока штрафа, ошибка бюджета «нужно, остаток, не хватает», итог массового приёма.
 - Глоссарий: имена схем и перечислений.
 - Spring Security: SPA-интеграция CSRF (отложенная загрузка токена, обновление после входа и выхода), `docs.spring.io/spring-security/reference/servlet/exploits/csrf.html`.
-- Версии на 07.11.2026: `@redocly/cli` 2.76 (Node ≥ 22.12), `openapi-typescript` 7.13 (peer TypeScript `^5`), `openapi-fetch` 0.17, `msw` 3.0.4, `openapi-diff-core` 2.1.7 (известны проблемы сравнения типов 3.1, issue OpenAPITools/openapi-diff#745), springdoc 3.2.
+- Версии на 07.11.2026: `@redocly/cli` 2.76 (Node ≥ 22.12), `openapi-typescript` 7.13 (peer TypeScript `^5`), `openapi-fetch` 0.17, `msw` 3.0.4, `openapi-diff-core` 2.1.7 (известны проблемы сравнения типов 3.1, issue OpenAPITools/openapi-diff#745; с 09.11 заменён на `oasdiff` 1.37.0, KTD14), springdoc 3.2.
 
 ---
 
