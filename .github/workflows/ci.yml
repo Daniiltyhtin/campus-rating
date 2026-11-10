@@ -42,7 +42,9 @@ jobs:
         with:
           node-version: '22'
       - name: Verify backend
-        run: ./backend/mvnw -f backend/pom.xml verify
+        run: |
+          node tools/install-oasdiff.mjs
+          ./backend/mvnw -f backend/pom.xml verify
       - name: Check CRAP
         run: node tools/crap.mjs backend/target/site/jacoco/jacoco.xml
 
@@ -58,6 +60,13 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install dependencies
         run: npm --prefix frontend ci
+      - name: Lint API contract
+        run: npm --prefix frontend run api:lint
+      - name: Check generated API files
+        run: |
+          git ls-files --error-unmatch frontend/src/api/schema.d.ts frontend/src/mocks/examples.generated.ts
+          npm --prefix frontend run api:gen
+          git diff --exit-code -- frontend/src/api/schema.d.ts frontend/src/mocks/examples.generated.ts
       - name: Check frontend
         run: npm --prefix frontend run check
       - name: Build frontend

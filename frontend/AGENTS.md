@@ -39,7 +39,9 @@ React 19, Vite, TypeScript, Mantine, React Router, TanStack Query, Vitest. До�
 | Сборка в `frontend/dist` | `npm --prefix frontend run build` |
 | Dev-сервер, `/api` → `http://localhost:8081` | `npm --prefix frontend run dev` |
 
-Появится в мастер-U3: `npm run api:gen`. Компоненты с `useMediaQuery` тестируются через `setViewportWidth` из `src/test/setup.ts`; страницы — через `renderApp` из `src/test/render.tsx`.
+`npm --prefix frontend run api:gen` обновляет типы и примеры MSW; оба генерируемых файла не править вручную. `api:lint` проверяет контракт. Моки включаются только в dev при `VITE_API_MOCKING=true` в окружении запуска, до рендера. Браузерный worker — `public/mockServiceWorker.js`, обновляется командой `node node_modules/msw/cli/index.js init public --save` из `frontend/`.
+
+Компоненты с `useMediaQuery` тестируются через `setViewportWidth` из `src/test/setup.ts`; страницы — через `renderApp` из `src/test/render.tsx`.
 
 ## Уроки
 
