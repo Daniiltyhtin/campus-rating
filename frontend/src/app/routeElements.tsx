@@ -11,3 +11,7 @@ export function SessionGate() {
 export function SectionPlaceholder() {
   return <Text>Раздел появится</Text>;
 }
+
+export function RouteLoading() {
+  return <Text role="status">Загрузка…</Text>;
+}

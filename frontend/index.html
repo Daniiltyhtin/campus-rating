@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Campus Rating</title>
+    <script>
+      try {
+        var appearance = JSON.parse(localStorage.getItem('campus-appearance'));
+        var root = document.documentElement;
+        root.dataset.theme = appearance === 'contrast' ? 'high-contrast' : appearance === 'dark' ? 'dark' : 'light';
+        root.setAttribute('data-mantine-color-scheme', appearance === 'dark' ? 'dark' : 'light');
+      } catch (error) {}
+    </script>
+    <style>html[data-theme='dark'] { background: #0f1419; color-scheme: dark; }</style>
   </head>
   <body>
     <div id="root"></div>
