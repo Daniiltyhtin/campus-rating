@@ -375,7 +375,15 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Изменить название и описание точки
+         * @description Меняет только название и описание (мастер-R7): отсутствующее поле не меняется, нет ни одного —
+         *     `400`, любое другое поле (`deadline`, `cost`, `groupIds` …) — `400` по этому полю. Дедлайн,
+         *     стоимость, группы, шаг и интервал после создания не меняются. Правка разрешена до и после дедлайна.
+         *
+         *     Доступ: только автор точки, даже если её группы ему уже недоступны. Администратор — `403`.
+         */
+        patch: operations["updateCheckpoint"];
         trace?: never;
     };
     "/api/v1/checkpoints/{checkpointId}/assignments": {
@@ -466,7 +474,7 @@ export interface paths {
         /**
          * Назначение
          * @description Задача студента целиком: точка, статус, блок штрафа (см. `Penalty`), комментарий возврата, последняя
-         *     сдача. Экраны «Задача» (студент), сдача из строки точки (преподаватель) и «Материалы сдачи»
+         *     сдача и все версии сдач от новой к старой. Экраны «Задача» (студент), сдача из строки точки (преподаватель) и «Материалы сдачи»
          *     (`/admin/submissions/:assignmentId`, только чтение).
          *
          *     Доступ: студент-владелец, автор точки (даже если группа уже недоступна), администратор — только
@@ -494,7 +502,8 @@ export interface paths {
          * Сдать работу
          * @description Сдача из `OPEN`, в том числе после дедлайна; останавливает штраф (мастер-R10). Ровно одна из частей:
          *     `link` (http или https) или `file` (до 10 МБ; pdf, docx, zip, png, jpg — мастер-KTD12). Ни одной или
-         *     обе — `400`. Ответ — назначение в `SUBMITTED` с `phase: STOPPED`.
+         *     обе — `400`. Каждая сдача — новая версия; прежние версии и их файлы сохраняются. Ответ — назначение
+         *     в `SUBMITTED` с `phase: STOPPED` и `returnComment: null`.
          *
          *     Доступ: только студент-владелец.
          */
@@ -514,12 +523,35 @@ export interface paths {
         };
         /**
          * Файл сдачи
-         * @description Файл последней сдачи с `Content-Disposition: attachment` и исходным именем. Если последняя сдача —
-         *     ссылка или сдачи нет, — `404`.
+         * @description Файл последней версии сдачи с `Content-Disposition: attachment` и исходным именем. Если последняя
+         *     версия — ссылка или сдачи нет, — `404`. Файл любой версии — `downloadSubmissionVersionFile`.
          *
          *     Доступ: студент-владелец, автор точки, администратор — как у чтения назначения.
          */
         get: operations["downloadSubmissionFile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/assignments/{assignmentId}/submissions/{submissionId}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Файл версии сдачи
+         * @description Файл указанной версии сдачи с `Content-Disposition: attachment` и исходным именем. Версия-ссылка,
+         *     версия другого назначения или нет такой версии — `404`.
+         *
+         *     Доступ: студент-владелец, автор точки, администратор — как у чтения назначения.
+         */
+        get: operations["downloadSubmissionVersionFile"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1224,6 +1256,11 @@ export interface components {
             /** Format: int32 */
             totalCount: number;
         };
+        /** @description Хотя бы одно поле; других полей нет (мастер-R7). */
+        CheckpointUpdate: {
+            title?: string;
+            description?: string;
+        };
         CheckpointList: {
             items: components["schemas"]["Checkpoint"][];
         };
@@ -1260,7 +1297,7 @@ export interface components {
          *     | `phase` | Условие | `nextAt` | `nextAmount` |
          *     |---|---|---|---|
          *     | `STOPPED` | состояние `SUBMITTED` или `ACCEPTED` | `null` | `null` |
-         *     | `CAP_REACHED` | `charged = cap` | `null` | `null` |
+         *     | `CAP_REACHED` | `charged ≥ cap` | `null` | `null` |
          *     | `BEFORE_DEADLINE` | `OPEN`, время ≤ дедлайна | дедлайн: слот 0 списывается сразу после него | `min(step, cap)` |
          *     | `ZERO_BALANCE` | `OPEN`, после дедлайна, АР = 0 | начало следующего слота | `0` |
          *     | `RUNNING` | `OPEN`, после дедлайна, АР > 0 | начало ближайшего необработанного слота | `min(step, cap − charged, АР)` |
@@ -1290,6 +1327,7 @@ export interface components {
             nextAmount: number | null;
         };
         LinkSubmission: {
+            id: components["schemas"]["Id"];
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -1298,8 +1336,12 @@ export interface components {
             /** Format: uri */
             url: string;
             submittedAt: components["schemas"]["Instant"];
+            /** @description Комментарий, с которым эту версию вернули; `null`, если не возвращали. */
+            returnComment: string | null;
+            returnedAt: components["schemas"]["NullableInstant"];
         };
         FileSubmission: {
+            id: components["schemas"]["Id"];
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -1308,10 +1350,17 @@ export interface components {
             fileName: string;
             /** Format: int64 */
             sizeBytes: number;
+            /** @description Тип, определённый сервером по содержимому при сдаче. */
             contentType: string;
             submittedAt: components["schemas"]["Instant"];
+            /** @description Комментарий, с которым эту версию вернули; `null`, если не возвращали. */
+            returnComment: string | null;
+            returnedAt: components["schemas"]["NullableInstant"];
         };
-        /** @description Последняя сдача; после возврата остаётся видна до новой сдачи. Файл — `GET .../submission/file`. */
+        /**
+         * @description Версия сдачи. Каждая сдача — новая версия, прежние сохраняются (мастер-R10). Файл версии —
+         *     `GET .../submissions/{submissionId}/file`, последней — `GET .../submission/file`.
+         */
         Submission: components["schemas"]["LinkSubmission"] | components["schemas"]["FileSubmission"];
         /** @enum {string} */
         SubmissionKind: "LINK" | "FILE";
@@ -1343,9 +1392,15 @@ export interface components {
             state: components["schemas"]["AssignmentState"];
             status: components["schemas"]["AssignmentStatus"];
             penalty: components["schemas"]["Penalty"];
-            /** @description Комментарий последнего возврата. */
+            /**
+             * @description Комментарий последнего возврата, пока работа на доработке (`OPEN` после возврата); после новой
+             *     сдачи — `null`. Комментарии всех возвратов остаются у версий в `submissions`.
+             */
             returnComment: string | null;
+            /** @description Последняя версия сдачи; после возврата остаётся до новой сдачи. */
             submission: components["schemas"]["Submission"] | null;
+            /** @description Все версии сдачи от новой к старой; видят студент-владелец, автор точки и администратор. */
+            submissions: components["schemas"]["Submission"][];
             submittedAt: components["schemas"]["NullableInstant"];
             acceptedAt: components["schemas"]["NullableInstant"];
         };
@@ -1912,6 +1967,8 @@ export interface components {
         Month: components["schemas"]["YearMonth"];
         CheckpointId: components["schemas"]["Id"];
         AssignmentId: components["schemas"]["Id"];
+        /** @description Id версии сдачи из `Assignment.submissions`. */
+        SubmissionId: components["schemas"]["Id"];
         FacultyId: components["schemas"]["Id"];
         /**
          * @description Непрозрачный курсор из `nextCursor` предыдущей страницы; без него — первая страница.
@@ -2592,6 +2649,70 @@ export interface operations {
             404: components["responses"]["NotFound"];
         };
     };
+    updateCheckpoint: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                checkpointId: components["parameters"]["CheckpointId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "title": "Лабораторная 3. АВЛ-деревья"
+                 *     }
+                 */
+                "application/json": components["schemas"]["CheckpointUpdate"];
+            };
+        };
+        responses: {
+            /** @description Точка после правки. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 501,
+                     *       "title": "Лабораторная 3. АВЛ-деревья",
+                     *       "description": "Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.",
+                     *       "deadline": "2026-11-12T09:00:00Z",
+                     *       "cost": 60,
+                     *       "penaltyStep": 20,
+                     *       "penaltyIntervalSeconds": 60,
+                     *       "groups": [
+                     *         {
+                     *           "id": 11,
+                     *           "name": "ИВТ-21",
+                     *           "faculty": {
+                     *             "id": 1,
+                     *             "code": "ФИТ",
+                     *             "name": "Факультет информационных технологий"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "author": {
+                     *         "id": 2001,
+                     *         "fullName": "Петров Павел Петрович"
+                     *       },
+                     *       "createdAt": "2026-11-05T07:30:00Z",
+                     *       "submittedCount": 3,
+                     *       "totalCount": 24
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Checkpoint"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
     listCheckpointAssignments: {
         parameters: {
             query?: {
@@ -2901,6 +3022,35 @@ export interface operations {
             200: {
                 headers: {
                     /** @description `attachment; filename*=UTF-8''<имя>` */
+                    "Content-Disposition"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": Blob;
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    downloadSubmissionVersionFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignmentId: components["parameters"]["AssignmentId"];
+                /** @description Id версии сдачи из `Assignment.submissions`. */
+                submissionId: components["parameters"]["SubmissionId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Файл. */
+            200: {
+                headers: {
+                    /** @description `attachment; filename="<имя латиницей>"; filename*=UTF-8''<имя>` */
                     "Content-Disposition"?: string;
                     [name: string]: unknown;
                 };

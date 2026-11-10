@@ -820,6 +820,67 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [checkpoint]
+      operationId: updateCheckpoint
+      summary: Изменить название и описание точки
+      description: |
+        Меняет только название и описание (мастер-R7): отсутствующее поле не меняется, нет ни одного —
+        `400`, любое другое поле (`deadline`, `cost`, `groupIds` …) — `400` по этому полю. Дедлайн,
+        стоимость, группы, шаг и интервал после создания не меняются. Правка разрешена до и после дедлайна.
+
+        Доступ: только автор точки, даже если её группы ему уже недоступны. Администратор — `403`.
+      x-roles: [TEACHER]
+      x-status: planned
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - $ref: '#/components/parameters/CheckpointId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckpointUpdate'
+            example:
+              title: Лабораторная 3. АВЛ-деревья
+      responses:
+        '200':
+          description: Точка после правки.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Checkpoint'
+              example:
+                id: 501
+                title: Лабораторная 3. АВЛ-деревья
+                description: Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.
+                deadline: '2026-11-12T09:00:00Z'
+                cost: 60
+                penaltyStep: 20
+                penaltyIntervalSeconds: 60
+                groups:
+                  - id: 11
+                    name: ИВТ-21
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+                author:
+                  id: 2001
+                  fullName: Петров Павел Петрович
+                createdAt: '2026-11-05T07:30:00Z'
+                submittedCount: 3
+                totalCount: 24
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /api/v1/checkpoints/{checkpointId}/assignments:
     get:
@@ -1069,7 +1130,7 @@ paths:
       summary: Назначение
       description: |
         Задача студента целиком: точка, статус, блок штрафа (см. `Penalty`), комментарий возврата, последняя
-        сдача. Экраны «Задача» (студент), сдача из строки точки (преподаватель) и «Материалы сдачи»
+        сдача и все версии сдач от новой к старой. Экраны «Задача» (студент), сдача из строки точки (преподаватель) и «Материалы сдачи»
         (`/admin/submissions/:assignmentId`, только чтение).
 
         Доступ: студент-владелец, автор точки (даже если группа уже недоступна), администратор — только
@@ -1103,6 +1164,9 @@ paths:
                 stopped:
                   summary: Сдано (AE2)
                   $ref: '#/components/examples/AssignmentStopped'
+                resubmitted:
+                  summary: Сдано повторно после возврата — две версии
+                  $ref: '#/components/examples/AssignmentResubmitted'
         '401':
           $ref: '#/components/responses/Unauthenticated'
         '403':
@@ -1118,7 +1182,8 @@ paths:
       description: |
         Сдача из `OPEN`, в том числе после дедлайна; останавливает штраф (мастер-R10). Ровно одна из частей:
         `link` (http или https) или `file` (до 10 МБ; pdf, docx, zip, png, jpg — мастер-KTD12). Ни одной или
-        обе — `400`. Ответ — назначение в `SUBMITTED` с `phase: STOPPED`.
+        обе — `400`. Каждая сдача — новая версия; прежние версии и их файлы сохраняются. Ответ — назначение
+        в `SUBMITTED` с `phase: STOPPED` и `returnComment: null`.
 
         Доступ: только студент-владелец.
       x-roles: [STUDENT]
@@ -1188,8 +1253,8 @@ paths:
       operationId: downloadSubmissionFile
       summary: Файл сдачи
       description: |
-        Файл последней сдачи с `Content-Disposition: attachment` и исходным именем. Если последняя сдача —
-        ссылка или сдачи нет, — `404`.
+        Файл последней версии сдачи с `Content-Disposition: attachment` и исходным именем. Если последняя
+        версия — ссылка или сдачи нет, — `404`. Файл любой версии — `downloadSubmissionVersionFile`.
 
         Доступ: студент-владелец, автор точки, администратор — как у чтения назначения.
       x-roles: [STUDENT, TEACHER, ADMIN]
@@ -1204,6 +1269,43 @@ paths:
           headers:
             Content-Disposition:
               description: '`attachment; filename*=UTF-8''''<имя>`'
+              schema:
+                type: string
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/assignments/{assignmentId}/submissions/{submissionId}/file:
+    get:
+      tags: [checkpoint]
+      operationId: downloadSubmissionVersionFile
+      summary: Файл версии сдачи
+      description: |
+        Файл указанной версии сдачи с `Content-Disposition: attachment` и исходным именем. Версия-ссылка,
+        версия другого назначения или нет такой версии — `404`.
+
+        Доступ: студент-владелец, автор точки, администратор — как у чтения назначения.
+      x-roles: [STUDENT, TEACHER, ADMIN]
+      x-status: planned
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/AssignmentId'
+        - $ref: '#/components/parameters/SubmissionId'
+      responses:
+        '200':
+          description: Файл.
+          headers:
+            Content-Disposition:
+              description: '`attachment; filename="<имя латиницей>"; filename*=UTF-8''''<имя>`'
               schema:
                 type: string
           content:
@@ -2519,6 +2621,7 @@ components:
           nextAmount: 20
         returnComment: null
         submission: null
+        submissions: []
         submittedAt: null
         acceptedAt: null
     AssignmentRunning:
@@ -2555,6 +2658,7 @@ components:
           nextAmount: 20
         returnComment: null
         submission: null
+        submissions: []
         submittedAt: null
         acceptedAt: null
     AssignmentZeroBalance:
@@ -2591,6 +2695,7 @@ components:
           nextAmount: 0
         returnComment: null
         submission: null
+        submissions: []
         submittedAt: null
         acceptedAt: null
     AssignmentCapReached:
@@ -2627,6 +2732,7 @@ components:
           nextAmount: null
         returnComment: null
         submission: null
+        submissions: []
         submittedAt: null
         acceptedAt: null
     AssignmentStopped:
@@ -2663,9 +2769,19 @@ components:
           nextAmount: null
         returnComment: null
         submission:
+          id: 9001
           kind: LINK
           url: https://github.com/smirnova-demo/avl-tree
           submittedAt: '2026-11-12T09:01:30Z'
+          returnComment: null
+          returnedAt: null
+        submissions:
+          - id: 9001
+            kind: LINK
+            url: https://github.com/smirnova-demo/avl-tree
+            submittedAt: '2026-11-12T09:01:30Z'
+            returnComment: null
+            returnedAt: null
         submittedAt: '2026-11-12T09:01:30Z'
         acceptedAt: null
     AssignmentReturned:
@@ -2702,10 +2818,79 @@ components:
           nextAmount: 20
         returnComment: Нет тестов на удаление корня.
         submission:
+          id: 9001
           kind: LINK
           url: https://github.com/smirnova-demo/avl-tree
           submittedAt: '2026-11-12T09:01:30Z'
+          returnComment: Нет тестов на удаление корня.
+          returnedAt: '2026-11-12T09:05:10Z'
+        submissions:
+          - id: 9001
+            kind: LINK
+            url: https://github.com/smirnova-demo/avl-tree
+            submittedAt: '2026-11-12T09:01:30Z'
+            returnComment: Нет тестов на удаление корня.
+            returnedAt: '2026-11-12T09:05:10Z'
         submittedAt: '2026-11-12T09:01:30Z'
+        acceptedAt: null
+    AssignmentResubmitted:
+      value:
+        id: 7001
+        checkpoint:
+          id: 501
+          title: Лабораторная 3. Деревья поиска
+          description: Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.
+          deadline: '2026-11-12T09:00:00Z'
+          cost: 60
+          author:
+            id: 2001
+            fullName: Петров Павел Петрович
+        student:
+          id: 1001
+          fullName: Смирнова Анна Олеговна
+        group:
+          id: 11
+          name: ИВТ-21
+          faculty:
+            id: 1
+            code: ФИТ
+            name: Факультет информационных технологий
+        state: SUBMITTED
+        status: SUBMITTED
+        penalty:
+          charged: 60
+          cap: 60
+          step: 20
+          intervalSeconds: 60
+          phase: STOPPED
+          nextAt: null
+          nextAmount: null
+        returnComment: null
+        submission:
+          id: 9002
+          kind: FILE
+          fileName: Отчёт АВЛ.pdf
+          sizeBytes: 482113
+          contentType: application/pdf
+          submittedAt: '2026-11-12T09:20:00Z'
+          returnComment: null
+          returnedAt: null
+        submissions:
+          - id: 9002
+            kind: FILE
+            fileName: Отчёт АВЛ.pdf
+            sizeBytes: 482113
+            contentType: application/pdf
+            submittedAt: '2026-11-12T09:20:00Z'
+            returnComment: null
+            returnedAt: null
+          - id: 9001
+            kind: LINK
+            url: https://github.com/smirnova-demo/avl-tree
+            submittedAt: '2026-11-12T09:01:30Z'
+            returnComment: Нет тестов на удаление корня.
+            returnedAt: '2026-11-12T09:05:10Z'
+        submittedAt: '2026-11-12T09:20:00Z'
         acceptedAt: null
 
     NotEnrolled:
@@ -2791,6 +2976,13 @@ components:
       name: assignmentId
       in: path
       required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    SubmissionId:
+      name: submissionId
+      in: path
+      required: true
+      description: Id версии сдачи из `Assignment.submissions`.
       schema:
         $ref: '#/components/schemas/Id'
     FacultyId:
@@ -3516,6 +3708,19 @@ components:
         totalCount:
           type: integer
           format: int32
+    CheckpointUpdate:
+      type: object
+      description: Хотя бы одно поле; других полей нет (мастер-R7).
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 10000
     CheckpointList:
       type: object
       required: [items]
@@ -3576,7 +3781,7 @@ components:
         | `phase` | Условие | `nextAt` | `nextAmount` |
         |---|---|---|---|
         | `STOPPED` | состояние `SUBMITTED` или `ACCEPTED` | `null` | `null` |
-        | `CAP_REACHED` | `charged = cap` | `null` | `null` |
+        | `CAP_REACHED` | `charged ≥ cap` | `null` | `null` |
         | `BEFORE_DEADLINE` | `OPEN`, время ≤ дедлайна | дедлайн: слот 0 списывается сразу после него | `min(step, cap)` |
         | `ZERO_BALANCE` | `OPEN`, после дедлайна, АР = 0 | начало следующего слота | `0` |
         | `RUNNING` | `OPEN`, после дедлайна, АР > 0 | начало ближайшего необработанного слота | `min(step, cap − charged, АР)` |
@@ -3611,8 +3816,10 @@ components:
 
     LinkSubmission:
       type: object
-      required: [kind, url, submittedAt]
+      required: [id, kind, url, submittedAt, returnComment, returnedAt]
       properties:
+        id:
+          $ref: '#/components/schemas/Id'
         kind:
           const: LINK
         url:
@@ -3620,10 +3827,17 @@ components:
           format: uri
         submittedAt:
           $ref: '#/components/schemas/Instant'
+        returnComment:
+          type: [string, 'null']
+          description: Комментарий, с которым эту версию вернули; `null`, если не возвращали.
+        returnedAt:
+          $ref: '#/components/schemas/NullableInstant'
     FileSubmission:
       type: object
-      required: [kind, fileName, sizeBytes, contentType, submittedAt]
+      required: [id, kind, fileName, sizeBytes, contentType, submittedAt, returnComment, returnedAt]
       properties:
+        id:
+          $ref: '#/components/schemas/Id'
         kind:
           const: FILE
         fileName:
@@ -3633,10 +3847,18 @@ components:
           format: int64
         contentType:
           type: string
+          description: Тип, определённый сервером по содержимому при сдаче.
         submittedAt:
           $ref: '#/components/schemas/Instant'
+        returnComment:
+          type: [string, 'null']
+          description: Комментарий, с которым эту версию вернули; `null`, если не возвращали.
+        returnedAt:
+          $ref: '#/components/schemas/NullableInstant'
     Submission:
-      description: Последняя сдача; после возврата остаётся видна до новой сдачи. Файл — `GET .../submission/file`.
+      description: |
+        Версия сдачи. Каждая сдача — новая версия, прежние сохраняются (мастер-R10). Файл версии —
+        `GET .../submissions/{submissionId}/file`, последней — `GET .../submission/file`.
       oneOf:
         - $ref: '#/components/schemas/LinkSubmission'
         - $ref: '#/components/schemas/FileSubmission'
@@ -3674,7 +3896,7 @@ components:
       description: |
         Назначение целиком. Только здесь отдаются материалы сдачи и комментарий возврата — с проверкой
         прав (мастер-R3); в профиле их нет никогда.
-      required: [id, checkpoint, student, group, state, status, penalty, returnComment, submission, submittedAt, acceptedAt]
+      required: [id, checkpoint, student, group, state, status, penalty, returnComment, submission, submissions, submittedAt, acceptedAt]
       properties:
         id:
           $ref: '#/components/schemas/Id'
@@ -3692,11 +3914,19 @@ components:
           $ref: '#/components/schemas/Penalty'
         returnComment:
           type: [string, 'null']
-          description: Комментарий последнего возврата.
+          description: |
+            Комментарий последнего возврата, пока работа на доработке (`OPEN` после возврата); после новой
+            сдачи — `null`. Комментарии всех возвратов остаются у версий в `submissions`.
         submission:
+          description: Последняя версия сдачи; после возврата остаётся до новой сдачи.
           anyOf:
             - $ref: '#/components/schemas/Submission'
             - type: 'null'
+        submissions:
+          type: array
+          description: Все версии сдачи от новой к старой; видят студент-владелец, автор точки и администратор.
+          items:
+            $ref: '#/components/schemas/Submission'
         submittedAt:
           $ref: '#/components/schemas/NullableInstant'
         acceptedAt:
