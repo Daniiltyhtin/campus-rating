@@ -10,7 +10,7 @@ const archives = {
 };
 const entry = archives[`${platform}-${process.arch}`];
 if (!entry) throw new Error(`Unsupported oasdiff platform: ${platform}-${process.arch}`);
-const dir = new URL(`../backend/target/tools/${platform}-${process.arch}/`, import.meta.url);
+const dir = new URL(`../.tools/oasdiff/${platform}-${process.arch}/`, import.meta.url);
 await mkdir(dir, { recursive: true });
 const archive = new URL('oasdiff.tar.gz', dir);
 let bytes;
