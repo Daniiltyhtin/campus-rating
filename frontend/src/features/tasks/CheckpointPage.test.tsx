@@ -121,3 +121,17 @@ it('фильтры передаются серверу, открытие сда�
     requested.some((url) => url.searchParams.get('status') === 'SUBMITTED' && url.searchParams.get('groupId') === '11'),
   ).toBe(true);
 });
+
+it('смена фильтра статуса или группы сбрасывает выбор работ', async () => {
+  rows();
+  renderApp('/checkpoints/501', teacher);
+  const user = userEvent.setup();
+  await user.click(await screen.findByRole('checkbox', { name: 'Студент 1' }));
+  expect(screen.getByText('Выбрано 1')).toBeInTheDocument();
+  await user.click(screen.getByRole('tab', { name: /Сдано на проверку/ }));
+  expect(await screen.findByRole('checkbox', { name: 'Студент 1' })).not.toBeChecked();
+  expect(screen.queryByText('Выбрано 1')).not.toBeInTheDocument();
+  await user.click(screen.getByRole('checkbox', { name: 'Студент 2' }));
+  await user.selectOptions(screen.getByLabelText('Группа'), '11');
+  expect(await screen.findByRole('checkbox', { name: 'Студент 2' })).not.toBeChecked();
+});
