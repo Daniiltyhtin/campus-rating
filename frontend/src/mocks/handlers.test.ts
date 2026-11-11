@@ -13,6 +13,8 @@ afterAll(() => server.close());
 
 it('serves two cursor pages without duplicate awards', async () => {
   const api = createApiClient('http://localhost');
+  await api.GET('/api/v1/auth/csrf');
+  await api.POST('/api/v1/auth/login', { body: { email: 'petrov@campus.test', password: 'demo-teacher-1' } });
   const first = (await api.GET('/api/v1/feed/awards')).data!;
   expect(first.items.length).toBeGreaterThan(0);
   expect(first.nextCursor).toBeTruthy();
