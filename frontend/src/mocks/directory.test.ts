@@ -17,13 +17,16 @@ afterAll(() => server.close());
 async function login() {
   await api.GET('/api/v1/auth/csrf');
   await api.POST('/api/v1/auth/login', { body: { email: 'admin@campus.test', password: 'demo-admin-1' } });
+  await api.GET('/api/v1/auth/csrf');
   await api.POST('/api/v1/auth/password', { body: { currentPassword: 'demo-admin-1', newPassword: 'changed-admin-1' } });
+  await api.GET('/api/v1/auth/csrf');
 }
 it('guards admin operations by session, password and role', async () => {
   await expect(api.GET('/api/v1/admin/directory/faculties')).rejects.toMatchObject({ code: 'UNAUTHENTICATED' });
   await api.GET('/api/v1/auth/csrf');
   await api.POST('/api/v1/auth/login', { body: { email: 'admin@campus.test', password: 'demo-admin-1' } });
   await expect(api.GET('/api/v1/admin/directory/faculties')).rejects.toMatchObject({ code: 'PASSWORD_CHANGE_REQUIRED' });
+  await api.GET('/api/v1/auth/csrf');
   await api.POST('/api/v1/auth/login', { body: { email: 'petrov@campus.test', password: 'demo-teacher-1' } });
   await expect(api.GET('/api/v1/admin/directory/groups')).rejects.toMatchObject({ code: 'FORBIDDEN' });
 });
