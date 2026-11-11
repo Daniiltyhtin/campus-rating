@@ -17,6 +17,7 @@ export const routes: RouteObject[] = [
       { element: <GuestGate />, children: [{ path: 'login', element: <LoginPage /> }, { path: 'register', element: <RegisterPage /> }] },
       { element: <PasswordGate />, children: [{ path: 'password/change', element: <ChangePasswordPage /> }] },
       { element: <SessionGate />, children: [
+        { path: 'users/:id', lazy: async () => ({ Component: (await import('../features/profile/ProfilePage')).ProfilePage }) },
         { path: 'activities', lazy: async () => ({ Component: (await import('../features/activities/ActivityListPage')).ActivityListPage }) },
         { path: 'activities/new', lazy: async () => ({ Component: (await import('../features/activities/CreateActivityPage')).CreateActivityPage }) },
         { path: 'activities/:id/confirm', lazy: async () => ({ Component: (await import('../features/activities/ConfirmParticipationPage')).ConfirmParticipationPage }) },

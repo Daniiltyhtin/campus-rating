@@ -2,12 +2,13 @@ import { http, HttpResponse } from 'msw';
 import { examples } from './examples.generated';
 import { createAuthMockHandlers } from './auth';
 import { createActivityMockHandlers } from './activities';
+import { createProfileMockHandlers } from './profile';
 
 function cursorPage(body: unknown): body is { items: unknown[]; nextCursor: string | null } {
   return !!body && typeof body === 'object' && 'items' in body && Array.isArray(body.items) && 'nextCursor' in body;
 }
 
-export const handlers = [...createAuthMockHandlers(), ...createActivityMockHandlers(), ...examples.map((operation) => {
+export const handlers = [...createAuthMockHandlers(), ...createActivityMockHandlers(), ...createProfileMockHandlers(), ...examples.map((operation) => {
   const example = operation.responses.find(({ status }) => status >= 200 && status < 300)!;
   const path = operation.path.replaceAll(/\{([^}]+)\}/g, ':$1');
   return http.all(`*${path}`, ({ request }) => {
