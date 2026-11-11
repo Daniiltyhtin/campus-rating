@@ -792,3 +792,14 @@
 - **Урок:** frontend/AGENTS.md — измерять обе стороны цели. Остальные конкретные ошибки tester/QA зафиксированы здесь и в verification; независимые acceptance исполнитель не менял.
 - **Кругов ревью:**0; тестировщик не является независимым reviewer реализации.
 - **Коммит / PR:** реализация `d98f45b`, [PR36](https://github.com/Daniiltyhtin/campus-rating/pull/36), ветка u11-feed-frontend → u10-profile-frontend;72 файла сверены с явным списком до/после коммита, опубликовано по прямому разрешению человека. `gh pr create` не смог выполнить локальную git-команду; PR создан тем же GitHub CLI через pulls API. Approve/merge не выполнялись.
+
+### 2026-11-11 — U13 frontend: контракт справочников
+
+- **Кто / агент / модель:** Максим / Codex / GPT-6.
+- **Поручение:** продолжать frontend; первая законченная часть U13 — CRUD трёх справочников. В OpenAPI не было admin-операций, поэтому сначала отдельный контрактный PR.
+- **Результат с доказательствами:**12 planned ADMIN операций GET/POST/PUT/DELETE, DTO/code/name/faculty/admissionYear, CSRF и ошибки409; R/KTD/backend/БД не меняются. Redocly exit0, negative admissionYear0 отвергнут exit1; api:gen exit0 и повтор идентичен по SHA256. Frontend check283/283 Vitest +11 lint-rule, build1037 modules; tools140/140, agent-docs/diff exit0. План docs/spec/plans/2026-11-11-003-feat-u13-directory-frontend-plan.md; отчёт docs/reviews/u13-directory-contract/verification.md.
+- **Не проверено:** реализация planned backend API и frontend CRUD; независимое ревью контракта. UI/MSW и приёмочные тесты — следующий PR поверх этого.
+- **Ошибка агента:**нет. Перед выбором UI проверен контракт и выявлено его отсутствие; endpoints не изобретались непосредственно в компонентах.
+- **Урок:** контрактный пробел закрывается до production отдельным PR; случай зафиксирован здесь, повторяющегося нового правила нет.
+- **Кругов ревью:**0.
+- **Коммит / PR:** spec-u13-directory-api → u11-feed-frontend, публикация по сохранённому разрешению человека; без approve/merge.
