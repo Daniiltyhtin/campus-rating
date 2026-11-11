@@ -1,6 +1,6 @@
 # U9 frontend — отчёт исполнителя
 
-Ветка `u9-activities-frontend`, база `ccdfd5d` из PR33. Область: R3/R17–R21/R41, AE8–AE10; [план](../../spec/plans/2026-11-11-001-feat-u9-activities-frontend-plan.md). Это отчёт реализации, независимого approve ещё нет.
+Ветка `u9-activities-frontend`, реализация `d9d2f8f`, [PR34](https://github.com/Daniiltyhtin/campus-rating/pull/34), база `ccdfd5d` из PR33. Область: R3/R17–R21/R41, AE8–AE10; [план](../../spec/plans/2026-11-11-001-feat-u9-activities-frontend-plan.md). Это отчёт реализации, независимого approve ещё нет.
 
 ## Результат
 
