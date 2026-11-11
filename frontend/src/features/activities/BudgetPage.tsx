@@ -4,28 +4,30 @@ import { AsyncContent, TeacherTableLayout } from '../../app/layouts/PageLayouts'
 import { ActivityAccess, ActivityLink, ActivityPage, Points } from './ActivityShared';
 import type { Group } from './contracts';
 import { loadState, useAccessibleGroups, useAwardHistory, useAwardSummary, useBudgets } from './queries';
+import { activityError } from './errors';
 import { formatMoscowTime } from './time';
 
 function History({ userId, month, groupId }: { userId: number; month: string; groupId: string }) {
   const query = useAwardHistory(userId, month, groupId);
   const sentinel = useRef<HTMLDivElement>(null);
-  const { hasNextPage, isFetchingNextPage, fetchNextPage } = query;
+  const { hasNextPage, isFetching, isFetchingNextPage, isFetchNextPageError, fetchNextPage } = query;
   useEffect(() => {
-    if (!sentinel.current || !hasNextPage || isFetchingNextPage || typeof IntersectionObserver === 'undefined') return;
-    const observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) void fetchNextPage(); });
+    if (!sentinel.current || !hasNextPage || isFetching || isFetchNextPageError || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) void fetchNextPage({ cancelRefetch: false }); });
     observer.observe(sentinel.current);
     return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [hasNextPage, isFetching, isFetchNextPageError, fetchNextPage]);
   const items = [...new Map((query.data?.pages.flatMap((page) => page.items) ?? []).map((item) => [item.id, item])).values()];
   return <section><Title order={2} mb="md">История начислений</Title>
-    <AsyncContent state={loadState(query, items.length === 0, 'Начислений пока нет. Здесь появится история за выбранный месяц и группу.')}>
+    {query.data && query.isError && !isFetchNextPageError && <Stack role="alert"><Text>{activityError(query.error)}</Text><Button variant="default" disabled={isFetching} onClick={() => { void query.refetch(); }}>Повторить обновление истории</Button></Stack>}
+    <AsyncContent state={query.data ? (items.length ? { status: 'ready' } : { status: 'empty', message: 'Начислений пока нет. Здесь появится история за выбранный месяц и группу.' }) : loadState(query)}>
       <Stack gap={0}>{items.map((award) => <article className="cr-article" key={award.id}><Stack gap="xs">
         <Title order={3}><ActivityLink to={`/activities/${award.activity.id}/confirm`}>{award.activity.title}</ActivityLink></Title>
         <MantineGroup justify="space-between"><ActivityLink to={`/users/${award.student.id}`}>{award.student.fullName}</ActivityLink><Points amount={award.amount} currency={award.currency} /></MantineGroup>
         <Text className="cr-caption">{award.group.name} · {award.level} % · <time dateTime={award.confirmedAt}>{formatMoscowTime(award.confirmedAt)}</time></Text>
       </Stack></article>)}</Stack>
     </AsyncContent>
-    <div ref={sentinel}>{hasNextPage && <Button variant="default" loading={isFetchingNextPage} disabled={isFetchingNextPage} onClick={() => { void fetchNextPage(); }}>Показать ещё</Button>}</div>
+    <div ref={sentinel}>{isFetchNextPageError ? <Stack role="alert"><Text>{activityError(query.error)}</Text><Button variant="default" disabled={isFetching} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Повторить загрузку истории</Button></Stack> : hasNextPage && <Button variant="default" loading={isFetchingNextPage} disabled={isFetching} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Показать ещё</Button>}</div>
   </section>;
 }
 function Budget({ userId }: { userId: number }) {
@@ -40,7 +42,7 @@ function Budget({ userId }: { userId: number }) {
   for (const item of summary.data?.items ?? []) groups.set(item.group.id, item.group);
   return <ActivityPage title="Группы и бюджет" description="Общий бюджет БУА и БОА по вашим группам. Месяц и время начислений — по Москве.">
     <section><Title order={2} mb="md">Рейтинги доступных групп</Title><AsyncContent state={loadState(accessibleGroups, accessibleGroups.data?.items.length === 0, 'Доступных групп пока нет. Они появятся после допуска или выдачи доступа.')}>
-      <Stack gap="xs">{accessibleGroups.data?.items.map((group) => <ActivityLink key={group.id} to={`/groups/${group.id}/ratings`}>{group.name} · {group.faculty.code}</ActivityLink>)}</Stack>
+      <Stack gap="xs">{accessibleGroups.data?.items.map((group) => <ActivityLink key={group.id} to={`/groups/${group.id}`}>{group.name} · {group.faculty.code}</ActivityLink>)}</Stack>
     </AsyncContent><ActivityLink to="/awards">Лента наград</ActivityLink></section>
     <div className="activity-toolbar"><TextInput type="month" label="Месяц бюджета" value={currentMonth} onChange={(event) => {
       const value = event.currentTarget.value;

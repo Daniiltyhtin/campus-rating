@@ -14,3 +14,11 @@ it('detects newer entries using timestamp then id without mutating the visible l
   expect(visible.map((item) => item.entryId)).toEqual([3, 2]);
   expect(newerAwards([award(1)], [])).toEqual([award(1)]);
 });
+
+it('36-1 compares microseconds before entry ids and normalizes fractional precision', () => {
+  const first = award(100, '2026-11-03T14:00:00.123100Z');
+  const newer = award(99, '2026-11-03T14:00:00.123900Z');
+  expect(newerAwards([newer, award(101, '2026-11-03T14:00:00.123000Z')], [first])).toEqual([newer]);
+  expect(newerAwards([award(101, '2026-11-03T14:00:00.123100000Z')], [first])).toHaveLength(1);
+  expect(newerAwards([award(99, '2026-11-03T14:00:00.123Z')], [award(100, '2026-11-03T14:00:00.122999Z')])).toHaveLength(1);
+});

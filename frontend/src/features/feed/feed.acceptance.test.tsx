@@ -239,10 +239,10 @@ describe('U11 рейтинги — R3/R22/KTD23', { timeout: 12_000 }, () => {
     state.groups.items.push(foreign);
     state.ratings.set(77, { ...feedFixtures.rating(), group: foreign });
     const view = mountFeed('/groups');
-    await waitFor(() => expect(screen.getAllByRole('link').some((link) => link.getAttribute('href') === '/groups/77/ratings')).toBe(true));
+    await waitFor(() => expect(screen.getAllByRole('link').some((link) => link.getAttribute('href') === '/groups/77')).toBe(true));
     expect(state.requests.some((request) => request.path.endsWith('/me/accessible-groups'))).toBe(true);
     expect(screen.getByRole('link', { name: 'Лента наград' })).toHaveAttribute('href', '/awards');
-    const target = screen.getAllByRole('link').find((link) => link.getAttribute('href') === '/groups/77/ratings')!;
+    const target = screen.getAllByRole('link').find((link) => link.getAttribute('href') === '/groups/77')!;
     await view.user.click(target);
     expect(await screen.findByRole('heading', { name: /МАТ-22/ })).toBeInTheDocument();
     expect(screen.getByText('Математический факультет')).toBeInTheDocument();
@@ -339,7 +339,7 @@ describe('U11 рейтинги — R3/R22/KTD23', { timeout: 12_000 }, () => {
     state.groups.items = [];
     mountFeed('/groups');
     expect(await screen.findByText(/доступных групп.*нет|нет доступных групп|доступные группы.*появятся/i)).toBeInTheDocument();
-    expect(screen.queryAllByRole('link').filter((link) => /\/groups\/\d+\/ratings/.test(link.getAttribute('href') ?? ''))).toHaveLength(0);
+    expect(screen.queryAllByRole('link').filter((link) => /^\/groups\/\d+$/.test(link.getAttribute('href') ?? ''))).toHaveLength(0);
   });
 
   it('ошибка доступных групп имеет независимый retry и не скрывает бюджет', async () => {
@@ -351,6 +351,6 @@ describe('U11 рейтинги — R3/R22/KTD23', { timeout: 12_000 }, () => {
     expect(screen.getByRole('table', { name: 'Бюджет групп' })).toBeInTheDocument();
     fail = false;
     await view.user.click(screen.getByRole('button', { name: /Повторить/ }));
-    await waitFor(() => expect(screen.getAllByRole('link').some((link) => link.getAttribute('href') === '/groups/11/ratings')).toBe(true));
+    await waitFor(() => expect(screen.getAllByRole('link').some((link) => link.getAttribute('href') === '/groups/11')).toBe(true));
   });
 });

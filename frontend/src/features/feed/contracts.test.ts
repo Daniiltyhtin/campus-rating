@@ -33,7 +33,7 @@ describe('feed input boundary', () => {
     value.items[0]!.balances[currency] = amount;
     expect(() => parseGroupRating(value)).toThrow();
   });
-  it('accepts zero balances and an empty rating', () => {
+  it('accepts an empty rating', () => {
     const value = parseGroupRating(example('getGroupRating'));
     value.items = [];
     expect(parseGroupRating(value).items).toEqual([]);
@@ -46,4 +46,10 @@ describe('feed input boundary', () => {
     value.items[0]!.teacher = { id: 0, fullName: 'Имя' };
     expect(() => parseAwardsPage(value)).toThrow();
   });
+});
+
+it('36-5 accepts zero balances in a nonempty rating', () => {
+  const value = structuredClone(examples.find((item) => item.operationId === 'getGroupRating')!.responses.find((item) => item.status === 200)!.body) as ReturnType<typeof parseGroupRating>;
+  value.items = [{ ...value.items[0]!, balances: { AR: 0, BUA: 0, BOA: 0 } }];
+  expect(parseGroupRating(value).items).toEqual(value.items);
 });

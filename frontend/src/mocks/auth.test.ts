@@ -31,3 +31,23 @@ it('keeps the selected group when a registered mock user signs in', async () => 
   const result = await api.POST('/api/v1/auth/login', { body: { email: 'selected-group@campus.test', password: 'new-password-1' } });
   expect(result.data).toMatchObject({ role: 'STUDENT', group: { id: 12 } });
 });
+
+it('33-5 rejects a group from another faculty as a field mismatch', async () => {
+  await api.GET('/api/v1/auth/csrf');
+  await expect(api.POST('/api/v1/auth/register/student', { body: { fullName: 'Тест', email: 'mismatch@campus.test', password: 'new-password-1', facultyId: 2, groupId: 11 } })).rejects.toMatchObject({ code: 'VALIDATION_FAILED', problem: { status: 400, fieldErrors: [{ field: 'groupId', code: 'MISMATCH' }] } });
+});
+it('33-3 invalidates the previous token after every successful auth mutation', async () => {
+  const post = (path: string, token: string, body?: unknown) => fetch(`http://localhost/api/v1/auth/${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': token }, body: body === undefined ? undefined : JSON.stringify(body) });
+  const token = async () => { await api.GET('/api/v1/auth/csrf'); return document.cookie.split('; ').find((c) => c.startsWith('XSRF-TOKEN='))!.slice(11); };
+  const login = { email: 'petrov@campus.test', password: 'demo-teacher-1' };
+  let old = await token();
+  expect((await post('login', old, login)).status).toBe(200);
+  expect(await (await post('password', old, { currentPassword: login.password, newPassword: 'rotated-password-1' })).json()).toMatchObject({ code: 'CSRF_INVALID', status: 403 });
+  old = await token();
+  expect((await post('password', old, { currentPassword: login.password, newPassword: 'rotated-password-1' })).status).toBe(204);
+  expect(await (await post('logout', old)).json()).toMatchObject({ code: 'CSRF_INVALID', status: 403 });
+  old = await token();
+  expect((await post('logout', old)).status).toBe(204);
+  expect(await (await post('login', old, { ...login, password: 'rotated-password-1' })).json()).toMatchObject({ code: 'CSRF_INVALID', status: 403 });
+  expect((await post('login', await token(), { ...login, password: 'rotated-password-1' })).status).toBe(200);
+});

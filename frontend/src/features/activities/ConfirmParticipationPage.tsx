@@ -1,8 +1,8 @@
 import { Button, Checkbox, Group, SegmentedControl, Stack, Text, Title } from '@mantine/core';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
-import { api } from '../../api/client';
+import { api, ApiError } from '../../api/client';
 import { AsyncContent, TeacherTableLayout } from '../../app/layouts/PageLayouts';
 import { ActivityAccess, ActivityFailure, ActivityLink, ActivityPage, BudgetChecks, Points } from './ActivityShared';
 import { levels, parseResult, participationLimit } from './contracts';
@@ -34,10 +34,20 @@ function Confirmation({ activity, userId }: { activity: Activity; userId: number
   const client = useQueryClient();
   const items = (participants.data?.items ?? []).flatMap((participant) => {
     const level = selection[participant.student.id];
-    return participant.confirmed || level === undefined ? [] : [{ studentId: participant.student.id, level }];
+    return participant.confirmed || (activity.type === 'SOCIAL' && participant.enrolled !== true) || level === undefined ? [] : [{ studentId: participant.student.id, level }];
   });
   const body = { items };
   const preview = useParticipationPreview(userId, activity.id, body, items.length > 0);
+  useEffect(() => {
+    if (!(preview.error instanceof ApiError) || !['ALREADY_CONFIRMED', 'NOT_ENROLLED', 'STUDENT_NOT_ELIGIBLE', 'INVALID_STATE'].includes(preview.error.code)) return;
+    void Promise.all([
+      client.invalidateQueries({ queryKey: ['activities', userId, 'participants', activity.id] }),
+      client.invalidateQueries({ queryKey: ['activities', userId, 'detail', activity.id] }),
+    ]).then(() => {
+      const roster = client.getQueryData<{ items: Participant[] }>(['activities', userId, 'participants', activity.id]);
+      setSelection((old) => Object.fromEntries(Object.entries(old).filter(([id]) => roster?.items.some((row) => row.student.id === Number(id) && !row.confirmed && (activity.type !== 'SOCIAL' || row.enrolled === true)))));
+    });
+  }, [preview.error, preview.errorUpdatedAt, client, userId, activity.id, activity.type]);
   const confirm = useMutation({ retry: false,
     mutationFn: (body: ParticipationRequest) => read(api.POST('/api/v1/activities/{activityId}/participation', { params: { path: { activityId: activity.id } }, body }), parseResult),
     onSuccess: () => { setSelection({}); }, onSettled: () => { void client.invalidateQueries({ queryKey: activityKeys.root }); } });

@@ -13,6 +13,7 @@ export function readUser() {
   try { const value = cookie('campus-mock-user'); return value ? currentUser(JSON.parse(decodeURIComponent(value))) : null; }
   catch { return null; }
 }
+function invalidateCsrf() { document.cookie = 'XSRF-TOKEN=; Max-Age=0; Path=/'; }
 function saveUser(user: CurrentUser | null) {
   document.cookie = user ? `campus-mock-user=${encodeURIComponent(JSON.stringify(user))}; Path=/; SameSite=Lax`
     : 'campus-mock-user=; Max-Age=0; Path=/';
@@ -53,13 +54,13 @@ export function createAuthMockHandlers() {
       const body: unknown = await request.json();
       const account = credentials(body) ? accounts.get(body.email.toLowerCase()) : undefined;
       if (!credentials(body) || !account || account.password !== body.password) return problem('INVALID_CREDENTIALS', 401);
-      saveUser(account.user);
+      saveUser(account.user); invalidateCsrf();
       return HttpResponse.json(account.user);
     }),
     http.post('*/api/v1/auth/logout', ({ request }) => {
       if (!validCsrf(request)) return problem('CSRF_INVALID', 403);
       if (!readUser()) return problem('UNAUTHENTICATED', 401);
-      saveUser(null);
+      saveUser(null); invalidateCsrf();
       return new HttpResponse(null, { status: 204 });
     }),
     http.post('*/api/v1/auth/password', async ({ request }) => {
@@ -72,7 +73,7 @@ export function createAuthMockHandlers() {
       if (!account || body.currentPassword !== account.password) return HttpResponse.json({ type: 'about:blank', title: 'Ошибка', status: 400, code: 'VALIDATION_FAILED',
         fieldErrors: [{ field: 'currentPassword', code: 'MISMATCH', message: 'Текущий пароль указан неверно.' }] }, { status: 400, headers: { 'Content-Type': 'application/problem+json' } });
       if (body.newPassword === account.password) return problem('PASSWORD_REUSED', 400);
-      account.password = body.newPassword; account.user = { ...user, mustChangePassword: false }; saveUser(account.user);
+      account.password = body.newPassword; account.user = { ...user, mustChangePassword: false }; saveUser(account.user); invalidateCsrf();
       return new HttpResponse(null, { status: 204 });
     }),
     http.post('*/api/v1/auth/register/:role', async ({ request, params }) => {
@@ -86,7 +87,7 @@ export function createAuthMockHandlers() {
       const target = template.role === 'STUDENT'
         ? facultyItems('listFacultyGroups', 'facultyId' in body ? body.facultyId : undefined).find((item) => 'groupId' in body && item.id === body.groupId)
         : directoryItems('listFacultyDepartments').find((item) => 'departmentId' in body && item.id === body.departmentId);
-      if (!target) return problem('FORBIDDEN', 403);
+      if (!target) return HttpResponse.json({ type: 'about:blank', title: 'Ошибка', status: 400, code: 'VALIDATION_FAILED', fieldErrors: [{ field: template.role === 'STUDENT' ? 'groupId' : 'departmentId', code: 'MISMATCH', message: 'Выбор не соответствует факультету.' }] }, { status: 400, headers: { 'Content-Type': 'application/problem+json' } });
       const user = currentUser({ ...template, id: 10_000 + accounts.size, fullName: body.fullName, email: body.email, mustChangePassword: false,
         ...(template.role === 'TEACHER' ? { teacherApproved: false, department: target } : { group: target }) });
       accounts.set(user.email.toLowerCase(), { user, password: body.password });

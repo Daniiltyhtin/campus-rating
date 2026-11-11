@@ -1,4 +1,5 @@
 import { Anchor, Button, Group, SegmentedControl, Stack, Tabs, Text, Title } from '@mantine/core';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
@@ -38,25 +39,27 @@ function HistoryEntry({ entry }: { entry: LedgerEntry }) {
   </Stack></article>;
 }
 function History({ viewerId, userId }: { viewerId: number; userId: number }) {
+  const client = useQueryClient();
   const [currency, setCurrency] = useState<Currency | ''>('');
   const query = useLedger(viewerId, userId, currency);
   const marker = useRef<HTMLDivElement>(null);
-  const { hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage } = query;
+  const { hasNextPage, isFetching, isFetchingNextPage, isFetchNextPageError, fetchNextPage } = query;
   useEffect(() => {
-    if (!marker.current || !hasNextPage || isFetchingNextPage || isFetchNextPageError || typeof IntersectionObserver === 'undefined') return;
-    const observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) void fetchNextPage(); });
+    if (!marker.current || !hasNextPage || isFetching || isFetchNextPageError || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) void fetchNextPage({ cancelRefetch: false }); });
     observer.observe(marker.current); return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
+  }, [hasNextPage, isFetching, isFetchNextPageError, fetchNextPage]);
   const entries = [...new Map((query.data?.pages.flatMap((page) => page.items) ?? []).map((entry) => [entry.id, entry])).values()];
   const state = query.isPending ? { status: 'loading' as const }
     : query.isError && !query.data ? { status: 'error' as const, message: profileError(query.error), retry: () => { void query.refetch(); } }
       : entries.length === 0 ? { status: 'empty' as const, message: 'Проводок пока нет. Здесь появится история выбранной валюты.' } : { status: 'ready' as const };
   return <Stack gap="lg"><SegmentedControl aria-label="Валюта истории" className="profile-currency" value={currency}
-    onChange={(value) => { if (value === '' || value === 'AR' || value === 'BUA' || value === 'BOA') setCurrency(value); }}
+    onChange={(value) => { if (value !== currency && (value === '' || value === 'AR' || value === 'BUA' || value === 'BOA')) { client.removeQueries({ queryKey: ['profile-ledger', viewerId, userId, value], exact: true }); setCurrency(value); } }}
     data={[{ value: '', label: 'Все' }, ...(['AR', 'BUA', 'BOA'] as const).map((value) => ({ value, label: currencyNames[value] }))]} />
+    {query.data && query.isError && !isFetchNextPageError && <Stack role="alert"><Text>{profileError(query.error)}</Text><Button variant="default" disabled={isFetching} onClick={() => { void query.refetch(); }}>Повторить обновление истории</Button></Stack>}
     <AsyncContent state={state}><div>{entries.map((entry) => <HistoryEntry key={entry.id} entry={entry} />)}</div></AsyncContent>
-    <div ref={marker}>{query.isFetchNextPageError ? <Stack role="alert"><Text>{profileError(query.error)}</Text><Button variant="default" onClick={() => { void query.fetchNextPage(); }}>Повторить загрузку истории</Button></Stack>
-      : hasNextPage && <Button variant="default" loading={isFetchingNextPage} disabled={isFetchingNextPage} onClick={() => { void fetchNextPage(); }}>Показать ещё</Button>}</div>
+    <div ref={marker}>{query.isFetchNextPageError ? <Stack role="alert"><Text>{profileError(query.error)}</Text><Button variant="default" disabled={isFetching} onClick={() => { void query.fetchNextPage({ cancelRefetch: false }); }}>Повторить загрузку истории</Button></Stack>
+      : hasNextPage && <Button variant="default" loading={isFetchingNextPage} disabled={isFetching} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Показать ещё</Button>}</div>
   </Stack>;
 }
 function ProfileContent({ profile, viewer }: { profile: UserProfile; viewer: CurrentUser }) {

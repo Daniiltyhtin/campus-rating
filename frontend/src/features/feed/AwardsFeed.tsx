@@ -23,12 +23,12 @@ function Awards({ viewerId }: { viewerId: number }) {
   const client = useQueryClient(), query = useAwards(viewerId);
   const poll = useAwardsPoll(viewerId, !!query.data);
   const marker = useRef<HTMLDivElement>(null);
-  const { hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage } = query;
+  const { hasNextPage, isFetching, isFetchingNextPage, isFetchNextPageError, fetchNextPage } = query;
   useEffect(() => {
-    if (!marker.current || !hasNextPage || isFetchingNextPage || isFetchNextPageError || typeof IntersectionObserver === 'undefined') return;
-    const observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) void fetchNextPage(); });
+    if (!marker.current || !hasNextPage || isFetching || isFetchNextPageError || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) void fetchNextPage({ cancelRefetch: false }); });
     observer.observe(marker.current); return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
+  }, [hasNextPage, isFetching, isFetchNextPageError, fetchNextPage]);
   const items = uniqueAwards(query.data?.pages.flatMap((page) => page.items) ?? []);
   const fresh = newerAwards(poll.data?.items ?? [], items);
   async function showNew() {
@@ -38,13 +38,14 @@ function Awards({ viewerId }: { viewerId: number }) {
     client.setQueryData(awardsKey(viewerId), { pages: [head], pageParams: [null] });
   }
   return <FeedPage title="Лента наград" description="Достижения студентов: кто, сколько, за что и от кого. Время — по Москве."><Stack gap="lg">
-    {fresh.length > 0 && <div role="status"><Button variant="default" className="feed-new" onClick={() => { void showNew(); }}>Новые награды: {fresh.length} — показать</Button></div>}
+    {fresh.length > 0 && <div role="status"><Button variant="default" className="feed-new" onClick={() => { void showNew(); }}>Новые награды: {fresh.length}{fresh.length === poll.data?.items.length && poll.data.nextCursor ? '+' : ''} — показать</Button></div>}
     {poll.isError && <Stack role="alert"><Text>{feedError(poll.error)}</Text><Button variant="default" onClick={() => { void poll.refetch(); }}>Повторить опрос</Button></Stack>}
+    {query.data && query.isError && !isFetchNextPageError && <Stack role="alert"><Text>{feedError(query.error)}</Text><Button variant="default" disabled={isFetching} onClick={() => { void query.refetch(); }}>Повторить обновление наград</Button></Stack>}
     <AsyncContent state={query.data ? (items.length ? { status: 'ready' } : { status: 'empty', message: 'Наград пока нет. Здесь появятся достижения студентов.' }) : feedState(query, false, '')}>
       <div>{items.map((item) => <AwardEntry key={item.entryId} item={item} />)}</div>
     </AsyncContent>
-    <div ref={marker}>{isFetchNextPageError ? <Stack role="alert"><Text>{feedError(query.error)}</Text><Button variant="default" onClick={() => { void fetchNextPage(); }}>Повторить загрузку наград</Button></Stack>
-      : hasNextPage && <Button variant="default" loading={isFetchingNextPage} disabled={isFetchingNextPage} onClick={() => { void fetchNextPage(); }}>Показать ещё</Button>}</div>
+    <div ref={marker}>{isFetchNextPageError ? <Stack role="alert"><Text>{feedError(query.error)}</Text><Button variant="default" disabled={isFetching} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Повторить загрузку наград</Button></Stack>
+      : hasNextPage && <Button variant="default" loading={isFetchingNextPage} disabled={isFetching} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Показать ещё</Button>}</div>
   </Stack></FeedPage>;
 }
 export function AwardsFeed() {

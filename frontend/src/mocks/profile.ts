@@ -9,8 +9,8 @@ function example(operationId: string, index = 0): unknown {
   if (!response) throw new Error(`Missing profile mock example: ${operationId}/${index}`);
   return structuredClone(response.body);
 }
-function problem(code: string, status: number) {
-  return HttpResponse.json({ type: 'about:blank', title: 'Ошибка', code, status }, { status, headers: { 'Content-Type': 'application/problem+json' } });
+function problem(code: string, status: number, field?: string) {
+  return HttpResponse.json({ type: 'about:blank', title: 'Ошибка', code, status, ...(field ? { fieldErrors: [{ field, code: 'INVALID', message: 'Некорректный параметр.' }] } : {}) }, { status, headers: { 'Content-Type': 'application/problem+json' } });
 }
 export function createProfileMockHandlers() {
   const profiles = [0, 1, 2, 3, 4].map((index) => parseProfile(example('getUserProfile', index)));
@@ -41,12 +41,13 @@ export function createProfileMockHandlers() {
       const userId = Number(params.userId);
       if (userId !== 1001 && userId !== 1002) return HttpResponse.json({ items: [], nextCursor: null });
       const query = new URL(request.url).searchParams, currency = query.get('currency');
-      if (currency && !['AR', 'BUA', 'BOA'].includes(currency)) return problem('VALIDATION_FAILED', 400);
+      if (currency && !['AR', 'BUA', 'BOA'].includes(currency)) return problem('VALIDATION_FAILED', 400, 'currency');
       const rows = ledger.items.filter((entry) => !currency || entry.currency === currency);
       const cursor = query.get('cursor');
-      if (cursor && cursor !== 'profile-page-2') return problem('VALIDATION_FAILED', 400);
-      const offset = cursor ? 2 : 0;
-      return HttpResponse.json({ items: rows.slice(offset, offset + 2), nextCursor: offset + 2 < rows.length ? 'profile-page-2' : null });
+      const prefix = `profile:${userId}:${currency ?? 'ALL'}:`;
+      const offset = cursor?.startsWith(prefix) ? Number(cursor.slice(prefix.length)) : 0;
+      if (cursor && (!cursor.startsWith(prefix) || !Number.isSafeInteger(offset) || offset <= 0 || offset % 2 !== 0 || offset >= rows.length || cursor !== `${prefix}${offset}`)) return problem('VALIDATION_FAILED', 400, 'cursor');
+      return HttpResponse.json({ items: rows.slice(offset, offset + 2), nextCursor: offset + 2 < rows.length ? `${prefix}${offset + 2}` : null });
     }),
   ];
 }

@@ -1,4 +1,4 @@
-import type { RouteObject } from 'react-router';
+import { redirect, type RouteObject } from 'react-router';
 import { LoginPage } from '../features/auth/LoginPage';
 import { RegisterPage } from '../features/auth/RegisterPage';
 import { ChangePasswordPage } from '../features/auth/ChangePasswordPage';
@@ -18,8 +18,14 @@ export const routes: RouteObject[] = [
       { element: <PasswordGate />, children: [{ path: 'password/change', element: <ChangePasswordPage /> }] },
       { element: <SessionGate />, children: [
         { path: 'admin/directory', lazy: async () => ({ Component: (await import('../features/admin/directory/DirectoryPage')).DirectoryPage }) },
+        { path: 'tasks', lazy: async () => ({ Component: (await import('../features/tasks/TaskList')).TaskList }) },
+        { path: 'tasks/:id', lazy: async () => ({ Component: (await import('../features/tasks/TaskPage')).TaskPage }) },
+        { path: 'checkpoints', lazy: async () => ({ Component: (await import('../features/tasks/CheckpointList')).CheckpointList }) },
+        { path: 'checkpoints/new', lazy: async () => ({ Component: (await import('../features/tasks/CheckpointForms')).CheckpointNew }) },
+        { path: 'checkpoints/:id', lazy: async () => ({ Component: (await import('../features/tasks/CheckpointPage')).CheckpointPage }) },
         { path: 'awards', lazy: async () => ({ Component: (await import('../features/feed/AwardsFeed')).AwardsFeed }) },
-        { path: 'groups/:id/ratings', lazy: async () => ({ Component: (await import('../features/feed/GroupRatings')).GroupRatings }) },
+        { path: 'groups/:id/ratings', loader: ({ params }) => redirect(`/groups/${params.id}`) },
+        { path: 'groups/:id', lazy: async () => ({ Component: (await import('../features/feed/GroupRatings')).GroupRatings }) },
         { path: 'users/:id', lazy: async () => ({ Component: (await import('../features/profile/ProfilePage')).ProfilePage }) },
         { path: 'activities', lazy: async () => ({ Component: (await import('../features/activities/ActivityListPage')).ActivityListPage }) },
         { path: 'activities/new', lazy: async () => ({ Component: (await import('../features/activities/CreateActivityPage')).CreateActivityPage }) },
