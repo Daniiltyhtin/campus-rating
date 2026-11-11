@@ -1,6 +1,6 @@
 # U11 frontend — продолжение
 
-Ветка `u11-feed-frontend` от `b58d949` U10; PR базируется на `u10-profile-frontend`, пока PR33/34/35 открыты. На старте все три OPEN, CI harness/backend/frontend/e2e SUCCESS. Ссылку на новый PR сообщает итоговый ответ; основной код и доказательства — в этой ветке.
+Реализация `d98f45b` опубликована в [PR36](https://github.com/Daniiltyhtin/campus-rating/pull/36), ветка `u11-feed-frontend` от `b58d949` U10; база — `u10-profile-frontend`, пока PR33/34/35 открыты. На старте все три OPEN, CI harness/backend/frontend/e2e SUCCESS. Основной код и доказательства — в этой ветке.
 
 Готовы `/awards`, курсор/дедупликация/новые награды без автоматической вставки, `/groups/:id/ratings` с AR/BUA/BOA, snapshot balances, права/ошибки/отмена запросов; ссылки из доступных групп и контекстный MSW. Backend/API/generated/БД не менялись. Planned операции работают в dev только при явном MSW, production не делает fallback.
 
