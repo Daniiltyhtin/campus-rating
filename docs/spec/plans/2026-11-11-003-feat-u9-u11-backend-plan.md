@@ -15,7 +15,7 @@ execution: code
 
 - **Цель.** Серверная часть мастер-U9, U10 и U11: 15 операций контракта в статусе `planned` переходят в `implemented`, экраны PR #34–#36 работают против настоящего backend, а не MSW.
 - **Иерархия источников.** Контракт `docs/spec/api/openapi.yaml` (операции тегов `activity`, `profile`, `feed`, `listLedgerEntries`) — главный источник поведения и кодов ошибок; мастер-план (U9–U11; R3, R5, R6, R17–R23, R41; AE8–AE10; KTD3, KTD5, KTD18, KTD23); `docs/spec/api/module-seams.md` (правила, протокол транзакции начисления, швы 0–6). Здесь П, KTD и U — локальные, ссылки на мастер помечены «мастер-».
-- **Профиль исполнения.** Каждый юнит пишет агент-исполнитель test-first; ревьюер гоняет `*IT` с Docker и проверку контракта. Контракт и швы не меняются.
+- **Профиль исполнения.** По `AGENTS.md`: приёмочные тесты юнита по его Test scenarios пишет отдельная сессия скиллом `write-tests` до реализации, исполнитель их не меняет и добавляет свои; ревьюер гоняет `*IT` с Docker и проверку контракта. В контракте меняется только `x-status` реализованных операций; швы не меняются.
 - **Остановись и спроси, если:**
   - нужно изменить контракт или сигнатуру `module-seams.md`;
   - тест зеленеет только ценой нарушения порядка блокировок (баланс раньше бюджета) или записи мимо `LedgerApi`;
@@ -72,18 +72,20 @@ execution: code
 - KTD2. **Домен — чистые функции в `activity.domain`.** `ParticipationLevel` (25/50/75/100), `AwardCalculator` (П1), `BudgetPolicy` (нужно по группам, остатки → `BudgetCheck` с `shortfall`, «в пределах» или нет), `ActivityWindow` (запись открыта, подтверждение открыто по `startsAt` и `now`). PIT по `activity.domain` ≥ 70 %.
 - KTD3. **Транзакция подтверждения** по протоколу швов:
   1. `SELECT … FOR UPDATE` строки `activity` — сериализует подтверждения одной активности;
-  2. проверки состава в порядке: повторы `studentId` (`400`) → время (`409 INVALID_STATE`) → уже подтверждённые с другим уровнем (`409 ALREADY_CONFIRMED`) → допуск (`422 STUDENT_NOT_ELIGIBLE`) → запись у `SOCIAL` (`422 NOT_ENROLLED`); у каждой ошибки — полный список `studentIds`;
-  3. отбросить уже подтверждённых с тем же уровнем, сгруппировать новые по группе студента;
-  4. вставить недостающие строки бюджета `ON CONFLICT DO NOTHING`, затем `SELECT … FOR UPDATE` по возрастанию `group_id`; проверить остатки (`BudgetPolicy`);
-  5. `spent += need`, вставка `activity_award`;
-  6. последним — `LedgerApi.post` одной пачкой по возрастанию `studentId`: `ACTIVITY_AWARD`, ключ `award:{activityId}:{studentId}`, источник `ACTIVITY` с id и названием, автор — id и ФИО преподавателя; `entryId` из `Posted` — в `activity_award.ledger_entry_id`.
-  Предпросмотр выполняет шаги 2–4 без `FOR UPDATE` и без записи; нехватка — `withinBudget: false`, а не ошибка.
+  2. проверки в порядке: повторы `studentId` — `400 VALIDATION_FAILED` с `fieldErrors` по полю `items`; время до начала — `409 INVALID_STATE` (`InvalidStateProblem`); уже подтверждённые с другим уровнем — `409 ALREADY_CONFIRMED`;
+  3. уже подтверждённые с тем же уровнем отделяются до проверки допуска: идут в `alreadyConfirmed` с сохранёнными группой, уровнем и суммой, допуск и запись для них не проверяются (безопасный повтор после смены членства или группы);
+  4. для новых: допуск — `422 STUDENT_NOT_ELIGIBLE`, запись у `SOCIAL` — `422 NOT_ENROLLED`; `studentIds` (все подходящие) — только у `ALREADY_CONFIRMED`, `STUDENT_NOT_ELIGIBLE`, `NOT_ENROLLED`; новые группируются по текущей группе студента;
+  5. вставить недостающие строки бюджета `ON CONFLICT DO NOTHING` по возрастанию `group_id`, затем `SELECT … FOR UPDATE` по возрастанию `group_id`; проверить остатки (`BudgetPolicy`);
+  6. `spent += need`, вставка `activity_award`;
+  7. последним — `LedgerApi.post` одной пачкой по возрастанию `studentId`: `ACTIVITY_AWARD`, ключ `award:{activityId}:{studentId}`, источник `ACTIVITY` с id и названием, автор — id и ФИО преподавателя; `entryId` из `Posted` — в `activity_award.ledger_entry_id`.
+  Предпросмотр выполняет шаги 2–5 без вставки, `FOR UPDATE` и записи; нехватка — `withinBudget: false`, а не ошибка.
+  Запись и отмена записи тоже начинают с `SELECT … FOR UPDATE` строки `activity` и проверяют время под блокировкой — иначе отмена на границе начала удаляет запись уже подтверждённого участника.
 - KTD4. **Месяц** — `MoscowTime` от `Clock`: и для бюджета подтверждения, и для фильтров `/budgets`, `/me/awards`, `/me/awards/summary`.
 - KTD5. **Курсоры** — непрозрачные строки по образцу `LedgerCursor`: `/me/awards` — `(confirmed_at desc, id desc)` с группой и месяцем внутри курсора; чужой фильтр или битый курсор — `400` по полю `cursor`.
 - KTD6. **Профиль** собирает `profile.internal.ProfileService` из `GroupMembers.card`, `GroupMembers.groups`, `DirectoryApi.department`, `LedgerApi.balances`, `StudentAssignments.active/completed`; своих таблиц у `profile` нет. Представление задачи выбирается по `CurrentUser` (П8).
 - KTD7. **История** — `ledger/api/LedgerEntriesController` поверх `LedgerApi.history`; существование пользователя не проверяет (швы §1): неизвестный id — пустая страница.
-- KTD8. **Лента и рейтинг** — `feed.internal`: лента — `LedgerApi.awards` + `GroupMembers.users` по `studentId` одной пачкой на страницу; рейтинг — `TeacherScope.requireAccessible`, `GroupMembers.activeStudents`, `LedgerApi.balances(ids)` одной пачкой, сортировка в памяти (П11). Тест рейтинга доказывает отсутствие `SUM` по журналу: счётчик запросов к `ledger_entry` или проверка SQL.
-- KTD9. **Контракт.** У каждой реализованной операции `x-status: implemented`; `ContractCompatibilityIT` проходит. Расхождения генератора схемы (как `anyOf` с `null` в U7) закрываются конвертером в тестовой поддержке, не правкой контракта.
+- KTD8. **Лента и рейтинг** — `feed.internal`: лента — `LedgerApi.awards` + `GroupMembers.users` по `studentId` одной пачкой на страницу; рейтинг — `GroupMembers.groups` (нет группы — `404 NOT_FOUND`; она же даёт название и факультет для `GroupRating.group`, в том числе у пустой группы), затем `TeacherScope.requireAccessible` (он на неизвестный id отвечает `403`, поэтому существование проверяется раньше), `GroupMembers.activeStudents`, `LedgerApi.balances(ids)` одной пачкой, сортировка в памяти (П11). Тест рейтинга доказывает отсутствие `SUM` по журналу: счётчик запросов к `ledger_entry` или проверка SQL.
+- KTD9. **Контракт.** У каждой реализованной операции `x-status: implemented` — единственная разрешённая правка `docs/spec/api/openapi.yaml`, она входит в Files юнитов U2–U5; `ContractCompatibilityIT` проходит. Расхождения генератора схемы (как `anyOf` с `null` в U7) закрываются конвертером в тестовой поддержке, не правкой контракта.
 
 ### Resolved Questions
 
@@ -119,31 +121,36 @@ execution: code
 - **Goal.** `createActivity`, `listActivities`, `getActivity`, `enrollInActivity`, `cancelEnrollment` по контракту.
 - **Requirements.** П2, П7; мастер-R17, R18, KTD23.
 - **Dependencies.** U1.
-- **Files:** `backend/src/main/java/ru/campusrating/activity/api/ActivityController.java`, `backend/src/main/java/ru/campusrating/activity/internal/{ActivityService,ActivityRepository}.java`; `backend/src/test/java/ru/campusrating/activity/ActivityIT.java`.
+- **Files:** `backend/src/main/java/ru/campusrating/activity/api/ActivityController.java`, `backend/src/main/java/ru/campusrating/activity/internal/{ActivityService,ActivityRepository}.java`; `backend/src/test/java/ru/campusrating/activity/ActivityIT.java`; `docs/spec/api/openapi.yaml` (только `x-status`).
 - **Test scenarios:**
   - Создание: максимум 1 — `400` по `maxPoints`; время начала в прошлом — `400`; группа вне доступных — `403 GROUP_NOT_ACCESSIBLE`; преподаватель без допуска — `403`.
   - Список студента: только активности его группы, будущие по возрастанию начала, затем прошедшие от недавних; `enrolled` и `myAward` — его; студент с `PENDING` видит.
   - Список преподавателя — только свои, в том числе после снятия доступа к группе.
   - `getActivity` студентом другой группы — `403`; несуществующая — `404`.
   - Запись: `SOCIAL` до начала — успех, повтор ничего не меняет; ровно в момент начала и после — `422 ENROLLMENT_CLOSED`; `ACADEMIC` — `409 INVALID_STATE`; `PENDING` — `422 MEMBERSHIP_NOT_ACTIVE`; студент другой группы — `403`.
-  - Отмена до начала — успех, без записи — ничего не меняет; в момент начала — `422`.
+  - Отмена до начала — успех, без записи — ничего не меняет; в момент начала — `422`; отмена `SOCIAL` студентом с `PENDING` — успех; отмена у `ACADEMIC` — `409 INVALID_STATE`.
+  - Отмена, начатая до начала и ждущая блокировку активности, после наступления начала — `422 ENROLLMENT_CLOSED`, запись на месте.
 
 ### U3. Подтверждение участия, бюджет и начисления преподавателя
 
 - **Goal.** `listActivityParticipants`, `previewParticipation`, `confirmParticipation`, `listBudgets`, `listMyAwards`, `getMyAwardsSummary`.
 - **Requirements.** П3–П7; KTD3–KTD5; мастер-AE8, AE10.
 - **Dependencies.** U2.
-- **Files:** `backend/src/main/java/ru/campusrating/activity/api/{ParticipationController,BudgetController}.java`, `backend/src/main/java/ru/campusrating/activity/internal/{ParticipationService,BudgetRepository,AwardRepository,AwardCursor}.java`; `backend/src/test/java/ru/campusrating/activity/{ParticipationIT,BudgetIT}.java`.
+- **Files:** `backend/src/main/java/ru/campusrating/activity/api/{ParticipationController,BudgetController}.java`, `backend/src/main/java/ru/campusrating/activity/internal/{ParticipationService,BudgetRepository,AwardRepository,AwardCursor}.java`; `backend/src/test/java/ru/campusrating/activity/{ParticipationIT,BudgetIT}.java`; `docs/spec/api/openapi.yaml` (только `x-status`).
 - **Test scenarios:**
   - Участники `SOCIAL` — записавшиеся, `ACADEMIC` — `ACTIVE`-студенты целевых групп; по группе, затем ФИО; у подтверждённых — уровень и сумма; не автор — `403`.
-  - Подтверждение до начала — `409 INVALID_STATE`; повтор `studentId` — `400`.
+  - Подтверждение до начала — `409 INVALID_STATE`; повтор `studentId` — `400` по `items`.
+  - Предпросмотр и подтверждение чужой активности — `403`, ничего не записано.
+  - Автор после снятия доступа к группам: участники, предпросмотр, подтверждение, `/me/awards` и summary работают.
+  - Студент переведён из одной целевой группы в другую до подтверждения — начисление и расход бюджета у новой группы.
+  - Студент подтверждён, затем стал `PENDING` или сменил группу: повтор с тем же уровнем — `alreadyConfirmed` с прежней группой, не `STUDENT_NOT_ELIGIBLE`.
   - Covers мастер-AE10. Незаписанный на `SOCIAL` — `422 NOT_ENROLLED`; на `ACADEMIC` — начисление; `PENDING` или студент чужой группы — `422 STUDENT_NOT_ELIGIBLE`.
   - Covers мастер-AE8. Превышение остатка одной из двух групп — `422 BUDGET_EXCEEDED` с нехваткой этой группы, проводок, строк `activity_award` и расхода нет.
   - Covers мастер-AE8. Граница месяца: подтверждение в 31.10 20:59:59Z расходует октябрь, в 21:00:00Z — ноябрь; в новом месяце остаток снова равен лимиту.
   - `ACADEMIC` и `SOCIAL` расходуют один бюджет группы.
   - Повтор того же запроса — всё в `alreadyConfirmed`, баланс и расход не меняются; повтор с другим уровнем — `409 ALREADY_CONFIRMED` со `studentIds`.
   - Два параллельных одинаковых подтверждения — одна проводка на студента и один расход.
-  - Два параллельных подтверждения разных активностей одного преподавателя для одной группы не превышают бюджет и не дают взаимной блокировки.
+  - Два параллельных подтверждения разных активностей одного преподавателя для двух общих групп, без строк бюджета и с участниками в обратном порядке групп, не превышают бюджет и не дают взаимной блокировки.
   - Предпросмотр: те же ошибки состава; нехватка — `withinBudget: false` и `shortfall`; ничего не записано.
   - Начисление видно в `LedgerApi.history` студента с автором-преподавателем и названием активности; `reconcile` без расхождений.
   - `/budgets` — доступные группы и группы своих активностей; месяц по умолчанию — текущий по Москве.
@@ -155,23 +162,27 @@ execution: code
 - **Goal.** `getUserProfile` и `listLedgerEntries`.
 - **Requirements.** П8, П9; KTD6, KTD7; мастер-R5, R6.
 - **Dependencies.** шов `StudentAssignments` (PR U7).
-- **Files:** `backend/src/main/java/ru/campusrating/profile/api/ProfileController.java`, `backend/src/main/java/ru/campusrating/profile/internal/ProfileService.java`, `backend/src/main/java/ru/campusrating/ledger/api/LedgerEntriesController.java`; `backend/src/test/java/ru/campusrating/profile/ProfileIT.java`, `backend/src/test/java/ru/campusrating/ledger/LedgerEntriesIT.java`.
+- **Files:** `backend/src/main/java/ru/campusrating/profile/api/ProfileController.java`, `backend/src/main/java/ru/campusrating/profile/internal/ProfileService.java`, `backend/src/main/java/ru/campusrating/ledger/api/LedgerEntriesController.java`; `backend/src/test/java/ru/campusrating/profile/ProfileIT.java`, `backend/src/test/java/ru/campusrating/ledger/LedgerEntriesIT.java`; `docs/spec/api/openapi.yaml` (только `x-status`).
 - **Test scenarios:**
-  - Профиль студента: ФИО, группа и факультет, балансы, активные (`OVERDUE` первыми) и завершённые задачи.
+  - Профиль студента: ФИО, группа и факультет, балансы; активные — сначала `OVERDUE`, затем по дедлайну по возрастанию, завершённые — по `acceptedAt` по убыванию; проверяется точный порядок на 4+ задачах разных состояний, дедлайнов и дат приёма.
   - Чужой профиль — `PUBLIC` без `assignmentId`; свой — `OWN`; администратор — `ADMIN`; ни в одном представлении нет ссылки, файла и комментария возврата.
   - Профиль преподавателя — кафедра и факультет; администратора — ФИО и роль; несуществующий — `404`; гость — `401`.
-  - История: начисление с автором-преподавателем, штраф с источником-точкой и автором `null`; фильтр валюты; пагинация на 120 записях без дублей и потерь; неизвестный id — пустая страница; битый курсор — `400`.
+  - История: начисление с автором-преподавателем, штраф с источником-точкой и автором `null`; фильтр валюты; пагинация на 120 записях без дублей и потерь; неизвестный id — пустая страница.
+  - Снимки (П9): после переименования точки и смены ФИО преподавателя прошлые записи истории показывают прежние название и ФИО.
+  - Курсор: битый, другого пользователя, другой валюты — `400 VALIDATION_FAILED` с `fieldErrors[].field = cursor`; `limit` 0 и 101 — `400`, 1 и 100 — `200`; гость — `401`.
 
 ### U5. Лента наград и рейтинг группы (мастер-U11)
 
 - **Goal.** `listAwardsFeed` и `getGroupRating`.
 - **Requirements.** П10, П11; KTD8; мастер-R22, R23.
-- **Files:** `backend/src/main/java/ru/campusrating/feed/api/{AwardsFeedController,GroupRatingsController}.java`, `backend/src/main/java/ru/campusrating/feed/internal/{AwardsFeedService,GroupRatingService}.java`; `backend/src/test/java/ru/campusrating/feed/{AwardsFeedIT,GroupRatingsIT}.java`.
+- **Files:** `backend/src/main/java/ru/campusrating/feed/api/{AwardsFeedController,GroupRatingsController}.java`, `backend/src/main/java/ru/campusrating/feed/internal/{AwardsFeedService,GroupRatingService}.java`; `backend/src/test/java/ru/campusrating/feed/{AwardsFeedIT,GroupRatingsIT}.java`; `docs/spec/api/openapi.yaml` (только `x-status`).
 - **Test scenarios:**
   - Новое начисление первым; штраф, семестр и стартовые баллы в ленте не появляются.
   - Курсор грузит следующую страницу без дублей; ФИО студента — текущее, автора — снимок.
+  - Курсор ленты: битый или курсор истории проводок — `400` по `cursor`; `limit` 0 и 101 — `400`; гость — `401`.
   - Рейтинг по АР, БУА и БОА; при равенстве — по ФИО, затем id; `PENDING`-студента нет.
-  - Группа вне доступных — `403 GROUP_NOT_ACCESSIBLE`; группа другого факультета, открытая выдачей, — доступна; несуществующая — `404`.
+  - Группа вне доступных — `403 GROUP_NOT_ACCESSIBLE`; группа другого факультета, открытая выдачей, — доступна; несуществующая — `404`; существующая без `ACTIVE`-студентов — `200`, `group` заполнена, `items` пуст.
+  - Рейтинг студентом и администратором — `403`; гостем — `401`; `sort` не из `AR`, `BUA`, `BOA` — `400`.
   - Рейтинг не читает `ledger_entry` (KTD8).
 
 ---
