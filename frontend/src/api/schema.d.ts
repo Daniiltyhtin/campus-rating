@@ -514,6 +514,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/assignments/{assignmentId}/submission/withdrawal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Отозвать сдачу
+         * @description Отзыв из `SUBMITTED` строго до дедлайна по времени сервера под блокировкой назначения.
+         *     Переводит работу в `OPEN`, помечает текущую версию `withdrawnAt`; история и файлы сохраняются.
+         *
+         *     Доступ: только студент-владелец; остальным — `403 FORBIDDEN`.
+         */
+        post: operations["withdrawSubmission"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/assignments/{assignmentId}/submission/file": {
         parameters: {
             query?: never;
@@ -1339,6 +1362,8 @@ export interface components {
             /** @description Комментарий, с которым эту версию вернули; `null`, если не возвращали. */
             returnComment: string | null;
             returnedAt: components["schemas"]["NullableInstant"];
+            /** @description Время отзыва студентом; `null`, если версия не отозвана. */
+            withdrawnAt: components["schemas"]["NullableInstant"];
         };
         FileSubmission: {
             id: components["schemas"]["Id"];
@@ -1356,6 +1381,8 @@ export interface components {
             /** @description Комментарий, с которым эту версию вернули; `null`, если не возвращали. */
             returnComment: string | null;
             returnedAt: components["schemas"]["NullableInstant"];
+            /** @description Время отзыва студентом; `null`, если версия не отозвана. */
+            withdrawnAt: components["schemas"]["NullableInstant"];
         };
         /**
          * @description Версия сдачи. Каждая сдача — новая версия, прежние сохраняются (мастер-R10). Файл версии —
@@ -1429,7 +1456,9 @@ export interface components {
             status: components["schemas"]["AssignmentStatus"];
             /** Format: int32 */
             charged: number;
+            /** @description Время последней неотозванной версии; `null`, если её нет. */
             submittedAt: components["schemas"]["NullableInstant"];
+            /** @description Тип последней неотозванной версии; `null`, если её нет. */
             submissionKind: components["schemas"]["SubmissionKind"] | null;
         };
         StatusCounts: {
@@ -3003,6 +3032,53 @@ export interface operations {
                      *     }
                      */
                     "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    withdrawSubmission: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignmentId: components["parameters"]["AssignmentId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Сдача отозвана. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Assignment"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /**
+             * @description Дедлайн наступил — «Срок сдачи прошёл — отозвать работу нельзя»;
+             *     `ACCEPTED` — «Работу уже приняли — отозвать нельзя»;
+             *     прочее состояние — «Отозвать можно только сданную работу».
+             */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "about:blank",
+                     *       "title": "Conflict",
+                     *       "status": 409,
+                     *       "code": "INVALID_STATE",
+                     *       "detail": "Срок сдачи прошёл — отозвать работу нельзя"
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["InvalidStateProblem"];
                 };
             };
         };

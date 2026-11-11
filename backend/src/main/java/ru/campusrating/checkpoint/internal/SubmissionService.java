@@ -69,6 +69,19 @@ public class SubmissionService {
     }
 
     @Transactional
+    public AssignmentView withdraw(long id) {
+        var assignment = require(id, true);
+        requireStudent(assignment);
+        var checkpoint = checkpoint(assignment.checkpointId());
+        var now = clock.instant();
+        var target = AssignmentTransitions.withdraw(assignment.state(), checkpoint.deadline(), now);
+        var latest = repository.versions(id).getFirst();
+        repository.withdrawVersion(latest.id(), now);
+        repository.state(id, target);
+        return reader.view(require(id, false), checkpoint);
+    }
+
+    @Transactional
     public AssignmentView returnBack(long id, String comment) {
         var assignment = require(id, true);
         var checkpoint = checkpoint(assignment.checkpointId());

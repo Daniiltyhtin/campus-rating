@@ -31,7 +31,7 @@ class AssignmentReadRepository {
                     + FROM
                     + """
             left join lateral (
-                select kind, submitted_at from submission where assignment_id=a.id
+                select kind, submitted_at from submission where assignment_id=a.id and withdrawn_at is null
                 order by submitted_at desc, id desc limit 1
             ) s on true
             """;

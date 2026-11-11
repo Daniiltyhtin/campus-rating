@@ -83,6 +83,12 @@ class SubmissionRepository {
                 .update();
     }
 
+    void withdrawVersion(long version, Instant now) {
+        jdbc.sql("update submission set withdrawn_at=? where id=?")
+                .params(Timestamp.from(now), version)
+                .update();
+    }
+
     void returnVersion(long version, String comment, Instant now) {
         jdbc.sql("update submission set return_comment=?,returned_at=? where id=?")
                 .params(comment, Timestamp.from(now), version)
@@ -114,7 +120,8 @@ class SubmissionRepository {
                 rs.getString("content_type"),
                 instant(rs, "submitted_at"),
                 rs.getString("return_comment"),
-                instant(rs, "returned_at"));
+                instant(rs, "returned_at"),
+                instant(rs, "withdrawn_at"));
     }
 
     private static Instant instant(ResultSet rs, String name) throws SQLException {

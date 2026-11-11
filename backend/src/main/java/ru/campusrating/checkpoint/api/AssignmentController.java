@@ -77,6 +77,11 @@ public class AssignmentController {
         return submissions.submit(assignmentId, link, file);
     }
 
+    @PostMapping("/assignments/{assignmentId}/submission/withdrawal")
+    public AssignmentView withdrawSubmission(@PathVariable @Min(1) long assignmentId) {
+        return submissions.withdraw(assignmentId);
+    }
+
     @PostMapping("/assignments/{assignmentId}/return")
     public AssignmentView returnAssignment(
             @PathVariable @Min(1) long assignmentId,
@@ -143,6 +148,14 @@ public class AssignmentController {
     }
 
     private String invalidStateDetail(InvalidAssignmentStateException exception) {
+        if (exception.action() == InvalidAssignmentStateException.Action.WITHDRAW) {
+            if (exception.state() == AssignmentState.ACCEPTED) {
+                return "Работу уже приняли — отозвать нельзя";
+            }
+            return exception.reason() == InvalidAssignmentStateException.Reason.DEADLINE_REACHED
+                    ? "Срок сдачи прошёл — отозвать работу нельзя"
+                    : "Отозвать можно только сданную работу";
+        }
         if (exception.action() == InvalidAssignmentStateException.Action.RETURN_BACK) {
             return "Вернуть можно только сданную работу";
         }

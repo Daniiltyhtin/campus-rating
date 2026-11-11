@@ -56,6 +56,7 @@ it('история сохраняет порядок версий и адрес 
       submittedAt: '2026-11-10T12:00:00Z',
       returnComment: null,
       returnedAt: null,
+      withdrawnAt: null,
     },
     {
       id: 1,
@@ -66,6 +67,7 @@ it('история сохраняет порядок версий и адрес 
       submittedAt: '2026-11-09T12:00:00Z',
       returnComment: 'Дополните',
       returnedAt: '2026-11-10T00:00:00Z',
+      withdrawnAt: null,
     },
   ];
   server.use(http.get('*/api/v1/assignments/:id', () => HttpResponse.json(assignment)));

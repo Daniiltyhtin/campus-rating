@@ -22,7 +22,7 @@ campus:
   penalty:
     scheduler:
       enabled: true
-    default-step: ${CAMPUS_PENALTY_DEFAULT_STEP:20}
+    default-step: ${CAMPUS_PENALTY_DEFAULT_STEP:4}
     default-interval: ${CAMPUS_PENALTY_DEFAULT_INTERVAL:1m}
     poll-period: ${CAMPUS_PENALTY_POLL_PERIOD:1s}
   semester:
