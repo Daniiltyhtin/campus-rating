@@ -26,6 +26,7 @@ import ru.campusrating.identity.MembershipActivated;
 import ru.campusrating.identity.StudentMember;
 import ru.campusrating.identity.TeacherScope;
 import ru.campusrating.settings.SettingsApi;
+import ru.campusrating.ledger.LedgerApi;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -51,6 +52,7 @@ class CheckpointModuleTest {
     @MockitoBean TeacherScope scope;
     @MockitoBean GroupMembers members;
     @MockitoBean SettingsApi settings;
+    @MockitoBean LedgerApi ledger;
 
     @Test
     void bothEventsCreateAssignmentsOnlyOnce(Scenario scenario) {

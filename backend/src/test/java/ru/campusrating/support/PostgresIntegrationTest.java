@@ -13,7 +13,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = "campus.mail.email-verification=off")
-@Import(TestClockConfiguration.class)
+@Import({TestClockConfiguration.class, SubmissionSchemaConfiguration.class})
 public abstract class PostgresIntegrationTest {
     @ServiceConnection
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:18.6-alpine");
