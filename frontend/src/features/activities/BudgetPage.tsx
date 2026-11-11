@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AsyncContent, TeacherTableLayout } from '../../app/layouts/PageLayouts';
 import { ActivityAccess, ActivityLink, ActivityPage, Points } from './ActivityShared';
 import type { Group } from './contracts';
-import { loadState, useAwardHistory, useAwardSummary, useBudgets } from './queries';
+import { loadState, useAccessibleGroups, useAwardHistory, useAwardSummary, useBudgets } from './queries';
 import { formatMoscowTime } from './time';
 
 function History({ userId, month, groupId }: { userId: number; month: string; groupId: string }) {
@@ -32,12 +32,16 @@ function Budget({ userId }: { userId: number }) {
   const [month, setMonth] = useState('');
   const [groupId, setGroupId] = useState('');
   const budgets = useBudgets(userId, month);
+  const accessibleGroups = useAccessibleGroups(userId);
   const currentMonth = month || budgets.data?.month || '';
   const summary = useAwardSummary(userId, currentMonth);
   const groups = new Map<number, Group>();
   for (const item of budgets.data?.items ?? []) groups.set(item.group.id, item.group);
   for (const item of summary.data?.items ?? []) groups.set(item.group.id, item.group);
   return <ActivityPage title="Группы и бюджет" description="Общий бюджет БУА и БОА по вашим группам. Месяц и время начислений — по Москве.">
+    <section><Title order={2} mb="md">Рейтинги доступных групп</Title><AsyncContent state={loadState(accessibleGroups, accessibleGroups.data?.items.length === 0, 'Доступных групп пока нет. Они появятся после допуска или выдачи доступа.')}>
+      <Stack gap="xs">{accessibleGroups.data?.items.map((group) => <ActivityLink key={group.id} to={`/groups/${group.id}/ratings`}>{group.name} · {group.faculty.code}</ActivityLink>)}</Stack>
+    </AsyncContent><ActivityLink to="/awards">Лента наград</ActivityLink></section>
     <div className="activity-toolbar"><TextInput type="month" label="Месяц бюджета" value={currentMonth} onChange={(event) => {
       const value = event.currentTarget.value;
       if (value && !/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) return;

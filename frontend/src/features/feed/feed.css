@@ -1,0 +1,12 @@
+.feed-page { min-width: 0; }
+.feed-page .cr-masthead > div > div { min-width: 0; max-width: 100%; }
+.feed-page h1, .feed-page h2, .feed-page p, .feed-page strong { overflow-wrap: anywhere; }
+.feed-link { display: inline-flex; align-items: center; min-height: var(--cr-touch-target); max-width: 100%; overflow-wrap: anywhere; }
+.feed-currency { max-width: 100%; }
+.feed-currency .mantine-SegmentedControl-label { color: var(--cr-text); min-width: var(--cr-touch-target); }
+.feed-new { max-width: 100%; height: auto; min-height: var(--cr-control-height); }
+.feed-new .mantine-Button-label { white-space: normal; }
+@media (max-width: 48em) {
+  .feed-page h1 { font-size: var(--mantine-h2-font-size); }
+  .feed-page .cr-table td { min-width: 0; }
+}
