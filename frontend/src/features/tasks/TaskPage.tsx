@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { api, submitAssignment } from '../../api/client';
 import { AsyncContent, FormLayout, PageLayout } from '../../app/layouts/PageLayouts';
-import { useSession } from '../../app/session';
+import { useAuthSession } from '../auth/authQueries';
 import { ErrorMessage, Status } from './shared';
 import { dataOf, dateTime, fieldError, loadState, type Schemas, invalidateTaskData } from './helpers';
 
@@ -98,7 +98,8 @@ export function AssignmentDetails({ assignmentId }: { assignmentId: number }) {
 }
 
 function SubmissionForm({ assignment }: { assignment: Schemas['Assignment'] }) {
-  const session = useSession();
+  const user = useAuthSession().session.data;
+  const session = user ? { userId: String(user.id), role: user.role } : null;
   const client = useQueryClient();
   const [mode, setMode] = useState('link');
   const [link, setLink] = useState('');

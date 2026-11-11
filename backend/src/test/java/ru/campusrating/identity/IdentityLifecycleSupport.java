@@ -1,5 +1,8 @@
 package ru.campusrating.identity;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -18,6 +21,11 @@ final class IdentityLifecycleSupport {
         properties.put("spring.datasource.password", database.getPassword());
         properties.put("EMAIL_VERIFICATION", "off");
         properties.put("spring.main.banner-mode", "off");
+        try {
+            properties.put("campus.storage.dir", Files.createTempDirectory("identity-lifecycle-storage-").toString());
+        } catch (IOException exception) {
+            throw new UncheckedIOException(exception);
+        }
         properties.putAll(overrides);
         // Defaults не перекрывают application.yml; тестовый datasource и явный режим почты должны иметь приоритет.
         var arguments = properties.entrySet().stream()

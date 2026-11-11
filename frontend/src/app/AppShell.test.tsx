@@ -3,9 +3,9 @@ import { renderApp } from '../test/render';
 import { setViewportWidth } from '../test/setup';
 import type { Session } from './session';
 
-const student: Session = { userId: 'student-1', role: 'STUDENT' };
-const teacher: Session = { userId: 'teacher-1', role: 'TEACHER' };
-const admin: Session = { userId: 'admin-1', role: 'ADMIN' };
+const student: Session = { userId: '1001', role: 'STUDENT' };
+const teacher: Session = { userId: '2001', role: 'TEACHER' };
+const admin: Session = { userId: '3001', role: 'ADMIN' };
 
 function linkNames(navigation: HTMLElement) {
   return within(navigation)
@@ -39,7 +39,7 @@ describe('AppShell', () => {
     const side = await screen.findByRole('navigation', { name: 'Боковое меню' });
     expect(within(side).getByRole('link', { name: 'Профиль' })).toHaveAttribute(
       'href',
-      '/users/student-1',
+      '/users/1001',
     );
   });
 
@@ -77,7 +77,7 @@ describe('AppShell', () => {
   });
 
   it('показывает заглушку раздела внутри AppShell', async () => {
-    renderApp('/activities', student);
+    renderApp('/', student);
 
     expect(await screen.findByText('Раздел появится')).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Боковое меню' })).toBeInTheDocument();

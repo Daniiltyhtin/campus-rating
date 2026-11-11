@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router';
 import { api } from '../../api/client';
 import { AsyncContent, PageLayout, TeacherTableLayout } from '../../app/layouts/PageLayouts';
-import { useSession } from '../../app/session';
+import { useAuthSession } from '../auth/authQueries';
 import { CheckpointEdit } from './CheckpointForms';
 import { AssignmentDetails } from './TaskPage';
 import { ErrorMessage, More, Status } from './shared';
@@ -18,7 +18,8 @@ function workCount(n: number) {
 
 export function CheckpointPage() {
   const checkpointId = Number(useParams().id);
-  const session = useSession();
+  const user = useAuthSession().session.data;
+  const session = user ? { userId: String(user.id), role: user.role } : null;
   const query = useQuery({
     queryKey: ['checkpoint', checkpointId],
     queryFn: () => dataOf(api.GET('/api/v1/checkpoints/{checkpointId}', { params: { path: { checkpointId } } })),

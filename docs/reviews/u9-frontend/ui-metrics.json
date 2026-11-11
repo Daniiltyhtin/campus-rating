@@ -1,0 +1,1802 @@
+[
+  {
+    "page": "create",
+    "width": 360,
+    "appearance": "light",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 4.5,
+    "textCount": 17,
+    "minContrast": 5.91,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 94.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "mantine-x0vkrx964",
+        "width": 280.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Открытый практикум для студентов факультета: доступность, композиция и",
+        "width": 280.8,
+        "height": 82.6,
+        "tag": "TEXTAREA"
+      },
+      {
+        "name": "Учебная · БУАОбщественная · БОА",
+        "width": 280.8,
+        "height": 44,
+        "tag": "SELECT"
+      },
+      {
+        "name": "ИВТ-21 · ФИТ",
+        "width": 90.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "ИВТ-22 · ФИТ",
+        "width": 90.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "mantine-hoq93hj9p",
+        "width": 280.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "mantine-3vfcgan2k",
+        "width": 280.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Создать активность",
+        "width": 280.8,
+        "height": 44,
+        "tag": "BUTTON"
+      }
+    ]
+  },
+  {
+    "page": "create",
+    "width": 360,
+    "appearance": "dark",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 4.5,
+    "textCount": 17,
+    "minContrast": 7.25,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 94.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "mantine-x0vkrx964",
+        "width": 280.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Открытый практикум для студентов факультета: доступность, композиция и",
+        "width": 280.8,
+        "height": 82.6,
+        "tag": "TEXTAREA"
+      },
+      {
+        "name": "Учебная · БУАОбщественная · БОА",
+        "width": 280.8,
+        "height": 44,
+        "tag": "SELECT"
+      },
+      {
+        "name": "ИВТ-21 · ФИТ",
+        "width": 90.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "ИВТ-22 · ФИТ",
+        "width": 90.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "mantine-hoq93hj9p",
+        "width": 280.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "mantine-3vfcgan2k",
+        "width": 280.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Создать активность",
+        "width": 280.8,
+        "height": 44,
+        "tag": "BUTTON"
+      }
+    ]
+  },
+  {
+    "page": "create",
+    "width": 360,
+    "appearance": "contrast",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 7,
+    "textCount": 17,
+    "minContrast": 10.6,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 107.5,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "mantine-x0vkrx964",
+        "width": 280.8,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Открытый практикум для студентов факультета: доступность, композиция и",
+        "width": 280.8,
+        "height": 119.2,
+        "tag": "TEXTAREA"
+      },
+      {
+        "name": "Учебная · БУАОбщественная · БОА",
+        "width": 280.8,
+        "height": 52,
+        "tag": "SELECT"
+      },
+      {
+        "name": "ИВТ-21 · ФИТ",
+        "width": 102.9,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "ИВТ-22 · ФИТ",
+        "width": 102.9,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "mantine-hoq93hj9p",
+        "width": 280.8,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "mantine-3vfcgan2k",
+        "width": 280.8,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Создать активность",
+        "width": 280.8,
+        "height": 52,
+        "tag": "BUTTON"
+      }
+    ]
+  },
+  {
+    "page": "create",
+    "width": 1280,
+    "appearance": "light",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 4.5,
+    "textCount": 17,
+    "minContrast": 5.91,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 94.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "mantine-x0vkrx964",
+        "width": 704,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Открытый практикум для студентов факультета: доступность, композиция и",
+        "width": 704,
+        "height": 81.6,
+        "tag": "TEXTAREA"
+      },
+      {
+        "name": "Учебная · БУАОбщественная · БОА",
+        "width": 704,
+        "height": 44,
+        "tag": "SELECT"
+      },
+      {
+        "name": "ИВТ-21 · ФИТ",
+        "width": 90.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "ИВТ-22 · ФИТ",
+        "width": 90.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "mantine-hoq93hj9p",
+        "width": 704,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "mantine-3vfcgan2k",
+        "width": 704,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Создать активность",
+        "width": 704,
+        "height": 44,
+        "tag": "BUTTON"
+      }
+    ]
+  },
+  {
+    "page": "create",
+    "width": 1280,
+    "appearance": "dark",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 4.5,
+    "textCount": 17,
+    "minContrast": 7.25,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 94.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "mantine-x0vkrx964",
+        "width": 704,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Открытый практикум для студентов факультета: доступность, композиция и",
+        "width": 704,
+        "height": 81.6,
+        "tag": "TEXTAREA"
+      },
+      {
+        "name": "Учебная · БУАОбщественная · БОА",
+        "width": 704,
+        "height": 44,
+        "tag": "SELECT"
+      },
+      {
+        "name": "ИВТ-21 · ФИТ",
+        "width": 90.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "ИВТ-22 · ФИТ",
+        "width": 90.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "mantine-hoq93hj9p",
+        "width": 704,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "mantine-3vfcgan2k",
+        "width": 704,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Создать активность",
+        "width": 704,
+        "height": 44,
+        "tag": "BUTTON"
+      }
+    ]
+  },
+  {
+    "page": "create",
+    "width": 1280,
+    "appearance": "contrast",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 7,
+    "textCount": 17,
+    "minContrast": 10.6,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 107.5,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "mantine-x0vkrx964",
+        "width": 704,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Открытый практикум для студентов факультета: доступность, композиция и",
+        "width": 704,
+        "height": 92.2,
+        "tag": "TEXTAREA"
+      },
+      {
+        "name": "Учебная · БУАОбщественная · БОА",
+        "width": 704,
+        "height": 52,
+        "tag": "SELECT"
+      },
+      {
+        "name": "ИВТ-21 · ФИТ",
+        "width": 102.9,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "ИВТ-22 · ФИТ",
+        "width": 102.9,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "mantine-hoq93hj9p",
+        "width": 704,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "mantine-3vfcgan2k",
+        "width": 704,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Создать активность",
+        "width": 704,
+        "height": 52,
+        "tag": "BUTTON"
+      }
+    ]
+  },
+  {
+    "page": "teacher-list",
+    "width": 360,
+    "appearance": "light",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 4.5,
+    "textCount": 47,
+    "minContrast": 5.57,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "Создать активность",
+        "width": 166.3,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Подтвердить участие: Хакатон факультета",
+        "width": 275.2,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Подтвердить участие: Помощь в организации конференции",
+        "width": 280.8,
+        "height": 46.5,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "teacher-list",
+    "width": 360,
+    "appearance": "dark",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 4.5,
+    "textCount": 47,
+    "minContrast": 7.25,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "Создать активность",
+        "width": 166.3,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Подтвердить участие: Хакатон факультета",
+        "width": 275.2,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Подтвердить участие: Помощь в организации конференции",
+        "width": 280.8,
+        "height": 46.5,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "teacher-list",
+    "width": 360,
+    "appearance": "contrast",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 7,
+    "textCount": 47,
+    "minContrast": 8.74,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "Создать активность",
+        "width": 183.5,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Подтвердить участие: Хакатон факультета",
+        "width": 280.8,
+        "height": 52.7,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Подтвердить участие: Помощь в организации конференции",
+        "width": 280.8,
+        "height": 52.7,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "teacher-list",
+    "width": 1280,
+    "appearance": "light",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 4.5,
+    "textCount": 47,
+    "minContrast": 5.57,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "Создать активность",
+        "width": 166.3,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Подтвердить участие: Хакатон факультета",
+        "width": 275.2,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Подтвердить участие: Помощь в организации конференции",
+        "width": 392.6,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "teacher-list",
+    "width": 1280,
+    "appearance": "dark",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 4.5,
+    "textCount": 47,
+    "minContrast": 7.25,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "Создать активность",
+        "width": 166.3,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Подтвердить участие: Хакатон факультета",
+        "width": 275.2,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Подтвердить участие: Помощь в организации конференции",
+        "width": 392.6,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "teacher-list",
+    "width": 1280,
+    "appearance": "contrast",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 7,
+    "textCount": 47,
+    "minContrast": 8.74,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "Создать активность",
+        "width": 183.5,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Подтвердить участие: Хакатон факультета",
+        "width": 311.9,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Подтвердить участие: Помощь в организации конференции",
+        "width": 444.9,
+        "height": 52,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "confirm-deficit",
+    "width": 360,
+    "appearance": "light",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 4.5,
+    "textCount": 28,
+    "minContrast": 5.63,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 94.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Кузнецов Дмитрий Андреевич",
+        "width": 59.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 199.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Смирнова Анна Олеговна",
+        "width": 59.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 167.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "confirm-deficit",
+    "width": 360,
+    "appearance": "dark",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 4.5,
+    "textCount": 28,
+    "minContrast": 7.59,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 94.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Кузнецов Дмитрий Андреевич",
+        "width": 59.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 199.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Смирнова Анна Олеговна",
+        "width": 59.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 167.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "confirm-deficit",
+    "width": 360,
+    "appearance": "contrast",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 7,
+    "textCount": 28,
+    "minContrast": 8.42,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 107.5,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Кузнецов Дмитрий Андреевич",
+        "width": 67.2,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 226.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Смирнова Анна Олеговна",
+        "width": 67.2,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 189.7,
+        "height": 52,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "confirm-deficit",
+    "width": 1280,
+    "appearance": "light",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 4.5,
+    "textCount": 28,
+    "minContrast": 5.63,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 94.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Кузнецов Дмитрий Андреевич",
+        "width": 59.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 199.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Смирнова Анна Олеговна",
+        "width": 59.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 167.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "confirm-deficit",
+    "width": 1280,
+    "appearance": "dark",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 4.5,
+    "textCount": 28,
+    "minContrast": 7.59,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 94.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Кузнецов Дмитрий Андреевич",
+        "width": 59.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 199.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Смирнова Анна Олеговна",
+        "width": 59.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 167.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "confirm-deficit",
+    "width": 1280,
+    "appearance": "contrast",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 7,
+    "textCount": 28,
+    "minContrast": 8.42,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 107.5,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Кузнецов Дмитрий Андреевич",
+        "width": 67.2,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 216.2,
+        "height": 52.7,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Смирнова Анна Олеговна",
+        "width": 67.2,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 189.7,
+        "height": 52,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "confirm-success",
+    "width": 360,
+    "appearance": "light",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 4.5,
+    "textCount": 24,
+    "minContrast": 5.63,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 94.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 199.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Смирнова Анна Олеговна",
+        "width": 59.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 167.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "confirm-success",
+    "width": 360,
+    "appearance": "dark",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 4.5,
+    "textCount": 24,
+    "minContrast": 7.59,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 94.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 199.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Смирнова Анна Олеговна",
+        "width": 59.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 167.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "confirm-success",
+    "width": 360,
+    "appearance": "contrast",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 7,
+    "textCount": 24,
+    "minContrast": 8.74,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 107.5,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 226.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Смирнова Анна Олеговна",
+        "width": 67.2,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 189.7,
+        "height": 52,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "confirm-success",
+    "width": 1280,
+    "appearance": "light",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 4.5,
+    "textCount": 24,
+    "minContrast": 5.63,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 94.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 199.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Смирнова Анна Олеговна",
+        "width": 59.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 167.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "confirm-success",
+    "width": 1280,
+    "appearance": "dark",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 4.5,
+    "textCount": 24,
+    "minContrast": 7.59,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 94.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 199.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Смирнова Анна Олеговна",
+        "width": 59.8,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 167.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "confirm-success",
+    "width": 1280,
+    "appearance": "contrast",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 7,
+    "textCount": 24,
+    "minContrast": 8.74,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "К активностям",
+        "width": 107.5,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 216.2,
+        "height": 52.7,
+        "tag": "A"
+      },
+      {
+        "name": "Выбрать Смирнова Анна Олеговна",
+        "width": 67.2,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 189.7,
+        "height": 52,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "budgets",
+    "width": 360,
+    "appearance": "light",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 4.5,
+    "textCount": 36,
+    "minContrast": 5.57,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "mantine-qzf3k15gp",
+        "width": 161.4,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Все группыИВТ-21ИВТ-22",
+        "width": 121.2,
+        "height": 44,
+        "tag": "SELECT"
+      },
+      {
+        "name": "Хакатон факультета",
+        "width": 159.3,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 199.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Помощь в организации конференции",
+        "width": 280.8,
+        "height": 46.5,
+        "tag": "A"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 167.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "budgets",
+    "width": 360,
+    "appearance": "dark",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 4.5,
+    "textCount": 36,
+    "minContrast": 7.59,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "mantine-qzf3k15gp",
+        "width": 161.4,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Все группыИВТ-21ИВТ-22",
+        "width": 121.2,
+        "height": 44,
+        "tag": "SELECT"
+      },
+      {
+        "name": "Хакатон факультета",
+        "width": 159.3,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 199.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Помощь в организации конференции",
+        "width": 280.8,
+        "height": 46.5,
+        "tag": "A"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 167.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "budgets",
+    "width": 360,
+    "appearance": "contrast",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 7,
+    "textCount": 36,
+    "minContrast": 8.74,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "mantine-qzf3k15gp",
+        "width": 180.2,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Все группыИВТ-21ИВТ-22",
+        "width": 132.4,
+        "height": 52,
+        "tag": "SELECT"
+      },
+      {
+        "name": "Хакатон факультета",
+        "width": 180.6,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 226.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Помощь в организации конференции",
+        "width": 280.8,
+        "height": 52.7,
+        "tag": "A"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 189.7,
+        "height": 52,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "budgets",
+    "width": 1280,
+    "appearance": "light",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 4.5,
+    "textCount": 36,
+    "minContrast": 5.57,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "mantine-qzf3k15gp",
+        "width": 161.4,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Все группыИВТ-21ИВТ-22",
+        "width": 121.2,
+        "height": 44,
+        "tag": "SELECT"
+      },
+      {
+        "name": "Хакатон факультета",
+        "width": 159.3,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 199.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Помощь в организации конференции",
+        "width": 296.6,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 167.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "budgets",
+    "width": 1280,
+    "appearance": "dark",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 4.5,
+    "textCount": 36,
+    "minContrast": 7.59,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "mantine-qzf3k15gp",
+        "width": 161.4,
+        "height": 44,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Все группыИВТ-21ИВТ-22",
+        "width": 121.2,
+        "height": 44,
+        "tag": "SELECT"
+      },
+      {
+        "name": "Хакатон факультета",
+        "width": 159.3,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 199.8,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Помощь в организации конференции",
+        "width": 296.6,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 167.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "budgets",
+    "width": 1280,
+    "appearance": "contrast",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 7,
+    "textCount": 36,
+    "minContrast": 8.74,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "mantine-qzf3k15gp",
+        "width": 180.2,
+        "height": 52,
+        "tag": "INPUT"
+      },
+      {
+        "name": "Все группыИВТ-21ИВТ-22",
+        "width": 132.4,
+        "height": 52,
+        "tag": "SELECT"
+      },
+      {
+        "name": "Хакатон факультета",
+        "width": 180.6,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Кузнецов Дмитрий Андреевич",
+        "width": 226.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Помощь в организации конференции",
+        "width": 336.2,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Смирнова Анна Олеговна",
+        "width": 189.7,
+        "height": 52,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "student-list",
+    "width": 360,
+    "appearance": "light",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 4.5,
+    "textCount": 46,
+    "minContrast": 5.57,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Отменить запись: Субботник в кампусе",
+        "width": 280.8,
+        "height": 44,
+        "tag": "BUTTON"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "student-list",
+    "width": 360,
+    "appearance": "dark",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 4.5,
+    "textCount": 46,
+    "minContrast": 7.59,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Отменить запись: Субботник в кампусе",
+        "width": 280.8,
+        "height": 44,
+        "tag": "BUTTON"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "student-list",
+    "width": 360,
+    "appearance": "contrast",
+    "viewport": 360,
+    "client": 345,
+    "scroll": 345,
+    "threshold": 7,
+    "textCount": 46,
+    "minContrast": 8.74,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Отменить запись: Субботник в кампусе",
+        "width": 280.8,
+        "height": 52,
+        "tag": "BUTTON"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "student-list",
+    "width": 1280,
+    "appearance": "light",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 4.5,
+    "textCount": 46,
+    "minContrast": 5.57,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Отменить запись: Субботник в кампусе",
+        "width": 960.8,
+        "height": 44,
+        "tag": "BUTTON"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "student-list",
+    "width": 1280,
+    "appearance": "dark",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 4.5,
+    "textCount": 46,
+    "minContrast": 7.59,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Отменить запись: Субботник в кампусе",
+        "width": 960.8,
+        "height": 44,
+        "tag": "BUTTON"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44,
+        "tag": "A"
+      }
+    ]
+  },
+  {
+    "page": "student-list",
+    "width": 1280,
+    "appearance": "contrast",
+    "viewport": 1280,
+    "client": 1265,
+    "scroll": 1265,
+    "threshold": 7,
+    "textCount": 46,
+    "minContrast": 8.74,
+    "contrastFailures": [],
+    "controls": [
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Отменить запись: Субботник в кампусе",
+        "width": 960.8,
+        "height": 52,
+        "tag": "BUTTON"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52,
+        "tag": "A"
+      }
+    ]
+  }
+]

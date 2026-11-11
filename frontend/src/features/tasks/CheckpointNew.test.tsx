@@ -11,6 +11,7 @@ it('создаёт точку с группой и дедлайном по Мо�
   let received: unknown;
   const checkpoint = example<Schemas['Checkpoint']>('createCheckpoint');
   server.use(
+    http.get('*/api/v1/me/accessible-groups', () => HttpResponse.json(example('listAccessibleGroups'))),
     http.post('*/api/v1/checkpoints', async ({ request }) => {
       received = await request.json();
       return HttpResponse.json(checkpoint, { status: 201 });
