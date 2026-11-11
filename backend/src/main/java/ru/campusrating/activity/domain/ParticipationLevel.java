@@ -6,5 +6,8 @@ public record ParticipationLevel(int percent) {
             throw new IllegalArgumentException("Уровень участия: 25, 50, 75 или 100");
         }
     }
-    public static ParticipationLevel of(int percent) { return new ParticipationLevel(percent); }
+
+    public static ParticipationLevel of(int percent) {
+        return new ParticipationLevel(percent);
+    }
 }

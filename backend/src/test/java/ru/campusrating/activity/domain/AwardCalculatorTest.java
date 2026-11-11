@@ -3,7 +3,9 @@ package ru.campusrating.activity.domain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import static org.assertj.core.api.Assertions.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AwardCalculatorTest {
     @ParameterizedTest
@@ -11,12 +13,16 @@ class AwardCalculatorTest {
     void roundsHalfUp(int maximum, int percent, int expected) {
         assertThat(AwardCalculator.amount(maximum, ParticipationLevel.of(percent))).isEqualTo(expected);
     }
-    @Test void rejectsInvalidLevelsAndMaximums() {
+
+    @Test
+    void rejectsInvalidLevelsAndMaximums() {
         assertThatThrownBy(() -> ParticipationLevel.of(30)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> AwardCalculator.amount(1, ParticipationLevel.of(25))).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> AwardCalculator.amount(10001, ParticipationLevel.of(100))).isInstanceOf(IllegalArgumentException.class);
     }
-    @Test void mapsCurrency() {
+
+    @Test
+    void mapsCurrency() {
         assertThat(ActivityType.ACADEMIC.currency().name()).isEqualTo("BUA");
         assertThat(ActivityType.SOCIAL.currency().name()).isEqualTo("BOA");
     }
