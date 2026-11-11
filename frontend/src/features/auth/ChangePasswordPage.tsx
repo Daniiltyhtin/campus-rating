@@ -1,4 +1,4 @@
-import { Button } from '@mantine/core';
+import { Button, Text } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { api } from '../../api/client';
@@ -28,7 +28,7 @@ export function ChangePasswordPage() {
       action.mutate({ currentPassword: oldPassword, newPassword }, { onError: form.fromServer, onSuccess: () => { void navigate('/', { replace: true }); } });
     }}><PasswordField label="Текущий пароль" autoComplete="current-password" value={oldPassword} onChange={(event) => { setOldPassword(event.currentTarget.value); form.clear('currentPassword'); }} error={form.errors.currentPassword} />
       <PasswordField label="Новый пароль" autoComplete="new-password" description="От 8 символов, не больше 72 байт UTF-8" value={newPassword} onChange={(event) => { setNewPassword(event.currentTarget.value); form.clear('newPassword'); }} error={form.errors.newPassword} />
-      {action.needsRefresh ? <RetryNotice message="Пароль изменён. Не удалось обновить сессию. Повторите обновление." retry={action.refresh} />
+      {action.refreshing ? <Text role="status">Обновление сессии…</Text> : action.refreshFailed ? <RetryNotice message="Пароль изменён. Не удалось обновить сессию. Повторите обновление." retry={action.refresh} />
         : action.error && <ActionError error={action.error} onReset={action.reset} />}
       <Button type="submit" disabled={action.isPending || action.needsRefresh} loading={action.isPending || action.refreshing}>Сменить пароль</Button>
     </FormLayout><LogoutButton />

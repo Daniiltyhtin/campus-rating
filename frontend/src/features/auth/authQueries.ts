@@ -1,9 +1,22 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError } from '../../api/client';
+import type { QueryClient } from '@tanstack/react-query';
 import { authConfig, currentUser, options } from './contracts';
 
 export const authKeys = { user: ['auth', 'me'], csrf: ['auth', 'csrf'] };
 
+const generations = new WeakMap<QueryClient, number>();
+export function sessionGeneration(client: QueryClient) { return generations.get(client) ?? 0; }
+export function advanceSession(client: QueryClient) {
+  const generation = sessionGeneration(client) + 1;
+  generations.set(client, generation);
+  return generation;
+}
+export async function clearPrivateQueries(client: QueryClient) {
+  const filter = { predicate: (query: { queryKey: readonly unknown[] }) => query.queryKey[0] !== 'auth' };
+  await client.cancelQueries(filter);
+  client.removeQueries(filter);
+}
 export async function csrfToken() {
   const { response } = await api.GET('/api/v1/auth/csrf');
   if (!response.ok) throw new Error('Не удалось обновить защиту формы');
@@ -12,14 +25,20 @@ export async function csrfToken() {
 export function useAuthSession() {
   const client = useQueryClient();
   const csrf = useQuery({ queryKey: authKeys.csrf, queryFn: csrfToken, staleTime: Infinity, retry: false });
-  const session = useQuery({ queryKey: authKeys.user, queryFn: async () => {
+  const session = useQuery({ queryKey: authKeys.user, queryFn: async ({ signal }) => {
+    const generation = sessionGeneration(client);
     try {
-      const { data, response } = await api.GET('/api/v1/auth/me');
+      const { data, response } = await api.GET('/api/v1/auth/me', { signal });
       if (!response.ok) throw new Error('Не удалось проверить сессию');
-      return currentUser(data);
+      const user = currentUser(data);
+      if (signal.aborted || generation !== sessionGeneration(client)) return client.getQueryData<ReturnType<typeof currentUser> | null>(authKeys.user) ?? null;
+      const previous = client.getQueryData<ReturnType<typeof currentUser> | null>(authKeys.user);
+      if (previous && previous.id !== user.id) await clearPrivateQueries(client);
+      return user;
     } catch (error) {
       if (error instanceof ApiError && error.code === 'UNAUTHENTICATED') {
-        client.removeQueries({ predicate: (query) => query.queryKey[0] !== 'auth' });
+        if (signal.aborted || generation !== sessionGeneration(client)) return client.getQueryData<ReturnType<typeof currentUser> | null>(authKeys.user) ?? null;
+        await clearPrivateQueries(client);
         return null;
       }
       throw error;

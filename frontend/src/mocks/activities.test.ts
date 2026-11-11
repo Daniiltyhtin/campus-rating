@@ -52,3 +52,35 @@ it('uses the preview and budget atomically when confirming mock participation', 
   const repeat = (await api.POST('/api/v1/activities/{activityId}/participation', { params, body })).data;
   expect(repeat).toMatchObject({ total: 0, awards: [], alreadyConfirmed: [{ studentId: 1002, amount: 38 }] });
 });
+
+it.each(['preview', 'confirm'])('34-3 rejects the entire conflicting %s request', async (kind) => {
+  await signIn('teacher');
+  const params = { path: { activityId: 602 } };
+  await api.POST('/api/v1/activities/{activityId}/participation', { params, body: { items: [{ studentId: 1002, level: 25 }] } });
+  const path = kind === 'preview' ? '/api/v1/activities/{activityId}/participation/preview' : '/api/v1/activities/{activityId}/participation';
+  await expect(api.POST(path, { params, body: { items: [{ studentId: 1002, level: 50 }, { studentId: 1001, level: 25 }] } })).rejects.toMatchObject({ code: 'ALREADY_CONFIRMED', problem: { status: 409, studentIds: [1002] } });
+});
+it('34-4 isolates teacher budgets, history and summary including newly awarded points', async () => {
+  await signIn('teacher');
+  await api.POST('/api/v1/activities/{activityId}/participation', { params: { path: { activityId: 602 } }, body: { items: [{ studentId: 1002, level: 25 }] } });
+  const cookie = document.cookie.split('; ').find((part) => part.startsWith('campus-mock-user='))!.slice('campus-mock-user='.length);
+  const teacher = JSON.parse(decodeURIComponent(cookie));
+  document.cookie = `campus-mock-user=${encodeURIComponent(JSON.stringify({ ...teacher, id: 2999 }))}; Path=/`;
+  const budgets = (await api.GET('/api/v1/budgets')).data!;
+  expect(budgets.items.every((row) => row.spent === 0 && row.remaining === row.limit)).toBe(true);
+  expect((await api.GET('/api/v1/me/awards')).data!.items).toEqual([]);
+  expect((await api.GET('/api/v1/me/awards/summary')).data).toMatchObject({ items: [], total: 0, count: 0 });
+  document.cookie = `campus-mock-user=${cookie}; Path=/`;
+  expect((await api.GET('/api/v1/me/awards/summary')).data!.total).toBeGreaterThan(0);
+  expect((await api.GET('/api/v1/budgets', { params: { query: { month: '2027-01' } } })).data!.items.every((row) => row.spent === 0)).toBe(true);
+});
+it('34-5 rejects enrollment at start with the contract status', async () => {
+  await signIn('student');
+  await expect(api.PUT('/api/v1/activities/{activityId}/enrollment', { params: { path: { activityId: 601 } } })).rejects.toMatchObject({ code: 'ENROLLMENT_CLOSED', problem: { status: 422 } });
+});
+it('34-5 rejects pending membership using a known problem code', async () => {
+  await signIn('student');
+  const cookie = document.cookie.split('; ').find((part) => part.startsWith('campus-mock-user='))!.slice('campus-mock-user='.length);
+  document.cookie = `campus-mock-user=${encodeURIComponent(JSON.stringify({ ...JSON.parse(decodeURIComponent(cookie)), membershipState: 'PENDING' }))}; Path=/`;
+  await expect(api.PUT('/api/v1/activities/{activityId}/enrollment', { params: { path: { activityId: 603 } } })).rejects.toMatchObject({ code: 'MEMBERSHIP_NOT_ACTIVE', problem: { status: 422 } });
+});

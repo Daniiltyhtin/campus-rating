@@ -41,7 +41,9 @@ export function createActivityMockHandlers(clock: Clock = activityClock) {
   const baseline = parseSummary(example('getMyAwardsSummary'));
   const history = parseAwardPage(example('listMyAwards')).items;
   const initialMonth = monthAt(clock.now());
-  const extraAwards: TeacherAward[] = [];
+  const extraAwards: { teacherId: number; award: TeacherAward }[] = [];
+  const teacherAwards = () => extraAwards.filter((row) => row.teacherId === readUser()?.id).map((row) => row.award);
+  const hasBaseline = () => readUser()?.id === academic.author.id;
   const confirmed = new Map<string, NonNullable<Participant['confirmed']>>();
   const enrolled = new Map<string, boolean>();
   const key = (activityId: number, studentId: number) => `${activityId}:${studentId}`;
@@ -68,9 +70,9 @@ export function createActivityMockHandlers(clock: Clock = activityClock) {
   };
   const own = (request: Request, activity: Activity | undefined) => access(request, true)
     ?? (!activity ? problem('NOT_FOUND', 404) : activity.author.id !== readUser()?.id ? problem('FORBIDDEN') : null);
-  const spentExtra = (groupId: number, month: string) => extraAwards.filter((row) => row.group.id === groupId && monthAt(new Date(row.confirmedAt)) === month).reduce((sum, row) => sum + row.amount, 0);
+  const spentExtra = (groupId: number, month: string) => teacherAwards().filter((row) => row.group.id === groupId && monthAt(new Date(row.confirmedAt)) === month).reduce((sum, row) => sum + row.amount, 0);
   const budgetItems = (month: string) => budgets.map((row) => {
-    const spent = (month === initialMonth ? row.spent : 0) + spentExtra(row.group.id, month);
+    const spent = (hasBaseline() && month === initialMonth ? row.spent : 0) + spentExtra(row.group.id, month);
     return { ...row, spent, remaining: row.limit - spent };
   });
   function preview(activity: Activity, body: ParticipationRequest): Preview {
@@ -101,6 +103,8 @@ export function createActivityMockHandlers(clock: Clock = activityClock) {
     if (invalid.length) return problem('STUDENT_NOT_ELIGIBLE', 422, { studentIds: invalid });
     const absent = body.items.filter((item) => activity.type === 'SOCIAL' && !rows.find((row) => row.student.id === item.studentId)?.enrolled).map((row) => row.studentId);
     if (absent.length) return problem('NOT_ENROLLED', 422, { studentIds: absent });
+    const conflicts = body.items.filter((item) => { const known = rows.find((row) => row.student.id === item.studentId)?.confirmed; return known && known.level !== item.level; }).map((item) => item.studentId);
+    if (conflicts.length) return problem('ALREADY_CONFIRMED', 409, { studentIds: conflicts });
     const result = preview(activity, body);
     if (!commit) return HttpResponse.json(result);
     if (!result.withinBudget) return problem('BUDGET_EXCEEDED', 422, { budgets: result.budgets });
@@ -108,7 +112,7 @@ export function createActivityMockHandlers(clock: Clock = activityClock) {
     for (const line of result.awards) {
       const row = rows.find((row) => row.student.id === line.studentId)!;
       confirmed.set(key(id, line.studentId), { level: line.level, amount: line.amount, confirmedAt });
-      extraAwards.unshift({ id: 10_000 + extraAwards.length, activity: { id, title: activity.title, type: activity.type }, student: row.student, group: row.group, level: line.level, amount: line.amount, currency: activity.currency, confirmedAt });
+      extraAwards.unshift({ teacherId: activity.author.id, award: { id: 10_000 + extraAwards.length, activity: { id, title: activity.title, type: activity.type }, student: row.student, group: row.group, level: line.level, amount: line.amount, currency: activity.currency, confirmedAt } });
     }
     activity.confirmedCount += result.awards.length;
     return HttpResponse.json({ awards: result.awards, alreadyConfirmed: result.alreadyConfirmed, currency: result.currency, total: result.total });
@@ -149,8 +153,8 @@ export function createActivityMockHandlers(clock: Clock = activityClock) {
       if (!activity) return problem('NOT_FOUND', 404);
       if (user?.role !== 'STUDENT' || !activity.groups.some((group) => group.id === user.group.id)) return problem('FORBIDDEN');
       if (activity.type !== 'SOCIAL') return problem('INVALID_STATE', 409);
-      if (!visible(activity).enrollmentOpen) return problem('ENROLLMENT_CLOSED', 409);
-      if (method === 'put' && user.membershipState !== 'ACTIVE') return problem('MEMBERSHIP_PENDING', 403);
+      if (!visible(activity).enrollmentOpen) return problem('ENROLLMENT_CLOSED', 422);
+      if (method === 'put' && user.membershipState !== 'ACTIVE') return problem('MEMBERSHIP_NOT_ACTIVE', 422);
       const next = method === 'put';
       if (isEnrolled(activity, user.id) !== next) activity.enrolledCount += next ? 1 : -1;
       enrolled.set(key(activity.id, user.id), next);
@@ -172,15 +176,15 @@ export function createActivityMockHandlers(clock: Clock = activityClock) {
       const error = access(request, true); if (error) return error;
       const query = new URL(request.url).searchParams;
       const month = query.get('month') ?? monthAt(clock.now()), group = query.get('groupId');
-      const items = [...extraAwards, ...history].filter((row) => monthAt(new Date(row.confirmedAt)) === month && (!group || String(row.group.id) === group));
+      const items = [...teacherAwards(), ...(hasBaseline() ? history : [])].filter((row) => monthAt(new Date(row.confirmedAt)) === month && (!group || String(row.group.id) === group));
       const offset = Number(query.get('cursor') ?? 0);
       return HttpResponse.json({ items: items.slice(offset, offset + 1), nextCursor: offset + 1 < items.length ? String(offset + 1) : null });
     }),
     http.get('*/api/v1/me/awards/summary', ({ request }) => {
       const error = access(request, true); if (error) return error;
       const month = new URL(request.url).searchParams.get('month') ?? monthAt(clock.now());
-      const items = month === initialMonth ? structuredClone(baseline.items) : [];
-      for (const award of extraAwards.filter((row) => monthAt(new Date(row.confirmedAt)) === month)) {
+      const items = hasBaseline() && month === initialMonth ? structuredClone(baseline.items) : [];
+      for (const award of teacherAwards().filter((row) => monthAt(new Date(row.confirmedAt)) === month)) {
         const row = items.find((row) => row.group.id === award.group.id && row.currency === award.currency);
         if (row) { row.amount += award.amount; row.count++; }
         else items.push({ group: award.group, currency: award.currency, amount: award.amount, count: 1 });

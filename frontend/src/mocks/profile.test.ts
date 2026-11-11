@@ -38,3 +38,15 @@ it('filters ledger at the mock API and ends the cursor without duplicates', asyn
   expect(boa.items.every((item) => item.currency === 'BOA')).toBe(true);
   expect((await api.GET('/api/v1/ledger/{userId}/entries', { params: { path: { userId: 2001 } } })).data).toEqual({ items: [], nextCursor: null });
 });
+
+it('35-4 rejects a cursor belonging to another currency', async () => {
+  await signIn('student');
+  const first = (await api.GET('/api/v1/ledger/{userId}/entries', { params: { path: { userId: 1001 } } })).data!;
+  await expect(api.GET('/api/v1/ledger/{userId}/entries', { params: { path: { userId: 1001 }, query: { currency: 'BOA', cursor: first.nextCursor! } } })).rejects.toMatchObject({ code: 'VALIDATION_FAILED', problem: { fieldErrors: [{ field: 'cursor' }] } });
+});
+it.each([['currency', 'WRONG'], ['cursor', 'garbage']])('35-5 returns a ValidationProblem for invalid %s', async (field, value) => {
+  await signIn('student');
+  const result = await fetch(`http://localhost/api/v1/ledger/1001/entries?${field}=${value}`);
+  expect(result.status).toBe(400);
+  expect(await result.json()).toMatchObject({ code: 'VALIDATION_FAILED', fieldErrors: [{ field, code: 'INVALID', message: expect.any(String) }] });
+});

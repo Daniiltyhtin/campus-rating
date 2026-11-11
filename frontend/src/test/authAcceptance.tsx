@@ -64,6 +64,7 @@ export function createAuthScenario(initialUser: CurrentUser | null = null) {
       await record(request);
       if (request.headers.get('X-XSRF-TOKEN') !== state.token || !state.token) return problem('CSRF_INVALID', 403);
       state.currentUser = structuredClone(state.loginUser);
+      state.token = "";
       return HttpResponse.json(state.currentUser);
     }),
     http.post('*/api/v1/auth/register/:role', async ({ request, params }) => {
@@ -76,12 +77,14 @@ export function createAuthScenario(initialUser: CurrentUser | null = null) {
       if (request.headers.get('X-XSRF-TOKEN') !== state.token || !state.token) return problem('CSRF_INVALID', 403);
       if (!state.currentUser) return problem('UNAUTHENTICATED', 401);
       state.currentUser = { ...state.currentUser, mustChangePassword: false };
+      state.token = "";
       return new HttpResponse(null, { status: 204 });
     }),
     http.post('*/api/v1/auth/logout', async ({ request }) => {
       state.events.push({ method: 'POST', path: new URL(request.url).pathname, csrf: request.headers.get('X-XSRF-TOKEN'), body: null });
       if (request.headers.get('X-XSRF-TOKEN') !== state.token || !state.token) return problem('CSRF_INVALID', 403);
       state.currentUser = null;
+      state.token = "";
       return new HttpResponse(null, { status: 204 });
     }),
     http.get('*/api/v1/directory/faculties', () => json(example('listFaculties'))),

@@ -26,7 +26,7 @@ export function LoginPage() {
       action.mutate({ email: email.trim(), password }, { onError: form.fromServer });
     }}><TextInput label="Email" type="email" autoComplete="email" value={email} onChange={(event) => { setEmail(event.currentTarget.value); form.clear('email'); }} error={form.errors.email} />
       <PasswordField label="Пароль" autoComplete="current-password" value={password} onChange={(event) => { setPassword(event.currentTarget.value); form.clear('password'); }} error={form.errors.password} />
-      {action.needsRefresh ? <RetryNotice message="Вход выполнен. Не удалось обновить защиту формы. Повторите обновление." retry={action.refresh} />
+      {action.refreshing ? <Text role="status">Обновление сессии…</Text> : action.refreshFailed ? <RetryNotice message="Вход выполнен. Не удалось обновить защиту формы. Повторите обновление." retry={action.refresh} />
         : action.error && <ActionError error={action.error} onReset={action.reset} />}
       <Button type="submit" loading={action.isPending || action.refreshing} disabled={action.isPending || action.needsRefresh}>Войти</Button>
     </FormLayout>
