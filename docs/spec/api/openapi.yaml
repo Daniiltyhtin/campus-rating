@@ -1380,7 +1380,7 @@ paths:
 
         Доступ: студент — активности своей группы; преподаватель — свои, даже если их группы уже недоступны.
       x-roles: [STUDENT, TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       responses:
@@ -1456,7 +1456,7 @@ paths:
 
         Доступ: допущенный преподаватель; каждая группа — из доступных (`403 GROUP_NOT_ACCESSIBLE`).
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
           csrf: []
@@ -1540,7 +1540,7 @@ paths:
         Доступ: студент, чья группа среди целевых, в том числе с `PENDING`-членством; автор активности.
         Остальным — `403 FORBIDDEN`.
       x-roles: [STUDENT, TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
@@ -1595,7 +1595,7 @@ paths:
 
         Доступ: студент, чья группа среди целевых.
       x-roles: [STUDENT]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
           csrf: []
@@ -1652,7 +1652,7 @@ paths:
 
         Доступ: студент, чья группа среди целевых.
       x-roles: [STUDENT]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
           csrf: []
@@ -1711,7 +1711,7 @@ paths:
 
         Доступ: только автор активности, даже если её группы ему уже недоступны.
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
@@ -1776,7 +1776,7 @@ paths:
 
         Доступ: только автор активности, даже если её группы ему уже недоступны.
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
           csrf: []
@@ -1894,7 +1894,7 @@ paths:
         Доступ: только автор активности, даже если её группы ему уже недоступны; бюджет — групп этой
         активности.
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
           csrf: []
@@ -1999,7 +1999,7 @@ paths:
 
         Доступ: преподаватель, только свой бюджет.
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
@@ -2053,7 +2053,7 @@ paths:
 
         Доступ: преподаватель, только свои начисления.
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
@@ -2112,7 +2112,7 @@ paths:
 
         Доступ: преподаватель, только свои начисления.
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
