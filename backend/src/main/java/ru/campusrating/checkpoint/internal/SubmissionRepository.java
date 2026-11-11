@@ -22,14 +22,14 @@ class SubmissionRepository {
     Optional<AssignmentData> find(long id, boolean lock) {
         return jdbc.sql("select * from assignment where id=?" + (lock ? " for update" : ""))
                 .param(id)
-                .query(this::assignment)
+                .query(SubmissionRepository::assignment)
                 .optional();
     }
 
     List<AssignmentData> lock(List<Long> ids) {
         return jdbc.sql("select * from assignment where id in (:ids) order by id for update")
                 .param("ids", ids)
-                .query(this::assignment)
+                .query(SubmissionRepository::assignment)
                 .list();
     }
 
@@ -89,7 +89,7 @@ class SubmissionRepository {
                 .update();
     }
 
-    private AssignmentData assignment(ResultSet rs, int row) throws SQLException {
+    static AssignmentData assignment(ResultSet rs, int row) throws SQLException {
         Number slot = (Number) rs.getObject("last_penalty_slot");
         return new AssignmentData(
                 rs.getLong("id"),
@@ -117,7 +117,7 @@ class SubmissionRepository {
                 instant(rs, "returned_at"));
     }
 
-    private Instant instant(ResultSet rs, String name) throws SQLException {
+    private static Instant instant(ResultSet rs, String name) throws SQLException {
         Timestamp value = rs.getTimestamp(name);
         return value == null ? null : value.toInstant();
     }

@@ -27,3 +27,7 @@ campus:
     accrual: ${CAMPUS_SEMESTER_ACCRUAL:200}
   budget:
     monthly-limit: ${CAMPUS_BUDGET_MONTHLY_LIMIT:1000}
+
+server:
+  tomcat:
+    max-swallow-size: 12MB

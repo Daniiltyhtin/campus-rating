@@ -753,3 +753,14 @@
 - **Урок:** нового нет.
 - **Кругов ревью:** 1.
 - **Коммит / PR:** PR U7 (U5).
+
+### 2026-11-11 — U7: чтение задач, таблица точки, шов профиля (U6 плана U7) и проход по стенду
+
+- **Кто / агент / модель:** Даниил / Codex / gpt-6.1-sol (реализация, test-first); ревью, прогон IT и стенд — Claude Code / claude-opus-5-5, второе мнение — Antigravity gemini-3.8-flash-high (только чтение).
+- **Поручение:** юнит U6 плана `2026-11-09-002-feat-u7-checkpoints-plan.md` — `listMyAssignments`, `listCheckpointAssignments`, шов `StudentAssignments`; затем «Как проверить» шаги 1–14 на демо-стеке для DoD PR U7.
+- **Результат с доказательствами:** `AssignmentReadService` и `AssignmentReadRepository` (статус в SQL — зеркало `AssignmentStatusPolicy`, KTD4), курсор `checkpoint.domain.AssignmentCursor`, `StudentAssignments` и `StudentAssignmentView` по §6 швов; все 13 операций точек и назначений — `x-status: implemented`. `clean verify -Pquality` — 422 теста, 0 падений (`AssignmentReadIT` 26, включая сверку SQL и функции на границе дедлайна); PIT `checkpoint.domain` 99/99; строки `checkpoint` — 793/802 (98,9 %); CRAP проходит. Демо-стек (`docker compose up --build backend`): скрипт по шагам 1–13 — 49/49 проверок; шаг 14 — после рестарта том пуст, точек и задач нет, входы 1001, 2001, 3001 работают.
+- **Не проверено:** экраны — отдельный PR U7c.
+- **Ошибка агента:** (1) `AssignmentReadIT` мокал только `GroupMembers`, а бин `identityReads` реализует и `TeacherScope` → контекст не поднимался, поймал прогон ревьюера → мок `TeacherScope` добавлен. (2) springdoc для `anyOf` enum и `null` выдавал ссылку на компонент `NullValue` вместо встроенного `type: null`; собственный тест схемы через `ModelConverters` этого не видел → `ContractCompatibilityIT` упал у ревьюера → конвертер в тестовой обвязке springdoc, тест схемы теперь читает реальный `/v3/api-docs`.
+- **Урок:** файл больше лимита multipart в IT давал `413`, а на стенде клиент, отправляющий тело целиком (как `fetch`), получал обрыв соединения: Tomcat дочитывает сверх лимита не больше 2 МБ (`max-swallow-size`) и закрывает сокет; curl этого не видит из-за `Expect: 100-continue` → поймано скриптом стенда → `server.tomcat.max-swallow-size: 12MB`, значение закреплено в `StorageConfigurationTest`. Загрузку сверх лимита проверять клиентом без `Expect`, а не только MockMvc и curl.
+- **Кругов ревью:** 1.
+- **Коммит / PR:** PR U7 (U6).

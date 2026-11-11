@@ -895,7 +895,7 @@ paths:
         Доступ: автор точки, даже если её группы ему уже недоступны; администратор — только чтение.
         Остальным — `403 FORBIDDEN`, даже если группа доступна.
       x-roles: [TEACHER, ADMIN]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
@@ -1046,7 +1046,7 @@ paths:
 
         Доступ: студент, только свои назначения.
       x-roles: [STUDENT]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
