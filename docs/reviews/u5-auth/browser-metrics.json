@@ -1,0 +1,182 @@
+[
+  {
+    "route": "login",
+    "width": 360,
+    "theme": "light",
+    "client": 360,
+    "scroll": 360,
+    "minimumHeight": 44,
+    "minimumContrast": 5.9090711559133755,
+    "contrastFailures": []
+  },
+  {
+    "route": "login",
+    "width": 360,
+    "theme": "dark",
+    "client": 360,
+    "scroll": 360,
+    "minimumHeight": 44,
+    "minimumContrast": 7.249461779114139,
+    "contrastFailures": []
+  },
+  {
+    "route": "login",
+    "width": 360,
+    "theme": "contrast",
+    "client": 360,
+    "scroll": 360,
+    "minimumHeight": 52,
+    "minimumContrast": 10.599938045930898,
+    "contrastFailures": []
+  },
+  {
+    "route": "login",
+    "width": 1280,
+    "theme": "light",
+    "client": 1280,
+    "scroll": 1280,
+    "minimumHeight": 44,
+    "minimumContrast": 5.566723124569585,
+    "contrastFailures": []
+  },
+  {
+    "route": "login",
+    "width": 1280,
+    "theme": "dark",
+    "client": 1280,
+    "scroll": 1280,
+    "minimumHeight": 44,
+    "minimumContrast": 7.249461779114139,
+    "contrastFailures": []
+  },
+  {
+    "route": "login",
+    "width": 1280,
+    "theme": "contrast",
+    "client": 1280,
+    "scroll": 1280,
+    "minimumHeight": 52,
+    "minimumContrast": 8.739470082546813,
+    "contrastFailures": []
+  },
+  {
+    "route": "register",
+    "width": 360,
+    "theme": "light",
+    "client": 345,
+    "scroll": 345,
+    "minimumHeight": 44,
+    "minimumContrast": 5.9090711559133755,
+    "contrastFailures": []
+  },
+  {
+    "route": "register",
+    "width": 360,
+    "theme": "dark",
+    "client": 345,
+    "scroll": 345,
+    "minimumHeight": 44,
+    "minimumContrast": 7.591638314213972,
+    "contrastFailures": []
+  },
+  {
+    "route": "register",
+    "width": 360,
+    "theme": "contrast",
+    "client": 345,
+    "scroll": 345,
+    "minimumHeight": 52,
+    "minimumContrast": 10.599938045930898,
+    "contrastFailures": []
+  },
+  {
+    "route": "register",
+    "width": 1280,
+    "theme": "light",
+    "client": 1265,
+    "scroll": 1265,
+    "minimumHeight": 44,
+    "minimumContrast": 5.566723124569585,
+    "contrastFailures": []
+  },
+  {
+    "route": "register",
+    "width": 1280,
+    "theme": "dark",
+    "client": 1265,
+    "scroll": 1265,
+    "minimumHeight": 44,
+    "minimumContrast": 7.591638314213972,
+    "contrastFailures": []
+  },
+  {
+    "route": "register",
+    "width": 1280,
+    "theme": "contrast",
+    "client": 1265,
+    "scroll": 1265,
+    "minimumHeight": 52,
+    "minimumContrast": 8.739470082546813,
+    "contrastFailures": []
+  },
+  {
+    "route": "password",
+    "width": 360,
+    "theme": "light",
+    "client": 360,
+    "scroll": 360,
+    "minimumHeight": 44,
+    "minimumContrast": 5.9090711559133755,
+    "contrastFailures": []
+  },
+  {
+    "route": "password",
+    "width": 360,
+    "theme": "dark",
+    "client": 360,
+    "scroll": 360,
+    "minimumHeight": 44,
+    "minimumContrast": 7.249461779114139,
+    "contrastFailures": []
+  },
+  {
+    "route": "password",
+    "width": 360,
+    "theme": "contrast",
+    "client": 360,
+    "scroll": 360,
+    "minimumHeight": 52,
+    "minimumContrast": 10.599938045930898,
+    "contrastFailures": []
+  },
+  {
+    "route": "password",
+    "width": 1280,
+    "theme": "light",
+    "client": 1280,
+    "scroll": 1280,
+    "minimumHeight": 44,
+    "minimumContrast": 5.566723124569585,
+    "contrastFailures": []
+  },
+  {
+    "route": "password",
+    "width": 1280,
+    "theme": "dark",
+    "client": 1280,
+    "scroll": 1280,
+    "minimumHeight": 44,
+    "minimumContrast": 7.249461779114139,
+    "contrastFailures": []
+  },
+  {
+    "route": "password",
+    "width": 1280,
+    "theme": "contrast",
+    "client": 1280,
+    "scroll": 1280,
+    "minimumHeight": 52,
+    "minimumContrast": 8.739470082546813,
+    "contrastFailures": []
+  }
+]

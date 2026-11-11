@@ -1,0 +1,13 @@
+.profile-page { min-width: 0; }
+.profile-page .cr-masthead > div > div { min-width: 0; max-width: 100%; }
+.profile-page h1, .profile-page h2, .profile-page h3, .profile-page p, .profile-page strong { overflow-wrap: anywhere; }
+.profile-link { display: inline-flex; align-items: center; min-height: var(--cr-touch-target); max-width: 100%; overflow-wrap: anywhere; }
+.profile-balances { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--mantine-spacing-md); }
+.profile-balance { display: block; font-size: var(--mantine-h2-font-size); }
+.profile-currency { max-width: 100%; }
+.profile-currency .mantine-SegmentedControl-label { color: var(--cr-text); }
+.profile-page .mantine-Tabs-tab { color: var(--cr-text); min-width: var(--cr-touch-target); }
+.profile-page .mantine-Tabs-list { flex-wrap: wrap; }
+@media (max-width: 48em) {
+  .profile-page h1 { font-size: var(--mantine-h2-font-size); }
+}

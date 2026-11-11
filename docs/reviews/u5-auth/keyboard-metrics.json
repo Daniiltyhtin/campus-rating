@@ -1,0 +1,17 @@
+{
+  "passwordFocused": true,
+  "toggleFocused": true,
+  "shown": true,
+  "themePersisted": true,
+  "menuClosed": true,
+  "focusReturned": true,
+  "shell360": {
+    "client": 360,
+    "scroll": 360
+  },
+  "shell1280": {
+    "client": 1280,
+    "scroll": 1280
+  },
+  "logoutKeyboard": true
+}
