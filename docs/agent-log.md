@@ -797,3 +797,14 @@
 - **Урок:** новый worktree требует `node tools/install-oasdiff.mjs` до `verify`, иначе падает `ContractCompatibilityIT`.
 - **Кругов ревью:** 1.
 - **Коммит / PR:** этот PR.
+
+### 2026-11-12 — Знак «Орбита»: файлы и фавикон
+
+- **Кто / агент / модель:** Даниил / Claude Code / claude-opus-5-5.
+- **Поручение:** положить в репозиторий готовый знак и анимации загрузки, подключить фавикон.
+- **Результат с доказательствами:** `frontend/src/assets/brand/` — `logo-mark.svg`, `loader.svg`, `loader-wait.svg` на `currentColor`; `frontend/public/` — `favicon.svg` (светлая и тёмная схема браузера), PNG 16 и 32, `apple-touch-icon.png`; ссылки в `frontend/index.html`; `docs/spec/ux/brand/README.md` и превью. `npm run check` — 30 тестов, build проходит, файлы в `dist`.
+- **Не проверено:** вид фавикона во вкладке браузера; подключение знака в шапку — в плане правок UI.
+- **Ошибка агента:** нет.
+- **Урок:** нового нет.
+- **Кругов ревью:** 0.
+- **Коммит / PR:** этот PR.
