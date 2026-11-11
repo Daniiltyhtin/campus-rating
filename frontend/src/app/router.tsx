@@ -13,6 +13,11 @@ export const routes: RouteObject[] = [
     element: <SessionGate />,
     children: [
       { index: true, element: <SectionPlaceholder /> },
+      { path: 'tasks', lazy: async () => ({ Component: (await import('../features/tasks/TaskList')).TaskList }) },
+      { path: 'tasks/:id', lazy: async () => ({ Component: (await import('../features/tasks/TaskPage')).TaskPage }) },
+      { path: 'checkpoints', lazy: async () => ({ Component: (await import('../features/tasks/CheckpointList')).CheckpointList }) },
+      { path: 'checkpoints/new', lazy: async () => ({ Component: (await import('../features/tasks/CheckpointForms')).CheckpointNew }) },
+      { path: 'checkpoints/:id', lazy: async () => ({ Component: (await import('../features/tasks/CheckpointPage')).CheckpointPage }) },
       { path: '*', element: <SectionPlaceholder /> },
     ],
   },

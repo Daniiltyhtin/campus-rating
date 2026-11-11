@@ -77,7 +77,7 @@ describe('AppShell', () => {
   });
 
   it('показывает заглушку раздела внутри AppShell', async () => {
-    renderApp('/tasks', student);
+    renderApp('/activities', student);
 
     expect(await screen.findByText('Раздел появится')).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Боковое меню' })).toBeInTheDocument();
