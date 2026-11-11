@@ -1,6 +1,6 @@
 # U10 frontend — отчёт исполнителя
 
-Ветка `u10-profile-frontend`, база `04ee40a` из PR34; [план](../../spec/plans/2026-11-11-002-feat-u10-profile-frontend-plan.md). Область: R3/R5/R6/R40/R41 и KTD18. Независимая приёмка реализации ещё требуется.
+Ветка `u10-profile-frontend`, реализация `5f5b00b`, [PR35](https://github.com/Daniiltyhtin/campus-rating/pull/35), база `04ee40a` из PR34; [план](../../spec/plans/2026-11-11-002-feat-u10-profile-frontend-plan.md). Область: R3/R5/R6/R40/R41 и KTD18. Независимая приёмка реализации ещё требуется.
 
 ## Поведение и файлы
 
