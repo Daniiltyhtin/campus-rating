@@ -1,6 +1,6 @@
 # U13 frontend — справочники: продолжение
 
-Ветка `u13-directory-frontend` от `47bc2da` (`spec-u13-directory-api`, PR40) поверх U11/PR36. Контракт опубликован отдельно перед реализацией; PR40 CI4/4 SUCCESS. Frontend PR должен иметь базу spec-u13-directory-api до принятия родителей. Не self-approve/merge.
+Реализация `e26760a` опубликована в [PR41](https://github.com/Daniiltyhtin/campus-rating/pull/41), ветка `u13-directory-frontend` от `47bc2da` (`spec-u13-directory-api`, PR40) поверх U11/PR36. Контракт опубликован отдельно перед реализацией; PR40 CI4/4 SUCCESS. База frontend PR — spec-u13-directory-api до принятия родителей. Не self-approve/merge.
 
 Готова первая часть U13: три справочника на `/admin/directory`, CRUD, полные admin DTO, валидация, ошибки/CSRF/зависимости, инвалидация списков и явный MSW. Backend и БД не менялись. Успешный write не повторяется при ошибке последующего GET. Диалоги возвращают focus на opener, после удаления — на добавление.
 
