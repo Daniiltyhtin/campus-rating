@@ -10,10 +10,12 @@ import { dataOf, dateTime, fieldError, loadState, type Schemas } from './helpers
 
 export function Penalty({ penalty }: { penalty: Schemas['Penalty'] }) {
   const [now, setNow] = useState(() => Date.now());
+  const ticking = penalty.phase === 'RUNNING' && penalty.nextAt !== null && Date.parse(penalty.nextAt) > now;
   useEffect(() => {
+    if (!ticking) return;
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [ticking]);
   let text: string;
   switch (penalty.phase) {
     case 'BEFORE_DEADLINE':

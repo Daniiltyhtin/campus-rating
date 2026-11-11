@@ -30,7 +30,7 @@ const messages: Partial<Record<ApiError['code'], string>> = {
 export function errorText(error: unknown): string {
   if (error instanceof ApiError)
     return error.code === 'GROUP_NOT_ACCESSIBLE' || error.code === 'INVALID_STATE'
-      ? (error.problem.detail ?? messages.GROUP_NOT_ACCESSIBLE!)
+      ? (error.problem.detail ?? messages[error.code]!)
       : (messages[error.code] ?? 'Не удалось выполнить действие. Попробуйте снова.');
   return 'Не удалось выполнить действие. Проверьте соединение и попробуйте снова.';
 }
@@ -69,4 +69,9 @@ export async function dataOf<T>(request: Promise<{ data?: T; error?: unknown }>)
   const response = await request;
   if (response.data === undefined) throw new Error('Нет данных');
   return response.data;
+}
+
+export function moscowDeadline(local: string) {
+  const moment = new Date(`${local.slice(0, 16)}:00+03:00`);
+  return Number.isNaN(moment.getTime()) ? local : moment.toISOString();
 }

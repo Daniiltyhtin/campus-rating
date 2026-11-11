@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 import { api } from '../../api/client';
 import { AsyncContent, FormLayout, PageLayout } from '../../app/layouts/PageLayouts';
 import { ErrorMessage } from './shared';
-import { dataOf, fieldError, loadState, type Schemas } from './helpers';
+import { dataOf, fieldError, loadState, moscowDeadline, type Schemas } from './helpers';
 
 export function CheckpointEdit({ checkpoint, onSaved }: { checkpoint: Schemas['Checkpoint']; onSaved: () => void }) {
   const [title, setTitle] = useState(checkpoint.title);
@@ -82,7 +82,7 @@ export function CheckpointNew() {
           body: {
             title,
             description,
-            deadline: new Date(`${deadline}:00+03:00`).toISOString(),
+            deadline: moscowDeadline(deadline),
             cost: Number(cost),
             groupIds,
           },

@@ -29,6 +29,7 @@ export function CheckpointPage() {
   const [opened, setOpened] = useState<number>();
   const [returnId, setReturnId] = useState<number>();
   const [editing, setEditing] = useState(false);
+  const [names, setNames] = useState<Record<number, string>>({});
   const rowsQuery = useInfiniteQuery({
     queryKey: ['checkpoint-assignments', checkpointId, status, groupId],
     initialPageParam: undefined as string | undefined,
@@ -120,7 +121,10 @@ export function CheckpointPage() {
                 <Button
                   disabled={!selected.length}
                   loading={accept.isPending}
-                  onClick={() => accept.mutate([...selected])}
+                  onClick={() => {
+                    setNames(Object.fromEntries(rows.map((row) => [row.assignmentId, row.student.fullName])));
+                    accept.mutate([...selected]);
+                  }}
                 >
                   Принять {workCount(selected.length)}
                 </Button>
@@ -133,7 +137,7 @@ export function CheckpointPage() {
                 </strong>
                 {accept.data.skipped.map((item) => (
                   <Text key={item.assignmentId}>
-                    {rows.find((row) => row.assignmentId === item.assignmentId)?.student.fullName ??
+                    {names[item.assignmentId] ??
                       `Назначение ${item.assignmentId}`}{' '}
                     пропущен: состояние работы изменилось, принять можно только сданную работу.
                   </Text>
@@ -178,7 +182,11 @@ export function CheckpointPage() {
                   render: (row) => (
                     <Stack gap="xs">
                       {row.submittedAt ? dateTime(row.submittedAt) : 'Ещё не сдано'}
-                      <Button variant="subtle" onClick={() => setOpened(row.assignmentId)}>
+                      <Button
+                        variant="subtle"
+                        disabled={!row.submittedAt}
+                        onClick={() => setOpened(row.assignmentId)}
+                      >
                         Открыть сдачу
                       </Button>
                     </Stack>
@@ -207,7 +215,14 @@ export function CheckpointPage() {
             </Modal>
             <Modal opened={returnId !== undefined} onClose={() => setReturnId(undefined)} title="Вернуть на доработку">
               {returnId !== undefined && (
-                <ReturnForm key={returnId} assignmentId={returnId} onReturned={() => setReturnId(undefined)} />
+                <ReturnForm
+                  key={returnId}
+                  assignmentId={returnId}
+                  onReturned={() => {
+                    setSelected((ids) => ids.filter((id) => id !== returnId));
+                    setReturnId(undefined);
+                  }}
+                />
               )}
             </Modal>
           </Stack>
