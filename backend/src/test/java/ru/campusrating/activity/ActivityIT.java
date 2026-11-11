@@ -2,13 +2,22 @@ package ru.campusrating.activity;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ActivityIT extends ActivityTestSupport {
+    @Autowired
+    PlatformTransactionManager transactions;
+
     @Test
     void creationValidatesFieldsScopeAndApproval() throws Exception {
         var valid = create("ACADEMIC", START, group, 75, teacherSession, 201);
@@ -105,6 +114,36 @@ class ActivityIT extends ActivityTestSupport {
         assertThat(result.path("enrolledCount").asInt()).isZero();
         request(delete(path(social) + "/enrollment"), studentSession, 200);
         problem(request(delete(path(social) + "/enrollment"), outsiderSession, 403), "FORBIDDEN");
+    }
+
+    @Test
+    void cancellationWaitsForActivityLockAndRechecksStart() throws Exception {
+        long social = activity("SOCIAL", START);
+        request(put(path(social) + "/enrollment"), studentSession, 200);
+        var locked = new CountDownLatch(1);
+        var release = new CountDownLatch(1);
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var holder = executor.submit(() -> new TransactionTemplate(transactions).executeWithoutResult(status -> {
+                jdbc.queryForObject("select id from activity where id = ? for update", Long.class, social);
+                locked.countDown();
+                try {
+                    release.await(10, TimeUnit.SECONDS);
+                } catch (InterruptedException exception) {
+                    Thread.currentThread().interrupt();
+                }
+            }));
+            assertThat(locked.await(10, TimeUnit.SECONDS)).isTrue();
+            var cancel = executor.submit(() -> exchange(delete(path(social) + "/enrollment"), studentSession));
+            Thread.sleep(500);
+            assertThat(cancel.isDone()).isFalse();
+            clock.set(START);
+            release.countDown();
+            holder.get(10, TimeUnit.SECONDS);
+            var response = cancel.get(10, TimeUnit.SECONDS);
+            assertThat(response.status()).isEqualTo(422);
+            problem(JSON.readTree(response.body()), "ENROLLMENT_CLOSED");
+        }
+        assertThat(request(get(path(social)), studentSession, 200).path("enrolledCount").asInt()).isEqualTo(1);
     }
 
     @Test

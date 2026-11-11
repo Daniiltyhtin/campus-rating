@@ -76,6 +76,7 @@ public class ActivityService {
     @Transactional
     public Activity enrollment(long id, boolean enroll) {
         var user = current.require();
+        repository.lock(id);
         var activity = requireActivity(id, user);
         Instant now = clock.instant();
         if (activity.type() != ActivityType.SOCIAL) {
