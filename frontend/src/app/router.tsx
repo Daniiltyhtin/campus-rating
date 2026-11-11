@@ -17,6 +17,11 @@ export const routes: RouteObject[] = [
       { element: <GuestGate />, children: [{ path: 'login', element: <LoginPage /> }, { path: 'register', element: <RegisterPage /> }] },
       { element: <PasswordGate />, children: [{ path: 'password/change', element: <ChangePasswordPage /> }] },
       { element: <SessionGate />, children: [
+        { path: 'tasks', lazy: async () => ({ Component: (await import('../features/tasks/TaskList')).TaskList }) },
+        { path: 'tasks/:id', lazy: async () => ({ Component: (await import('../features/tasks/TaskPage')).TaskPage }) },
+        { path: 'checkpoints', lazy: async () => ({ Component: (await import('../features/tasks/CheckpointList')).CheckpointList }) },
+        { path: 'checkpoints/new', lazy: async () => ({ Component: (await import('../features/tasks/CheckpointForms')).CheckpointNew }) },
+        { path: 'checkpoints/:id', lazy: async () => ({ Component: (await import('../features/tasks/CheckpointPage')).CheckpointPage }) },
         { path: 'awards', lazy: async () => ({ Component: (await import('../features/feed/AwardsFeed')).AwardsFeed }) },
         { path: 'groups/:id/ratings', loader: ({ params }) => redirect(`/groups/${params.id}`) },
         { path: 'groups/:id', lazy: async () => ({ Component: (await import('../features/feed/GroupRatings')).GroupRatings }) },
