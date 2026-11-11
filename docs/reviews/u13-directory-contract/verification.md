@@ -14,3 +14,5 @@ HTTP-ограничения: непустые code/name после trim (64/255 
 - В diff отсутствуют backend изменения. Runtime UI/MSW CRUD — следующий отдельный frontend PR; новый контракт ещё требует независимого ревью.
 
 Contract-first PR публикуется перед frontend реализацией. Наличие generated examples само по себе не доказывает авторизацию или транзакции backend.
+
+Первый CI PR40 обнаружил ошибку сериализации: YAML stringify повторно использовал объекты через anchors, swagger-parser в ContractCompatibilityIT передал alias как строку в oasdiff. Anchors убраны без правок backend: parsed YAML до/после deepEqual, Redocly exit0, api:gen не изменяет generated. Исправление проверяется повторным CI этого PR.

@@ -2522,9 +2522,9 @@ paths:
 
   /api/v1/admin/directory/faculties:
     get:
-      tags: &a1
+      tags:
         - directory
-      x-roles: &a2
+      x-roles:
         - ADMIN
       x-status: planned
       operationId: listAdminFaculties
@@ -2542,17 +2542,18 @@ paths:
                 $ref: "#/components/schemas/AdminFacultyList"
               example:
                 items:
-                  - &a3
-                    id: 1
+                  - id: 1
                     code: ФИТ
                     name: Факультет информационных технологий
-        "401": &a4
+        "401":
           $ref: "#/components/responses/Unauthenticated"
-        "403": &a5
+        "403":
           $ref: "#/components/responses/Forbidden"
     post:
-      tags: *a1
-      x-roles: *a2
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
       x-status: planned
       operationId: createAdminFaculty
       summary: Создать факультет
@@ -2560,10 +2561,10 @@ paths:
         пароля — PASSWORD_CHANGE_REQUIRED. Код и название trim; код уникален в своём справочнике, регистр
         сохраняется. Для группы/кафедры facultyId должен существовать, иначе VALIDATION_FAILED с
         fieldErrors.facultyId. Повтор POST с тем же кодом —409, не вторая запись."
-      security: &a6
+      security:
         - session: []
           csrf: []
-      requestBody: &a7
+      requestBody:
         required: true
         content:
           application/json:
@@ -2579,11 +2580,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdminFaculty"
-              example: *a3
-        "400": &a8
+              example:
+                id: 1
+                code: ФИТ
+                name: Факультет информационных технологий
+        "400":
           $ref: "#/components/responses/ValidationFailed"
-        "401": *a4
-        "403": *a5
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "409":
           description: Код уже используется другой записью этого справочника, регистр учитывается.
           content:
@@ -2598,8 +2604,10 @@ paths:
                 detail: Код уже используется.
   /api/v1/admin/directory/faculties/{id}:
     put:
-      tags: *a1
-      x-roles: *a2
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
       x-status: planned
       operationId: updateAdminFaculty
       summary: Изменить факультет
@@ -2607,14 +2615,24 @@ paths:
         пароля — PASSWORD_CHANGE_REQUIRED. Полная замена полей write DTO. Правила trim/уникальности/facultyId
         как у создания. Смена факультета группы/кафедры меняет связь, существующие пользователи и события не
         пересоздаются."
-      security: *a6
-      parameters: &a9
+      security:
+        - session: []
+          csrf: []
+      parameters:
         - name: id
           in: path
           required: true
           schema:
             $ref: "#/components/schemas/Id"
-      requestBody: *a7
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FacultyWrite"
+            example:
+              code: ФИТ
+              name: Факультет информационных технологий
       responses:
         "200":
           description: Обновлено.
@@ -2622,10 +2640,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdminFaculty"
-              example: *a3
-        "400": *a8
-        "401": *a4
-        "403": *a5
+              example:
+                id: 1
+                code: ФИТ
+                name: Факультет информационных технологий
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "409":
@@ -2641,22 +2665,34 @@ paths:
                 code: DIRECTORY_CODE_TAKEN
                 detail: Код уже используется.
     delete:
-      tags: *a1
-      x-roles: *a2
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
       x-status: planned
       operationId: deleteAdminFaculty
       summary: Удалить факультет
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
         пароля — PASSWORD_CHANGE_REQUIRED. Без каскадного удаления зависимостей. Группу со студентами удалить
         нельзя (мастер-U13); любые связанные записи сохраняются. Повтор после удаления —404 NOT_FOUND."
-      security: *a6
-      parameters: *a9
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
       responses:
         "204":
           description: Удалено, тело отсутствует.
-        "400": *a8
-        "401": *a4
-        "403": *a5
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "409":
@@ -2674,9 +2710,9 @@ paths:
                 detail: Нельзя удалить используемую запись справочника.
   /api/v1/admin/directory/groups:
     get:
-      tags: &a10
+      tags:
         - directory
-      x-roles: &a11
+      x-roles:
         - ADMIN
       x-status: planned
       operationId: listAdminGroups
@@ -2694,17 +2730,23 @@ paths:
                 $ref: "#/components/schemas/AdminStudyGroupList"
               example:
                 items:
-                  - &a12
-                    id: 11
+                  - id: 11
                     code: IVT-21
                     name: ИВТ-21
-                    faculty: *a3
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
                     admissionYear: 2025
-        "401": *a4
-        "403": *a5
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
     post:
-      tags: *a10
-      x-roles: *a11
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
       x-status: planned
       operationId: createAdminStudyGroup
       summary: Создать учебную группу
@@ -2712,10 +2754,10 @@ paths:
         пароля — PASSWORD_CHANGE_REQUIRED. Код и название trim; код уникален в своём справочнике, регистр
         сохраняется. Для группы/кафедры facultyId должен существовать, иначе VALIDATION_FAILED с
         fieldErrors.facultyId. Повтор POST с тем же кодом —409, не вторая запись."
-      security: &a13
+      security:
         - session: []
           csrf: []
-      requestBody: &a14
+      requestBody:
         required: true
         content:
           application/json:
@@ -2733,10 +2775,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdminStudyGroup"
-              example: *a12
-        "400": *a8
-        "401": *a4
-        "403": *a5
+              example:
+                id: 11
+                code: IVT-21
+                name: ИВТ-21
+                faculty:
+                  id: 1
+                  code: ФИТ
+                  name: Факультет информационных технологий
+                admissionYear: 2025
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "409":
           description: Код уже используется другой записью этого справочника, регистр учитывается.
           content:
@@ -2751,8 +2804,10 @@ paths:
                 detail: Код уже используется.
   /api/v1/admin/directory/groups/{id}:
     put:
-      tags: *a10
-      x-roles: *a11
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
       x-status: planned
       operationId: updateAdminStudyGroup
       summary: Изменить учебную группу
@@ -2760,14 +2815,26 @@ paths:
         пароля — PASSWORD_CHANGE_REQUIRED. Полная замена полей write DTO. Правила trim/уникальности/facultyId
         как у создания. Смена факультета группы/кафедры меняет связь, существующие пользователи и события не
         пересоздаются."
-      security: *a13
-      parameters: &a15
+      security:
+        - session: []
+          csrf: []
+      parameters:
         - name: id
           in: path
           required: true
           schema:
             $ref: "#/components/schemas/Id"
-      requestBody: *a14
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyGroupWrite"
+            example:
+              code: IVT-21
+              name: ИВТ-21
+              facultyId: 1
+              admissionYear: 2025
       responses:
         "200":
           description: Обновлено.
@@ -2775,10 +2842,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdminStudyGroup"
-              example: *a12
-        "400": *a8
-        "401": *a4
-        "403": *a5
+              example:
+                id: 11
+                code: IVT-21
+                name: ИВТ-21
+                faculty:
+                  id: 1
+                  code: ФИТ
+                  name: Факультет информационных технологий
+                admissionYear: 2025
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "409":
@@ -2794,22 +2872,34 @@ paths:
                 code: DIRECTORY_CODE_TAKEN
                 detail: Код уже используется.
     delete:
-      tags: *a10
-      x-roles: *a11
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
       x-status: planned
       operationId: deleteAdminStudyGroup
       summary: Удалить учебную группу
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
         пароля — PASSWORD_CHANGE_REQUIRED. Без каскадного удаления зависимостей. Группу со студентами удалить
         нельзя (мастер-U13); любые связанные записи сохраняются. Повтор после удаления —404 NOT_FOUND."
-      security: *a13
-      parameters: *a15
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
       responses:
         "204":
           description: Удалено, тело отсутствует.
-        "400": *a8
-        "401": *a4
-        "403": *a5
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "409":
@@ -2827,9 +2917,9 @@ paths:
                 detail: Нельзя удалить используемую запись справочника.
   /api/v1/admin/directory/departments:
     get:
-      tags: &a16
+      tags:
         - directory
-      x-roles: &a17
+      x-roles:
         - ADMIN
       x-status: planned
       operationId: listAdminDepartments
@@ -2847,16 +2937,22 @@ paths:
                 $ref: "#/components/schemas/AdminDepartmentList"
               example:
                 items:
-                  - &a18
-                    id: 101
+                  - id: 101
                     code: ПИ
                     name: Кафедра программной инженерии
-                    faculty: *a3
-        "401": *a4
-        "403": *a5
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
     post:
-      tags: *a16
-      x-roles: *a17
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
       x-status: planned
       operationId: createAdminDepartment
       summary: Создать кафедру
@@ -2864,10 +2960,10 @@ paths:
         пароля — PASSWORD_CHANGE_REQUIRED. Код и название trim; код уникален в своём справочнике, регистр
         сохраняется. Для группы/кафедры facultyId должен существовать, иначе VALIDATION_FAILED с
         fieldErrors.facultyId. Повтор POST с тем же кодом —409, не вторая запись."
-      security: &a19
+      security:
         - session: []
           csrf: []
-      requestBody: &a20
+      requestBody:
         required: true
         content:
           application/json:
@@ -2884,10 +2980,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdminDepartment"
-              example: *a18
-        "400": *a8
-        "401": *a4
-        "403": *a5
+              example:
+                id: 101
+                code: ПИ
+                name: Кафедра программной инженерии
+                faculty:
+                  id: 1
+                  code: ФИТ
+                  name: Факультет информационных технологий
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "409":
           description: Код уже используется другой записью этого справочника, регистр учитывается.
           content:
@@ -2902,8 +3008,10 @@ paths:
                 detail: Код уже используется.
   /api/v1/admin/directory/departments/{id}:
     put:
-      tags: *a16
-      x-roles: *a17
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
       x-status: planned
       operationId: updateAdminDepartment
       summary: Изменить кафедру
@@ -2911,14 +3019,25 @@ paths:
         пароля — PASSWORD_CHANGE_REQUIRED. Полная замена полей write DTO. Правила trim/уникальности/facultyId
         как у создания. Смена факультета группы/кафедры меняет связь, существующие пользователи и события не
         пересоздаются."
-      security: *a19
-      parameters: &a21
+      security:
+        - session: []
+          csrf: []
+      parameters:
         - name: id
           in: path
           required: true
           schema:
             $ref: "#/components/schemas/Id"
-      requestBody: *a20
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepartmentWrite"
+            example:
+              code: ПИ
+              name: Кафедра программной инженерии
+              facultyId: 1
       responses:
         "200":
           description: Обновлено.
@@ -2926,10 +3045,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdminDepartment"
-              example: *a18
-        "400": *a8
-        "401": *a4
-        "403": *a5
+              example:
+                id: 101
+                code: ПИ
+                name: Кафедра программной инженерии
+                faculty:
+                  id: 1
+                  code: ФИТ
+                  name: Факультет информационных технологий
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "409":
@@ -2945,22 +3074,34 @@ paths:
                 code: DIRECTORY_CODE_TAKEN
                 detail: Код уже используется.
     delete:
-      tags: *a16
-      x-roles: *a17
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
       x-status: planned
       operationId: deleteAdminDepartment
       summary: Удалить кафедру
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
         пароля — PASSWORD_CHANGE_REQUIRED. Без каскадного удаления зависимостей. Группу со студентами удалить
         нельзя (мастер-U13); любые связанные записи сохраняются. Повтор после удаления —404 NOT_FOUND."
-      security: *a19
-      parameters: *a21
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
       responses:
         "204":
           description: Удалено, тело отсутствует.
-        "400": *a8
-        "401": *a4
-        "403": *a5
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "409":
@@ -5160,9 +5301,9 @@ components:
         - code
         - name
       properties:
-        code: &a1
+        code:
           $ref: "#/components/schemas/DirectoryCode"
-        name: &a2
+        name:
           $ref: "#/components/schemas/DirectoryName"
     StudyGroupWrite:
       type: object
@@ -5173,8 +5314,10 @@ components:
         - facultyId
         - admissionYear
       properties:
-        code: *a1
-        name: *a2
+        code:
+          $ref: "#/components/schemas/DirectoryCode"
+        name:
+          $ref: "#/components/schemas/DirectoryName"
         facultyId:
           $ref: "#/components/schemas/Id"
         admissionYear:
@@ -5187,8 +5330,10 @@ components:
         - name
         - facultyId
       properties:
-        code: *a1
-        name: *a2
+        code:
+          $ref: "#/components/schemas/DirectoryCode"
+        name:
+          $ref: "#/components/schemas/DirectoryName"
         facultyId:
           $ref: "#/components/schemas/Id"
     AdminFaculty:
@@ -5201,8 +5346,10 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/Id"
-        code: *a1
-        name: *a2
+        code:
+          $ref: "#/components/schemas/DirectoryCode"
+        name:
+          $ref: "#/components/schemas/DirectoryName"
     AdminStudyGroup:
       type: object
       additionalProperties: false
@@ -5215,8 +5362,10 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/Id"
-        code: *a1
-        name: *a2
+        code:
+          $ref: "#/components/schemas/DirectoryCode"
+        name:
+          $ref: "#/components/schemas/DirectoryName"
         faculty:
           $ref: "#/components/schemas/AdminFaculty"
         admissionYear:
@@ -5232,8 +5381,10 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/Id"
-        code: *a1
-        name: *a2
+        code:
+          $ref: "#/components/schemas/DirectoryCode"
+        name:
+          $ref: "#/components/schemas/DirectoryName"
         faculty:
           $ref: "#/components/schemas/AdminFaculty"
     AdminFacultyList:
