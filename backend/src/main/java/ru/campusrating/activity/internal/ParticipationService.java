@@ -3,6 +3,7 @@ package ru.campusrating.activity.internal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -107,7 +108,6 @@ public class ParticipationService {
         for (var member : candidates(activity, enrolled)) {
             people.put(member.studentId(), new Person(member.studentId(), member.fullName(), member.groupId()));
         }
-        addAwardedOutsiders(people, awarded.values());
         var groups = members.groups(people.values().stream().map(Person::groupId).distinct().toList());
         var items = people.values().stream()
                 .sorted(byGroupAndName(groups))
@@ -119,7 +119,7 @@ public class ParticipationService {
     @Transactional(readOnly = true)
     public ParticipationPreview preview(long activityId, List<Item> items) {
         var user = current.require();
-        Instant now = clock.instant();
+        Instant now = clock.instant().truncatedTo(ChronoUnit.MICROS);
         var plan = plan(requireOwn(activityId, user), items, now);
         var needed = plan.needed();
         var check = check(needed, budgets.spent(user.id(), needed.keySet(), month(now)));
@@ -132,7 +132,7 @@ public class ParticipationService {
     public ParticipationResult confirm(long activityId, List<Item> items) {
         var user = current.require();
         activities.lock(activityId);
-        Instant now = clock.instant();
+        Instant now = clock.instant().truncatedTo(ChronoUnit.MICROS);
         var plan = plan(requireOwn(activityId, user), items, now);
         var needed = plan.needed();
         var month = month(now);
@@ -161,14 +161,6 @@ public class ParticipationService {
             return members.memberships(enrolled).values();
         }
         return members.activeStudents(activityGroups(activity.id()));
-    }
-
-    private void addAwardedOutsiders(Map<Long, Person> people, Collection<AwardRow> awarded) {
-        var outsiders = awarded.stream().filter(award -> !people.containsKey(award.studentId())).toList();
-        var names = members.users(outsiders.stream().map(AwardRow::studentId).toList());
-        for (var award : outsiders) {
-            people.put(award.studentId(), new Person(award.studentId(), names.get(award.studentId()).fullName(), award.groupId()));
-        }
     }
 
     private Comparator<Person> byGroupAndName(Map<Long, GroupRef> groups) {

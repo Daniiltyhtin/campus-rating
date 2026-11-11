@@ -179,6 +179,8 @@ class ParticipationIT extends ActivityTestSupport {
         assertThat(studentIdsOf(afterMembershipLoss.path("alreadyConfirmed"))).containsExactly(student);
         assertThat(afterMembershipLoss.path("budgets")).isEmpty();
         assertThat(afterMembershipLoss.path("withinBudget").asBoolean()).isTrue();
+        var participants = request(get(path(academic) + "/participants"), teacherSession, 200);
+        assertThat(studentIds(participants.path("items"))).doesNotContain(student).contains(classmate);
         assertThat(spent(group, NOVEMBER)).isEqualTo(150);
         assertThat(awardEntries(academic)).isEqualTo(2);
     }
@@ -241,9 +243,10 @@ class ParticipationIT extends ActivityTestSupport {
         Instant start = Instant.parse("2026-10-31T20:00:00Z");
         long october = activity("ACADEMIC", start, 1000, group);
         long november = activity("ACADEMIC", start, 100, group);
-        clock.set(Instant.parse("2026-10-31T20:59:59Z"));
+        clock.set(Instant.parse("2026-10-31T20:59:59.999999900Z"));
         confirm(october, items(student, 100), teacherSession, 200);
         assertThat(spent(group, OCTOBER)).isEqualTo(1000);
+        assertThat(request(get("/api/v1/me/awards/summary?month=2026-10"), teacherSession, 200).path("total").asInt()).isEqualTo(1000);
         assertThat(preview(november, items(classmate, 100), teacherSession, 200).path("withinBudget").asBoolean()).isFalse();
         clock.set(Instant.parse("2026-10-31T21:00:00Z"));
         var preview = preview(november, items(classmate, 100), teacherSession, 200);

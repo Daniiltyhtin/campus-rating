@@ -78,6 +78,8 @@ class BudgetIT extends ActivityTestSupport {
         var next = request(get("/api/v1/me/awards?limit=2&cursor=" + encode(cursor)), teacherSession, 200);
         assertThat(studentIds(next.path("items"))).containsExactly(student);
         assertThat(next.path("nextCursor").isNull()).isTrue();
+        var foreignCursor = request(get("/api/v1/me/awards?limit=2&cursor=" + encode(cursor)), otherTeacherSession, 400);
+        assertThat(foreignCursor.path("fieldErrors").get(0).path("field").asText()).isEqualTo("cursor");
 
         var byGroup = request(get("/api/v1/me/awards?groupId=" + secondGroup), teacherSession, 200);
         assertThat(studentIds(byGroup.path("items"))).containsExactly(neighbour);

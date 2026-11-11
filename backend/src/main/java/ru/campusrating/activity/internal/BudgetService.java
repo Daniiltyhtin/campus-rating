@@ -71,7 +71,7 @@ public class BudgetService {
     public TeacherAwardPage awards(@Nullable Long groupId, @Nullable String month, @Nullable String cursor, int limit) {
         var user = current.require();
         var period = month(month);
-        String filter = "awards/" + (groupId == null ? "ALL" : groupId) + "/" + period;
+        String filter = "awards/" + user.id() + "/" + (groupId == null ? "ALL" : groupId) + "/" + period;
         var after = cursor == null ? null : cursor(cursor, filter);
         var rows = awards.history(user.id(), groupId, MonthRange.of(period), after, limit + 1);
         var page = rows.subList(0, Math.min(limit, rows.size()));
