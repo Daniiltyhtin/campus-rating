@@ -135,6 +135,21 @@ class SemesterAccrualIT extends PostgresIntegrationTest {
     }
 
     @Test
+    void studentRegisteredAfterSemesterStartIsNotAccrued() {
+        long onTime = student(900);
+        clock.set(START.plusSeconds(60));
+        long late = student(900);
+
+        job.runOnce();
+
+        assertAccrual(onTime, 100, 1);
+        assertThat(accrualCount(late)).isZero();
+        assertThat(ledger.balances(late).ar()).isEqualTo(900);
+        assertThat(jdbc.queryForObject("select count(*) from ledger_entry where idempotency_key = ?",
+                Integer.class, "semester:" + semester + ":" + late)).isZero();
+    }
+
+    @Test
     void existingPostingRestoresActualAccrualWithoutPostingAgain() {
         long student = student(900);
         post(student, EntryKind.SEMESTER_ACCRUAL, 200, "semester:" + semester + ":" + student);

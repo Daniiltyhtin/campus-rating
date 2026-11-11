@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 class SemesterRepository {
-    record Semester(long id, String title) {}
+    record Semester(long id, String title, Instant startsAt) {}
 
     private final JdbcClient jdbc;
 
@@ -17,21 +17,25 @@ class SemesterRepository {
     }
 
     List<Semester> started(Instant now) {
-        return jdbc.sql("select id, title from semester where starts_at <= :now order by starts_at, id")
+        return jdbc.sql("select id, title, starts_at from semester where starts_at <= :now order by starts_at, id")
                 .param("now", Timestamp.from(now))
-                .query((rs, row) -> new Semester(rs.getLong("id"), rs.getString("title"))).list();
+                .query((rs, row) -> new Semester(rs.getLong("id"), rs.getString("title"), rs.getTimestamp("starts_at").toInstant())).list();
     }
 
-    List<Long> candidates(long semesterId, long afterStudentId) {
+    List<Long> candidates(Semester semester, long afterStudentId) {
         return jdbc.sql("""
                 select b.student_id from ledger_balance b
                 where b.currency = 'AR' and b.student_id > :after
+                  and exists (
+                      select 1 from ledger_entry e
+                      where e.student_id = b.student_id and e.kind = 'INITIAL' and e.created_at <= :startsAt
+                  )
                   and not exists (
                       select 1 from semester_accrual a
                       where a.semester_id = :semester and a.student_id = b.student_id
                   )
                 order by b.student_id limit 500
-                """).param("semester", semesterId).param("after", afterStudentId).query(Long.class).list();
+                """).param("semester", semester.id()).param("startsAt", Timestamp.from(semester.startsAt())).param("after", afterStudentId).query(Long.class).list();
     }
 
     boolean recordAccrual(long semesterId, long studentId, int accrued, Instant processedAt) {

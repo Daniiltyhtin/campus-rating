@@ -53,7 +53,7 @@ public class SemesterAccrualJob {
     private void accrueSemester(Semester semester, int nominal) {
         long afterStudentId = 0;
         while (true) {
-            var students = repository.candidates(semester.id(), afterStudentId);
+            var students = repository.candidates(semester, afterStudentId);
             if (students.isEmpty()) {
                 return;
             }
