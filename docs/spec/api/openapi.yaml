@@ -2526,7 +2526,7 @@ paths:
         - directory
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: listAdminFaculties
       summary: Список факультетов
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
@@ -2554,7 +2554,7 @@ paths:
         - directory
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: createAdminFaculty
       summary: Создать факультет
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
@@ -2608,7 +2608,7 @@ paths:
         - directory
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: updateAdminFaculty
       summary: Изменить факультет
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
@@ -2669,7 +2669,7 @@ paths:
         - directory
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: deleteAdminFaculty
       summary: Удалить факультет
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
@@ -2714,7 +2714,7 @@ paths:
         - directory
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: listAdminGroups
       summary: Список учебных групп
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
@@ -2747,7 +2747,7 @@ paths:
         - directory
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: createAdminStudyGroup
       summary: Создать учебную группу
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
@@ -2808,7 +2808,7 @@ paths:
         - directory
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: updateAdminStudyGroup
       summary: Изменить учебную группу
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
@@ -2876,7 +2876,7 @@ paths:
         - directory
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: deleteAdminStudyGroup
       summary: Удалить учебную группу
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
@@ -2921,7 +2921,7 @@ paths:
         - directory
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: listAdminDepartments
       summary: Список кафедр
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
@@ -2953,7 +2953,7 @@ paths:
         - directory
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: createAdminDepartment
       summary: Создать кафедру
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
@@ -3012,7 +3012,7 @@ paths:
         - directory
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: updateAdminDepartment
       summary: Изменить кафедру
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
@@ -3078,7 +3078,7 @@ paths:
         - directory
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: deleteAdminDepartment
       summary: Удалить кафедру
       description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
@@ -3124,7 +3124,7 @@ paths:
         - identity
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: listAdminTeachers
       summary: Преподаватели и заявки
       description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
@@ -3175,7 +3175,7 @@ paths:
         - identity
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: getAdminTeacher
       summary: Карточка преподавателя
       description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
@@ -3220,7 +3220,7 @@ paths:
         - identity
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: approveAdminTeacher
       summary: Допустить преподавателя
       description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
@@ -3282,7 +3282,7 @@ paths:
         - identity
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: rejectAdminTeacher
       summary: Отклонить заявку преподавателя
       description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
@@ -3316,7 +3316,7 @@ paths:
         - identity
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: listAdminTeacherGrants
       summary: Выдачи доступа преподавателю
       description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
@@ -3375,7 +3375,7 @@ paths:
         - identity
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: createAdminTeacherGrant
       summary: Выдать доступ преподавателю
       description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
@@ -3445,7 +3445,7 @@ paths:
         - identity
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: deleteAdminTeacherGrant
       summary: Снять выдачу доступа
       description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
@@ -3482,7 +3482,7 @@ paths:
         - identity
       x-roles:
         - ADMIN
-      x-status: planned
+      x-status: implemented
       operationId: listAdminTeacherAccessibleGroups
       summary: Доступные группы преподавателя
       description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
