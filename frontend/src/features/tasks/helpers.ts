@@ -2,6 +2,7 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import { ApiError } from '../../api/client';
 import type { components } from '../../api/schema';
 import type { LoadState } from '../../app/layouts/PageLayouts';
+import type { QueryClient } from '@tanstack/react-query';
 export type Schemas = components['schemas'];
 export const statuses = {
   IN_PROGRESS: 'В процессе',
@@ -74,4 +75,8 @@ export async function dataOf<T>(request: Promise<{ data?: T; error?: unknown }>)
 export function moscowDeadline(local: string) {
   const moment = new Date(`${local.slice(0, 16)}:00+03:00`);
   return Number.isNaN(moment.getTime()) ? local : moment.toISOString();
+}
+
+export function invalidateTaskData(client: QueryClient) {
+  return client.invalidateQueries({ predicate: (query) => query.queryKey[0] !== 'auth' });
 }

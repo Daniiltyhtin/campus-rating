@@ -1,6 +1,7 @@
+import { QueryClient } from '@tanstack/react-query';
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '../../api/client';
-import { errorText, moscowDeadline } from './helpers';
+import { errorText, invalidateTaskData, moscowDeadline } from './helpers';
 
 describe('moscowDeadline', () => {
   it('переводит местное время Москвы в UTC', () => {
@@ -20,5 +21,16 @@ describe('errorText', () => {
   it('для INVALID_STATE без detail показывает текст про состояние работы', () => {
     const error = new ApiError({ type: 'about:blank', title: 'Conflict', status: 409, code: 'INVALID_STATE' });
     expect(errorText(error)).toBe('Состояние работы изменилось. Обновите данные.');
+  });
+});
+
+describe('invalidateTaskData', () => {
+  it('сбрасывает данные задач и не трогает сессию', async () => {
+    const client = new QueryClient();
+    client.setQueryData(['auth', 'me'], { id: 1 });
+    client.setQueryData(['assignment', 7], { id: 7 });
+    await invalidateTaskData(client);
+    expect(client.getQueryState(['auth', 'me'])?.isInvalidated).toBe(false);
+    expect(client.getQueryState(['assignment', 7])?.isInvalidated).toBe(true);
   });
 });

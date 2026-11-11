@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 import { api } from '../../api/client';
 import { AsyncContent, FormLayout, PageLayout } from '../../app/layouts/PageLayouts';
 import { ErrorMessage } from './shared';
-import { dataOf, fieldError, loadState, moscowDeadline, type Schemas } from './helpers';
+import { dataOf, fieldError, loadState, moscowDeadline, type Schemas, invalidateTaskData } from './helpers';
 
 export function CheckpointEdit({ checkpoint, onSaved }: { checkpoint: Schemas['Checkpoint']; onSaved: () => void }) {
   const [title, setTitle] = useState(checkpoint.title);
@@ -20,7 +20,7 @@ export function CheckpointEdit({ checkpoint, onSaved }: { checkpoint: Schemas['C
         }),
       ),
     onSuccess: async () => {
-      await client.invalidateQueries();
+      await invalidateTaskData(client);
       onSaved();
     },
   });
@@ -89,7 +89,7 @@ export function CheckpointNew() {
         }),
       ),
     onSuccess: async (checkpoint) => {
-      await client.invalidateQueries();
+      await invalidateTaskData(client);
       void navigate(`/checkpoints/${checkpoint.id}`);
     },
   });

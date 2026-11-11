@@ -6,7 +6,7 @@ import { api, submitAssignment } from '../../api/client';
 import { AsyncContent, FormLayout, PageLayout } from '../../app/layouts/PageLayouts';
 import { useSession } from '../../app/session';
 import { ErrorMessage, Status } from './shared';
-import { dataOf, dateTime, fieldError, loadState, type Schemas } from './helpers';
+import { dataOf, dateTime, fieldError, loadState, type Schemas, invalidateTaskData } from './helpers';
 
 export function Penalty({ penalty }: { penalty: Schemas['Penalty'] }) {
   const [now, setNow] = useState(() => Date.now());
@@ -106,7 +106,7 @@ function SubmissionForm({ assignment }: { assignment: Schemas['Assignment'] }) {
   const [required, setRequired] = useState(false);
   const mutation = useMutation({
     mutationFn: () => dataOf(submitAssignment(api, assignment.id, mode === 'file' && file ? { file } : { link })),
-    onSuccess: () => client.invalidateQueries(),
+    onSuccess: () => invalidateTaskData(client),
   });
   if (session?.role !== 'STUDENT' || session.userId !== String(assignment.student.id)) return null;
 

@@ -8,7 +8,7 @@ import { useSession } from '../../app/session';
 import { CheckpointEdit } from './CheckpointForms';
 import { AssignmentDetails } from './TaskPage';
 import { ErrorMessage, More, Status } from './shared';
-import { dataOf, dateTime, fieldError, loadState, statuses, type Schemas } from './helpers';
+import { dataOf, dateTime, fieldError, loadState, statuses, type Schemas, invalidateTaskData } from './helpers';
 
 function workCount(n: number) {
   if (n % 10 === 1 && n % 100 !== 11) return `${n} работу`;
@@ -56,7 +56,7 @@ export function CheckpointPage() {
       ),
     onSuccess: async () => {
       setSelected([]);
-      await client.invalidateQueries();
+      await invalidateTaskData(client);
     },
   });
   const checkpoint = query.data;
@@ -245,7 +245,7 @@ function ReturnForm({ assignmentId, onReturned }: { assignmentId: number; onRetu
         }),
       ),
     onSuccess: async () => {
-      await client.invalidateQueries();
+      await invalidateTaskData(client);
       onReturned();
     },
   });
