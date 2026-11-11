@@ -721,6 +721,61 @@
 - **Кругов ревью:** 1 (две модели).
 - **Коммит / PR:** PR25.
 
+### 2026-11-11 — U7b: домен точек (U2 плана U7)
+
+- **Кто / агент / модель:** Даниил / Codex / gpt-6.1-sol (реализация, test-first); ревью — Claude Code / claude-opus-5-5, второе мнение — Antigravity gemini-3.8-flash-high (только чтение).
+- **Поручение:** юнит U2 плана `2026-11-09-002-feat-u7-checkpoints-plan.md` — состояния и переходы назначения, вычисляемый статус, слот и блок штрафа, правила сдачи ссылкой и файлом.
+- **Результат с доказательствами:** `AssignmentState`, `AssignmentStatus` (тип шва §6), `checkpoint.domain`: `AssignmentTransitions`, `AssignmentStatusPolicy`, `PenaltySlot`, `PenaltyView`, `PenaltyPhase`, `SubmissionRules`. Примеры 1–6 и 1а, мастер-AE1 и AE3, приоритет фаз, вся матрица переходов, ссылки, расширения, сигнатуры и граница 10 МБ — 115 модульных тестов. `clean verify` — 309 тестов, 0 падений; `-Pquality verify` — PIT `checkpoint.domain` 86/86 (100 %); CRAP по `checkpoint` ≤ 5; `check-agent-docs` и 140 тестов `tools` прошли. По ревью: отказ сдачи `SubmissionRules.Rejected` больше не наследует `IllegalArgumentException` — иначе общий обработчик аргументов мог бы превратить 413/415 в 400; добавлен тест `nextAt` на долях секунды для слотов 0, 1, 2 (мастер-AE1).
+- **Не проверено:** `.docx` проверяется сигнатурой ZIP — переименованный архив с расширением `.docx` пройдёт; глубже не проверяем. Имя `.pdf` без основы допустимо. Второе мнение оборвалось по таймауту после первой находки.
+- **Ошибка агента:** нет.
+- **Урок:** нового нет.
+- **Кругов ревью:** 1 (две модели).
+- **Коммит / PR:** PR U7b.
+
+### 2026-11-11 — U7: схема, хранилище, точки и назначения (U3–U4 плана U7)
+
+- **Кто / агент / модель:** Даниил / Codex / gpt-6.1-sol (реализация, test-first); ревью и прогон IT — Claude Code / claude-opus-5-5, второе мнение — Antigravity gemini-3.8-flash-high (только чтение).
+- **Поручение:** юниты U3 и U4 плана `2026-11-09-002-feat-u7-checkpoints-plan.md` поверх домена U7b — таблицы точки, назначений и версий сдач, порт `FileStorage` на томе, пять операций точек, назначения тремя путями (KTD8).
+- **Результат с доказательствами:** changeset `checkpoint/202611110100-checkpoint.sql`; `shared/storage` (`FileStorage`, `VolumeFileStorage`, очистка тома в `demo`); `CheckpointController` (`listMyCheckpoints`, `createCheckpoint`, `getCheckpointDefaults`, `getCheckpoint`, `updateCheckpoint`) с `x-status: implemented`; слушатели `CheckpointCreated` и `MembershipActivated` с `ON CONFLICT DO NOTHING` и условием `activatedAt < deadline`; `PATCH /api/v1/checkpoints/*` добавлен в `SecurityConfig` с ролью `TEACHER`. `clean verify` — 351 тест, 0 падений (в том числе `CheckpointIT`, `CheckpointModuleTest`, `ContractCompatibilityIT`, `DemoRecreateIT`, `ModularityTest`); строки `checkpoint` — 281/284 (98,9 %); CRAP проходит; `CheckpointIT` дополнительно прогнан дважды подряд; `api:gen` без изменений; `frontend check`, линтер контракта, `check-agent-docs`, 140 тестов `tools` — зелёные.
+- **Не проверено:** «Как проверить» на демо-стеке через HTTP — по DoD PR U7 это шаги 1–3, сделать после U5–U6 одним проходом.
+- **Ошибка агента:** (1) тесты, поднимающие приложение через `SpringApplicationBuilder`, остались без `campus.storage.dir` → `BootstrapAdminIT` и `DemoIdentityLifecycleIT` упали на создании `/app/uploads` при прогоне ревьюера → временный каталог в `IdentityLifecycleSupport`. (2) `failedListenerRemainsUnfinishedAndRegistryRetryIsIdempotent` падал только в прогоне всего класса → диагностика показала гонку стаббинга Mockito: главный поток перестаббил мок, пока асинхронный слушатель `CheckpointCreated` вызывал тот же мок, и стаб прицепился не к тому вызову → перед перестаббингом тесты ждут завершения публикаций, стаббинг через `doReturn`/`doThrow`. (3) тесты были написаны сжато и с полными именами классов → приведены к стилю проекта.
+- **Урок:** мок, который вызывает асинхронный слушатель Modulith, нельзя перестаббивать, пока есть незавершённые публикации → в IT сначала дождаться пустого `event_publication` по типу события, затем `doReturn/doThrow(...).when(mock)`; Codex без Docker такую гонку не увидит, поэтому IT с событиями ревьюер гоняет целым классом.
+- **Кругов ревью:** 1.
+- **Коммит / PR:** PR U7 (U3–U4).
+
+### 2026-11-11 — U7: сдача, приём, возврат, файлы (U5 плана U7)
+
+- **Кто / агент / модель:** Даниил / Codex / gpt-6.1-sol (реализация, test-first); ревью и прогон IT — Claude Code / claude-opus-5-5, второе мнение — Antigravity gemini-3.8-flash-high (только чтение).
+- **Поручение:** юнит U5 плана `2026-11-09-002-feat-u7-checkpoints-plan.md` — сдача версиями, приём пачкой, возврат с комментарием, файлы последней сдачи и любой версии, блок штрафа в `getAssignment`.
+- **Результат с доказательствами:** `SubmissionService` (блокировка назначений `FOR UPDATE` по возрастанию id → переход через `AssignmentTransitions` → запись, KTD6), `SubmissionFiles` (файл до вставки версии, удаление при откате), `AssignmentReader` (блок штрафа `PenaltyView` с АР из `LedgerApi.balances`, `returnComment` последней версии только в `OPEN`), `AssignmentController` и приём точки; шесть операций — `x-status: implemented`. Для multipart `oneOf` с запрещённой второй частью добавлен конвертер схемы в тестовую обвязку springdoc (springdoc в проекте только в тестах — прод `/v3/api-docs` не отдаёт). `clean verify` — 367 тестов, 0 падений (`SubmissionIT` 10 сценарных тестов, в том числе Г16 — параллельная сдача и Г17 — откат после записи файла; `ContractCompatibilityIT`); строки `checkpoint` — 560/568 (98,6 %); CRAP проходит.
+- **Не проверено:** лимит multipart 11 МБ на уровне контейнера сервлетов — MockMvc его не применяет, в IT `413` даёт `SubmissionRules`; на стенде проверить шагом 10 «Как проверить».
+- **Ошибка агента:** нет.
+- **Урок:** нового нет.
+- **Кругов ревью:** 1.
+- **Коммит / PR:** PR U7 (U5).
+
+### 2026-11-11 — U7: чтение задач, таблица точки, шов профиля (U6 плана U7) и проход по стенду
+
+- **Кто / агент / модель:** Даниил / Codex / gpt-6.1-sol (реализация, test-first); ревью, прогон IT и стенд — Claude Code / claude-opus-5-5, второе мнение — Antigravity gemini-3.8-flash-high (только чтение).
+- **Поручение:** юнит U6 плана `2026-11-09-002-feat-u7-checkpoints-plan.md` — `listMyAssignments`, `listCheckpointAssignments`, шов `StudentAssignments`; затем «Как проверить» шаги 1–14 на демо-стеке для DoD PR U7.
+- **Результат с доказательствами:** `AssignmentReadService` и `AssignmentReadRepository` (статус в SQL — зеркало `AssignmentStatusPolicy`, KTD4), курсор `checkpoint.domain.AssignmentCursor`, `StudentAssignments` и `StudentAssignmentView` по §6 швов; все 13 операций точек и назначений — `x-status: implemented`. `clean verify -Pquality` — 422 теста, 0 падений (`AssignmentReadIT` 26, включая сверку SQL и функции на границе дедлайна); PIT `checkpoint.domain` 99/99; строки `checkpoint` — 793/802 (98,9 %); CRAP проходит. Демо-стек (`docker compose up --build backend`): скрипт по шагам 1–13 — 49/49 проверок; шаг 14 — после рестарта том пуст, точек и задач нет, входы 1001, 2001, 3001 работают.
+- **Не проверено:** экраны — отдельный PR U7c.
+- **Ошибка агента:** (1) `AssignmentReadIT` мокал только `GroupMembers`, а бин `identityReads` реализует и `TeacherScope` → контекст не поднимался, поймал прогон ревьюера → мок `TeacherScope` добавлен. (2) springdoc для `anyOf` enum и `null` выдавал ссылку на компонент `NullValue` вместо встроенного `type: null`; собственный тест схемы через `ModelConverters` этого не видел → `ContractCompatibilityIT` упал у ревьюера → конвертер в тестовой обвязке springdoc, тест схемы теперь читает реальный `/v3/api-docs`.
+- **Урок:** файл больше лимита multipart в IT давал `413`, а на стенде клиент, отправляющий тело целиком (как `fetch`), получал обрыв соединения: Tomcat дочитывает сверх лимита не больше 2 МБ (`max-swallow-size`) и закрывает сокет; curl этого не видит из-за `Expect: 100-continue` → поймано скриптом стенда → `server.tomcat.max-swallow-size: 12MB`, значение закреплено в `StorageConfigurationTest`. Загрузку сверх лимита проверять клиентом без `Expect`, а не только MockMvc и curl.
+- **Кругов ревью:** 1.
+- **Коммит / PR:** PR U7 (U6).
+
+### 2026-11-11 — U8: задание штрафа по слотам (U1–U2 плана U8)
+
+- **Кто / агент / модель:** Даниил / Codex / gpt-6.1-sol (реализация, test-first); ревью, прогон IT и стенд — Claude Code / claude-opus-5-5.
+- **Поручение:** юниты U1–U2 черновика плана `2026-11-11-001-feat-u8-penalty-semester-plan.md` (PR U8a) — `PenaltyPolicy` и задание штрафа; начисление семестра (U3) ждёт решения по источнику дат.
+- **Результат с доказательствами:** `checkpoint.domain.PenaltyPolicy` (слот через `PenaltySlot`, номинал `min(шаг, стоимость − списано)`), `PenaltyJob` (триггер читает poll-period из `SettingsApi` перед каждым проходом; на назначение — своя транзакция: `FOR UPDATE` → политика → `LedgerApi.post` → `charged` и `last_penalty_slot` по `Posted` / `Zero` / `AlreadyPosted`), `PenaltyRepository` (кандидаты в SQL, пачка до 500). `clean verify -Pquality` — 442 теста, 0 падений (`PenaltyJobIT` 13: мастер-AE1–AE4, AE6, AE7, гонка сдачи и прохода, смена poll-period, `AlreadyPosted`, откат при ошибке без остановки пачки); PIT `checkpoint.domain` 110/110; строки `checkpoint` — 869/884 (98,3 %); CRAP проходит. Демо-стек: точка стоимостью 40 с дедлайном через 20 с — в слоте 0 списано 20, в слоте 1 ещё 20, затем `CAP_REACHED`; АР студента 960.
+- **Не проверено:** начисление семестра (U3 плана U8) не делалось.
+- **Ошибка агента:** (1) `PenaltyJobIT` мокал только `GroupMembers` — контекст не поднимался без `TeacherScope` (повтор случая U6). (2) Задание реализовало `SchedulingConfigurer` само, а свойство `campus.penalty.scheduler.enabled` выключало только `@EnableScheduling`; инфраструктура планирования поднималась в тестовых контекстах, и фоновые проходы штрафовали чужие назначения в общей базе IT → поймал прогон ревьюера (чужие балансы в `SubmissionIT`, лишние пары в сверке `LedgerIT`) → регистрация задачи перенесена в условную конфигурацию, свойство выключено для всех тестов в `src/test/resources/application.properties`.
+- **Урок:** фоновое задание, которое пишет в общую базу IT, выключать для всех тестов одним местом и проверять по логу полного прогона, что проходов вне своего теста нет; условие ставить на регистрацию задачи, а не только на `@EnableScheduling`.
+- **Кругов ревью:** 1.
+- **Коммит / PR:** PR U8 (штраф).
+
 ### 2026-11-11 — План U8: штрафы и начисление семестра (черновик)
 
 - **Кто / агент / модель:** Даниил / Claude Code / claude-opus-5-5.
