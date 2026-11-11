@@ -756,3 +756,27 @@
 - **Урок:** в frontend/AGENTS.md добавлены keyed form state, FontFaceSet test helper и единое longhand-свойство для динамических кнопок.
 - **Кругов ревью:** 0; независимый tester не является ревьюером реализации.
 - **Коммит / PR:** реализация `d9d2f8f`, [PR34](https://github.com/Daniiltyhtin/campus-rating/pull/34), ветка `u9-activities-frontend` → `u5-auth-frontend`; опубликовано по сохранённому поручению человека. 67 файлов сверены с явным списком до/после коммита, дерево чистое. PR33 остаётся отдельным auth-изменением; независимый approve ещё требуется.
+
+### 2026-11-11 — U10 frontend: подготовка профиля и истории
+
+- **Кто / агент / модель:** Максим / Codex / GPT-6; отдельная сессия tester по разрешению человека запускать frontend-тестировщиков без вопросов.
+- **Поручение:** начать U10 при оставшихся 15% лимита и продолжить позже; сохранить пригодную точку продолжения.
+- **Результат с доказательствами:** ветка `u10-profile-frontend` от `04ee40a`; отдельный план `docs/spec/plans/2026-11-11-002-feat-u10-profile-frontend-plan.md`, R3/R5/R6/R40/R41 и KTD18, Files и матрица; `node tools/check-agent-docs.mjs` passed, `git diff --check` exit 0. Точка продолжения: `docs/reviews/u10-frontend/handoff.md`. База подтверждена CI 42977107588: frontend/backend/e2e/harness SUCCESS. Tester пишет 25 acceptance, production ещё не менялся.
+- **Не проверено на этапе подготовки:** UI/реализация и browser screenshots U10; затем tester завершил25 acceptance с RED24 failed/1 passed, результат реализации — в следующей записи. Реальная интеграция planned profile/ledger не заявляется. Предыдущие снимки U9 не считаются доказательством U10.
+- **Неудачные попытки:** нет.
+- **Ошибка агента:** новых нет; подготовка не объявляется реализацией.
+- **Урок:** новых нет; используются существующие уроки MSW/Mantine и изоляции состояния по ресурсу.
+- **Кругов ревью:** 0.
+- **Коммит / PR:** нет; подготовка и Red-тесты остаются в рабочем дереве этой ветки до реализации и зелёных ворот. Родительские PR33/PR34 не меняются.
+
+### 2026-11-11 — U10 frontend: профили и история
+
+- **Кто / агент / модель:** Максим / Codex / GPT-6; отдельная сессия tester по разрешению человека.
+- **Поручение:** после первоначальной подготовки человек попросил продолжать; реализовать frontend U10 и публиковать готовый результат в собственной ветке по сохранённому поручению.
+- **Результат с доказательствами:** профили всех ролей, server balances, задачи/приватность ссылок, история со знаковыми суммами/snapshot/Москвой, currency/cursor/dedup/retry/cancellation. До production25 acceptance RED24/1, собственные24 проверки RED18/6; итоговые25 независимых acceptance прошли. Финальный frontend check с VITEST_MAX_WORKERS=1:218/218 Vitest +11/11 lint-rule, ESLint/tsc exit0; build1030 modules exit0; tools140/140, agent-docs/diff passed. Browser Playwright CLI/Chrome с явным MSW:36 финальных снимков360/1280 ×3 темы, overflow0, min text contrast5.07/7.54/7.05, active targets≥44/52, own/foreign/admin ссылки, currency/keyboard/cursor, ошибок приложения0; exit0. Отчёт: `docs/reviews/u10-frontend/verification.md`.
+- **Не проверено:** реальные profile/ledger backend операции planned, серверная авторизация и БД; независимое approve. Страницы задач, админских материалов и ленты — существующие placeholder других юнитов. Backend/API/generated/БД не менялись.
+- **Неудачные попытки:** Docker engine недоступен после попытки запуска, MCP browser timeout; использован прямой Vite5190 + Playwright CLI с установленным Chrome (bundled headless shell отсутствовал). Параллельные тяжёлые UI/Vitest процессы давали scheduler timeouts → последовательные прогоны; tester увеличил только scoped timing с restore,25 бизнес-ожиданий прежние. Первый полный прогон217/218 нашёл старый guest smoke профиля → tester добавил реальный teacher login, точное toEqual PUBLIC example сохранено; финальный218/218.
+- **Ошибка агента:** первоначальный object guard был недостаточно сужен для Record → диагностика tsc → добавлен type predicate без unsafe cast. В QA ожидался пункт «Профиль» у admin, которого нет в его навигации → timeout → ожидание общего меню пользователя; локальный focus вышел за область видимости script-mode → ReferenceError → исправлен QA script и повторён полный финальный сценарий. Слишком длинный урок превысил8192bytes frontend/AGENTS.md → agent-docs → сокращён до зелёной проверки. В product UI системный автор приведён к «Система» без «от Система», снимки и ворота повторены.
+- **Урок:** frontend/AGENTS.md — разумные локальные async/test timeouts с restore без изменения ожиданий; прежние lessons MSW и keyed state применены.
+- **Кругов ревью:**0; tester не заменяет независимого reviewer реализации.
+- **Коммит / PR:** реализация `5f5b00b`, [PR35](https://github.com/Daniiltyhtin/campus-rating/pull/35), ветка `u10-profile-frontend` → `u9-activities-frontend`;57 файлов сверены с явным списком до/после коммита, дерево чистое. Опубликовано по сохранённому поручению человека. Родительские PR33/PR34 остаются отдельными изменениями, независимый approve ещё требуется.

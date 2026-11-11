@@ -47,6 +47,8 @@ React 19, Vite, TypeScript, Mantine, React Router, TanStack Query, Vitest. До�
 
 ## Уроки
 
+- Lazy UI превысил findBy 1 s → tester подтвердил loading DOM → локальные async/test timeouts с restore без смены ожиданий (`src/features/profile/profile.acceptance.test.tsx`).
+
 - Выбор участников сохранялся при переходе на другую уже закешированную активность → воспроизвёл тест с двумя заполненными query keys → состояние формы подтверждения привязывать к activity.id через key; проверять переход и на холодные, и на прогретые данные (`src/features/activities/ConfirmParticipationPage.tsx`, `navigation.test.tsx`).
 - Autosize Textarea падала в jsdom из-за отсутствующего FontFaceSet → tester прочитал подписку Mantine на document.fonts → в test-only helper давать EventTarget с ready/check/load, не менять production-компонент ради среды (`src/test/activitiesAcceptance.tsx`).
 - Default-кнопка при смене disabled смешивала background и backgroundColor → заметили ошибку React в браузере и воспроизвели rerender-тестом → в одной ветке стилей использовать одно longhand-свойство (`src/theme/theme.ts`, `button.test.tsx`).
