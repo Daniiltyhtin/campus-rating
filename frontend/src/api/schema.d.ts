@@ -1097,6 +1097,150 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/teachers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Преподаватели и заявки
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Полный список TEACHER, включая ожидающих допуска, name asc затем id asc. Счётчик заявок — число teacherApproved=false; email/кафедра сами по себе допуска не дают.
+         */
+        get: operations["listAdminTeachers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teachers/{teacherId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Карточка преподавателя
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED.
+         */
+        get: operations["getAdminTeacher"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teachers/{teacherId}/approval": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Допустить преподавателя
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Администратор проверяет кафедру: её факультет определяет базовый доступ. departmentId должен существовать, иначе VALIDATION_FAILED с fieldErrors.departmentId. Повтор уже принятой заявки с той же кафедрой возвращает текущее200 без второго эффекта. Другая кафедра у уже допущенного —409 INVALID_STATE; изменение кафедры допущенного этим действием не разрешается. Список преподавателей/допусков и TeacherScope обновляются согласованно.
+         */
+        post: operations["approveAdminTeacher"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teachers/{teacherId}/application": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Отклонить заявку преподавателя
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Только teacherApproved=false: удалить аккаунт и его зависимые записи доступа; завершить сессии. Повторная регистрация с email возможна. Уже допущенный —409 INVALID_STATE; отсутствующий или уже отклонённый —404 NOT_FOUND. Требует явного подтверждения в UI. Не удаляет другого пользователя по неподходящей роли.
+         */
+        delete: operations["rejectAdminTeacher"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teachers/{teacherId}/grants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Выдачи доступа преподавателю
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Все дополнительные выдачи, включая выданные до допуска. Базовый факультет кафедры сюда не входит. Порядок id asc, курс не вычисляется клиентом.
+         */
+        get: operations["listAdminTeacherGrants"];
+        put?: never;
+        /**
+         * Выдать доступ преподавателю
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Только точные сочетания GROUP(groupId), FACULTY(facultyId), FACULTY_COURSE(facultyId,course), COURSE(course). Другие поля, null, неизвестные id и курс вне1…6 —VALIDATION_FAILED с fieldErrors. Нет ограничения факультетом кафедры. Одинаковая выдача идемпотентна: новая201, уже существующая200 с тем жеid, без второго эффекта. До допуска TeacherScope остаётся пустым.
+         */
+        post: operations["createAdminTeacherGrant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teachers/{teacherId}/grants/{grantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Снять выдачу доступа
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Удалить только указанную выдачу этого преподавателя; grant другого teacherId или отсутствующая выдача —404, чужую запись не менять. Повтор после удаления —404. TeacherScope пересчитывается, группа может остаться доступной по кафедре или другой выдаче. Старые авторские ресурсы сохраняются по KTD23.
+         */
+        delete: operations["deleteAdminTeacherGrant"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teachers/{teacherId}/accessible-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Доступные группы преподавателя
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Только серверный TeacherScope: факультет кафедры ∪ дополнительные выдачи, для teacherApproved=false пусто. Курс рассчитывается по году набора и текущему учебному году Europe/Moscow с границей1сентября, только1…6. Уникальные группы name asc/id asc. Frontend не повторяет вычисление прав; при снятии выдачи здесь может оставаться группа по другому основанию.
+         */
+        get: operations["listAdminTeacherAccessibleGroups"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1993,6 +2137,97 @@ export interface components {
         };
         AdminDepartmentList: {
             items: components["schemas"]["AdminDepartment"][];
+        };
+        AdminTeacher: {
+            id: components["schemas"]["Id"];
+            fullName: string;
+            /** Format: email */
+            email: string;
+            department: components["schemas"]["AdminDepartment"];
+            teacherApproved: boolean;
+        };
+        AdminTeacherList: {
+            items: components["schemas"]["AdminTeacher"][];
+        };
+        TeacherApprovalRequest: {
+            departmentId: components["schemas"]["Id"];
+        };
+        /** Format: int32 */
+        TeacherGrantCourse: number;
+        TeacherGrantGROUPRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "GROUP";
+            groupId: components["schemas"]["Id"];
+        };
+        TeacherGrantGROUPView: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "GROUP";
+            group: components["schemas"]["StudyGroupRef"];
+        };
+        TeacherGrantFACULTYRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "FACULTY";
+            facultyId: components["schemas"]["Id"];
+        };
+        TeacherGrantFACULTYView: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "FACULTY";
+            faculty: components["schemas"]["FacultyRef"];
+        };
+        TeacherGrantFACULTY_COURSERequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "FACULTY_COURSE";
+            facultyId: components["schemas"]["Id"];
+            course: components["schemas"]["TeacherGrantCourse"];
+        };
+        TeacherGrantFACULTY_COURSEView: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "FACULTY_COURSE";
+            faculty: components["schemas"]["FacultyRef"];
+            course: components["schemas"]["TeacherGrantCourse"];
+        };
+        TeacherGrantCOURSERequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "COURSE";
+            course: components["schemas"]["TeacherGrantCourse"];
+        };
+        TeacherGrantCOURSEView: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "COURSE";
+            course: components["schemas"]["TeacherGrantCourse"];
+        };
+        TeacherGrantCreate: components["schemas"]["TeacherGrantGROUPRequest"] | components["schemas"]["TeacherGrantFACULTYRequest"] | components["schemas"]["TeacherGrantFACULTY_COURSERequest"] | components["schemas"]["TeacherGrantCOURSERequest"];
+        AdminTeacherGrant: components["schemas"]["TeacherGrantGROUPView"] | components["schemas"]["TeacherGrantFACULTYView"] | components["schemas"]["TeacherGrantFACULTY_COURSEView"] | components["schemas"]["TeacherGrantCOURSEView"];
+        AdminTeacherGrantList: {
+            items: components["schemas"]["AdminTeacherGrant"][];
         };
     };
     responses: {
@@ -4849,6 +5084,398 @@ export interface operations {
                     "application/problem+json": components["schemas"]["Problem"];
                 };
             };
+        };
+    };
+    listAdminTeachers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Результат. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": 2002,
+                     *           "fullName": "Волков Максим Игоревич",
+                     *           "email": "volkov@campus.test",
+                     *           "department": {
+                     *             "id": 101,
+                     *             "code": "ПИ",
+                     *             "name": "Кафедра программной инженерии",
+                     *             "faculty": {
+                     *               "id": 1,
+                     *               "code": "ФИТ",
+                     *               "name": "Факультет информационных технологий"
+                     *             }
+                     *           },
+                     *           "teacherApproved": false
+                     *         },
+                     *         {
+                     *           "id": 2001,
+                     *           "fullName": "Петров Павел Петрович",
+                     *           "email": "petrov@campus.test",
+                     *           "department": {
+                     *             "id": 101,
+                     *             "code": "ПИ",
+                     *             "name": "Кафедра программной инженерии",
+                     *             "faculty": {
+                     *               "id": 1,
+                     *               "code": "ФИТ",
+                     *               "name": "Факультет информационных технологий"
+                     *             }
+                     *           },
+                     *           "teacherApproved": true
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminTeacherList"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    getAdminTeacher: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                teacherId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Результат. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 2002,
+                     *       "fullName": "Волков Максим Игоревич",
+                     *       "email": "volkov@campus.test",
+                     *       "department": {
+                     *         "id": 101,
+                     *         "code": "ПИ",
+                     *         "name": "Кафедра программной инженерии",
+                     *         "faculty": {
+                     *           "id": 1,
+                     *           "code": "ФИТ",
+                     *           "name": "Факультет информационных технологий"
+                     *         }
+                     *       },
+                     *       "teacherApproved": false
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminTeacher"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    approveAdminTeacher: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                teacherId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "departmentId": 101
+                 *     }
+                 */
+                "application/json": components["schemas"]["TeacherApprovalRequest"];
+            };
+        };
+        responses: {
+            /** @description Результат. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 2002,
+                     *       "fullName": "Волков Максим Игоревич",
+                     *       "email": "volkov@campus.test",
+                     *       "department": {
+                     *         "id": 101,
+                     *         "code": "ПИ",
+                     *         "name": "Кафедра программной инженерии",
+                     *         "faculty": {
+                     *           "id": 1,
+                     *           "code": "ФИТ",
+                     *           "name": "Факультет информационных технологий"
+                     *         }
+                     *       },
+                     *       "teacherApproved": true
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminTeacher"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["InvalidState"];
+        };
+    };
+    rejectAdminTeacher: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                teacherId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Заявка отклонена, аккаунт удалён. Тело отсутствует. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["InvalidState"];
+        };
+    };
+    listAdminTeacherGrants: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                teacherId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Результат. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": 7001,
+                     *           "kind": "GROUP",
+                     *           "group": {
+                     *             "id": 12,
+                     *             "name": "ИВТ-22",
+                     *             "faculty": {
+                     *               "id": 1,
+                     *               "code": "ФИТ",
+                     *               "name": "Факультет информационных технологий"
+                     *             }
+                     *           }
+                     *         },
+                     *         {
+                     *           "id": 7002,
+                     *           "kind": "FACULTY",
+                     *           "faculty": {
+                     *             "id": 2,
+                     *             "code": "ЭФ",
+                     *             "name": "Экономический факультет"
+                     *           }
+                     *         },
+                     *         {
+                     *           "id": 7003,
+                     *           "kind": "FACULTY_COURSE",
+                     *           "faculty": {
+                     *             "id": 2,
+                     *             "code": "ЭФ",
+                     *             "name": "Экономический факультет"
+                     *           },
+                     *           "course": 1
+                     *         },
+                     *         {
+                     *           "id": 7004,
+                     *           "kind": "COURSE",
+                     *           "course": 2
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminTeacherGrantList"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createAdminTeacherGrant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                teacherId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "kind": "FACULTY_COURSE",
+                 *       "facultyId": 2,
+                 *       "course": 1
+                 *     }
+                 */
+                "application/json": components["schemas"]["TeacherGrantCreate"];
+            };
+        };
+        responses: {
+            /** @description Идентичная выдача уже существует. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 7003,
+                     *       "kind": "FACULTY_COURSE",
+                     *       "faculty": {
+                     *         "id": 2,
+                     *         "code": "ЭФ",
+                     *         "name": "Экономический факультет"
+                     *       },
+                     *       "course": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminTeacherGrant"];
+                };
+            };
+            /** @description Создана новая выдача. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 7003,
+                     *       "kind": "FACULTY_COURSE",
+                     *       "faculty": {
+                     *         "id": 2,
+                     *         "code": "ЭФ",
+                     *         "name": "Экономический факультет"
+                     *       },
+                     *       "course": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminTeacherGrant"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteAdminTeacherGrant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                teacherId: components["schemas"]["Id"];
+                grantId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Выдача снята, тело отсутствует. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listAdminTeacherAccessibleGroups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                teacherId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Результат. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": 11,
+                     *           "name": "ИВТ-21",
+                     *           "faculty": {
+                     *             "id": 1,
+                     *             "code": "ФИТ",
+                     *             "name": "Факультет информационных технологий"
+                     *           }
+                     *         },
+                     *         {
+                     *           "id": 12,
+                     *           "name": "ИВТ-22",
+                     *           "faculty": {
+                     *             "id": 1,
+                     *             "code": "ФИТ",
+                     *             "name": "Факультет информационных технологий"
+                     *           }
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StudyGroupList"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
 }
