@@ -67,3 +67,21 @@ it('rejects a budget problem without budgets instead of typing it', async () => 
   expect(error).toBeInstanceOf(Error);
   expect(error).not.toBeInstanceOf(ApiError);
 });
+
+it.each([undefined, [], [0], [-1], ['1001'], [1.5], [Number.MAX_SAFE_INTEGER + 1]].map((studentIds) => ({ studentIds })))('rejects malformed studentIds $studentIds', async ({ studentIds }) => {
+  server.use(http.get('http://localhost/api/v1/feed/awards', () => HttpResponse.json(
+    { type: 'about:blank', status: 422, title: 'Участники', code: 'NOT_ENROLLED', studentIds },
+    { status: 422, headers: { 'Content-Type': 'application/problem+json' } },
+  )));
+  const error = await createApiClient('http://localhost').GET('/api/v1/feed/awards').catch((error: unknown) => error);
+  expect(error).toBeInstanceOf(Error);
+  expect(error).not.toBeInstanceOf(ApiError);
+});
+
+it.each(['NOT_ENROLLED', 'STUDENT_NOT_ELIGIBLE', 'ALREADY_CONFIRMED'])('preserves checked studentIds for %s', async (code) => {
+  server.use(http.get('http://localhost/api/v1/feed/awards', () => HttpResponse.json(
+    { type: 'about:blank', status: 422, title: 'Участники', code, studentIds: [1001, 1002] },
+    { status: 422, headers: { 'Content-Type': 'application/problem+json' } },
+  )));
+  await expect(createApiClient('http://localhost').GET('/api/v1/feed/awards')).rejects.toMatchObject({ code, problem: { studentIds: [1001, 1002] } });
+});

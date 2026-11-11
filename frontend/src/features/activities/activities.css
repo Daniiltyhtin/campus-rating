@@ -1,0 +1,24 @@
+.activities-page { min-width: 0; }
+.activities-page .cr-masthead > div > div { min-width: 0; max-width: 100%; }
+.activities-page h1, .activities-page h2, .activities-page h3, .activities-page p { overflow-wrap: anywhere; }
+.activities-page .cr-table { min-width: 0; }
+.activity-link { display: inline-flex; align-items: center; min-height: var(--cr-touch-target); max-width: 100%; overflow-wrap: anywhere; }
+.activity-description { white-space: pre-wrap; }
+.activity-meta { display: flex; flex-wrap: wrap; gap: var(--mantine-spacing-md); align-items: center; }
+.activity-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--mantine-spacing-md); }
+.activity-panel { border-block-start: var(--cr-rule-width) solid var(--cr-rule); padding-block: var(--mantine-spacing-lg); }
+.activity-danger { color: var(--cr-status-overdue); }
+.activity-result { border-block-start: var(--cr-rule-width) solid var(--cr-rule); padding-block: var(--mantine-spacing-md); }
+.activity-form { max-width: 44rem; }
+.activity-form .mantine-InputWrapper-description, .activity-form .mantine-CheckboxGroup-description { color: var(--cr-muted); }
+.activity-form .mantine-InputWrapper-error, .activity-form .mantine-CheckboxGroup-error { color: var(--cr-status-overdue); }
+.activity-participants .mantine-SegmentedControl-root { width: 100%; }
+.activity-participants .mantine-SegmentedControl-label { padding-inline: var(--mantine-spacing-xs); color: var(--cr-text); }
+.activity-person { min-width: 0; }
+.activity-filter { max-width: 100%; }
+.activity-filter .mantine-SegmentedControl-label { white-space: normal; color: var(--cr-text); }
+@media (max-width: 48em) {
+  .activities-page h1 { font-size: var(--mantine-h2-font-size); }
+  .activities-page .cr-table td { min-width: 0; }
+  .activity-participants td[data-label='Уровень участия'], .activity-participants td[data-label='Участник'] { grid-template-columns: minmax(0, 1fr); }
+}

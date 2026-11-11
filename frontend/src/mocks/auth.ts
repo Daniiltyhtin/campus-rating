@@ -9,7 +9,7 @@ function cookie(name: string) {
 function problem(code: string, status: number) {
   return HttpResponse.json({ type: 'about:blank', title: 'Ошибка', status, code }, { status, headers: { 'Content-Type': 'application/problem+json' } });
 }
-function readUser() {
+export function readUser() {
   try { const value = cookie('campus-mock-user'); return value ? currentUser(JSON.parse(decodeURIComponent(value))) : null; }
   catch { return null; }
 }
@@ -17,7 +17,7 @@ function saveUser(user: CurrentUser | null) {
   document.cookie = user ? `campus-mock-user=${encodeURIComponent(JSON.stringify(user))}; Path=/; SameSite=Lax`
     : 'campus-mock-user=; Max-Age=0; Path=/';
 }
-function validCsrf(request: Request) {
+export function validCsrf(request: Request) {
   const token = cookie('XSRF-TOKEN');
   return Boolean(token && request.headers.get('X-XSRF-TOKEN') === decodeURIComponent(token));
 }

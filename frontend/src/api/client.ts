@@ -3,8 +3,9 @@ import type { components, paths } from './schema';
 import { problemCodes } from './problemCodes.generated';
 
 type Problem = components['schemas']['Problem'];
-type ApiProblem = components['schemas']['BudgetProblem'] | (Omit<components['schemas']['ValidationProblem'], 'code'> & { code: 'VALIDATION_FAILED' }) | (Omit<Problem, 'code'> & {
-  code: Exclude<Problem['code'], 'BUDGET_EXCEEDED' | 'VALIDATION_FAILED'>;
+type StudentProblem = Omit<components['schemas']['StudentsProblem'], 'code'> & { code: 'NOT_ENROLLED' | 'STUDENT_NOT_ELIGIBLE' | 'ALREADY_CONFIRMED' };
+type ApiProblem = components['schemas']['BudgetProblem'] | StudentProblem | (Omit<components['schemas']['ValidationProblem'], 'code'> & { code: 'VALIDATION_FAILED' }) | (Omit<Problem, 'code'> & {
+  code: Exclude<Problem['code'], 'BUDGET_EXCEEDED' | 'VALIDATION_FAILED' | StudentProblem['code']>;
 });
 
 export class ApiError extends Error {
@@ -21,6 +22,8 @@ function isProblem(value: unknown): value is ApiProblem {
   const p = value as Record<string, unknown>;
   if (typeof p.type !== 'string' || typeof p.title !== 'string' || typeof p.status !== 'number' || typeof p.code !== 'string' || !problemCodes.some((code) => code === p.code)) return false;
   if (p.detail != null && typeof p.detail !== 'string') return false;
+  if (['NOT_ENROLLED', 'STUDENT_NOT_ELIGIBLE', 'ALREADY_CONFIRMED'].includes(p.code)) return Array.isArray(p.studentIds) && p.studentIds.length > 0
+    && p.studentIds.every((id: unknown) => typeof id === 'number' && Number.isSafeInteger(id) && id > 0);
   if (p.code === 'VALIDATION_FAILED') return Array.isArray(p.fieldErrors) && p.fieldErrors.every((field: unknown) => {
     if (!field || typeof field !== 'object') return false;
     const item = field as Record<string, unknown>;

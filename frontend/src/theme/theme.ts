@@ -33,7 +33,7 @@ export const theme = createTheme({
     Button: Button.extend({ styles: (_theme, props) => ({ root: { minHeight: 'var(--cr-touch-target)', fontSize: 'var(--cr-body-size)',
       ...(props.disabled ? { backgroundColor: 'var(--cr-selection)', color: 'var(--cr-muted)', border: 'var(--cr-rule-width) dashed var(--cr-muted)' } : {}),
       ...(!props.disabled && (props.variant ?? 'filled') === 'filled' ? { backgroundColor: 'var(--cr-button)', color: 'var(--cr-button-text)' } : {}),
-      ...(props.variant === 'default' ? { background: 'transparent', color: 'var(--cr-text)', border: 'var(--cr-rule-width) solid var(--cr-text)' } : {}),
+      ...(props.variant === 'default' ? { backgroundColor: 'transparent', color: 'var(--cr-text)', border: 'var(--cr-rule-width) solid var(--cr-text)' } : {}),
       ...(props.variant === 'outline' || props.variant === 'subtle' ? { color: 'var(--cr-link)', borderColor: props.variant === 'outline' ? 'var(--cr-link)' : undefined } : {}),
     } }) }),
     Input: Input.extend({ styles: (_theme, props) => ({ input: { minHeight: 'var(--cr-touch-target)', fontSize: 'var(--cr-body-size)', background: 'var(--cr-surface)', color: 'var(--cr-text)',
