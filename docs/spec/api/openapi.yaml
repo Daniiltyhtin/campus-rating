@@ -622,7 +622,7 @@ paths:
 
         Доступ: преподаватель, только свои точки — в том числе для групп, которые уже недоступны.
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       responses:
@@ -677,7 +677,7 @@ paths:
         Доступ: допущенный преподаватель; каждая группа — из доступных (`403 GROUP_NOT_ACCESSIBLE`; у
         преподавателя без допуска доступных групп нет).
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
           csrf: []
@@ -747,7 +747,7 @@ paths:
 
         Доступ: преподаватель.
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       responses:
@@ -775,7 +775,7 @@ paths:
         Доступ: автор точки, даже если её группы ему уже недоступны; администратор — только чтение.
         Остальным — `403 FORBIDDEN`.
       x-roles: [TEACHER, ADMIN]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
@@ -831,7 +831,7 @@ paths:
 
         Доступ: только автор точки, даже если её группы ему уже недоступны. Администратор — `403`.
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
           csrf: []

@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
   application:
     name: campus-rating
   modulith:
@@ -11,6 +15,8 @@ spring:
     contexts: default
 
 campus:
+  storage:
+    dir: ${CAMPUS_STORAGE_DIR:/app/uploads}
   mail:
     email-verification: ${EMAIL_VERIFICATION}
   penalty:

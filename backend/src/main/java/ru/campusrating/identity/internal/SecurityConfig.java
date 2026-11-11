@@ -82,6 +82,7 @@ class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/checkpoints/*", "/api/v1/checkpoints/*/assignments").hasAnyRole("TEACHER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/checkpoints", "/api/v1/checkpoints/*/assignments/accept", "/api/v1/assignments/*/return",
                                 "/api/v1/activities", "/api/v1/activities/*/participation", "/api/v1/activities/*/participation/preview").hasRole("TEACHER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/checkpoints/*").hasRole("TEACHER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/activities/*/participants").hasRole("TEACHER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/me/assignments").hasRole("STUDENT")
                         .requestMatchers(HttpMethod.POST, "/api/v1/assignments/*/submission").hasRole("STUDENT")

@@ -731,3 +731,14 @@
 - **Урок:** нового нет.
 - **Кругов ревью:** 1 (две модели).
 - **Коммит / PR:** PR U7b.
+
+### 2026-11-11 — U7: схема, хранилище, точки и назначения (U3–U4 плана U7)
+
+- **Кто / агент / модель:** Даниил / Codex / gpt-6.1-sol (реализация, test-first); ревью и прогон IT — Claude Code / claude-opus-5-5, второе мнение — Antigravity gemini-3.8-flash-high (только чтение).
+- **Поручение:** юниты U3 и U4 плана `2026-11-09-002-feat-u7-checkpoints-plan.md` поверх домена U7b — таблицы точки, назначений и версий сдач, порт `FileStorage` на томе, пять операций точек, назначения тремя путями (KTD8).
+- **Результат с доказательствами:** changeset `checkpoint/202611110100-checkpoint.sql`; `shared/storage` (`FileStorage`, `VolumeFileStorage`, очистка тома в `demo`); `CheckpointController` (`listMyCheckpoints`, `createCheckpoint`, `getCheckpointDefaults`, `getCheckpoint`, `updateCheckpoint`) с `x-status: implemented`; слушатели `CheckpointCreated` и `MembershipActivated` с `ON CONFLICT DO NOTHING` и условием `activatedAt < deadline`; `PATCH /api/v1/checkpoints/*` добавлен в `SecurityConfig` с ролью `TEACHER`. `clean verify` — 351 тест, 0 падений (в том числе `CheckpointIT`, `CheckpointModuleTest`, `ContractCompatibilityIT`, `DemoRecreateIT`, `ModularityTest`); строки `checkpoint` — 281/284 (98,9 %); CRAP проходит; `CheckpointIT` дополнительно прогнан дважды подряд; `api:gen` без изменений; `frontend check`, линтер контракта, `check-agent-docs`, 140 тестов `tools` — зелёные.
+- **Не проверено:** «Как проверить» на демо-стеке через HTTP — по DoD PR U7 это шаги 1–3, сделать после U5–U6 одним проходом.
+- **Ошибка агента:** (1) тесты, поднимающие приложение через `SpringApplicationBuilder`, остались без `campus.storage.dir` → `BootstrapAdminIT` и `DemoIdentityLifecycleIT` упали на создании `/app/uploads` при прогоне ревьюера → временный каталог в `IdentityLifecycleSupport`. (2) `failedListenerRemainsUnfinishedAndRegistryRetryIsIdempotent` падал только в прогоне всего класса → диагностика показала гонку стаббинга Mockito: главный поток перестаббил мок, пока асинхронный слушатель `CheckpointCreated` вызывал тот же мок, и стаб прицепился не к тому вызову → перед перестаббингом тесты ждут завершения публикаций, стаббинг через `doReturn`/`doThrow`. (3) тесты были написаны сжато и с полными именами классов → приведены к стилю проекта.
+- **Урок:** мок, который вызывает асинхронный слушатель Modulith, нельзя перестаббивать, пока есть незавершённые публикации → в IT сначала дождаться пустого `event_publication` по типу события, затем `doReturn/doThrow(...).when(mock)`; Codex без Docker такую гонку не увидит, поэтому IT с событиями ревьюер гоняет целым классом.
+- **Кругов ревью:** 1.
+- **Коммит / PR:** PR U7 (U3–U4).
