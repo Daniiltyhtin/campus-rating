@@ -49,6 +49,10 @@ class StorageConfigurationTest {
                                                     .getProperty(
                                                             "spring.servlet.multipart.max-request-size"))
                                     .isEqualTo("11MB");
+                            assertThat(
+                                            context.getEnvironment()
+                                                    .getProperty("server.tomcat.max-swallow-size"))
+                                    .isEqualTo("12MB");
                         });
     }
 }
