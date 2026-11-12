@@ -29,3 +29,5 @@ blob-report/
 # Local agent settings
 .claude/settings.local.json
 .compound-engineering/config.local.yaml
+
+deploy/server.env
