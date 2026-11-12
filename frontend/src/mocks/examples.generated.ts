@@ -1205,7 +1205,8 @@ export const examples: ExampleOperation[] = [
               "status": "SUBMITTED",
               "charged": 0,
               "submittedAt": "2026-11-11T18:20:00Z",
-              "submissionKind": "FILE"
+              "submissionKind": "FILE",
+              "hasSubmissions": true
             },
             {
               "assignmentId": 7002,
@@ -1226,7 +1227,8 @@ export const examples: ExampleOperation[] = [
               "status": "OVERDUE",
               "charged": 40,
               "submittedAt": null,
-              "submissionKind": null
+              "submissionKind": null,
+              "hasSubmissions": false
             }
           ],
           "nextCursor": "eyJuIjoi0JrRg9C30L3QtdGG0L7QsiIsImlkIjo3MDAyfQ",

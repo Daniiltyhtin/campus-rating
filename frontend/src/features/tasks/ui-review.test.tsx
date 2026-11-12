@@ -125,12 +125,12 @@ it.each([student, teacher, { userId: '1', role: 'ADMIN' as const }])('R9: пом
 });
 it.each([['report.pdf', 2516582, '2,4 МБ'], ['scan.png', 87040, '85 КБ'], ['scan.jpg', 1025, '2 КБ'], ['work.zip', 1048576, '1,0 МБ']])('R11–R13: выбор %s, размер и удаление', async (name, size, formatted) => {
   const user = await fileForm();
-  expect(screen.getByRole('button', { name: 'Выбрать файл' })).toBeInTheDocument();
-  expect(screen.getByLabelText(/Файл работы/)).not.toBeVisible();
+  expect(screen.getByRole('button', { name: /Файл работы/ })).toBeInTheDocument();
+  expect(screen.getByLabelText(/Файл работы/, { selector: 'input' })).not.toBeVisible();
   expect(screen.getByText('До 10 МБ: pdf, docx, zip, png или jpg')).toBeVisible();
-  expect(screen.getByRole('button', { name: 'Выбрать файл' })).toHaveAttribute('data-variant', 'default');
+  expect(screen.getByRole('button', { name: /Файл работы/ })).toHaveAttribute('data-variant', 'default');
   expect(screen.getByText('*')).toBeVisible();
-  await user.upload(screen.getByLabelText(/Файл работы/), file(String(name), Number(size)));
+  await user.upload(screen.getByLabelText(/Файл работы/, { selector: 'input' }), file(String(name), Number(size)));
   expect(screen.getByText(`${name} · ${formatted}`)).toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Убрать' }));
   expect(screen.queryByText(`${name} · ${formatted}`)).not.toBeInTheDocument();
@@ -147,15 +147,15 @@ it.each([
   let requests = 0;
   server.use(http.post('*/api/v1/assignments/:id/submission', () => { requests++; return HttpResponse.json({}); }));
   const user = await fileForm();
-  await user.upload(screen.getByLabelText(/Файл работы/), file(name, size));
+  await user.upload(screen.getByLabelText(/Файл работы/, { selector: 'input' }), file(name, size));
   if (error) {
     expect(screen.getByText(error)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Сдать работу' })).toBeDisabled();
-    expect(screen.getByLabelText(/Файл работы/)).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('button', { name: /Файл работы/ })).toHaveAttribute('aria-invalid', 'true');
     expect(requests).toBe(0);
     await user.click(screen.getByRole('button', { name: 'Убрать' }));
     expect(screen.queryByText(error)).not.toBeInTheDocument();
-    await user.upload(screen.getByLabelText(/Файл работы/), file('good.docx', 1));
+    await user.upload(screen.getByLabelText(/Файл работы/, { selector: 'input' }), file('good.docx', 1));
   }
   expect(screen.getByRole('button', { name: 'Сдать работу' })).toBeEnabled();
 });
@@ -164,11 +164,11 @@ it.each(['html', 'problem', 'broken-json'])('R16: 413 %s под полем', asy
     ? problem(413, 'FILE_TOO_LARGE')
     : new HttpResponse(body === 'html' ? '<html>Too large</html>' : '{', { status: 413, headers: { 'Content-Type': body === 'html' ? 'text/html' : 'application/problem+json' } })));
   const user = await fileForm();
-  await user.upload(screen.getByLabelText(/Файл работы/), file('report.pdf', 1));
+  await user.upload(screen.getByLabelText(/Файл работы/, { selector: 'input' }), file('report.pdf', 1));
   await user.click(screen.getByRole('button', { name: 'Сдать работу' }));
   expect(await screen.findByText('Файл больше 10 МБ')).toBeInTheDocument();
   expect(screen.queryByText(/Проверьте соединение/)).not.toBeInTheDocument();
-  expect(screen.getByLabelText(/Файл работы/)).toHaveAttribute('aria-invalid', 'true');
+  expect(screen.getByRole('button', { name: /Файл работы/ })).toHaveAttribute('aria-invalid', 'true');
 });
 it.each([['', 'Укажите ссылку на работу'], ['ftp://example.com/work', 'Укажите ссылку http или https длиной до 2000 символов']])('R18–R20: ссылка %s', async (link, message) => {
   serveAssignment(assignment()); renderApp('/tasks/7001', student);
@@ -247,7 +247,7 @@ it.each([360, 1280])('R22–R24/R32/R39: меню, выбор и панель, %
   setViewportWidth(width);
   const page = example<Schemas['CheckpointAssignmentPage']>('listCheckpointAssignments');
   page.nextCursor = null;
-  page.items = ['SUBMITTED', 'OPEN', 'ACCEPTED', 'SUBMITTED', 'SUBMITTED', 'OPEN'].map((state, i) => ({ ...page.items[0]!, assignmentId: i + 1, student: { id: i + 1, fullName: `Студент ${i + 1}` }, state: state as Schemas['AssignmentState'], status: state === 'OPEN' ? (i === 1 ? 'OVERDUE' : 'IN_PROGRESS') : state as Schemas['AssignmentStatus'], submittedAt: state === 'OPEN' ? null : serverNow }));
+  page.items = ['SUBMITTED', 'OPEN', 'ACCEPTED', 'SUBMITTED', 'SUBMITTED', 'OPEN'].map((state, i) => ({ ...page.items[0]!, assignmentId: i + 1, student: { id: i + 1, fullName: `Студент ${i + 1}` }, state: state as Schemas['AssignmentState'], status: state === 'OPEN' ? (i === 1 ? 'OVERDUE' : 'IN_PROGRESS') : state as Schemas['AssignmentStatus'], hasSubmissions: state !== 'OPEN', submittedAt: state === 'OPEN' ? null : serverNow }));
   const empty = assignment(); empty.submissions = [];
   server.use(http.get('*/api/v1/checkpoints/:id/assignments', () => HttpResponse.json(page)), http.get('*/api/v1/assignments/:id', () => HttpResponse.json(empty)));
   renderApp('/checkpoints/501', teacher); const user = userEvent.setup();
@@ -274,7 +274,7 @@ it.each([360, 1280])('R22–R24/R32/R39: меню, выбор и панель, %
 });
 it('R22/R23: меню у отозванной версии без даты сдачи', async () => {
   const page = example<Schemas['CheckpointAssignmentPage']>('listCheckpointAssignments');
-  page.items = [{ ...page.items[0]!, assignmentId: 7001, state: 'OPEN', status: 'IN_PROGRESS', submittedAt: null, submissionKind: null }]; page.nextCursor = null;
+  page.items = [{ ...page.items[0]!, assignmentId: 7001, hasSubmissions: true, state: 'OPEN', status: 'IN_PROGRESS', submittedAt: null, submissionKind: null }]; page.nextCursor = null;
   const a = assignment(); a.submissions = [{ id: 1, kind: 'LINK', url: 'https://example.com', submittedAt: serverNow, returnComment: null, returnedAt: null, withdrawnAt: serverNow }];
   serveAssignment(a); server.use(http.get('*/api/v1/checkpoints/:id/assignments', () => HttpResponse.json(page)));
   renderApp('/checkpoints/501', teacher); const user = userEvent.setup();
@@ -410,4 +410,33 @@ it.each([4, 20])('R3: студент видит шаг %s из назначен�
   const a = assignment(); a.penalty.step = step; a.penalty.nextAmount = step;
   serveAssignment(a); renderApp('/tasks/7001', student);
   expect(await screen.findByText(`До дедлайна штрафа нет; после — до −${step} АР за каждый интервал`)).toBeVisible();
+});
+
+it('file button describes and announces an oversized selection', async () => {
+  const user = await fileForm();
+  const button = screen.getByRole('button', { name: /Файл работы/ });
+  expect(button).toHaveAttribute('aria-required', 'true');
+  expect(button).toHaveAccessibleDescription('До 10 МБ: pdf, docx, zip, png или jpg');
+  await user.upload(screen.getByLabelText(/Файл работы/, { selector: 'input' }), file('large.pdf', 11 * 1024 * 1024));
+  expect(button).toHaveAttribute('aria-invalid', 'true');
+  expect(button).toHaveAccessibleDescription(/Файл больше 10 МБ/);
+  expect(button).toHaveAccessibleDescription(/large.pdf/);
+  expect(screen.getByRole('alert')).toHaveTextContent('Файл больше 10 МБ');
+});
+
+it('opens a withdrawn history from row metadata without loading assignments for the table', async () => {
+  const page = example<Schemas['CheckpointAssignmentPage']>('listCheckpointAssignments');
+  page.items = [{ ...page.items[0]!, hasSubmissions: true, submittedAt: null, submissionKind: null, state: 'OPEN', status: 'IN_PROGRESS' }];
+  page.nextCursor = null;
+  const reads = vi.fn(() => new HttpResponse(null, { status: 500 }));
+  server.use(
+    http.get('*/api/v1/checkpoints/:id/assignments', () => HttpResponse.json(page)),
+    http.get('*/api/v1/assignments/:id', reads),
+  );
+  renderApp('/checkpoints/501', teacher);
+  const user = userEvent.setup();
+  await user.click(await screen.findByRole('button', { name: `Действия: ${page.items[0]!.student.fullName}` }));
+  expect(await screen.findByRole('menuitem', { name: 'Открыть сдачу' })).toBeVisible();
+  expect(screen.queryByRole('menuitem', { name: 'Вернуть…' })).not.toBeInTheDocument();
+  expect(reads).not.toHaveBeenCalled();
 });

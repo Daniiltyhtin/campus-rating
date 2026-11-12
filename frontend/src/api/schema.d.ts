@@ -1456,6 +1456,8 @@ export interface components {
             status: components["schemas"]["AssignmentStatus"];
             /** Format: int32 */
             charged: number;
+            /** @description Есть хотя бы одна версия сдачи, включая отозванные. */
+            hasSubmissions: boolean;
             /** @description Время последней неотозванной версии; `null`, если её нет. */
             submittedAt: components["schemas"]["NullableInstant"];
             /** @description Тип последней неотозванной версии; `null`, если её нет. */
@@ -2792,7 +2794,8 @@ export interface operations {
                      *           "status": "SUBMITTED",
                      *           "charged": 0,
                      *           "submittedAt": "2026-11-11T18:20:00Z",
-                     *           "submissionKind": "FILE"
+                     *           "submissionKind": "FILE",
+                     *           "hasSubmissions": true
                      *         },
                      *         {
                      *           "assignmentId": 7002,
@@ -2813,7 +2816,8 @@ export interface operations {
                      *           "status": "OVERDUE",
                      *           "charged": 40,
                      *           "submittedAt": null,
-                     *           "submissionKind": null
+                     *           "submissionKind": null,
+                     *           "hasSubmissions": false
                      *         }
                      *       ],
                      *       "nextCursor": "eyJuIjoi0JrRg9C30L3QtdGG0L7QsiIsImlkIjo3MDAyfQ",

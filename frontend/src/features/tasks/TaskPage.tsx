@@ -153,16 +153,20 @@ function SubmissionForm({ assignment }: { assignment: Schemas['Assignment'] }) {
           error={inputError}
         />
       ) : (
-        <Input.Wrapper label="Файл работы" labelElement="label" id={`file-${assignment.id}`} required
-          description="До 10 МБ: pdf, docx, zip, png или jpg" error={inputError}
+        <Input.Wrapper label="Файл работы" labelElement="label" id={`file-${assignment.id}`}
+          labelProps={{ htmlFor: `file-${assignment.id}-button` }} required
+          description="До 10 МБ: pdf, docx, zip, png или jpg" error={inputError ? <span role="alert">{inputError}</span> : undefined}
           styles={{ error: { color: 'var(--cr-status-overdue)' } }}>
           <Stack gap="xs" p="sm" style={{ border: `var(--cr-rule-width) solid var(${inputError ? '--cr-status-overdue' : '--cr-field'})`, borderRadius: 'var(--mantine-radius-sm)' }}>
             <FileButton accept=".pdf,.docx,.zip,.png,.jpg" resetRef={resetFile}
-              inputProps={{ id: `file-${assignment.id}`, 'aria-invalid': !!inputError, 'aria-required': true }}
+              inputProps={{ id: `file-${assignment.id}`, 'aria-labelledby': `file-${assignment.id}-label` }}
               onChange={(value) => { setFile(value ?? undefined); setLocalError(undefined); mutation.reset(); }}>
-              {(props) => <Button {...props} variant="default" style={{ alignSelf: 'flex-start' }}>Выбрать файл</Button>}
+              {(props) => <Button {...props} id={`file-${assignment.id}-button`}
+                aria-labelledby={`file-${assignment.id}-label`} aria-invalid={!!inputError} aria-required="true"
+                aria-describedby={[`file-${assignment.id}-description`, file && `file-${assignment.id}-selection`, inputError && `file-${assignment.id}-error`].filter(Boolean).join(' ')}
+                variant="default" style={{ alignSelf: 'flex-start' }}>Выбрать файл</Button>}
             </FileButton>
-            {file && <><Text>{file.name} · {fileSize(file.size)}</Text><Button variant="subtle" style={{ alignSelf: 'flex-start' }} onClick={() => { setFile(undefined); setLocalError(undefined); mutation.reset(); resetFile.current?.(); }}>Убрать</Button></>}
+            {file && <><Text id={`file-${assignment.id}-selection`}>{file.name} · {fileSize(file.size)}</Text><Button variant="subtle" style={{ alignSelf: 'flex-start' }} onClick={() => { setFile(undefined); setLocalError(undefined); mutation.reset(); resetFile.current?.(); }}>Убрать</Button></>}
           </Stack>
         </Input.Wrapper>
       )}

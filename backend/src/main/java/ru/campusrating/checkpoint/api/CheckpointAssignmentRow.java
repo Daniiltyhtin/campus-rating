@@ -17,7 +17,8 @@ import ru.campusrating.checkpoint.api.CheckpointView.UserView;
             "status",
             "charged",
             "submittedAt",
-            "submissionKind"
+            "submissionKind",
+            "hasSubmissions"
         })
 public record CheckpointAssignmentRow(
         @Min(1) long assignmentId,
@@ -30,7 +31,8 @@ public record CheckpointAssignmentRow(
                         types = {"string", "null"},
                         format = "date-time")
                 Instant submittedAt,
-        @Schema(implementation = NullableSubmissionKind.class) SubmissionKind submissionKind) {
+        @Schema(implementation = NullableSubmissionKind.class) SubmissionKind submissionKind,
+        boolean hasSubmissions) {
     public enum SubmissionKind {
         LINK,
         FILE

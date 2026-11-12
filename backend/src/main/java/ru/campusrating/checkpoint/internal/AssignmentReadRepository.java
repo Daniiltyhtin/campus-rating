@@ -26,7 +26,8 @@ class AssignmentReadRepository {
             """
             select a.*, c.author_id, c.title, c.description, c.deadline, c.cost,
                 c.penalty_step, c.penalty_interval_seconds, c.created_at as checkpoint_created_at,
-                s.kind, s.submitted_at
+                s.kind, s.submitted_at,
+                exists(select 1 from submission where assignment_id=a.id) as has_submissions
             """
                     + FROM
                     + """
@@ -152,6 +153,7 @@ class AssignmentReadRepository {
                 assignment,
                 checkpoint,
                 submittedAt == null ? null : submittedAt.toInstant(),
-                rs.getString("kind"));
+                rs.getString("kind"),
+                rs.getBoolean("has_submissions"));
     }
 }

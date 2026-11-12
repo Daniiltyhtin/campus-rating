@@ -937,6 +937,7 @@ paths:
                     charged: 0
                     submittedAt: '2026-11-11T18:20:00Z'
                     submissionKind: FILE
+                    hasSubmissions: true
                   - assignmentId: 7002
                     student:
                       id: 1002
@@ -953,6 +954,7 @@ paths:
                     charged: 40
                     submittedAt: null
                     submissionKind: null
+                    hasSubmissions: false
                 nextCursor: eyJuIjoi0JrRg9C30L3QtdGG0L7QsiIsImlkIjo3MDAyfQ
                 statusCounts:
                   IN_PROGRESS: 0
@@ -4083,7 +4085,7 @@ components:
 
     CheckpointAssignmentRow:
       type: object
-      required: [assignmentId, student, group, state, status, charged, submittedAt, submissionKind]
+      required: [assignmentId, student, group, state, status, charged, submittedAt, submissionKind, hasSubmissions]
       properties:
         assignmentId:
           $ref: '#/components/schemas/Id'
@@ -4098,6 +4100,9 @@ components:
         charged:
           type: integer
           format: int32
+        hasSubmissions:
+          type: boolean
+          description: Есть хотя бы одна версия сдачи, включая отозванные.
         submittedAt:
           description: Время последней неотозванной версии; `null`, если её нет.
           $ref: '#/components/schemas/NullableInstant'

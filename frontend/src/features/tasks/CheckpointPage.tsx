@@ -1,5 +1,5 @@
 import { Button, Checkbox, Menu, Modal, NativeSelect, Stack, Tabs, Text, Textarea } from '@mantine/core';
-import { useInfiniteQuery, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMediaQuery } from '@mantine/hooks';
 import { useState } from 'react';
 import { useParams } from 'react-router';
@@ -71,12 +71,6 @@ function CheckpointContent() {
   const checkpoint = query.data;
   const canEdit = session?.role === 'TEACHER' && session.userId === String(checkpoint?.author.id);
   const counts = rowsQuery.data?.pages[0]?.statusCounts;
-  const historyRows = rows.filter((row) => row.submittedAt === null);
-  const histories = useQueries({ queries: historyRows.map((row) => ({
-    queryKey: ['assignment-history', row.assignmentId],
-    queryFn: () => dataOf(api.GET('/api/v1/assignments/{assignmentId}', { params: { path: { assignmentId: row.assignmentId } } })),
-  })) });
-  const withHistory = new Set(historyRows.filter((_, index) => histories[index]?.data?.submissions.length).map((row) => row.assignmentId));
   if (isAccessFailure(query.error)) return <TaskFailure error={query.error} />;
   function filterChanged() {
     setSelected([]);
@@ -203,12 +197,12 @@ function CheckpointContent() {
                   key: 'actions',
                   title: 'Действия',
                   render: (row) => {
-                    const hasVersions = !!row.submittedAt || withHistory.has(row.assignmentId);
-                    const canReturn = canEdit && row.state === 'SUBMITTED';
-                    return hasVersions || canReturn ? <Menu>
+                    const hasVersions = row.hasSubmissions;
+                    const canReturn = canEdit && row.status === 'SUBMITTED';
+                    return hasVersions ? <Menu>
                       <Menu.Target><Button variant="subtle" aria-label={`Действия: ${row.student.fullName}`}>⋯</Button></Menu.Target>
                       <Menu.Dropdown>
-                        {hasVersions && <Menu.Item onClick={() => setOpened(row.assignmentId)}>Открыть сдачу</Menu.Item>}
+                        <Menu.Item onClick={() => setOpened(row.assignmentId)}>Открыть сдачу</Menu.Item>
                         {canReturn && <Menu.Item onClick={() => setReturnId(row.assignmentId)}>Вернуть…</Menu.Item>}
                       </Menu.Dropdown>
                     </Menu> : null;
