@@ -37,6 +37,8 @@ export function personalEventView(event: PersonalEvent, viewerId: number): Perso
     case 'POINTS_AWARDED': return { text: `Начислено ${event.amount} ${currencyName[event.currency]} за «${event.activityTitle}»`, to: `/users/${viewerId}` };
     case 'ACTIVITY_CREATED': return { text: `Новая активность «${event.activityTitle}» для вашей группы`, to: '/activities' };
     case 'WORK_SUBMITTED': return { text: `Сдана работа «${event.checkpointTitle}» · ${event.studentFullName}`, to: `/checkpoints/${event.checkpointId}` };
+    case 'POLL_CREATED': return { text: `Новый опрос «${event.pollTitle}» · до ${formatFeedTime(event.endsAt)}`, to: `/polls/${event.pollId}` };
+    case 'POLL_CLOSED': return { text: `Опрос «${event.pollTitle}» завершён · проголосовали ${event.voted} из ${event.eligible}`, to: `/polls/${event.pollId}` };
   }
 }
 export function uniqueEvents(items: readonly PersonalEvent[]) {

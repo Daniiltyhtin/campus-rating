@@ -61,6 +61,10 @@ function personalEvent(value: unknown): PersonalEvent {
       return { ...base, kind: row.kind, activityId: id(row.activityId), activityTitle: text(row.activityTitle) };
     case 'WORK_SUBMITTED':
       return { ...base, kind: row.kind, checkpointId: id(row.checkpointId), checkpointTitle: text(row.checkpointTitle), studentFullName: text(row.studentFullName) };
+    case 'POLL_CREATED':
+      return { ...base, kind: row.kind, pollId: id(row.pollId), pollTitle: text(row.pollTitle), endsAt: instant(row.endsAt) };
+    case 'POLL_CLOSED':
+      return { ...base, kind: row.kind, pollId: id(row.pollId), pollTitle: text(row.pollTitle), voted: integer(row.voted), eligible: integer(row.eligible) };
     default: return invalid();
   }
 }
