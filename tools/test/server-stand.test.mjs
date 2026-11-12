@@ -51,7 +51,8 @@ test('U22: host nginx example terminates TLS and proxies to loopback', async () 
   assert.match(host, /listen 80;[\s\S]*return 301 https:\/\/\$host\$request_uri;/);
   assert.match(host, /listen 443 ssl;/);
   assert.match(host, /ssl_certificate \/etc\/letsencrypt\/live\//);
-  assert.match(host, /proxy_pass http:\/\/127\.0\.0\.1:8080;/);
+  assert.match(host, /proxy_pass http:\/\/127\.0\.0\.1:WEB_PORT;/);
+  assert.doesNotMatch(host, /8080/);
   assert.match(host, /proxy_set_header X-Forwarded-Proto https;/);
   assert.match(host, /client_max_body_size 12m;/);
 });
