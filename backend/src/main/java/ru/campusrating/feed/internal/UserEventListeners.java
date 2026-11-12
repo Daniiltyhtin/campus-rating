@@ -10,6 +10,8 @@ import ru.campusrating.checkpoint.AssignmentReturned;
 import ru.campusrating.checkpoint.AssignmentSubmitted;
 import ru.campusrating.feed.domain.UserEventKind;
 import ru.campusrating.feed.internal.UserEventRepository.NewEvent;
+import ru.campusrating.poll.PollClosed;
+import ru.campusrating.poll.PollCreated;
 
 @Component
 public class UserEventListeners {
@@ -55,5 +57,19 @@ public class UserEventListeners {
     public void on(PointsAwarded event) {
         repository.insert(new NewEvent(event.studentId(), UserEventKind.POINTS_AWARDED, "award:" + event.entryId(),
                 event.occurredAt(), event.activityId(), event.activityTitle(), null, event.amount(), event.currency(), null));
+    }
+
+    @ApplicationModuleListener
+    public void on(PollCreated event) {
+        for (long student : event.studentIds()) {
+            repository.insert(new NewEvent(student, UserEventKind.POLL_CREATED, "poll:" + event.pollId(), event.occurredAt(),
+                    event.pollId(), event.title(), event.endsAt(), null, null, null));
+        }
+    }
+
+    @ApplicationModuleListener
+    public void on(PollClosed event) {
+        repository.insert(new NewEvent(event.authorId(), UserEventKind.POLL_CLOSED, "pollClosed:" + event.pollId(), event.occurredAt(),
+                event.pollId(), event.title(), null, null, null, null, event.voted(), event.eligible()));
     }
 }

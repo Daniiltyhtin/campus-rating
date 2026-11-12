@@ -162,7 +162,7 @@ export function createPollMockHandlers(state: PollMockState = createPollMockStat
   return [
     http.get('*/api/v1/polls', () => {
       const user = viewer();
-      if (!user) return problem('UNAUTHENTICATED', 401);
+      if (!user) return HttpResponse.json({ items: [] });
       if (user.role === 'ADMIN') return problem('FORBIDDEN', 403);
       const items = state.polls.filter((poll) => user.role === 'TEACHER' ? poll.author.id === user.id : isStudentOf(user, poll))
         .sort(order).map((poll) => summary(poll, user));

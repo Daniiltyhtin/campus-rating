@@ -1,0 +1,8 @@
+.poll-result-row { display: grid; gap: 4px; }
+.poll-result-label { display: flex; justify-content: space-between; gap: 12px; }
+.poll-bar { height: 8px; border-bottom: var(--cr-rule-width) solid var(--cr-rule); }
+.poll-bar-fill { height: 100%; background: var(--cr-text); }
+.poll-question { border: var(--cr-rule-width) solid var(--cr-rule); padding: 12px; margin: 0; min-width: 0; }
+.poll-question legend { font-weight: 700; padding: 0 4px; }
+.poll-list { display: grid; gap: 8px; }
+.poll-home { display: grid; gap: 8px; }

@@ -4526,7 +4526,7 @@ paths:
         Порядок: открытые по окончанию по возрастанию, затем завершённые по окончанию по убыванию, затем id.
         Администратору — `403 FORBIDDEN`.
       x-roles: [STUDENT, TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       responses:
@@ -4567,7 +4567,7 @@ paths:
         Доступ: допущенный преподаватель; каждая группа — из доступных (`403 GROUP_NOT_ACCESSIBLE`),
         иначе опрос и события не создаются.
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
           csrf: []
@@ -4651,7 +4651,7 @@ paths:
         автору — всегда. `voted` — голосовал ли смотрящий студент, у автора `null`.
         `eligible` — студенты целевых групп с `ACTIVE`-членством сейчас, только автору, иначе `null`.
       x-roles: [STUDENT, TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
@@ -4721,7 +4721,7 @@ paths:
         `422 POLL_CLOSED`; `PENDING` или `REJECTED` — `422 MEMBERSHIP_NOT_ACTIVE`; не та группа или
         не студент — `403 FORBIDDEN`. В анонимном опросе связь «студент — выбор» не сохраняется.
       x-roles: [STUDENT]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
           csrf: []
@@ -4806,7 +4806,7 @@ paths:
         Только автор неанонимного опроса; по ФИО, затем id студента. Анонимный опрос — `409 INVALID_STATE`:
         ответы по студентам не сохраняются. Не автор — `403 FORBIDDEN`.
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
