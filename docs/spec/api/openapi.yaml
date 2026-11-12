@@ -2361,7 +2361,7 @@ paths:
 
         Доступ: любой вошедший.
       x-roles: [AUTHENTICATED]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
@@ -2421,7 +2421,7 @@ paths:
 
         Доступ: преподаватель, группа — из доступных (`403 GROUP_NOT_ACCESSIBLE`).
       x-roles: [TEACHER]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
