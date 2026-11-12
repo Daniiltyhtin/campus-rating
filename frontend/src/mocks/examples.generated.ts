@@ -7122,6 +7122,199 @@ export const examples: ExampleOperation[] = [
     ]
   },
   {
+    "path": "/api/v1/groups/{groupId}/analytics",
+    "method": "get",
+    "operationId": "getGroupAnalytics",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "group": {
+            "id": 11,
+            "name": "ИВТ-21",
+            "faculty": {
+              "id": 1,
+              "code": "ФИТ",
+              "name": "Факультет информационных технологий"
+            }
+          },
+          "semesterStart": "2026-09-01",
+          "days": [
+            {
+              "date": "2026-11-01",
+              "averageAr": 990,
+              "students": 2
+            }
+          ],
+          "items": [
+            {
+              "student": {
+                "id": 1001,
+                "fullName": "Смирнова Анна Олеговна"
+              },
+              "bua": 30,
+              "boa": 0,
+              "ar": 980
+            }
+          ]
+        }
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "GROUP_NOT_ACCESSIBLE",
+          "detail": "Группа ИВТ-22 вне ваших доступных групп."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/groups/{groupId}/analytics/budget",
+    "method": "get",
+    "operationId": "getGroupAnalyticsBudget",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "items": [
+            {
+              "month": "2026-11",
+              "teacher": {
+                "id": 201,
+                "fullName": "Петров Пётр Петрович"
+              },
+              "limit": 1000,
+              "spent": 950,
+              "remaining": 50,
+              "awards": 3,
+              "bua": 800,
+              "boa": 150
+            }
+          ]
+        }
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "GROUP_NOT_ACCESSIBLE",
+          "detail": "Группа ИВТ-22 вне ваших доступных групп."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      }
+    ]
+  },
+  {
     "path": "/api/v1/admin/ledger/reconciliation",
     "method": "get",
     "operationId": "reconcileLedger",

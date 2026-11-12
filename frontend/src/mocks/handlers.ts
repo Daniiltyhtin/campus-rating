@@ -1,3 +1,4 @@
+import { createAnalyticsMockHandlers } from './analytics';
 import { http, HttpResponse } from 'msw';
 import type { components } from '../api/schema';
 import { examples } from './examples.generated';
@@ -13,7 +14,7 @@ function cursorPage(body: unknown): body is { items: unknown[]; nextCursor: stri
 }
 
 const directory = createDirectoryMockState();
-export const handlers = [...createDirectoryMockHandlers(directory), ...createTeacherMockHandlers(directory), ...createAuthMockHandlers(), ...createActivityMockHandlers(), ...createProfileMockHandlers(), ...createFeedMockHandlers(), ...examples.map((operation) => {
+export const handlers = [...createDirectoryMockHandlers(directory), ...createTeacherMockHandlers(directory), ...createAuthMockHandlers(), ...createActivityMockHandlers(), ...createProfileMockHandlers(), ...createAnalyticsMockHandlers(), ...createFeedMockHandlers(), ...examples.map((operation) => {
   const example = operation.responses.find(({ status }) => status >= 200 && status < 300)!;
   const path = operation.path.replaceAll(/\{([^}]+)\}/g, ':$1');
   return http.all(`*${path}`, ({ request }) => {

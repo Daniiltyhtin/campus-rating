@@ -67,3 +67,4 @@ html[data-theme='high-contrast'] a { text-decoration: underline; }
 @media (min-width: 1920px) {
   html { font-size: 112.5%; }
 }
+.cr-nowrap { white-space: nowrap; }

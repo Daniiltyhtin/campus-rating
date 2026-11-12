@@ -50,4 +50,10 @@ class SemesterRepository {
                 """).param("semester", semesterId).param("student", studentId).param("accrued", accrued)
                 .param("processedAt", Timestamp.from(processedAt)).update() == 1;
     }
+
+    java.util.Optional<Instant> latestStart(Instant at) {
+        return jdbc.sql("select starts_at from semester where starts_at <= :at order by starts_at desc, id desc limit 1")
+                .param("at", Timestamp.from(at)).query((rs, row) -> rs.getTimestamp("starts_at").toInstant()).optional();
+    }
+
 }

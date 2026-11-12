@@ -35,7 +35,7 @@ function Directory({ viewerId }: { viewerId: number }) {
             ...(kind !== 'faculties' ? [{ key: 'faculty', title: 'Факультет', render: (row: DirectoryEntry) => row.kind !== 'faculties' ? row.faculty.name : '' }] : []),
             ...(kind === 'groups' ? [{ key: 'year', title: 'Год набора', render: (row: DirectoryEntry) => row.kind === 'groups' ? row.admissionYear : '' },
               { key: 'head', title: 'Староста', render: (row: DirectoryEntry) => <HeadCell group={row} heads={heads} disabled={busy} /> }] : []),
-            { key: 'actions', title: 'Действия', render: (row) => <Group gap="xs"><Button variant="default" aria-label={`Редактировать ${row.name}`} disabled={busy} onClick={(event) => open({ action: 'edit', kind, entry: row }, event.currentTarget)}>Редактировать</Button>
+            { key: 'actions', title: 'Действия', render: (row) => <Group gap="xs">{kind === 'groups' && <TeacherLink to={`/groups/${row.id}?tab=analytics`}>Аналитика</TeacherLink>}<Button variant="default" aria-label={`Редактировать ${row.name}`} disabled={busy} onClick={(event) => open({ action: 'edit', kind, entry: row }, event.currentTarget)}>Редактировать</Button>
               <Button variant="default" aria-label={`Удалить ${row.name}`} disabled={busy} onClick={(event) => open({ action: 'delete', kind, entry: row }, event.currentTarget)}>Удалить</Button></Group> }]} />
       </>}</Stack></Tabs.Panel>)}
     </Tabs>

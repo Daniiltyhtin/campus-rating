@@ -300,3 +300,16 @@ describe('U13 directory deletion — R24', { timeout: 12_000 }, () => {
     expect(mutations(state)).toHaveLength(1);
   });
 });
+
+describe('U17 directory analytics — AE7', () => {
+  it('each group row links to its analytics tab', async () => {
+    const state = createDirectoryScenario(), view = mountDirectory();
+    await tab(view, 'Учебные группы');
+    const table = await screen.findByRole('table', { name: 'Учебные группы' });
+    for (const group of state.lists.groups) {
+      const row = within(table).getByText(group.name, { exact: true }).closest('tr')!;
+      expect(within(row).getByRole('link', { name: 'Аналитика' }))
+        .toHaveAttribute('href', `/groups/${group.id}?tab=analytics`);
+    }
+  });
+});

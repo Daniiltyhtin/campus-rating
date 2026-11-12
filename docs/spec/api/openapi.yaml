@@ -40,6 +40,8 @@ tags:
     description: История проводок и сверка журнала (мастер-U6, U10).
   - name: profile
     description: Профиль пользователя (мастер-U10).
+  - name: analytics
+    description: Аналитика учебных групп.
   - name: feed
     description: Лента наград и рейтинги групп (мастер-U11).
 
@@ -3572,8 +3574,8 @@ paths:
         Студенты группы с `ACTIVE`-членством и их балансы из снимка (мастер-R22, KTD3), по убыванию выбранной
         валюты, при равенстве — по ФИО, затем по id. Список целиком.
 
-        Доступ: преподаватель, группа — из доступных (`403 GROUP_NOT_ACCESSIBLE`).
-      x-roles: [TEACHER]
+        Доступ: администратор — любая группа; преподаватель, группа — из доступных (`403 GROUP_NOT_ACCESSIBLE`).
+      x-roles: [TEACHER, ADMIN]
       x-status: implemented
       security:
         - session: []
@@ -3623,6 +3625,97 @@ paths:
                       AR: 940
                       BUA: 120
                       BOA: 50
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/GroupForbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/groups/{groupId}/analytics:
+    get:
+      tags: [analytics]
+      operationId: getGroupAnalytics
+      summary: Аналитика группы
+      description: Сутки Москвы, включительно, максимум 366 суток; без параметров последние 30 суток. Среднее АР округлено HALF_UP до одного знака.
+      x-roles: [TEACHER, ADMIN]
+      x-status: implemented
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+        - name: from
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Аналитика группы.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAnalytics'
+              example:
+                group:
+                  id: 11
+                  name: ИВТ-21
+                  faculty: { id: 1, code: ФИТ, name: Факультет информационных технологий }
+                semesterStart: '2026-09-01'
+                days:
+                  - { date: '2026-11-01', averageAr: 990.0, students: 2 }
+                items:
+                  - student: { id: 1001, fullName: Смирнова Анна Олеговна }
+                    bua: 30
+                    boa: 0
+                    ar: 980
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/GroupForbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/groups/{groupId}/analytics/budget:
+    get:
+      tags: [analytics]
+      operationId: getGroupAnalyticsBudget
+      summary: Расход бюджета группы по месяцам
+      description: Текущий и пять предыдущих месяцев Москвы, новые сверху. Преподавателю свой бюджет, администратору все преподаватели; лимит текущий.
+      x-roles: [TEACHER, ADMIN]
+      x-status: implemented
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/GroupId'
+      responses:
+        '200':
+          description: Расход бюджета группы по месяцам.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAnalyticsBudget'
+              example:
+                items:
+                  - month: '2026-11'
+                    teacher: { id: 201, fullName: Петров Пётр Петрович }
+                    limit: 1000
+                    spent: 950
+                    remaining: 50
+                    awards: 3
+                    bua: 800
+                    boa: 150
         '400':
           $ref: '#/components/responses/ValidationFailed'
         '401':
@@ -7424,6 +7517,61 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RatingRow'
+
+    AnalyticsDay:
+      type: object
+      required: [date, averageAr, students]
+      properties:
+        date: { type: string, format: date }
+        averageAr: { type: [number, 'null'] }
+        students: { type: integer, format: int32, minimum: 0 }
+    AnalyticsPoints:
+      type: object
+      required: [student, bua, boa, ar]
+      properties:
+        student:
+          $ref: '#/components/schemas/UserRef'
+        bua: { type: integer, format: int32 }
+        boa: { type: integer, format: int32 }
+        ar: { type: integer, format: int32 }
+    GroupAnalytics:
+      type: object
+      required: [group, semesterStart, days, items]
+      properties:
+        group:
+          $ref: '#/components/schemas/StudyGroupRef'
+        semesterStart: { type: [string, 'null'], format: date }
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalyticsDay'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalyticsPoints'
+    AnalyticsBudgetMonth:
+      type: object
+      required: [month, teacher, limit, spent, remaining, awards, bua, boa]
+      properties:
+        month: { type: string, pattern: '^\d{4}-\d{2}$' }
+        teacher:
+          oneOf:
+            - $ref: '#/components/schemas/UserRef'
+            - type: 'null'
+        limit: { type: integer, format: int32 }
+        spent: { type: integer, format: int32 }
+        remaining: { type: [integer, 'null'], format: int32 }
+        awards: { type: integer, format: int32 }
+        bua: { type: integer, format: int32 }
+        boa: { type: integer, format: int32 }
+    GroupAnalyticsBudget:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalyticsBudgetMonth'
 
     BalanceMismatch:
       type: object
