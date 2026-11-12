@@ -1,13 +1,13 @@
 {
   "participant": "Максим",
   "period": {
-    "since": "20261022",
+    "since": "2026-10-22",
     "through": "2026-11-12"
   },
   "sources": {
     "claude": {
       "status": "ok",
-      "coverage": "проект C--Java-Projects-campus-rating",
+      "coverage": "один проект Claude",
       "daily": [
         {
           "date": "2026-11-07",

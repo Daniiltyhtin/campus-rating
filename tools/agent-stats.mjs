@@ -42,7 +42,7 @@ function parseArguments(args) {
   const since = values.get('--since') ?? '20261022';
   const date = since.replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3');
   if (!/^\d{8}$/.test(since) || !validDate(date)) throw new Error('Некорректная дата --since: YYYYMMDD');
-  return { participant, since, project: values.get('--claude-project') };
+  return { participant, since, sinceDate: date, project: values.get('--claude-project') };
 }
 
 function number(value, field) {
@@ -72,7 +72,7 @@ function normalizeDay(day, source) {
 }
 
 function collectSource(source, config, { root, run, platform, log }) {
-  const coverage = source === 'claude' && config.project ? `проект ${config.project}` : 'вся машина';
+  const coverage = source === 'claude' && config.project ? 'один проект Claude' : 'вся машина';
   const args = ['-y', ccusage, source, 'daily', '--json', '--since', config.since];
   if (source === 'claude' && config.project) args.push('--project', config.project);
   try {
@@ -102,7 +102,7 @@ async function exportParticipant(config, options) {
   const dates = Object.values(collected).flatMap(source => (source.daily ?? []).map(day => day.date)).sort();
   const data = {
     participant: config.participant,
-    period: { since: config.since, through: dates.at(-1) ?? null },
+    period: { since: config.sinceDate, through: dates.at(-1) ?? null },
     sources: collected,
   };
   const directory = path.join(options.root, 'docs/presentation/agent-stats');
