@@ -4,7 +4,7 @@ type: refactor
 date: 2026-11-12
 topic: admin-users-node
 artifact_contract: ce-unified-plan/v1
-artifact_readiness: requirements-only
+artifact_readiness: implementation-ready
 product_contract_source: interview
 execution: code
 ---
@@ -103,3 +103,108 @@ execution: code
 
 - Планы U13: `docs/spec/plans/2026-11-12-006-feat-u13-users-temporary-passwords-plan.md` (R1–R4), `docs/spec/plans/2026-11-11-004-feat-u13-teachers-frontend-plan.md` (заявки, карточка).
 - Код: `frontend/src/app/navigation.ts`, `frontend/src/features/admin/users/AdminUsersPage.tsx`, `frontend/src/features/admin/teachers/*` (`TeacherBadge`, `TeacherListPage`, `TeacherPage`), `frontend/src/features/admin/directory/DirectoryPage.tsx`, `GET /api/v1/admin/users`, таблица `app_user`.
+
+---
+
+## Planning Contract
+
+**Product Contract preservation:** Product Contract unchanged.
+
+### Key Technical Decisions
+
+- KTD1. **Расширить существующий `GET /api/v1/admin/users`, нового эндпоинта нет.** Параметры: `search`, `role` (есть), `status` (`PENDING` | `APPROVED` | `MEMBERSHIP_PENDING` | `MEMBERSHIP_ACTIVE`), `sort` (`name` | `created` | `lastLogin`), `cursor`. В строке добавляются `status` (тот же enum), `createdAt`, `lastLoginAt` (nullable). Курсор кодирует ключ сортировки + ФИО + id и фильтры; чужой курсор — `VALIDATION_FAILED`, как сейчас. Governs R3–R8.
+- KTD2. **Миграция `app_user`.** `created_at timestamptz NOT NULL DEFAULT now()` — существующие строки получают время транзакции миграции одним значением (R13); `last_login_at timestamptz NULL`. Индексы под сортировки: `(created_at DESC, full_name, id)`, `(last_login_at NULLS FIRST, full_name, id)`.
+- KTD3. **Время — по часам приложения в одной точке вставки.** `IdentityRepository` (регистрация и импорт) пишет `created_at` из `Clock`; сид не меняется и получает `DEFAULT now()`. `last_login_at` пишет `SessionService.login` после успешной аутентификации, из `Clock`, в той же транзакции входа; неуспешный вход не доходит до записи (R14).
+- KTD4. **Бейдж заявок — существующий источник.** `TeacherBadge` уже считает заявки по `GET /api/v1/admin/teachers`; бейдж и кнопка «Заявки преподавателей (N)» используют тот же запрос (R7: N без учёта фильтров). Бейдж переносится на пункт «Пользователи» в `AppShell`.
+- KTD5. **Маршруты.** Карточка — `/admin/users/teachers/:id` (`TeacherPage`); `/admin/directory/teachers` и `/admin/directory/teachers/:id` — перенаправления (`redirect` в `router.tsx`, как у `groups/:id/ratings`). `TeacherListPage` удаляется: вкладки «Заявки / Все» заменены фильтрами (R6, R7).
+- KTD6. **Состояние таблицы — в адресе** (`useSearchParams`), значения R12; смена параметра сбрасывает бесконечный запрос к первой странице (ключ запроса включает все параметры).
+
+### High-Level Technical Design
+
+```mermaid
+flowchart LR
+  Nav[Меню «Пользователи» + бейдж] --> Page[/admin/users?role&status&search&sort/]
+  Page -->|GET /admin/users| API[AdminUsersController]
+  Page -->|GET /admin/teachers: N заявок| T[AdminTeachersController]
+  API --> S[AdminUserService: фильтры, сортировки, курсор]
+  S --> DB[(app_user: created_at, last_login_at; group_membership; teacher_approval)]
+  Login[POST /auth/login] --> SS[SessionService] -->|last_login_at| DB
+  Reg[Регистрация, импорт] --> IR[IdentityRepository] -->|created_at| DB
+  Old[/admin/directory/teachers/:id/] -->|redirect| Card[/admin/users/teachers/:id/]
+```
+
+---
+
+## Implementation Units
+
+### U1. Миграция и запись времён
+
+- **Goal:** `created_at`, `last_login_at` и их запись.
+- **Requirements:** R13, R14; KTD2, KTD3.
+- **Dependencies:** нет.
+- **Files:** `backend/src/main/resources/db/changelog/identity/<ts>-user-times.sql`, `backend/src/main/java/ru/campusrating/identity/internal/IdentityRepository.java`, `backend/src/main/java/ru/campusrating/identity/internal/SessionService.java`, `backend/src/test/java/ru/campusrating/admin/UserTimesIT.java`.
+- **Test scenarios:**
+  - Covers AE9. Импорт студента при часах 13.11 11:00 — `created_at` 13.11 11:00.
+  - Регистрация студента и преподавателя — `created_at` равен часам приложения.
+  - Covers AE9. Вход по временному паролю — `last_login_at` обновлён.
+  - Повторный вход — значение обновляется на новое время.
+  - Covers AE5. Неуспешный вход (неверный пароль, неподтверждённый email в `required`) — `last_login_at` не меняется.
+  - Существующие до миграции строки — одно общее значение `created_at` (проверка: у всех сидовых пользователей одинаковое время).
+- **Verification:** `UserTimesIT` зелёный; `DemoStoryIT` зелёный.
+
+### U2. API списка пользователей
+
+- **Goal:** фильтр статуса, сортировки, новые поля.
+- **Requirements:** R3–R8, R10; KTD1.
+- **Dependencies:** U1.
+- **Files:** `docs/spec/api/openapi.yaml`, `frontend/src/api/schema.d.ts`, `frontend/src/mocks/examples.generated.ts`, `backend/src/main/java/ru/campusrating/identity/api/AdminUsersController.java`, `backend/src/main/java/ru/campusrating/identity/internal/AdminUserService.java`, `backend/src/test/java/ru/campusrating/admin/AdminUsersListIT.java`.
+- **Approach:** статус в SQL: преподаватель — наличие `teacher_approval`; студент — `group_membership.state`; администратор — `null`. Поиск и фильтры — `AND` (R5). Сортировка `lastLogin` — `NULLS FIRST`, затем ФИО и id. После правки контракта — `redocly lint`.
+- **Patterns to follow:** текущий `AdminUserService.list` (keyset-курсор, 50 строк).
+- **Test scenarios:**
+  - Covers AE2. Поля строки: роль, группа/кафедра, `status` для студента (`MEMBERSHIP_ACTIVE`/`MEMBERSHIP_PENDING`), преподавателя (`APPROVED`/`PENDING`), администратора (`null`), `createdAt`, `lastLoginAt`.
+  - Covers AE3. `search=PETROV@` — Петров; `role=STUDENT&status=PENDING` — пусто; `status=MEMBERSHIP_PENDING` — Орлов; `search=смир&role=TEACHER` — пусто; поиск из 1 символа не применяется.
+  - Covers AE5. `sort=lastLogin` — сначала без входа по ФИО, затем по возрастанию времени; `sort=created` — новые сверху, равные — по ФИО и id.
+  - Covers AE6. 120 студентов: страницы 50/50/20 без дублей при каждой сортировке; курсор с другими параметрами — `VALIDATION_FAILED`.
+  - Не администратор — `403`.
+- **Verification:** `AdminUsersListIT`, `U13AdminUsersIT`, `ContractCompatibilityIT` зелёные; `redocly lint` без ошибок.
+
+### U3. Таблица «Пользователи» на фронтенде
+
+- **Goal:** новая таблица, фильтры, кнопка заявок, сортировка, состояние в адресе.
+- **Requirements:** R3–R10, R12; KTD4, KTD6.
+- **Dependencies:** U2.
+- **Files:** `frontend/src/features/admin/users/AdminUsersPage.tsx`, `frontend/src/features/admin/users/contracts.ts`, `frontend/src/mocks/` (обработчики пользователей), `frontend/src/features/admin/users/users.acceptance.test.tsx`.
+- **Approach:** колонки и тексты статуса — R3, R4; ссылка ФИО — по роли (R9); «Временный пароль» — существующий `SetPasswordDialog`; кнопка заявок — число из `useTeachers` (KTD4), нажатие — `role=TEACHER&status=PENDING` без `search`.
+- **Patterns to follow:** текущий `AdminUsersPage.tsx`, `TeacherTableLayout`, `features/analytics/GroupAnalytics.tsx` (параметры в адресе).
+- **Test scenarios:**
+  - Covers AE2. Тексты статуса для всех ролей и «—» у администратора; время по Москве.
+  - Covers AE3. Значения фильтров по умолчанию «Все»; комбинации из AE3.
+  - Covers AE4. Кнопка «Заявки преподавателей (1)» ставит фильтры и очищает поиск; при N = 0 кнопки нет.
+  - Covers AE7. Ссылки ФИО: преподаватель — `/admin/users/teachers/<id>`, остальные — `/users/<id>`.
+  - Covers AE8. Открытие адреса с параметрами восстанавливает фильтры, поиск и сортировку.
+  - Covers AE10. У администратора нет действий.
+- **Verification:** `npm --prefix frontend run check` зелёный.
+
+### U4. Меню, «Справочники», маршруты и карточка
+
+- **Goal:** бейдж на «Пользователях», чистые «Справочники», перенос карточки, перенаправления, ссылка «Профиль».
+- **Requirements:** R1, R2, R9, R11, R15; KTD4, KTD5.
+- **Dependencies:** U3.
+- **Files:** `frontend/src/app/AppShell.tsx`, `frontend/src/app/router.tsx`, `frontend/src/features/admin/directory/DirectoryPage.tsx`, `frontend/src/features/admin/teachers/TeacherPage.tsx`, `frontend/src/features/admin/teachers/TeacherShared.tsx`, удалить `frontend/src/features/admin/teachers/TeacherListPage.tsx`, тесты: `frontend/src/app/AppShell.test.tsx`, `frontend/src/features/admin/teachers/teachers.acceptance.test.tsx`, `frontend/src/test/teachersAcceptance.tsx`, `frontend/src/features/admin/directory/directory.acceptance.test.tsx`, `e2e/tests/admin.spec.ts`.
+- **Approach:** обновление ожиданий старых тестов (адреса карточки, место бейджа, отсутствие ссылки «Преподаватели») — следствие R1, R2, R11; проверки допуска и выдач не ослабляются.
+- **Test scenarios:**
+  - Covers AE1. Меню из шести пунктов; бейдж «1» на «Пользователи»; на «Справочниках» нет «Преподаватели», у групп есть «Аналитика».
+  - Covers AE7. `/admin/directory/teachers/2002` → `/admin/users/teachers/2002`; `/admin/directory/teachers` → `/admin/users?role=TEACHER&status=PENDING`; в карточке ссылка «Профиль» → `/users/2002`; допуск и выдачи работают как раньше.
+  - e2e (1280 и 360): администратор нажимает «Заявки преподавателей (1)», открывает карточку Волкова, допускает его — бейдж и кнопка исчезают.
+- **Verification:** `check`, `build`, e2e зелёные.
+
+---
+
+## Verification Contract
+
+- Приёмочные тесты по AE1–AE10 пишет отдельная сессия до реализации; red фиксируется запуском.
+- `./backend/mvnw -f backend/pom.xml -Pquality verify`, `npm --prefix frontend run check` и `build`, `redocly lint` контракта, e2e — зелёные.
+
+## Definition of Done
+
+- AE1–AE10 покрыты тестами и проходят; CI зелёный; запись в `docs/agent-log.md`.
