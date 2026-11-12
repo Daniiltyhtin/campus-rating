@@ -165,7 +165,6 @@ it('late detail response is aborted when navigating to another teacher', async (
 });
 afterAll(() => { server.close(); configure({ asyncUtilTimeout: originalTimeout }); });
 
-const pendingName = teacherFixtures.pending().fullName;
 const approvedName = teacherFixtures.list().items.find((item) => item.teacherApproved)!.fullName;
 type View = ReturnType<typeof mountTeachers>;
 type State = ReturnType<typeof createTeachersScenario>;
@@ -188,21 +187,11 @@ async function chooseGrant(view: View, dialog: ReturnType<typeof within>, body: 
 }
 
 describe('R2/R3/R24: teacher access, list and detail', { timeout: 12_000 }, () => {
-it('admin sees pending applications and teacher details link', async () => {
-  createTeachersScenario(); mountTeachers();
-  expect(await screen.findByRole('heading', { name: 'Преподаватели' })).toBeInTheDocument();
-  expect(await screen.findByRole('link', { name: pendingName })).toHaveAttribute('href', '/admin/users/teachers/2002');
-  expect(screen.queryByRole('link', { name: approvedName })).not.toBeInTheDocument();
-  expect(await screen.findByLabelText('Заявки преподавателей: 1')).toBeInTheDocument();
-});
-it('all teachers tab preserves server order and statuses', async () => {
-  const state = createTeachersScenario(), view = mountTeachers();
-  await view.user.click(await screen.findByRole('tab', { name: 'Все преподаватели' }));
-  const first = await screen.findByRole('link', { name: pendingName }), second = screen.getByRole('link', { name: approvedName });
-  expect(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  expect(screen.getByText('Ждёт допуска', { exact: true })).toBeInTheDocument();
-  expect(screen.getByText('Допущен', { exact: true })).toBeInTheDocument();
-  expect(state.requests.filter((item) => item.path === '/api/v1/admin/teachers').length).toBeGreaterThan(0);
+it('old teacher list address redirects to the users table filtered by applications', async () => {
+  createTeachersScenario(); const view = mountTeachers();
+  await waitFor(() => expect(view.router.state.location.pathname).toBe('/admin/users'));
+  expect(new URLSearchParams(view.router.state.location.search).get('role')).toBe('TEACHER');
+  expect(new URLSearchParams(view.router.state.location.search).get('status')).toBe('PENDING');
 });
 it.each([authUsers.student, authUsers.teacher])('role $role has no teacher API calls', async (viewer) => {
   const state = createTeachersScenario(viewer); mountTeachers('/admin/users/teachers/2002');
@@ -225,19 +214,6 @@ it('directory has no teachers entry', async () => {
   createTeachersScenario(); mountTeachers('/admin/directory');
   expect(await screen.findByRole('heading', { name: 'Справочники' })).toBeInTheDocument();
   expect(screen.queryByRole('link', { name: 'Преподаватели' })).not.toBeInTheDocument();
-});
-it('list loading finishes with an honest empty state', async () => {
-  createTeachersScenario(); const gate = teacherDeferred();
-  server.use(http.get('*/api/v1/admin/teachers', async () => { await gate.promise; return teacherJson({ items: [] }); }));
-  mountTeachers(); expect(await screen.findByRole('status')).toBeInTheDocument();
-  await act(async () => { gate.resolve(); });
-  expect(await screen.findByText(/заяв.*нет|нет.*заяв/i)).toBeInTheDocument(); expect(screen.queryByLabelText('Заявки преподавателей: 0')).not.toBeInTheDocument();
-});
-it.each(['500', 'network', 'malformed'] as const)('list %s has retry instead of fake empty data', async (kind) => {
-  createTeachersScenario(); let fail = true;
-  server.use(http.get('*/api/v1/admin/teachers', () => !fail ? teacherJson(teacherFixtures.list()) : kind === 'network' ? HttpResponse.error() : kind === 'malformed' ? teacherJson({ items: [{ ...teacherFixtures.pending(), teacherApproved: 'yes' }] }) : problem('INTERNAL_ERROR', 500)));
-  const view = mountTeachers(); const retry = await screen.findByRole('button', { name: /Повторить/ });
-  fail = false; await view.user.click(retry); expect(await screen.findByRole('link', { name: pendingName })).toBeInTheDocument();
 });
 it('approved detail hides application decisions and displays the server scope without computing it', async () => {
   const state = createTeachersScenario(); const onlyServer = { ...foreignGroup, id: 999, name: 'Группа только из ответа сервера' };
