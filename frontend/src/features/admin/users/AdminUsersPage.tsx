@@ -64,12 +64,12 @@ function Users() {
     </div>
     <div className="admin-users-table"><TeacherTableLayout caption="Пользователи" rows={items} keyForRow={(r) => r.id} state={loadState(query, items.length === 0, 'Никого не нашли')}
       columns={[{ key: 'name', title: 'ФИО', sort: sortable('name'), render: (r) => <Anchor component={Link} fw={700} to={r.role === 'TEACHER' ? `/admin/users/teachers/${r.id}` : `/users/${r.id}`}>{r.fullName}</Anchor> },
-        { key: 'email', title: 'Email', sort: sortable('email'), render: (r) => <span className="admin-users-muted">{r.email}</span> },
-        { key: 'role', title: 'Роль', sort: sortable('role'), render: (r) => roleNames[r.role] },
-        { key: 'group', title: 'Группа / кафедра', sort: sortable('unit'), render: (r) => r.group?.name ?? (r.department ? `${r.department.name} · ${r.department.faculty.name}` : '—') },
+        { key: 'email', title: 'Email', sort: sortable('email'), render: (r) => <span className="admin-users-muted admin-users-keep">{r.email}</span> },
+        { key: 'role', title: 'Роль', sort: sortable('role'), render: (r) => <span className="admin-users-keep">{roleNames[r.role]}</span> },
+        { key: 'group', title: 'Группа / кафедра', sort: sortable('unit'), render: (r) => r.group ? <span className="admin-users-keep">{r.group.name}</span> : r.department ? <span className="admin-users-unit"><span>{r.department.name}</span><span className="admin-users-muted admin-users-small">{r.department.faculty.name}</span></span> : '—' },
         { key: 'status', title: 'Статус', sort: sortable('status'), className: 'admin-users-status', render: (r) => r.status ? <span className={`cr-status cr-status-${['APPROVED', 'MEMBERSHIP_ACTIVE'].includes(r.status) ? 'accepted' : 'submitted'}`}>{statusNames[r.status]}</span> : '—' },
-        { key: 'created', title: 'Создан', sort: sortable('created'), render: (r) => <span className="admin-users-muted">{userTime(r.createdAt)}</span> },
-        { key: 'login', title: 'Последний вход', sort: sortable('lastLogin'), render: (r) => <span className="admin-users-muted">{userTime(r.lastLoginAt)}</span> },
+        { key: 'created', title: 'Создан', sort: sortable('created'), render: (r) => <span className="admin-users-muted admin-users-keep">{userTime(r.createdAt)}</span> },
+        { key: 'login', title: 'Последний вход', sort: sortable('lastLogin'), render: (r) => <span className="admin-users-muted admin-users-keep">{userTime(r.lastLoginAt)}</span> },
         { key: 'actions', title: 'Действия', render: (r) => r.role !== 'ADMIN' && <div className="admin-users-actions">
           <SetPasswordDialog user={{ ...r, role: r.role }} />
           {r.passwordSetAt && <span className="admin-users-muted admin-users-audit">Пароль выставлен <time dateTime={r.passwordSetAt}>{userTime(r.passwordSetAt)}</time></span>}

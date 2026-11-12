@@ -12,7 +12,12 @@
 @media (min-width: 48em) {
   .admin-users-sort { display: none; }
   .admin-users-table .admin-users-status { text-align: center; }
+  .admin-page .admin-users-table .cr-table td { overflow-wrap: normal; word-break: normal; }
+  .admin-page .admin-users-table .cr-table td > * { max-width: none; }
+  .admin-users-keep, .admin-users-table .cr-status, .admin-users-table .cr-sort-button { white-space: nowrap; }
 }
+.admin-users-unit { display: flex; flex-direction: column; }
+.admin-users-small { font-size: var(--mantine-font-size-xs); }
 .admin-users-table .cr-status { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; line-height: 1.4; }
 @media (max-width: 48em) {
   .admin-users-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }

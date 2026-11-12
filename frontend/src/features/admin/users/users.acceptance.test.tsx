@@ -86,7 +86,8 @@ describe('users-node AE1–AE10', { timeout: 20000 }, () => {
     }
     expect(within(await row('Смирнова')).getByText('ИВТ-21')).toBeInTheDocument();
     expect(within(await row('Орлов')).getByText('ИВТ-21')).toBeInTheDocument();
-    expect(within(await row('Петров')).getByText('Кафедра программной инженерии · Факультет информационных технологий')).toBeInTheDocument();
+    expect(within(await row('Петров')).getByText('Кафедра программной инженерии', { exact: true })).toBeInTheDocument();
+    expect(within(await row('Петров')).getByText('Факультет информационных технологий', { exact: true })).toBeInTheDocument();
     const admin = within(await row('Администратор Демо'));
     expect(admin.getAllByText('—', { exact: true })).toHaveLength(3);
     expect(admin.queryByRole('button')).not.toBeInTheDocument();
