@@ -109,10 +109,10 @@ execution: code
 ### U3. Экраны (frontend)
 
 - **Goal.** Заявки для преподавателя и старосты, повторная заявка студента, назначение старосты администратором.
-- **Files:** `frontend/src/features/groups/PendingMembers.tsx` (маршрут `/memberships`, пункт навигации «Заявки в группы» для допущенного преподавателя и старосты), `frontend/src/features/auth/RequestMembership.tsx` (плашка «Заявка в {группа} отклонена» и выбор факультета и группы на «Главной»), правка `frontend/src/features/admin/directory/DirectoryPage.tsx` (колонка «Староста», диалог назначения из студентов группы, снятие), `frontend/src/app/{router,navigation,routeElements}.tsx`, `frontend/src/features/auth/contracts.ts`, моки `frontend/src/mocks/**`; приёмочный тест `frontend/src/features/groups/memberships.acceptance.test.tsx`.
+- **Files:** `frontend/src/features/groups/PendingMembers.tsx` (маршрут `/memberships` без пункта меню — у ролей уже пять пунктов; вход по `screen-map.md`: у преподавателя — ссылка «Заявки: N» в «Группах», у старосты — плашка «Ждут подтверждения: N» на «Главной»), `frontend/src/features/auth/RequestMembership.tsx` (плашка «Заявка в {группа} отклонена» и выбор факультета и группы на «Главной»), правка `frontend/src/features/admin/directory/DirectoryPage.tsx` (колонка «Староста», диалог назначения из студентов группы, снятие), `frontend/src/app/{router,routeElements}.tsx`, `frontend/src/features/auth/contracts.ts`, моки `frontend/src/mocks/**`; приёмочный тест `frontend/src/features/groups/memberships.acceptance.test.tsx`.
 - **Test scenarios:**
   - Преподаватель видит заявки доступных групп с ФИО, email, группой и временем; «Подтвердить» убирает строку; «Отклонить» — через подтверждение в диалоге.
-  - Староста видит пункт «Заявки в группы» и только свою группу; обычный студент пункта не видит, прямой переход — «Нет доступа».
+  - Староста видит плашку «Ждут подтверждения: N» на «Главной» и по ней — только свою группу; при N = 0 плашки нет; обычный студент плашки не видит, прямой переход на `/memberships` — «Нет доступа». Преподаватель видит «Заявки: N» в «Группах».
   - Пустой список — «Новых заявок нет»; ошибка загрузки — сообщение и «Повторить».
   - Студент с `REJECTED` видит плашку и форму; после отправки — текст ожидания `PENDING` (уже есть в `routeElements.tsx`).
   - Администратор назначает старосту из `ACTIVE`-студентов группы, видит его в колонке, снимает.
