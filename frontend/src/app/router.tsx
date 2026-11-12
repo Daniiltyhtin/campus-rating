@@ -14,9 +14,20 @@ export const routes: RouteObject[] = [
   {
     element: <AuthBoundary />,
     children: [
+      { path: 'password/set/:token', lazy: async () => ({ Component: (await import('../features/auth/SetPasswordPage')).SetPasswordPage }) },
+      { path: 'email/confirm/:token', lazy: async () => ({ Component: (await import('../features/auth/EmailVerification')).ConfirmEmailPage }) },
       { element: <GuestGate />, children: [{ path: 'login', element: <LoginPage /> }, { path: 'register', element: <RegisterPage /> }] },
       { element: <PasswordGate />, children: [{ path: 'password/change', element: <ChangePasswordPage /> }] },
       { element: <SessionGate />, children: [
+        { path: 'admin/directory/teachers', lazy: async () => ({ Component: (await import('../features/admin/teachers/TeacherListPage')).TeacherListPage }) },
+        { path: 'admin/directory/teachers/:id', lazy: async () => ({ Component: (await import('../features/admin/teachers/TeacherPage')).TeacherPage }) },
+        { path: 'admin/import', lazy: async () => ({ Component: (await import('../features/admin/import/AdminImportPage')).AdminImportPage }) },
+        { path: 'admin/submissions/:assignmentId', lazy: async () => ({ Component: (await import('../features/admin/submissions/AdminSubmissionPage')).AdminSubmissionPage }) },
+        { path: 'admin/users', lazy: async () => ({ Component: (await import('../features/admin/users/AdminUsersPage')).AdminUsersPage }) },
+        { path: 'groups/:id/students', lazy: async () => ({ Component: (await import('../features/groups/GroupStudentsPage')).GroupStudentsPage }) },
+        { path: 'admin/semesters', lazy: async () => ({ Component: (await import('../features/admin/semesters/AdminSemestersPage')).AdminSemestersPage }) },
+        { path: 'admin/settings', lazy: async () => ({ Component: (await import('../features/admin/settings/AdminSettingsPage')).AdminSettingsPage }) },
+        { path: 'admin/budgets', lazy: async () => ({ Component: (await import('../features/admin/budgets/AdminBudgetsPage')).AdminBudgetsPage }) },
         { path: 'admin/directory', lazy: async () => ({ Component: (await import('../features/admin/directory/DirectoryPage')).DirectoryPage }) },
         { path: 'tasks', lazy: async () => ({ Component: (await import('../features/tasks/TaskList')).TaskList }) },
         { path: 'tasks/:id', lazy: async () => ({ Component: (await import('../features/tasks/TaskPage')).TaskPage }) },

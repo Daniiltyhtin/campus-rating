@@ -28,7 +28,8 @@ function access(request: Request) {
   if (viewer.role !== 'ADMIN') return problem('FORBIDDEN', 403);
   return request.method !== 'GET' && !validCsrf(request) ? problem('CSRF_INVALID', 403) : null;
 }
-export function createDirectoryMockHandlers() {
+export type DirectoryMockState = Record<DirectoryKind, DirectoryEntry[]> & { references: Record<DirectoryKind, Set<number>> };
+export function createDirectoryMockState(): DirectoryMockState {
   const rows: Record<DirectoryKind, DirectoryEntry[]> = {
     faculties: parseDirectoryList('faculties', example('listFaculties')).items,
     groups: parseDirectoryList('groups', example('listAdminGroups')).items,
@@ -38,6 +39,9 @@ export function createDirectoryMockHandlers() {
   if (object(publicGroups) && Array.isArray(publicGroups.items)) for (const group of publicGroups.items) {
     if (object(group) && !rows.groups.some((row) => row.id === group.id)) rows.groups.push(parseDirectoryEntry('groups', { ...group, code: group.name, admissionYear: 2025 }));
   }
+  return { ...rows, references: { faculties: new Set(), groups: new Set([11]), departments: new Set([101]) } };
+}
+export function createDirectoryMockHandlers(rows: DirectoryMockState = createDirectoryMockState()) {
   let nextId = 5000;
   const faculties = (): Faculty[] => rows.faculties.map(({ id, code, name }) => ({ id, code, name }));
   const wire = (row: DirectoryEntry) => {
@@ -47,8 +51,8 @@ export function createDirectoryMockHandlers() {
     return { ...value, faculty: faculties().find((item) => item.id === facultyId), ...(row.kind === 'groups' ? { admissionYear: row.admissionYear } : {}) };
   };
   const ordered = (kind: DirectoryKind) => [...rows[kind]].sort((a, b) => a.name.localeCompare(b.name, 'ru') || a.id - b.id).map(wire);
-  const inUse = (kind: DirectoryKind, id: number) => kind === 'groups' ? id === 11 : kind === 'departments' ? id === 101
-    : [...rows.groups, ...rows.departments].some((row) => row.kind !== 'faculties' && row.faculty.id === id);
+  const inUse = (kind: DirectoryKind, id: number) => rows.references[kind].has(id)
+    || (kind === 'faculties' && [...rows.groups, ...rows.departments].some((row) => row.kind !== 'faculties' && row.faculty.id === id));
   async function save(kind: DirectoryKind, request: Request, id?: number) {
     const denied = access(request); if (denied) return denied;
     if (id !== undefined && !rows[kind].some((row) => row.id === id)) return problem('NOT_FOUND', 404);

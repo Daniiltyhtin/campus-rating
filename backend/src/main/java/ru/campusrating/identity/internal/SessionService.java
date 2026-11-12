@@ -25,17 +25,22 @@ public class SessionService {
     private final SecurityContextRepository contexts;
     private final CookieCsrfTokenRepository csrf;
     private final SessionRegistry registry;
+    private final PasswordSetupService setup;
     SessionService(IdentityRepository repository, Passwords passwords, AuthenticationManager authentication,
                    SessionAuthenticationStrategy loginStrategy, SecurityContextRepository contexts,
-                   CookieCsrfTokenRepository csrf, SessionRegistry registry) {
+                   CookieCsrfTokenRepository csrf, SessionRegistry registry,PasswordSetupService setup) {
         this.repository = repository; this.passwords = passwords; this.authentication = authentication;
         this.loginStrategy = loginStrategy; this.contexts = contexts; this.csrf = csrf; this.registry = registry;
+        this.setup=setup;
     }
 
     public void login(String email, String password, HttpServletRequest request, HttpServletResponse response) {
         passwords.requireByteLimit(password, "password");
         try {
             var result = authentication.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(email, password));
+            var principal=(IdentityPrincipal)result.getPrincipal();
+            if(setup.required()&&!setup.verified(principal.userId())&&!account(principal.userId()).mustChangePassword())
+                throw new ApiException(ProblemCode.EMAIL_NOT_VERIFIED,"Отправить ссылку подтверждения");
             loginStrategy.onAuthentication(result, request, response);
             var context = SecurityContextHolder.createEmptyContext();
             context.setAuthentication(result);

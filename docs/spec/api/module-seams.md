@@ -75,6 +75,17 @@ public record DepartmentInfo(long id, String code, String name, FacultyInfo facu
 - **Гарантии.** Только чтение. Справочники меняются редко (мастер-U13), поэтому кэш на запрос допустим. Курс группы из `admissionYear` и учебного года считает `identity` (мастер-KTD23), а не `directory`.
 - **Тестовый двойник:** мок по демо-данным контракта — ФИТ (1): ИВТ-21 (11), ИВТ-22 (12); кафедра ПИ (101).
 
+### Импорт справочников (U13)
+
+Публичный `directory.DirectoryImport` принадлежит `directory`, потребитель — `identity`.
+`facultyByCode(code)` и `departmentByCode(code)` возвращают `Optional<FacultyInfo>` /
+`Optional<DepartmentInfo>`. `groupByCode(code)` возвращает
+`Optional<ImportedGroup(id,facultyId,code,name,admissionYear)>`.
+Сравнение кодов — как в существующих справочниках. `createGroup(facultyId,code,name,admissionYear)`
+требует транзакции вызывающего (`MANDATORY`), участвует в общем rollback импорта и
+не публикует побочных эффектов. Валидация входных строк и отчёт принадлежат `identity`;
+чтение и запись таблиц справочников — только `directory`.
+
 ## 1. `LedgerApi` — журнал проводок
 
 - **Владелец:** `ledger`, мастер-U6, дорожка A.

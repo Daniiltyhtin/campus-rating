@@ -61,7 +61,7 @@ class SecurityConfig {
     @Bean
     @org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication(type = org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type.SERVLET)
     SecurityFilterChain securityFilterChain(HttpSecurity http, SecurityContextRepository contexts,
-            CookieCsrfTokenRepository csrf, SessionRegistry registry, CurrentUser current, SecurityProblems problems) throws Exception {
+            CookieCsrfTokenRepository csrf, SessionRegistry registry, CurrentUser current, SecurityProblems problems,PasswordSetupService setup) throws Exception {
         var concurrent = new ConcurrentSessionFilter(registry, event -> problems.write(event.getRequest(), event.getResponse(), ProblemCode.UNAUTHENTICATED));
         http.formLogin(AbstractHttpConfigurer::disable).httpBasic(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
@@ -73,6 +73,7 @@ class SecurityConfig {
                         .accessDeniedHandler((request, response, exception) -> problems.write(request, response,
                                 exception instanceof CsrfException ? ProblemCode.CSRF_INVALID : ProblemCode.FORBIDDEN)))
                 .authorizeHttpRequests(access -> access
+                        .requestMatchers(HttpMethod.POST,"/api/v1/auth/password/set","/api/v1/auth/email/verification","/api/v1/auth/email/confirmation").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/error", "/v3/api-docs", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/auth/csrf", "/api/v1/auth/config", "/api/v1/directory/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/register/student", "/api/v1/auth/register/teacher").permitAll()
@@ -91,7 +92,8 @@ class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/activities", "/api/v1/activities/*").hasAnyRole("STUDENT", "TEACHER")
                         .requestMatchers("/api/v1/**").authenticated().anyRequest().permitAll())
                 .addFilterAfter(concurrent, SecurityContextHolderFilter.class)
-                .addFilterAfter(new PasswordChangeFilter(current, problems), AnonymousAuthenticationFilter.class);
+                .addFilterAfter(new PasswordChangeFilter(current, problems), AnonymousAuthenticationFilter.class)
+                .addFilterAfter(new EmailVerificationFilter(current,setup,problems),PasswordChangeFilter.class);
         return http.build();
     }
 }

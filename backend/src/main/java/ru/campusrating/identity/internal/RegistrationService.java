@@ -29,14 +29,27 @@ public class RegistrationService {
     private final LedgerApi ledger;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    private final PasswordSetupService setup;
+    private final org.springframework.jdbc.core.simple.JdbcClient jdbc;
     RegistrationService(IdentityRepository repository, DirectoryApi directory, Passwords passwords, LedgerApi ledger,
-                        ApplicationEventPublisher events, Clock clock) {
+                        ApplicationEventPublisher events, Clock clock,PasswordSetupService setup,org.springframework.jdbc.core.simple.JdbcClient jdbc) {
         this.repository = repository; this.directory = directory; this.passwords = passwords;
         this.ledger = ledger; this.events = events; this.clock = clock;
+        this.setup=setup;this.jdbc=jdbc;
     }
 
     @Transactional
     public long student(String email, String fullName, String password, long facultyId, long groupId) {
+        return student(email,fullName,password,facultyId,groupId,false);
+    }
+    @Transactional
+    public long importStudent(String email,String fullName,long facultyId,long groupId) {
+        long id=student(email,fullName,new TemporaryPassword().generate(),facultyId,groupId,true);
+        jdbc.sql("update app_user set password_hash=null where id=:id").param("id",id).update();
+        return id;
+    }
+    private long student(String email,String fullName,String password,long facultyId,long groupId,boolean imported) {
+        AdminImportService.lock(jdbc);
         if (repository.allowlisted(email)) throw new ApiException(ProblemCode.EMAIL_RESERVED_FOR_TEACHER, "Email зарезервирован для преподавателя");
         requireFreeEmail(email);
         var group = directory.group(groupId).orElseThrow(() -> Passwords.invalid("groupId", "INVALID", "Группа не найдена"));
@@ -46,19 +59,25 @@ public class RegistrationService {
         repository.addMembership(id, groupId, GroupMembershipState.ACTIVE, time);
         events.publishEvent(new MembershipActivated(id, groupId, time));
         ledger.post(List.of(initial(id)));
+        if(!imported) setup.sendVerification(id,email);
         return id;
     }
 
     @Transactional
     public long teacher(String email, String fullName, String password, long departmentId) {
+        AdminImportService.lock(jdbc);
         requireFreeEmail(email);
         if (directory.department(departmentId).isEmpty()) throw Passwords.invalid("departmentId", "INVALID", "Кафедра не найдена");
-        return create(email, fullName, password, Role.TEACHER, departmentId, false);
+        long id=create(email, fullName, password, Role.TEACHER, departmentId, false);
+        setup.sendVerification(id,email);return id;
     }
 
     @Transactional
     public void bootstrap(String email, String password) {
-        if (!repository.hasAdmin()) create(email, "Администратор", password, Role.ADMIN, null, true);
+        if (!repository.hasAdmin()) {
+            long id=create(email, "Администратор", password, Role.ADMIN, null, true);
+            jdbc.sql("update app_user set email_verified=true where id=:id").param("id",id).update();
+        }
     }
 
     private long create(String email, String fullName, String password, Role role, Long department, boolean change) {

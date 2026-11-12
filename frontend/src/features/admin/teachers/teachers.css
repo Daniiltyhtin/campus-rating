@@ -1,0 +1,13 @@
+.teachers-page { min-width: 0; }
+.teachers-page .cr-masthead > div > div { min-width: 0; max-width: 100%; }
+.teachers-page h1, .teachers-page h2, .teachers-page p, .teachers-page .cr-table td, .teachers-page span { overflow-wrap: anywhere; }
+.teachers-page .mantine-Tabs-list { flex-wrap: wrap; }
+.teachers-page .mantine-Tabs-tab { color: var(--cr-text); min-width: var(--cr-touch-target); }
+.teacher-link { display: inline-flex; align-items: center; min-height: var(--cr-touch-target); max-width: 100%; overflow-wrap: anywhere; }
+.teachers-dialog .mantine-Modal-title, .teachers-dialog p { overflow-wrap: anywhere; }
+.teachers-dialog .mantine-Modal-close { min-width: var(--cr-touch-target); min-height: var(--cr-touch-target); }
+.teachers-dialog .mantine-InputWrapper-error { color: var(--cr-status-overdue); }
+@media (max-width: 48em) {
+  .teachers-page h1 { font-size: var(--mantine-h2-font-size); }
+  .teachers-page .cr-table td { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+}

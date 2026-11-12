@@ -52,6 +52,7 @@ export function createAuthScenario(initialUser: CurrentUser | null = null) {
       csrf: request.headers.get('X-XSRF-TOKEN'), body: await request.clone().json() });
   }
   server.use(
+    http.get('*/api/v1/admin/teachers', () => json({ items: [] })),
     http.get('*/api/v1/auth/csrf', () => {
       state.token = `acceptance-csrf-${++state.csrfCount}`;
       document.cookie = `XSRF-TOKEN=${state.token}; Path=/`;

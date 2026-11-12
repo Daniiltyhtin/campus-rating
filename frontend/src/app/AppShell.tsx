@@ -6,6 +6,7 @@ import type { Session } from './session';
 import type { CurrentUser } from '../features/auth/contracts';
 import { BrandMark } from '../theme/Brand';
 import { UserMenu } from '../features/auth/UserMenu';
+import { TeacherBadge } from '../features/admin/teachers/TeacherBadge';
 
 const HEADER_HEIGHT = '3.5rem';
 const FOOTER_HEIGHT = '4rem';
@@ -40,6 +41,8 @@ export function AppShell({ session, user }: { session: Session; user: CurrentUse
               component={Link}
               to={item.to}
               label={item.label}
+              aria-label={item.label}
+              rightSection={session.role === 'ADMIN' && item.to === '/admin/directory' ? <TeacherBadge viewerId={Number(session.userId)} /> : undefined}
               active={isActive(pathname, item.to)}
               aria-current={isActive(pathname, item.to) ? 'page' : undefined}
             />
@@ -54,6 +57,8 @@ export function AppShell({ session, user }: { session: Session; user: CurrentUse
                 component={Link}
                 to={item.to}
                 label={item.label}
+                aria-label={item.label}
+                rightSection={session.role === 'ADMIN' && item.to === '/admin/directory' ? <TeacherBadge viewerId={Number(session.userId)} /> : undefined}
                 active={isActive(pathname, item.to)}
                 aria-current={isActive(pathname, item.to) ? 'page' : undefined}
                 h="100%"
