@@ -42,7 +42,7 @@
       ```
    2. Сертификат без правки конфигов:
       ```bash
-      sudo certbot certonly --nginx -d <домен> --deploy-hook "systemctl reload nginx"
+      sudo certbot certonly --nginx -d <домен> --deploy-hook "nginx -t && systemctl reload nginx"
       ```
    3. Полный конфиг из шаблона: замените `campus.example.ru` на домен и `WEB_PORT` на значение из `deploy/server.env`.
       ```bash

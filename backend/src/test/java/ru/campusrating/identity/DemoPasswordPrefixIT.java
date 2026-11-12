@@ -2,11 +2,15 @@ package ru.campusrating.identity;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.web.server.context.WebServerInitializedEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,6 +53,17 @@ class DemoPasswordPrefixIT {
             assertThat(restarted.getBean(JdbcTemplate.class)
                     .queryForObject("select count(*) from app_user where email like '%campus.test'", Integer.class))
                     .isEqualTo(DEMO_ACCOUNTS.size());
+        }
+    }
+
+    @Test
+    void readmePasswordStopsWorkingBeforeTheServerAcceptsRequests() {
+        var adminHashAtStartup = new AtomicReference<String>();
+        ApplicationListener<WebServerInitializedEvent> probe = event -> adminHashAtStartup.set(event.getApplicationContext()
+                .getBean(JdbcTemplate.class).queryForObject("select password_hash from app_user where id=3001", String.class));
+        try (var context = IdentityLifecycleSupport.start(database, "demo", Map.of("DEMO_PASSWORD_PREFIX", PREFIX), probe)) {
+            assertThat(adminHashAtStartup.get()).isNotNull();
+            assertThat(new BCryptPasswordEncoder().matches("demo-admin-1", adminHashAtStartup.get())).isFalse();
         }
     }
 
