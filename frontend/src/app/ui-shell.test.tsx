@@ -111,7 +111,7 @@ it('R29: system theme follows the operating system color scheme', async () => {
   }
 });
 
-it.each(['light', 'dark', 'system'])('R40: mobile active item uses primary tokens without icon slots in %s', async (appearance) => {
+it.each(['light', 'dark', 'system'])('R40: mobile active item uses primary tokens and every item has a decorative icon in %s', async (appearance) => {
   localStorage.setItem('campus-appearance', JSON.stringify(appearance));
   setViewportWidth(360);
   renderApp('/tasks', { userId: '1001', role: 'STUDENT' });
@@ -119,7 +119,8 @@ it.each(['light', 'dark', 'system'])('R40: mobile active item uses primary token
   const active = within(nav).getByRole('link', { name: 'Задачи' });
   expect(active).toHaveAttribute('aria-current', 'page');
   expect(active).toHaveClass('cr-bottom-link');
-  expect(active.querySelector('[data-position], svg')).toBeNull();
+  expect(active.querySelector('[data-position]')).toBeNull();
+  for (const link of within(nav).getAllByRole('link')) expect(link.querySelector('svg.cr-nav-icon[aria-hidden="true"]')).not.toBeNull();
   expect(styles).toMatch(/\.cr-bottom-link\s*\{[^}]*justify-content:\s*center[^}]*text-align:\s*center/);
   expect(styles).toMatch(/\.cr-bottom-link\[data-active\]\s*\{[^}]*background(?:-color)?:\s*var\(--cr-primary-soft\)[^}]*color:\s*var\(--cr-primary\)/);
 });

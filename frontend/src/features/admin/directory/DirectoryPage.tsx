@@ -22,7 +22,6 @@ function Directory({ viewerId }: { viewerId: number }) {
   const open = (next: Editor, target: HTMLButtonElement) => { opener.current = target; setResult(''); setEditor(next); };
   const busy = editor !== null;
   return <div className="directory-page"><PageLayout title="Справочники" description="Факультеты, учебные группы и кафедры университета.">
-    <TeacherLink to="/admin/directory/teachers">Преподаватели</TeacherLink>
     {result && <Text role="status">{result}</Text>}
     <Tabs value={kind} onChange={(value) => { const next = kinds.find((item) => item === value); if (next && !busy) { setKind(next); setResult(''); } }}>
       <Tabs.List>{kinds.map((item) => <Tabs.Tab value={item} key={item} disabled={busy}>{labels[item].title}</Tabs.Tab>)}</Tabs.List>

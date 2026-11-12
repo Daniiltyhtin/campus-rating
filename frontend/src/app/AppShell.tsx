@@ -7,6 +7,7 @@ import type { CurrentUser } from '../features/auth/contracts';
 import { BrandMark } from '../theme/Brand';
 import { UserMenu } from '../features/auth/UserMenu';
 import { TeacherBadge } from '../features/admin/teachers/TeacherBadge';
+import { NavIcon } from './NavIcon';
 
 const HEADER_HEIGHT = '3.5rem';
 const FOOTER_HEIGHT = '4rem';
@@ -42,7 +43,7 @@ export function AppShell({ session, user }: { session: Session; user: CurrentUse
               to={item.to}
               label={item.label}
               aria-label={item.label}
-              rightSection={session.role === 'ADMIN' && item.to === '/admin/directory' ? <TeacherBadge viewerId={Number(session.userId)} /> : undefined}
+              rightSection={session.role === 'ADMIN' && item.to === '/admin/users' ? <TeacherBadge viewerId={Number(session.userId)} /> : undefined}
               active={isActive(pathname, item.to)}
               aria-current={isActive(pathname, item.to) ? 'page' : undefined}
             />
@@ -56,9 +57,9 @@ export function AppShell({ session, user }: { session: Session; user: CurrentUse
                 key={item.to}
                 component={Link}
                 to={item.to}
-                label={item.label}
+                label={<span className="cr-bottom-label"><NavIcon name={item.icon} />{item.label}</span>}
                 aria-label={item.label}
-                rightSection={session.role === 'ADMIN' && item.to === '/admin/directory' ? <TeacherBadge viewerId={Number(session.userId)} /> : undefined}
+                rightSection={session.role === 'ADMIN' && item.to === '/admin/users' ? <TeacherBadge viewerId={Number(session.userId)} /> : undefined}
                 active={isActive(pathname, item.to)}
                 aria-current={isActive(pathname, item.to) ? 'page' : undefined}
                 h="100%"
