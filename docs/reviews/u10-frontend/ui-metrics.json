@@ -1,0 +1,854 @@
+[
+  {
+    "page": "student-history",
+    "width": 360,
+    "appearance": "light",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 4.5,
+    "minContrast": 5.57,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "student-history",
+    "width": 360,
+    "appearance": "dark",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 4.5,
+    "minContrast": 7.59,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "student-history",
+    "width": 360,
+    "appearance": "contrast",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 7,
+    "minContrast": 8.74,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 86,
+        "height": 52
+      },
+      {
+        "name": "Задачи",
+        "width": 78.7,
+        "height": 52
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52
+      }
+    ]
+  },
+  {
+    "page": "student-history",
+    "width": 1280,
+    "appearance": "light",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 4.5,
+    "minContrast": 5.57,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "student-history",
+    "width": 1280,
+    "appearance": "dark",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 4.5,
+    "minContrast": 7.59,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 157.4,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "student-history",
+    "width": 1280,
+    "appearance": "contrast",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 7,
+    "minContrast": 8.74,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 86,
+        "height": 52
+      },
+      {
+        "name": "Задачи",
+        "width": 78.7,
+        "height": 52
+      },
+      {
+        "name": "Петров Павел Петрович",
+        "width": 178.4,
+        "height": 52
+      }
+    ]
+  },
+  {
+    "page": "student-tasks",
+    "width": 360,
+    "appearance": "light",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 4.5,
+    "minContrast": 5.07,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      },
+      {
+        "name": "Лабораторная 3. Деревья поиска",
+        "width": 253.2,
+        "height": 44
+      },
+      {
+        "name": "Лабораторная 2. Сортировки",
+        "width": 226.1,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "student-tasks",
+    "width": 360,
+    "appearance": "dark",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 4.5,
+    "minContrast": 7.54,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      },
+      {
+        "name": "Лабораторная 3. Деревья поиска",
+        "width": 253.2,
+        "height": 44
+      },
+      {
+        "name": "Лабораторная 2. Сортировки",
+        "width": 226.1,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "student-tasks",
+    "width": 360,
+    "appearance": "contrast",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 7,
+    "minContrast": 7.05,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 86,
+        "height": 52
+      },
+      {
+        "name": "Задачи",
+        "width": 78.7,
+        "height": 52
+      },
+      {
+        "name": "Лабораторная 3. Деревья поиска",
+        "width": 287,
+        "height": 52
+      },
+      {
+        "name": "Лабораторная 2. Сортировки",
+        "width": 256.2,
+        "height": 52
+      }
+    ]
+  },
+  {
+    "page": "student-tasks",
+    "width": 1280,
+    "appearance": "light",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 4.5,
+    "minContrast": 5.07,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      },
+      {
+        "name": "Лабораторная 3. Деревья поиска",
+        "width": 253.2,
+        "height": 44
+      },
+      {
+        "name": "Лабораторная 2. Сортировки",
+        "width": 226.1,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "student-tasks",
+    "width": 1280,
+    "appearance": "dark",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 4.5,
+    "minContrast": 7.54,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      },
+      {
+        "name": "Лабораторная 3. Деревья поиска",
+        "width": 253.2,
+        "height": 44
+      },
+      {
+        "name": "Лабораторная 2. Сортировки",
+        "width": 226.1,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "student-tasks",
+    "width": 1280,
+    "appearance": "contrast",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 7,
+    "minContrast": 7.05,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 86,
+        "height": 52
+      },
+      {
+        "name": "Задачи",
+        "width": 78.7,
+        "height": 52
+      },
+      {
+        "name": "Лабораторная 3. Деревья поиска",
+        "width": 287,
+        "height": 52
+      },
+      {
+        "name": "Лабораторная 2. Сортировки",
+        "width": 256.2,
+        "height": 52
+      }
+    ]
+  },
+  {
+    "page": "foreign-tasks",
+    "width": 360,
+    "appearance": "light",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 4.5,
+    "minContrast": 5.07,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "foreign-tasks",
+    "width": 360,
+    "appearance": "dark",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 4.5,
+    "minContrast": 7.54,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "foreign-tasks",
+    "width": 360,
+    "appearance": "contrast",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 7,
+    "minContrast": 7.05,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 86,
+        "height": 52
+      },
+      {
+        "name": "Задачи",
+        "width": 78.7,
+        "height": 52
+      }
+    ]
+  },
+  {
+    "page": "foreign-tasks",
+    "width": 1280,
+    "appearance": "light",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 4.5,
+    "minContrast": 5.07,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "foreign-tasks",
+    "width": 1280,
+    "appearance": "dark",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 4.5,
+    "minContrast": 7.54,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "foreign-tasks",
+    "width": 1280,
+    "appearance": "contrast",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 7,
+    "minContrast": 7.05,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 86,
+        "height": 52
+      },
+      {
+        "name": "Задачи",
+        "width": 78.7,
+        "height": 52
+      }
+    ]
+  },
+  {
+    "page": "teacher",
+    "width": 360,
+    "appearance": "light",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 4.5,
+    "minContrast": 5.91,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "Лента наград",
+        "width": 296,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "teacher",
+    "width": 360,
+    "appearance": "dark",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 4.5,
+    "minContrast": 7.59,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "Лента наград",
+        "width": 296,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "teacher",
+    "width": 360,
+    "appearance": "contrast",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 7,
+    "minContrast": 10.6,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "Лента наград",
+        "width": 296,
+        "height": 52
+      }
+    ]
+  },
+  {
+    "page": "teacher",
+    "width": 1280,
+    "appearance": "light",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 4.5,
+    "minContrast": 5.91,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "Лента наград",
+        "width": 976,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "teacher",
+    "width": 1280,
+    "appearance": "dark",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 4.5,
+    "minContrast": 7.59,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "Лента наград",
+        "width": 976,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "teacher",
+    "width": 1280,
+    "appearance": "contrast",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 7,
+    "minContrast": 10.6,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "Лента наград",
+        "width": 976,
+        "height": 52
+      }
+    ]
+  },
+  {
+    "page": "admin",
+    "width": 360,
+    "appearance": "light",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 4.5,
+    "minContrast": 5.91,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": []
+  },
+  {
+    "page": "admin",
+    "width": 360,
+    "appearance": "dark",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 4.5,
+    "minContrast": 7.59,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": []
+  },
+  {
+    "page": "admin",
+    "width": 360,
+    "appearance": "contrast",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 7,
+    "minContrast": 12.63,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": []
+  },
+  {
+    "page": "admin",
+    "width": 1280,
+    "appearance": "light",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 4.5,
+    "minContrast": 5.91,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": []
+  },
+  {
+    "page": "admin",
+    "width": 1280,
+    "appearance": "dark",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 4.5,
+    "minContrast": 7.59,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": []
+  },
+  {
+    "page": "admin",
+    "width": 1280,
+    "appearance": "contrast",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 7,
+    "minContrast": 12.63,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": []
+  },
+  {
+    "page": "admin-tasks",
+    "width": 360,
+    "appearance": "light",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 4.5,
+    "minContrast": 5.57,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      },
+      {
+        "name": "Материалы сдачи",
+        "width": 296,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "admin-tasks",
+    "width": 360,
+    "appearance": "dark",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 4.5,
+    "minContrast": 7.54,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      },
+      {
+        "name": "Материалы сдачи",
+        "width": 296,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "admin-tasks",
+    "width": 360,
+    "appearance": "contrast",
+    "client": 360,
+    "scroll": 360,
+    "threshold": 7,
+    "minContrast": 7.05,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 86,
+        "height": 52
+      },
+      {
+        "name": "Задачи",
+        "width": 78.7,
+        "height": 52
+      },
+      {
+        "name": "Материалы сдачи",
+        "width": 296,
+        "height": 52
+      }
+    ]
+  },
+  {
+    "page": "admin-tasks",
+    "width": 1280,
+    "appearance": "light",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 4.5,
+    "minContrast": 5.57,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      },
+      {
+        "name": "Материалы сдачи",
+        "width": 976,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "admin-tasks",
+    "width": 1280,
+    "appearance": "dark",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 4.5,
+    "minContrast": 7.54,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 78.8,
+        "height": 44
+      },
+      {
+        "name": "Задачи",
+        "width": 72.4,
+        "height": 44
+      },
+      {
+        "name": "Материалы сдачи",
+        "width": 976,
+        "height": 44
+      }
+    ]
+  },
+  {
+    "page": "admin-tasks",
+    "width": 1280,
+    "appearance": "contrast",
+    "client": 1280,
+    "scroll": 1280,
+    "threshold": 7,
+    "minContrast": 7.05,
+    "contrastFailures": [],
+    "smallControls": [],
+    "controls": [
+      {
+        "name": "История",
+        "width": 86,
+        "height": 52
+      },
+      {
+        "name": "Задачи",
+        "width": 78.7,
+        "height": 52
+      },
+      {
+        "name": "Материалы сдачи",
+        "width": 976,
+        "height": 52
+      }
+    ]
+  }
+]

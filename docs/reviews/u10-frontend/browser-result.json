@@ -1,0 +1,19 @@
+{
+  "screenshots": 36,
+  "errors": [],
+  "ignoredResourceErrors": [
+    {
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "url": "http://127.0.0.1:5190/favicon.ico"
+    },
+    {
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "url": "http://127.0.0.1:5190/api/v1/auth/me"
+    }
+  ],
+  "keyboardFocus": "solid",
+  "currencyFilter": true,
+  "ownLinks": true,
+  "foreignLinksHidden": true,
+  "adminMaterials": true
+}

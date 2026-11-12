@@ -47,5 +47,14 @@ React 19, Vite, TypeScript, Mantine, React Router, TanStack Query, Vitest. До�
 
 ## Уроки
 
+- Lazy UI превысил findBy 1 s → tester подтвердил loading DOM → локальные async/test timeouts с restore без смены ожиданий (`src/features/profile/profile.acceptance.test.tsx`).
+
+- Выбор участников сохранялся при переходе на другую уже закешированную активность → воспроизвёл тест с двумя заполненными query keys → состояние формы подтверждения привязывать к activity.id через key; проверять переход и на холодные, и на прогретые данные (`src/features/activities/ConfirmParticipationPage.tsx`, `navigation.test.tsx`).
+- Autosize Textarea падала в jsdom из-за отсутствующего FontFaceSet → tester прочитал подписку Mantine на document.fonts → в test-only helper давать EventTarget с ready/check/load, не менять production-компонент ради среды (`src/test/activitiesAcceptance.tsx`).
+- Default-кнопка при смене disabled смешивала background и backgroundColor → заметили ошибку React в браузере и воспроизвели rerender-тестом → в одной ветке стилей использовать одно longhand-свойство (`src/theme/theme.ts`, `button.test.tsx`).
+
 - Подсветка активного пункта меню и провайдер TanStack Query в тестовом рендере не проверялись — все тесты проходили и без них → нашёл ревьюер PR #10 → каждое состояние, меняющее вид, проверять тестом через доступный атрибут (`aria-current`, `aria-disabled`), а `renderApp` держать с теми же провайдерами, что `main.tsx` (`src/app/AppShell.tsx`, `src/test/render.tsx`).
 - Рамка поля в светлой теме прошла по контрасту текста, но дала 2.81 к фону при норме 3:1 для нетекстовых элементов → нашлось при сверке токенов U21b → контраст рамок полей, линий-индикаторов и фокуса проверять тем же скриптом, что и текст (`docs/spec/ux/style-tiles/README.md`).
+- Общий API-клиент захватил native fetch до запуска MSW и в UI-тесте получил HTML вместо JSON → обнаружил bootstrap-тест реальных routes → fetch общего клиента разрешать в момент запроса; сохранять проверку старта клиента до server.listen (`src/api/client.ts`, `src/features/auth/bootstrap.test.tsx`).
+- InnerInput/кнопка пароля и label АР меньше цели → браузер/Tab → измерять обе стороны целей, проверять показ пароля клавиатурой и токены подсказок/ошибок (`src/features/auth/AuthLayout.tsx`, `src/features/feed/feed.css`).
+- Открытое меню в jsdom имело display:none из-за нулевой геометрии, хотя aria-expanded=true → выяснил tester по Mantine Popover → для UI-тестов меню задавать MantineProvider env="test" и ждать видимый menuitem, не нажимать скрытый (`src/test/authAcceptance.tsx`).
