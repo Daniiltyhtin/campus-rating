@@ -2,6 +2,8 @@ package ru.campusrating.profile.internal;
 
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.campusrating.checkpoint.StudentAssignmentView;
 import ru.campusrating.checkpoint.StudentAssignments;
 import ru.campusrating.directory.DirectoryApi;
@@ -43,6 +45,7 @@ public class ProfileService {
         this.assignments = assignments;
     }
 
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public UserProfile profile(long userId) {
         var viewer = current.require();
         var card = members.card(userId)
