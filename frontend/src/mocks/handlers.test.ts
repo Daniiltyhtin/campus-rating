@@ -4,11 +4,17 @@ import { server } from './server';
 import { examples } from './examples.generated';
 
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
-afterEach(() => server.resetHandlers());
+afterEach(() => {
+  server.resetHandlers();
+  document.cookie = 'campus-mock-user=; Max-Age=0; Path=/';
+  document.cookie = 'XSRF-TOKEN=; Max-Age=0; Path=/';
+});
 afterAll(() => server.close());
 
 it('serves two cursor pages without duplicate awards', async () => {
   const api = createApiClient('http://localhost');
+  await api.GET('/api/v1/auth/csrf');
+  await api.POST('/api/v1/auth/login', { body: { email: 'petrov@campus.test', password: 'demo-teacher-1' } });
   const first = (await api.GET('/api/v1/feed/awards')).data!;
   expect(first.items.length).toBeGreaterThan(0);
   expect(first.nextCursor).toBeTruthy();
@@ -20,7 +26,11 @@ it('serves two cursor pages without duplicate awards', async () => {
 });
 
 it('serves a dereferenced contract profile example', async () => {
-  const response = await createApiClient('http://localhost').GET('/api/v1/users/{userId}/profile', { params: { path: { userId: 1001 } } });
+  const api = createApiClient('http://localhost');
+  await api.GET('/api/v1/auth/csrf');
+  await api.POST('/api/v1/auth/login', { body: { email: 'petrov@campus.test', password: 'demo-teacher-1' } });
+  await api.GET('/api/v1/auth/csrf');
+  const response = await api.GET('/api/v1/users/{userId}/profile', { params: { path: { userId: 1001 } } });
   expect(response.data).toEqual(examples.find((entry) => entry.operationId === 'getUserProfile')!.responses[0]!.body);
 });
 
