@@ -1,18 +1,18 @@
 import { test, expect, login, logout, evidence, moscowInput, type Schemas } from './base/support.js';
 
 const administrator = { email: 'admin@campus.test', password: 'demo-admin-1' };
-test('ADM-01: семестры, настройки и бюджеты администратора — 004/AE1–4,8,11', async ({ page, scenario }) => {
+test('ADM-01: семестры администратора — 004/AE1–4', async ({ page, scenario }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'порядок семестров — общее состояние стенда, параллельно в двух проектах не проверяется');
   await login(page, administrator);
   await page.goto('/admin/semesters');
   await expect(page.getByRole('heading', { name: 'Семестры', exact: true })).toBeVisible();
   const semesters = await scenario.admin.get<Schemas['AdminSemesterList']>('/api/v1/admin/semesters');
   const latest = Math.max(Date.now(), ...semesters.items.map((s) => Date.parse(s.startsAt)));
-  const start = new Date(latest + 86400_000).toISOString();
   const name = `Семестр ${scenario.prefix}`;
   await page.getByRole('button', { name: 'Добавить семестр' }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('textbox', { name: 'Название', exact: true }).fill(name);
-  await dialog.getByLabel('Начало (МСК)').fill(moscowInput(start));
+  await dialog.getByLabel('Начало (МСК)').fill(moscowInput(new Date(latest + 86400_000).toISOString()));
   await dialog.getByRole('button', { name: 'Сохранить', exact: true }).click();
   await expect(dialog).not.toBeVisible();
   await expect(page.getByText(name, { exact: true })).toBeVisible();
@@ -20,6 +20,10 @@ test('ADM-01: семестры, настройки и бюджеты админ�
   await page.getByRole('button', { name: `Удалить ${name}`, exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Удалить', exact: true }).click();
   await expect(page.getByText(name, { exact: true })).not.toBeVisible();
+});
+
+test('ADM-01: настройки и бюджеты администратора — 004/AE8,11', async ({ page }) => {
+  await login(page, administrator);
   await page.goto('/admin/settings');
   await page.getByLabel('Шаг штрафа, АР').fill('0');
   await page.getByRole('button', { name: 'Сохранить', exact: true }).click();
