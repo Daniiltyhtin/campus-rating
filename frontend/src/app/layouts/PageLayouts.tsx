@@ -37,8 +37,8 @@ export function CardLayout({ title, children }: { title: string; children: React
   return <section className="cr-card"><Title order={2} mb="md">{title}</Title>{children}</section>;
 }
 
-export function FormLayout({ title, children, onSubmit }: { title: string; children: ReactNode; onSubmit: FormEventHandler<HTMLFormElement> }) {
-  return <section className="cr-card"><Title order={2} mb="md">{title}</Title><form onSubmit={onSubmit}><Stack>{children}</Stack></form></section>;
+export function FormLayout({ title, children, onSubmit, noValidate = false, maxWidth }: { title: string; children: ReactNode; onSubmit: FormEventHandler<HTMLFormElement>; noValidate?: boolean; maxWidth?: string }) {
+  return <section className="cr-card" style={{ maxWidth }}><Title order={2} mb="md">{title}</Title><form noValidate={noValidate} onSubmit={onSubmit}><Stack>{children}</Stack></form></section>;
 }
 
 export function TeacherTableLayout<T>({ caption, rows, columns, keyForRow, state, isSelected }: {

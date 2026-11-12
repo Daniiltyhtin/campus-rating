@@ -1,19 +1,20 @@
-import { Anchor, Button, Stack, Tabs, Text, TextInput } from '@mantine/core';
+import { Anchor, Button, FileButton, Input, Modal, Stack, Tabs, Text, TextInput } from '@mantine/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
+import { taskClock } from './clock';
 import { api, submitAssignment } from '../../api/client';
 import { AsyncContent, FormLayout, PageLayout } from '../../app/layouts/PageLayouts';
 import { useAuthSession } from '../auth/authQueries';
-import { ErrorMessage, Status } from './shared';
-import { dataOf, dateTime, fieldError, loadState, type Schemas, invalidateTaskData } from './helpers';
+import { ErrorMessage, Status, TaskButton, TaskFailure } from './shared';
+import { dataOf, dateTime, isAccessFailure, fieldError, loadState, fileValidation, fileSize, linkValidation, teacherCommentLabel, type Schemas, invalidateTaskData } from './helpers';
 
 export function Penalty({ penalty }: { penalty: Schemas['Penalty'] }) {
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState(() => taskClock.now().getTime());
   const ticking = penalty.phase === 'RUNNING' && penalty.nextAt !== null && Date.parse(penalty.nextAt) > now;
   useEffect(() => {
     if (!ticking) return;
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    const timer = window.setInterval(() => setNow(taskClock.now().getTime()), 1000);
     return () => window.clearInterval(timer);
   }, [ticking]);
   let text: string;
@@ -44,9 +45,11 @@ export function Penalty({ penalty }: { penalty: Schemas['Penalty'] }) {
 export function AssignmentDetails({ assignmentId }: { assignmentId: number }) {
   const query = useQuery({
     queryKey: ['assignment', assignmentId],
-    queryFn: () => dataOf(api.GET('/api/v1/assignments/{assignmentId}', { params: { path: { assignmentId } } })),
+    queryFn: () => readAssignment(assignmentId),
   });
   const assignment = query.data;
+  if (isAccessFailure(query.error)) return <TaskFailure error={query.error} />;
+  const currentReturn = assignment?.state === 'OPEN' && assignment.returnComment ? assignment.submissions.find((version) => version.returnComment === assignment.returnComment && version.returnedAt) : undefined;
   return (
     <AsyncContent state={loadState(query)}>
       {assignment && (
@@ -58,9 +61,8 @@ export function AssignmentDetails({ assignmentId }: { assignmentId: number }) {
             Списано {assignment.penalty.charged} из {assignment.penalty.cap} АР
           </Text>
           <Penalty penalty={assignment.penalty} />
-          {assignment.returnComment && (
-            <blockquote className="cr-return-comment">{assignment.returnComment}</blockquote>
-          )}
+          {currentReturn && <TeacherComment author={assignment.checkpoint.author.fullName} submission={currentReturn} />}
+          <Withdrawal assignment={assignment} />
           <section aria-label="История сдач">
             <Text component="h2">История сдач</Text>
             {!assignment.submissions.length && <Text>Сдач пока нет. Отправьте ссылку или файл работы.</Text>}
@@ -80,12 +82,10 @@ export function AssignmentDetails({ assignmentId }: { assignmentId: number }) {
                       {submission.fileName}
                     </Anchor>
                   )}
-                  {submission.returnComment && (
-                    <blockquote className="cr-return-comment">
-                      {submission.returnComment}
-                      {submission.returnedAt && <Text>{dateTime(submission.returnedAt)} (МСК)</Text>}
-                    </blockquote>
-                  )}
+                  {submission.withdrawnAt && <Text>Отозвана студентом · {dateTime(submission.withdrawnAt)} (МСК)</Text>}
+                  {submission.returnComment && (currentReturn?.id === submission.id ?
+                    <details><summary>Возвращена с замечанием</summary><TeacherComment author={assignment.checkpoint.author.fullName} submission={submission} /></details> :
+                    <TeacherComment author={assignment.checkpoint.author.fullName} submission={submission} />)}
                 </Stack>
               </article>
             ))}
@@ -104,24 +104,25 @@ function SubmissionForm({ assignment }: { assignment: Schemas['Assignment'] }) {
   const [mode, setMode] = useState('link');
   const [link, setLink] = useState('');
   const [file, setFile] = useState<File>();
-  const [required, setRequired] = useState(false);
+  const [localError, setLocalError] = useState<string>();
+  const resetFile = useRef<() => void>(null);
   const mutation = useMutation({
     mutationFn: () => dataOf(submitAssignment(api, assignment.id, mode === 'file' && file ? { file } : { link })),
     onSuccess: () => invalidateTaskData(client),
   });
   if (session?.role !== 'STUDENT' || session.userId !== String(assignment.student.id)) return null;
 
-  function fileInputError() {
-    if (required) return 'Выберите файл';
-    return fieldError(mutation.error, 'file');
-  }
+  const validation = mode === 'file' && file ? fileValidation(file) : undefined;
+  const inputError = localError ?? validation ?? fieldError(mutation.error, mode === 'file' ? 'file' : 'link');
   return (
     <FormLayout
       title="Сдать работу"
+      noValidate
       onSubmit={(event) => {
         event.preventDefault();
-        if (mode === 'file' && !file) {
-          setRequired(true);
+        const error = mode === 'file' ? (file ? fileValidation(file) : 'Выберите файл') : linkValidation(link);
+        if (error) {
+          setLocalError(error);
           return;
         }
         mutation.mutate();
@@ -131,7 +132,7 @@ function SubmissionForm({ assignment }: { assignment: Schemas['Assignment'] }) {
         value={mode}
         onChange={(value) => {
           setMode(value ?? 'link');
-          setRequired(false);
+          setLocalError(undefined);
           mutation.reset();
         }}
       >
@@ -148,26 +149,27 @@ function SubmissionForm({ assignment }: { assignment: Schemas['Assignment'] }) {
           required
           maxLength={2000}
           value={link}
-          onChange={(event) => setLink(event.currentTarget.value)}
-          error={fieldError(mutation.error, 'link')}
+          onChange={(event) => { setLink(event.currentTarget.value); setLocalError(undefined); mutation.reset(); }}
+          error={inputError}
         />
       ) : (
-        <TextInput
-          type="file"
-          label="Файл работы"
-          accept=".pdf,.docx,.zip,.png,.jpg"
-          onChange={(event) => {
-            setFile(event.currentTarget.files?.[0]);
-            setRequired(false);
-          }}
-          error={fileInputError()}
-          description="До 10 МБ: pdf, docx, zip, png или jpg"
-        />
+        <Input.Wrapper label="Файл работы" labelElement="label" id={`file-${assignment.id}`} required
+          description="До 10 МБ: pdf, docx, zip, png или jpg" error={inputError}
+          styles={{ error: { color: 'var(--cr-status-overdue)' } }}>
+          <Stack gap="xs" p="sm" style={{ border: `var(--cr-rule-width) solid var(${inputError ? '--cr-status-overdue' : '--cr-field'})`, borderRadius: 'var(--mantine-radius-sm)' }}>
+            <FileButton accept=".pdf,.docx,.zip,.png,.jpg" resetRef={resetFile}
+              inputProps={{ id: `file-${assignment.id}`, 'aria-invalid': !!inputError, 'aria-required': true }}
+              onChange={(value) => { setFile(value ?? undefined); setLocalError(undefined); mutation.reset(); }}>
+              {(props) => <Button {...props} variant="default" style={{ alignSelf: 'flex-start' }}>Выбрать файл</Button>}
+            </FileButton>
+            {file && <><Text>{file.name} · {fileSize(file.size)}</Text><Button variant="subtle" style={{ alignSelf: 'flex-start' }} onClick={() => { setFile(undefined); setLocalError(undefined); mutation.reset(); resetFile.current?.(); }}>Убрать</Button></>}
+          </Stack>
+        </Input.Wrapper>
       )}
       {!fieldError(mutation.error, mode === 'file' ? 'file' : 'link') && <ErrorMessage error={mutation.error} />}
-      <Button type="submit" loading={mutation.isPending}>
+      <TaskButton type="submit" loading={mutation.isPending} disabled={!!validation}>
         Сдать работу
-      </Button>
+      </TaskButton>
     </FormLayout>
   );
 }
@@ -176,11 +178,55 @@ export function TaskPage() {
   const assignmentId = Number(useParams().id);
   const query = useQuery({
     queryKey: ['assignment', assignmentId],
-    queryFn: () => dataOf(api.GET('/api/v1/assignments/{assignmentId}', { params: { path: { assignmentId } } })),
+    queryFn: () => readAssignment(assignmentId),
   });
+  if (isAccessFailure(query.error)) return <TaskFailure error={query.error} />;
   return (
     <PageLayout title={query.data?.checkpoint.title ?? 'Задача'}>
       <AssignmentDetails assignmentId={assignmentId} />
     </PageLayout>
   );
+}
+
+async function readAssignment(assignmentId: number) {
+  const result = await api.GET('/api/v1/assignments/{assignmentId}', { params: { path: { assignmentId } } });
+  const data = await dataOf(Promise.resolve(result));
+  const headerTime = Date.parse(result.response.headers.get('Date') ?? '');
+  return { ...data, serverTime: Number.isFinite(headerTime) ? headerTime : taskClock.now().getTime(), receivedAt: taskClock.monotonicNow() };
+}
+
+function TeacherComment({ author, submission }: { author: string; submission: Schemas['Submission'] }) {
+  return <div style={{ padding: 'var(--mantine-spacing-md)', background: 'var(--cr-selection)', fontFamily: 'var(--mantine-font-family)', fontStyle: 'normal' }}>
+    {submission.returnedAt && <Text>{teacherCommentLabel(author, submission.returnedAt)}</Text>}
+    <Text>{submission.returnComment}</Text>
+  </div>;
+}
+
+function Withdrawal({ assignment }: { assignment: Awaited<ReturnType<typeof readAssignment>> }) {
+  const user = useAuthSession().session.data;
+  const client = useQueryClient();
+  const [opened, setOpened] = useState(false);
+  const [now, setNow] = useState(() => taskClock.monotonicNow());
+  const serverNow = assignment.serverTime + Math.max(0, now - assignment.receivedAt);
+  const eligible = user?.role === 'STUDENT' && user.id === assignment.student.id && assignment.state === 'SUBMITTED' && serverNow < Date.parse(assignment.checkpoint.deadline);
+  useEffect(() => {
+    if (!eligible) return;
+    const timer = window.setInterval(() => setNow(taskClock.monotonicNow()), 250);
+    return () => window.clearInterval(timer);
+  }, [eligible]);
+  const mutation = useMutation({
+    mutationFn: () => dataOf(api.POST('/api/v1/assignments/{assignmentId}/submission/withdrawal', { params: { path: { assignmentId: assignment.id } } })),
+    onSuccess: async () => { setOpened(false); await invalidateTaskData(client); },
+    onError: () => invalidateTaskData(client),
+  });
+  return <>
+    {eligible && <TaskButton variant="default" onClick={() => { mutation.reset(); setOpened(true); }}>Отозвать сдачу</TaskButton>}
+    <Modal opened={opened} onClose={() => setOpened(false)} title="Отозвать работу?">
+      <Stack><Text>Вы сможете сдать её заново до дедлайна</Text>
+        <TaskButton loading={mutation.isPending} disabled={mutation.isSuccess} onClick={() => mutation.mutate()}>Отозвать</TaskButton>
+        <ErrorMessage error={mutation.error} />
+        <TaskButton variant="default" onClick={() => setOpened(false)}>Отмена</TaskButton>
+      </Stack>
+    </Modal>
+  </>;
 }

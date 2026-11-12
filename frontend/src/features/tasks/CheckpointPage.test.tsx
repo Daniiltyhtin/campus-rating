@@ -40,9 +40,11 @@ it('возврат требует непустой комментарий', asyn
   rows();
   renderApp('/checkpoints/501', teacher);
   const user = userEvent.setup();
-  await user.click((await screen.findAllByRole('button', { name: 'Вернуть…' }))[0]!);
+  await user.click((await screen.findAllByRole('button', { name: /Действия:/ }))[0]!);
+  await user.click(await screen.findByRole('menuitem', { name: 'Вернуть…' }));
   await user.click(await screen.findByRole('button', { name: 'Вернуть работу' }));
   expect(await screen.findByText('Укажите комментарий')).toBeInTheDocument();
+  expect(screen.getByRole('textbox', { name: 'Комментарий возврата' }).closest('form')).toHaveAttribute('novalidate');
   expect(screen.getByRole('dialog')).toBeInTheDocument();
 });
 it('возврат отправляет комментарий и перечитывает список', async () => {
@@ -64,7 +66,8 @@ it('возврат отправляет комментарий и перечит
   );
   renderApp('/checkpoints/501', teacher);
   const user = userEvent.setup();
-  await user.click((await screen.findAllByRole('button', { name: 'Вернуть…' }))[0]!);
+  await user.click((await screen.findAllByRole('button', { name: /Действия:/ }))[0]!);
+  await user.click(await screen.findByRole('menuitem', { name: 'Вернуть…' }));
   await user.type(await screen.findByRole('textbox', { name: 'Комментарий возврата' }), 'Дополните тесты');
   await user.click(screen.getByRole('button', { name: 'Вернуть работу' }));
   const { waitFor } = await import('@testing-library/react');
@@ -111,7 +114,8 @@ it('фильтры передаются серверу, открытие сда�
   await user.selectOptions(screen.getByLabelText('Группа'), '11');
   const checkbox = await screen.findByRole('checkbox', { name: row.student.fullName });
   await user.click(checkbox);
-  await user.click(screen.getByRole('button', { name: 'Открыть сдачу' }));
+  await user.click(screen.getByRole('button', { name: `Действия: ${row.student.fullName}` }));
+  await user.click(await screen.findByRole('menuitem', { name: 'Открыть сдачу' }));
   expect(await screen.findByRole('dialog')).toBeInTheDocument();
   await user.keyboard('{Escape}');
   const { waitFor } = await import('@testing-library/react');

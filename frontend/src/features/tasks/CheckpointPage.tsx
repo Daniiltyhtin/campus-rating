@@ -1,5 +1,6 @@
-import { Button, Checkbox, Group, Modal, NativeSelect, Stack, Tabs, Text, Textarea } from '@mantine/core';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Button, Checkbox, Menu, Modal, NativeSelect, Stack, Tabs, Text, Textarea } from '@mantine/core';
+import { useInfiniteQuery, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMediaQuery } from '@mantine/hooks';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 import { api } from '../../api/client';
@@ -7,8 +8,8 @@ import { AsyncContent, PageLayout, TeacherTableLayout } from '../../app/layouts/
 import { useAuthSession } from '../auth/authQueries';
 import { CheckpointEdit } from './CheckpointForms';
 import { AssignmentDetails } from './TaskPage';
-import { ErrorMessage, More, Status } from './shared';
-import { dataOf, dateTime, fieldError, loadState, statuses, type Schemas, invalidateTaskData } from './helpers';
+import { ErrorMessage, More, Status, TaskButton, TaskFailure } from './shared';
+import { dataOf, dateTime, isAccessFailure, fieldError, loadState, statuses, type Schemas, invalidateTaskData } from './helpers';
 
 function workCount(n: number) {
   if (n % 10 === 1 && n % 100 !== 11) return `${n} работу`;
@@ -17,7 +18,14 @@ function workCount(n: number) {
 }
 
 export function CheckpointPage() {
+  const user = useAuthSession().session.data;
+  if (user?.role === 'STUDENT') return <TaskFailure forbidden />;
+  return <CheckpointContent />;
+}
+
+function CheckpointContent() {
   const checkpointId = Number(useParams().id);
+  const desktop = useMediaQuery('(min-width: 48em)', true, { getInitialValueInEffect: false });
   const user = useAuthSession().session.data;
   const session = user ? { userId: String(user.id), role: user.role } : null;
   const query = useQuery({
@@ -63,6 +71,13 @@ export function CheckpointPage() {
   const checkpoint = query.data;
   const canEdit = session?.role === 'TEACHER' && session.userId === String(checkpoint?.author.id);
   const counts = rowsQuery.data?.pages[0]?.statusCounts;
+  const historyRows = rows.filter((row) => row.submittedAt === null);
+  const histories = useQueries({ queries: historyRows.map((row) => ({
+    queryKey: ['assignment-history', row.assignmentId],
+    queryFn: () => dataOf(api.GET('/api/v1/assignments/{assignmentId}', { params: { path: { assignmentId: row.assignmentId } } })),
+  })) });
+  const withHistory = new Set(historyRows.filter((_, index) => histories[index]?.data?.submissions.length).map((row) => row.assignmentId));
+  if (isAccessFailure(query.error)) return <TaskFailure error={query.error} />;
   function filterChanged() {
     setSelected([]);
     accept.reset();
@@ -71,7 +86,7 @@ export function CheckpointPage() {
     <PageLayout title={checkpoint?.title ?? 'Точка'}>
       <AsyncContent state={loadState(query)}>
         {checkpoint && (
-          <Stack>
+          <Stack pb={!desktop && selected.length ? 'calc(var(--cr-touch-target) * 3 + var(--mantine-spacing-md) * 2)' : undefined}>
             <Text>{checkpoint.description}</Text>
             <Text>
               Дедлайн: {dateTime(checkpoint.deadline)} (МСК) · Стоимость: {checkpoint.cost} АР
@@ -80,9 +95,9 @@ export function CheckpointPage() {
               Штраф: {checkpoint.penaltyStep} АР каждые {checkpoint.penaltyIntervalSeconds} с
             </Text>
             {canEdit && (
-              <Button variant="default" onClick={() => setEditing(true)}>
+              <TaskButton variant="default" onClick={() => setEditing(true)}>
                 Редактировать описание
-              </Button>
+              </TaskButton>
             )}
             {editing && <CheckpointEdit checkpoint={checkpoint} onSaved={() => setEditing(false)} />}
             <Tabs
@@ -96,7 +111,7 @@ export function CheckpointPage() {
                 <Tabs.Tab value="all">Все</Tabs.Tab>
                 {Object.entries(statuses).map(([value, label]) => (
                   <Tabs.Tab key={value} value={value}>
-                    {label} · {counts?.[value as Schemas['AssignmentStatus']] ?? 0}
+                    {label}{counts ? ` · ${counts[value as Schemas['AssignmentStatus']]}` : ''}
                   </Tabs.Tab>
                 ))}
               </Tabs.List>
@@ -113,8 +128,8 @@ export function CheckpointPage() {
                 ...checkpoint.groups.map((group) => ({ value: String(group.id), label: group.name })),
               ]}
             />
-            {canEdit && (
-              <div className="cr-selection">
+            {canEdit && (desktop || selected.length > 0) && (
+              <section aria-label="Выбор работ" className="cr-selection" style={{ position: desktop ? 'static' : 'fixed', bottom: 'var(--app-shell-footer-height, 0px)', insetInline: desktop ? undefined : 'var(--mantine-spacing-md)', zIndex: 'calc(var(--mantine-z-index-app) + 1)' }}>
                 <strong>Выбрано {selected.length}</strong>
                 <Button variant="subtle" onClick={() => setSelected([])}>
                   Снять выбор
@@ -129,7 +144,7 @@ export function CheckpointPage() {
                 >
                   Принять {workCount(selected.length)}
                 </Button>
-              </div>
+              </section>
             )}
             {accept.data && (
               <div role="status" className="cr-success">
@@ -160,6 +175,7 @@ export function CheckpointPage() {
                     canEdit ? (
                       <Checkbox
                         label={row.student.fullName}
+                        styles={{ label: { color: 'var(--cr-text)' } }}
                         disabled={row.state !== 'SUBMITTED' || accept.isPending}
                         checked={selected.includes(row.assignmentId)}
                         onChange={(event) => {
@@ -180,30 +196,23 @@ export function CheckpointPage() {
                 {
                   key: 'submitted',
                   title: 'Сдано',
-                  render: (row) => (
-                    <Stack gap="xs">
-                      {row.submittedAt ? dateTime(row.submittedAt) : 'Ещё не сдано'}
-                      <Button
-                        variant="subtle"
-                        disabled={!row.submittedAt}
-                        onClick={() => setOpened(row.assignmentId)}
-                      >
-                        Открыть сдачу
-                      </Button>
-                    </Stack>
-                  ),
+                  render: (row) => row.submittedAt ? dateTime(row.submittedAt) : 'Ещё не сдано',
                 },
                 { key: 'charged', title: 'Списано', render: (row) => `${row.charged} АР` },
                 {
                   key: 'actions',
                   title: 'Действия',
-                  render: (row) =>
-                    canEdit &&
-                    row.state === 'SUBMITTED' && (
-                      <Button variant="default" onClick={() => setReturnId(row.assignmentId)}>
-                        Вернуть…
-                      </Button>
-                    ),
+                  render: (row) => {
+                    const hasVersions = !!row.submittedAt || withHistory.has(row.assignmentId);
+                    const canReturn = canEdit && row.state === 'SUBMITTED';
+                    return hasVersions || canReturn ? <Menu>
+                      <Menu.Target><Button variant="subtle" aria-label={`Действия: ${row.student.fullName}`}>⋯</Button></Menu.Target>
+                      <Menu.Dropdown>
+                        {hasVersions && <Menu.Item onClick={() => setOpened(row.assignmentId)}>Открыть сдачу</Menu.Item>}
+                        {canReturn && <Menu.Item onClick={() => setReturnId(row.assignmentId)}>Вернуть…</Menu.Item>}
+                      </Menu.Dropdown>
+                    </Menu> : null;
+                  },
                 },
               ]}
             />
@@ -251,7 +260,7 @@ function ReturnForm({ assignmentId, onReturned }: { assignmentId: number; onRetu
     },
   });
   return (
-    <form
+    <form noValidate
       onSubmit={(event) => {
         event.preventDefault();
         if (!comment.trim()) {
@@ -274,12 +283,10 @@ function ReturnForm({ assignmentId, onReturned }: { assignmentId: number; onRetu
           error={required ? 'Укажите комментарий' : fieldError(mutation.error, 'comment')}
         />
         <Text>После возврата штраф возобновится, если дедлайн прошёл и стоимость ещё не списана.</Text>
-        <ErrorMessage error={mutation.error} />
-        <Group>
-          <Button type="submit" loading={mutation.isPending}>
-            Вернуть работу
-          </Button>
-        </Group>
+        {!fieldError(mutation.error, 'comment') && <ErrorMessage error={mutation.error} />}
+        <TaskButton type="submit" loading={mutation.isPending}>
+          Вернуть работу
+        </TaskButton>
       </Stack>
     </form>
   );

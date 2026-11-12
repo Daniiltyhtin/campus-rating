@@ -47,6 +47,12 @@ export const csrfMiddleware: Middleware = {
     return request;
   },
   async onResponse({ request, response }) {
+    if (request.method === 'GET' && [403, 404].includes(response.status) && /\/(assignments|checkpoints)\//.test(new URL(request.url).pathname)) {
+      throw new ApiError({ type: 'about:blank', title: 'Error', status: response.status, code: response.status === 403 ? 'FORBIDDEN' : 'NOT_FOUND' });
+    }
+    if (response.status === 413 && /\/assignments\/[^/]+\/submission$/.test(new URL(request.url).pathname)) {
+      throw new ApiError({ type: 'about:blank', title: 'Payload Too Large', status: 413, code: 'FILE_TOO_LARGE' });
+    }
     if (!response.ok && response.headers.get('content-type')?.split(';')[0] === 'application/problem+json') {
       const problem: unknown = await response.clone().json();
       if (isProblem(problem)) {
