@@ -14,10 +14,10 @@ export function AsyncContent({ state, children }: { state: LoadState; children: 
   }
 }
 
-export function PageLayout({ title, description, actions, children }: {
-  title: string; description?: string; actions?: ReactNode; children: ReactNode;
+export function PageLayout({ title, description, actions, children, wide = false }: {
+  title: string; description?: string; actions?: ReactNode; children: ReactNode; wide?: boolean;
 }) {
-  return <Container size="lg" className="cr-page"><Stack gap="xl">
+  return <Container size={wide ? '100rem' : 'lg'} className="cr-page"><Stack gap="xl">
     <header className="cr-masthead"><Group justify="space-between" align="start"><Stack gap="xs">
       <Title order={1}>{title}</Title>
       {description && <Text className="cr-caption">{description}</Text>}

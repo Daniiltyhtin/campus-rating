@@ -42,7 +42,7 @@ function Users() {
   }
   const sortable = (key: SortKey) => ({ direction: filters.sort === key ? direction : null, onSort: () => sortBy(key) });
   const first = pending[0];
-  return <PageLayout title="Пользователи" description="Студенты, преподаватели и администраторы стенда">
+  return <PageLayout title="Пользователи" description="Студенты, преподаватели и администраторы стенда" wide>
     {first && !teachers.isError && <div className="admin-users-requests" role="status">
       <span className="admin-users-requests-icon">{warning}</span>
       <div className="admin-users-requests-text">
