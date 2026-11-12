@@ -181,6 +181,17 @@ export const examples: ExampleOperation[] = [
         }
       },
       {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
         "status": 403,
         "contentType": "application/problem+json",
         "body": {

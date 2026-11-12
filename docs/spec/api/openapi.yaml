@@ -53,7 +53,8 @@ paths:
       description: "Подтверждение email для U13 в режиме required: запрос ссылки, подтверждение по токену из письма и статус. Ссылка одноразовая, действует 24 часа. До подтверждения остальные вызовы получают EMAIL_NOT_VERIFIED."
       x-status: implemented
       x-public: true
-      security: []
+      security:
+        - csrf: []
       requestBody:
         required: true
         content:
@@ -78,7 +79,8 @@ paths:
       description: "Подтверждение email для U13 в режиме required: запрос ссылки, подтверждение по токену из письма и статус. Ссылка одноразовая, действует 24 часа. До подтверждения остальные вызовы получают EMAIL_NOT_VERIFIED."
       x-status: implemented
       x-public: true
-      security: []
+      security:
+        - csrf: []
       requestBody:
         required: true
         content:
@@ -104,6 +106,8 @@ paths:
       x-status: implemented
       x-roles:
         - AUTHENTICATED
+      security:
+        - session: []
       responses:
         "200":
           description: "Операция выполнена"
@@ -116,6 +120,8 @@ paths:
                 verified: false
         "400":
           $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
         "403":
           $ref: "#/components/responses/Forbidden"
         "409":
@@ -131,6 +137,8 @@ paths:
       x-status: implemented
       x-roles:
         - ADMIN
+      security:
+        - session: []
       responses:
         "200":
           description: "Операция выполнена."
@@ -159,6 +167,9 @@ paths:
       x-status: implemented
       x-roles:
         - ADMIN
+      security:
+        - session: []
+          csrf: []
       responses:
         "201":
           description: "Операция выполнена."
@@ -198,6 +209,9 @@ paths:
       x-status: implemented
       x-roles:
         - ADMIN
+      security:
+        - session: []
+          csrf: []
       responses:
         "200":
           description: "Операция выполнена."
@@ -244,6 +258,9 @@ paths:
       x-status: implemented
       x-roles:
         - ADMIN
+      security:
+        - session: []
+          csrf: []
       responses:
         "204":
           description: "Операция выполнена."
@@ -275,6 +292,9 @@ paths:
       x-status: implemented
       x-roles:
         - ADMIN
+      security:
+        - session: []
+          csrf: []
       responses:
         "200":
           description: "Операция выполнена."
@@ -316,6 +336,8 @@ paths:
       x-status: implemented
       x-roles:
         - ADMIN
+      security:
+        - session: []
       responses:
         "200":
           description: "Операция выполнена."
@@ -348,6 +370,9 @@ paths:
       x-status: implemented
       x-roles:
         - ADMIN
+      security:
+        - session: []
+          csrf: []
       responses:
         "200":
           description: "Операция выполнена."
@@ -387,6 +412,8 @@ paths:
       x-status: implemented
       x-roles:
         - ADMIN
+      security:
+        - session: []
       responses:
         "200":
           description: "Операция выполнена."
@@ -421,6 +448,8 @@ paths:
       x-status: implemented
       x-roles:
         - ADMIN
+      security:
+        - session: []
       responses:
         "200":
           description: "Операция выполнена."
@@ -459,6 +488,8 @@ paths:
       x-status: implemented
       x-roles:
         - ADMIN
+      security:
+        - session: []
       responses:
         "200":
           description: "Операция выполнена."
@@ -506,6 +537,8 @@ paths:
       x-status: implemented
       x-roles:
         - TEACHER
+      security:
+        - session: []
       responses:
         "200":
           description: "Операция выполнена."
@@ -544,6 +577,9 @@ paths:
       x-roles:
         - ADMIN
         - TEACHER
+      security:
+        - session: []
+          csrf: []
       responses:
         "200":
           description: "Операция выполнена."
@@ -581,6 +617,8 @@ paths:
       x-status: implemented
       x-roles:
         - AUTHENTICATED
+      security:
+        - session: []
       responses:
         "200":
           description: "Операция выполнена."
@@ -615,6 +653,9 @@ paths:
       x-status: implemented
       x-roles:
         - ADMIN
+      security:
+        - session: []
+          csrf: []
       responses:
         "200":
           description: "Операция выполнена."
@@ -668,6 +709,8 @@ paths:
       x-status: implemented
       x-roles:
         - ADMIN
+      security:
+        - session: []
       responses:
         "200":
           description: "Операция выполнена."
@@ -696,6 +739,9 @@ paths:
       x-status: implemented
       x-roles:
         - ADMIN
+      security:
+        - session: []
+          csrf: []
       responses:
         "204":
           description: "Операция выполнена."
@@ -724,7 +770,8 @@ paths:
       description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-public: true
-      security: []
+      security:
+        - csrf: []
       responses:
         "204":
           description: "Операция выполнена."
