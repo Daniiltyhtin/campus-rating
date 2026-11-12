@@ -54,7 +54,7 @@ describe('AppShell', () => {
     renderApp('/admin/directory', admin);
 
     const side = await screen.findByRole('navigation', { name: 'Боковое меню' });
-    expect(linkNames(side)).toEqual(['Справочники', 'Импорт', 'Семестры', 'Настройки', 'Старосты']);
+    expect(linkNames(side)).toEqual(['Справочники', 'Пользователи', 'Импорт', 'Семестры', 'Настройки', 'Бюджеты']);
   });
 
   it('отмечает текущим только пункт открытого раздела', async () => {

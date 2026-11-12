@@ -17,6 +17,7 @@ export function renderApp(path: string, session: Session | null = null) {
   queryClient.setQueryData(authKeys.csrf, true);
   queryClient.setQueryData(['auth', 'config'], { demo: false, emailVerification: 'OFF' });
   queryClient.setQueryData(authKeys.user, user ? { ...user, id: Number(session?.userId), mustChangePassword: false } : null);
+  if (session?.role === 'ADMIN') queryClient.setQueryData(['admin-teachers', Number(session.userId), 'list'], { items: [] });
   render(
     <CampusThemeProvider><MantineProvider env="test" withCssVariables={false} withGlobalClasses={false}>
       <QueryClientProvider client={queryClient}>

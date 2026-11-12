@@ -42,7 +42,7 @@ function Budget({ userId }: { userId: number }) {
   for (const item of summary.data?.items ?? []) groups.set(item.group.id, item.group);
   return <ActivityPage title="Группы и бюджет" description="Общий бюджет БУА и БОА по вашим группам. Месяц и время начислений — по Москве.">
     <section><Title order={2} mb="md">Рейтинги доступных групп</Title><AsyncContent state={loadState(accessibleGroups, accessibleGroups.data?.items.length === 0, 'Доступных групп пока нет. Они появятся после допуска или выдачи доступа.')}>
-      <Stack gap="xs">{accessibleGroups.data?.items.map((group) => <ActivityLink key={group.id} to={`/groups/${group.id}`}>{group.name} · {group.faculty.code}</ActivityLink>)}</Stack>
+      <Stack gap="xs">{accessibleGroups.data?.items.map((group) => <Stack gap="xs" key={group.id}><ActivityLink to={`/groups/${group.id}`}>{group.name} · {group.faculty.code}</ActivityLink><ActivityLink to={`/groups/${group.id}/students`}>Студенты {group.name}</ActivityLink></Stack>)}</Stack>
     </AsyncContent><ActivityLink to="/awards">Лента наград</ActivityLink></section>
     <div className="activity-toolbar"><TextInput type="month" label="Месяц бюджета" value={currentMonth} onChange={(event) => {
       const value = event.currentTarget.value;

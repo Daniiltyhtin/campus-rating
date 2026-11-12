@@ -45,8 +45,8 @@ public class SemesterAccrualJob {
 
     public void runOnce() {
         int nominal = settings.semesterAccrual();
-        for (var semester : repository.started(clock.instant())) {
-            accrueSemester(semester, nominal);
+        for (var semester : repository.started(clock.instant(), nominal)) {
+            accrueSemester(semester, semester.accrual());
         }
     }
 
@@ -73,6 +73,7 @@ public class SemesterAccrualJob {
     }
 
     private boolean accrueStudent(Semester semester, long studentId, int nominal) {
+        if (nominal == 0) return repository.recordAccrual(semester.id(), studentId, 0, clock.instant());
         var posting = new Posting(studentId, Currency.AR, EntryKind.SEMESTER_ACCRUAL, nominal,
                 new Source(SourceType.SEMESTER, semester.id(), semester.title()), null,
                 "semester:" + semester.id() + ":" + studentId);

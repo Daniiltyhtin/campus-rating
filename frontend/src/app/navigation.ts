@@ -27,10 +27,11 @@ export function navigationFor(session: Session): NavItem[] {
     case 'ADMIN':
       return [
         { label: 'Справочники', to: '/admin/directory' },
+        { label: 'Пользователи', to: '/admin/users' },
         { label: 'Импорт', to: '/admin/import' },
         { label: 'Семестры', to: '/admin/semesters' },
         { label: 'Настройки', to: '/admin/settings' },
-        { label: 'Старосты', to: '/admin/group-heads' },
+        { label: 'Бюджеты', to: '/admin/budgets' },
       ];
   }
 }

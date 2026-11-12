@@ -26,6 +26,8 @@ servers:
 security:
   - session: []
 tags:
+  - name: settings
+    description: "Настройки стенда (мастер-U13)."
   - name: identity
     description: Вход, сессия, регистрация, доступные группы (мастер-U5).
   - name: directory
@@ -42,6 +44,754 @@ tags:
     description: Лента наград и рейтинги групп (мастер-U11).
 
 paths:
+  /api/v1/auth/email/verification:
+    post:
+      tags:
+        - identity
+      operationId: requestEmailVerification
+      summary: requestEmailVerification
+      description: "Подтверждение email для U13 в режиме required: запрос ссылки, подтверждение по токену из письма и статус. Ссылка одноразовая, действует 24 часа. До подтверждения остальные вызовы получают EMAIL_NOT_VERIFIED."
+      x-status: implemented
+      x-public: true
+      security:
+        - csrf: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailVerificationRequest"
+      responses:
+        "204":
+          description: "Операция выполнена"
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+  /api/v1/auth/email/confirmation:
+    post:
+      tags:
+        - identity
+      operationId: confirmEmail
+      summary: confirmEmail
+      description: "Подтверждение email для U13 в режиме required: запрос ссылки, подтверждение по токену из письма и статус. Ссылка одноразовая, действует 24 часа. До подтверждения остальные вызовы получают EMAIL_NOT_VERIFIED."
+      x-status: implemented
+      x-public: true
+      security:
+        - csrf: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailConfirmationRequest"
+      responses:
+        "204":
+          description: "Операция выполнена"
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+  /api/v1/auth/email/status:
+    get:
+      tags:
+        - identity
+      operationId: getEmailVerificationStatus
+      summary: getEmailVerificationStatus
+      description: "Подтверждение email для U13 в режиме required: запрос ссылки, подтверждение по токену из письма и статус. Ссылка одноразовая, действует 24 часа. До подтверждения остальные вызовы получают EMAIL_NOT_VERIFIED."
+      x-status: implemented
+      x-roles:
+        - AUTHENTICATED
+      security:
+        - session: []
+      responses:
+        "200":
+          description: "Операция выполнена"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailVerificationStatus"
+              example:
+                required: true
+                verified: false
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+
+  /api/v1/admin/semesters:
+    get:
+      tags:
+        - ledger
+      operationId: listAdminSemesters
+      summary: listAdminSemesters
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - ADMIN
+      security:
+        - session: []
+      responses:
+        "200":
+          description: "Операция выполнена."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSemesterList"
+              example:
+                items: []
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+    post:
+      tags:
+        - ledger
+      operationId: createAdminSemester
+      summary: createAdminSemester
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - ADMIN
+      security:
+        - session: []
+          csrf: []
+      responses:
+        "201":
+          description: "Операция выполнена."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSemester"
+              example:
+                id: 1
+                title: Весна 2027
+                startsAt: 2026-11-13T09:00:00Z
+                started: false
+                accrual: null
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSemesterRequest"
+  /api/v1/admin/semesters/{semesterId}:
+    put:
+      tags:
+        - ledger
+      operationId: updateAdminSemester
+      summary: updateAdminSemester
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - ADMIN
+      security:
+        - session: []
+          csrf: []
+      responses:
+        "200":
+          description: "Операция выполнена."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSemester"
+              example:
+                id: 1
+                title: Весна 2027
+                startsAt: 2026-11-13T09:00:00Z
+                started: false
+                accrual: null
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+      parameters:
+        - name: semesterId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSemesterRequest"
+    delete:
+      tags:
+        - ledger
+      operationId: deleteAdminSemester
+      summary: deleteAdminSemester
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - ADMIN
+      security:
+        - session: []
+          csrf: []
+      responses:
+        "204":
+          description: "Операция выполнена."
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+      parameters:
+        - name: semesterId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+  /api/v1/admin/semesters/{semesterId}/start:
+    post:
+      tags:
+        - ledger
+      operationId: startAdminSemester
+      summary: startAdminSemester
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - ADMIN
+      security:
+        - session: []
+          csrf: []
+      responses:
+        "200":
+          description: "Операция выполнена."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSemester"
+              example:
+                id: 1
+                title: Весна 2027
+                startsAt: 2026-11-13T09:00:00Z
+                started: false
+                accrual: null
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+      parameters:
+        - name: semesterId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+  /api/v1/admin/settings:
+    get:
+      tags:
+        - settings
+      operationId: getAdminSettings
+      summary: getAdminSettings
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - ADMIN
+      security:
+        - session: []
+      responses:
+        "200":
+          description: "Операция выполнена."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSettings"
+              example:
+                penaltyStep: 0
+                penaltyIntervalSeconds: 0
+                minPenaltyIntervalSeconds: 0
+                semesterAccrual: 0
+                monthlyBudgetLimit: 0
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+    put:
+      tags:
+        - settings
+      operationId: updateAdminSettings
+      summary: updateAdminSettings
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - ADMIN
+      security:
+        - session: []
+          csrf: []
+      responses:
+        "200":
+          description: "Операция выполнена."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminSettings"
+              example:
+                penaltyStep: 0
+                penaltyIntervalSeconds: 0
+                minPenaltyIntervalSeconds: 0
+                semesterAccrual: 0
+                monthlyBudgetLimit: 0
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSettingsRequest"
+  /api/v1/admin/budgets:
+    get:
+      tags:
+        - activity
+      operationId: listAdminBudgets
+      summary: listAdminBudgets
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - ADMIN
+      security:
+        - session: []
+      responses:
+        "200":
+          description: "Операция выполнена."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminBudgetList"
+              example:
+                items: []
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+      parameters:
+        - name: month
+          in: query
+          schema:
+            type: string
+  /api/v1/admin/budgets/impact:
+    get:
+      tags:
+        - activity
+      operationId: getAdminBudgetImpact
+      summary: getAdminBudgetImpact
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - ADMIN
+      security:
+        - session: []
+      responses:
+        "200":
+          description: "Операция выполнена."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetImpact"
+              example:
+                count: 0
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            maximum: 100000
+          required: true
+  /api/v1/admin/users:
+    get:
+      tags:
+        - identity
+      operationId: listAdminUsers
+      summary: listAdminUsers
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - ADMIN
+      security:
+        - session: []
+      responses:
+        "200":
+          description: "Операция выполнена."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUserPage"
+              example:
+                items: []
+                nextCursor: null
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum:
+              - STUDENT
+              - TEACHER
+              - ADMIN
+        - name: cursor
+          in: query
+          schema:
+            type: string
+  /api/v1/groups/{groupId}/students:
+    get:
+      tags:
+        - identity
+      operationId: listGroupStudents
+      summary: listGroupStudents
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - TEACHER
+      security:
+        - session: []
+      responses:
+        "200":
+          description: "Операция выполнена."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupStudentList"
+              example:
+                items: []
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+  /api/v1/users/{userId}/temporary-password:
+    post:
+      tags:
+        - identity
+      operationId: setTemporaryPassword
+      summary: setTemporaryPassword
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - ADMIN
+        - TEACHER
+      security:
+        - session: []
+          csrf: []
+      responses:
+        "200":
+          description: "Операция выполнена."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemporaryPasswordResult"
+              example:
+                password: Hk7mPq2rTz9x
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+  /api/v1/me/password-audit:
+    get:
+      tags:
+        - identity
+      operationId: getOwnPasswordAudit
+      summary: getOwnPasswordAudit
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - AUTHENTICATED
+      security:
+        - session: []
+      responses:
+        "200":
+          description: "Операция выполнена."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordAudit"
+              example:
+                actor:
+                  id: 1
+                  fullName: Смирнова Анна Олеговна
+                createdAt: 2026-11-13T09:00:00Z
+        "204":
+          description: "Временный пароль ещё не выставлялся."
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+  /api/v1/admin/import/{kind}:
+    post:
+      tags:
+        - identity
+      operationId: importAdminFile
+      summary: importAdminFile
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - ADMIN
+      security:
+        - session: []
+          csrf: []
+      responses:
+        "200":
+          description: "Операция выполнена."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportReport"
+              example:
+                created: 0
+                skipped: 0
+                rejected: []
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+      parameters:
+        - name: kind
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - GROUPS
+              - STUDENTS
+              - TEACHER_ALLOWLIST
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+  /api/v1/admin/teacher-allowlist:
+    get:
+      tags:
+        - identity
+      operationId: listTeacherAllowlist
+      summary: listTeacherAllowlist
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - ADMIN
+      security:
+        - session: []
+      responses:
+        "200":
+          description: "Операция выполнена."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeacherAllowlistList"
+              example:
+                items: []
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+    delete:
+      tags:
+        - identity
+      operationId: deleteTeacherAllowlistEntry
+      summary: deleteTeacherAllowlistEntry
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-roles:
+        - ADMIN
+      security:
+        - session: []
+          csrf: []
+      responses:
+        "204":
+          description: "Операция выполнена."
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+      parameters:
+        - name: email
+          in: query
+          schema:
+            type: string
+          required: true
+  /api/v1/auth/password/set:
+    post:
+      tags:
+        - identity
+      operationId: setImportedStudentPassword
+      summary: setImportedStudentPassword
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      x-status: implemented
+      x-public: true
+      security:
+        - csrf: []
+      responses:
+        "204":
+          description: "Операция выполнена."
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordSetupRequest"
+
   /api/v1/auth/csrf:
     get:
       tags: [identity]
@@ -4395,6 +5145,348 @@ components:
               $ref: '#/components/examples/StudentNotEligible'
 
   schemas:
+    EmailVerificationRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+    EmailConfirmationRequest:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          minLength: 1
+    EmailVerificationStatus:
+      type: object
+      required:
+        - required
+        - verified
+      properties:
+        required:
+          type: boolean
+        verified:
+          type: boolean
+
+    AdminSemester:
+      type: object
+      required:
+        - id
+        - title
+        - startsAt
+        - started
+        - accrual
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        title:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        started:
+          type: boolean
+        accrual:
+          type:
+            - integer
+            - "null"
+          format: int32
+    AdminSemesterRequest:
+      type: object
+      required:
+        - title
+        - startsAt
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+        startsAt:
+          type: string
+          format: date-time
+    AdminSemesterList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminSemester"
+    AdminSettingsRequest:
+      type: object
+      required:
+        - penaltyStep
+        - penaltyIntervalSeconds
+        - semesterAccrual
+        - monthlyBudgetLimit
+      properties:
+        penaltyStep:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 1000
+        penaltyIntervalSeconds:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 86400
+        semesterAccrual:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 1000
+        monthlyBudgetLimit:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 100000
+    AdminSettings:
+      type: object
+      required:
+        - penaltyStep
+        - penaltyIntervalSeconds
+        - minPenaltyIntervalSeconds
+        - semesterAccrual
+        - monthlyBudgetLimit
+      properties:
+        penaltyStep:
+          type: integer
+          format: int32
+        penaltyIntervalSeconds:
+          type: integer
+          format: int32
+        minPenaltyIntervalSeconds:
+          type: integer
+          format: int32
+        semesterAccrual:
+          type: integer
+          format: int32
+        monthlyBudgetLimit:
+          type: integer
+          format: int32
+    AdminBudget:
+      type: object
+      required:
+        - teacher
+        - group
+        - limit
+        - spent
+        - remaining
+      properties:
+        teacher:
+          $ref: "#/components/schemas/UserRef"
+        group:
+          $ref: "#/components/schemas/StudyGroupRef"
+        limit:
+          type: integer
+          format: int32
+        spent:
+          type: integer
+          format: int32
+        remaining:
+          type: integer
+          format: int32
+    AdminBudgetList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminBudget"
+    BudgetImpact:
+      type: object
+      required:
+        - count
+      properties:
+        count:
+          type: integer
+          format: int32
+    AdminUser:
+      type: object
+      required:
+        - id
+        - fullName
+        - email
+        - role
+        - group
+        - department
+        - passwordSetAt
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum:
+            - STUDENT
+            - TEACHER
+            - ADMIN
+        group:
+          oneOf:
+            - $ref: "#/components/schemas/StudyGroupRef"
+            - type: "null"
+        department:
+          oneOf:
+            - $ref: "#/components/schemas/DepartmentRef"
+            - type: "null"
+        passwordSetAt:
+          type:
+            - string
+            - "null"
+          format: date-time
+    AdminUserPage:
+      type: object
+      required:
+        - items
+        - nextCursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminUser"
+        nextCursor:
+          type:
+            - string
+            - "null"
+    GroupStudent:
+      type: object
+      required:
+        - id
+        - fullName
+        - email
+        - membershipState
+        - passwordSetAt
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        membershipState:
+          type: string
+          enum:
+            - ACTIVE
+            - PENDING
+        passwordSetAt:
+          type:
+            - string
+            - "null"
+          format: date-time
+    GroupStudentList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/GroupStudent"
+    TemporaryPasswordResult:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          minLength: 12
+          maxLength: 12
+    PasswordAudit:
+      type: object
+      required:
+        - actor
+        - createdAt
+      properties:
+        actor:
+          $ref: "#/components/schemas/UserRef"
+        createdAt:
+          type: string
+          format: date-time
+    ImportRejection:
+      type: object
+      required:
+        - row
+        - key
+        - reason
+      properties:
+        row:
+          type: integer
+          format: int32
+        key:
+          type: string
+        reason:
+          type: string
+    ImportReport:
+      type: object
+      required:
+        - created
+        - skipped
+        - rejected
+      properties:
+        created:
+          type: integer
+          format: int32
+        skipped:
+          type: integer
+          format: int32
+        rejected:
+          type: array
+          items:
+            $ref: "#/components/schemas/ImportRejection"
+    TeacherAllowlistEntry:
+      type: object
+      required:
+        - email
+        - department
+        - registered
+      properties:
+        email:
+          type: string
+          format: email
+        department:
+          $ref: "#/components/schemas/DepartmentRef"
+        registered:
+          type: boolean
+    TeacherAllowlistList:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeacherAllowlistEntry"
+    PasswordSetupRequest:
+      type: object
+      required:
+        - token
+        - password
+      properties:
+        token:
+          type: string
+          minLength: 1
+        password:
+          $ref: "#/components/schemas/Password"
+
     Id:
       type: integer
       format: int64
