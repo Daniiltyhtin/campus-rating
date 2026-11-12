@@ -29,6 +29,6 @@ export function GroupAnalytics({ viewerId, groupId, admin }: { viewerId: number;
     <AsyncContent state={feedState(query, false, '')}>{query.data && (query.data.items.length === 0
       ? <Text>В группе нет студентов с подтверждённым членством</Text>
       : <><AverageArChart days={query.data.days} /><PeriodPoints items={query.data.items} /></>)}</AsyncContent>
-    <BudgetMonths viewerId={viewerId} groupId={groupId} admin={admin} />
+    {query.data && <BudgetMonths viewerId={viewerId} groupId={groupId} admin={admin} />}
   </Stack></FeedPage>;
 }

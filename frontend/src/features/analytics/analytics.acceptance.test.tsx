@@ -219,6 +219,8 @@ describe('U17 analytics acceptance AE1–AE9', { timeout: 15_000 }, () => {
   it('AE7 inaccessible teacher group shows no access', async () => {
     const state = scenario(); state.forbidden = true; mount();
     expect(await screen.findByText('Нет доступа', { exact: true })).toBeInTheDocument();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(screen.getAllByText('Нет доступа', { exact: true })).toHaveLength(1);
   });
 
   it('AE9 changing period refreshes days and points and preserves budget', async () => {
