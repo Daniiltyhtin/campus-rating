@@ -18,7 +18,7 @@ test('POLL-01 преподаватель создаёт опрос в UI, сту
   await page.getByLabel('Название', { exact: true }).fill(title);
   await page.getByLabel('Описание', { exact: true }).fill('Выберите удобное время.');
   await page.getByLabel(/Окончание/).fill(moscowInput(await teacher.api.future(3600)));
-  await page.getByRole('checkbox', { name: new RegExp(escape(scenario.group.name)) }).check();
+  await page.getByRole('checkbox', { name: new RegExp(escape(scenario.group.name)) }).check({ force: true });
   await page.getByLabel('Анонимный опрос', { exact: true }).setChecked(false);
   const question = page.getByRole('group', { name: /^Вопрос 1(\D|$)/ });
   await question.getByRole('textbox', { name: 'Текст вопроса', exact: true }).fill('Когда удобнее?');
