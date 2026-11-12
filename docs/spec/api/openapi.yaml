@@ -2177,7 +2177,7 @@ paths:
 
         Доступ: любой вошедший.
       x-roles: [AUTHENTICATED]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
@@ -2288,7 +2288,7 @@ paths:
 
         Доступ: любой вошедший (профиль открыт всем, мастер-R5).
       x-roles: [AUTHENTICATED]
-      x-status: planned
+      x-status: implemented
       security:
         - session: []
       parameters:
