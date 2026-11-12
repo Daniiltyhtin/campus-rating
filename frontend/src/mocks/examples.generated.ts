@@ -334,7 +334,7 @@ export const examples: ExampleOperation[] = [
         "contentType": "application/json",
         "body": {
           "id": 1,
-          "title": "??????",
+          "title": "Весна 2027",
           "startsAt": "2026-11-13T09:00:00Z",
           "started": false,
           "accrual": null
@@ -436,7 +436,7 @@ export const examples: ExampleOperation[] = [
         "contentType": "application/json",
         "body": {
           "id": 1,
-          "title": "??????",
+          "title": "Весна 2027",
           "startsAt": "2026-11-13T09:00:00Z",
           "started": false,
           "accrual": null
@@ -634,7 +634,7 @@ export const examples: ExampleOperation[] = [
         "contentType": "application/json",
         "body": {
           "id": 1,
-          "title": "??????",
+          "title": "Весна 2027",
           "startsAt": "2026-11-13T09:00:00Z",
           "started": false,
           "accrual": null
@@ -1332,7 +1332,7 @@ export const examples: ExampleOperation[] = [
         "status": 200,
         "contentType": "application/json",
         "body": {
-          "password": "??????"
+          "password": "Hk7mPq2rTz9x"
         }
       },
       {
@@ -1432,7 +1432,7 @@ export const examples: ExampleOperation[] = [
         "body": {
           "actor": {
             "id": 1,
-            "fullName": "??????"
+            "fullName": "Смирнова Анна Олеговна"
           },
           "createdAt": "2026-11-13T09:00:00Z"
         }

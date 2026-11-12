@@ -55,7 +55,7 @@ public class AdminUserService {
     public List<GroupStudent> students(long groupId) {
         var actor=current.require();if(actor.role()!=Role.TEACHER||!scope.accessibleGroupIds(actor.id()).contains(groupId)) throw forbidden();
         return jdbc.sql("select u.id,u.full_name,u.email,m.state,"+AUDIT+" password_set_at from app_user u join group_membership m on m.student_id=u.id where m.group_id=:group and m.state in ('ACTIVE','PENDING') order by u.full_name,u.id")
-                .param("group",groupId).query((rs,n)->new GroupStudent(rs.getLong("id"),rs.getString("full_name"),rs.getString("email"),rs.getString("state"),rs.getTimestamp("password_set_at")==null?null:rs.getTimestamp("password_set_at").toInstant())).list();
+                .param("group",groupId).query((rs,n)->new GroupStudent(rs.getLong("id"),rs.getString("full_name"),rs.getString("email"),GroupMembershipState.valueOf(rs.getString("state")),rs.getTimestamp("password_set_at")==null?null:rs.getTimestamp("password_set_at").toInstant())).list();
     }
     @Transactional
     public String reset(long id) {

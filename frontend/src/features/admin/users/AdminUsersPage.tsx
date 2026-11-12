@@ -9,14 +9,15 @@ import { AdminOnly } from '../shared';
 import { SetPasswordDialog } from '../../groups/SetPasswordDialog';
 
 const roleNames = { STUDENT: 'Студент', TEACHER: 'Преподаватель', ADMIN: 'Администратор' };
+type RoleFilter = '' | keyof typeof roleNames;
 function Users() {
-  const [search, setSearch] = useState(''), [role, setRole] = useState('');
+  const [search, setSearch] = useState(''), [role, setRole] = useState<RoleFilter>('');
   const query = useInfiniteQuery({ queryKey: ['admin-users', search.trim(), role], initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) => dataOf(api.GET('/api/v1/admin/users', { params: { query: { search, role: role || undefined, cursor: pageParam } } })),
     getNextPageParam: (page) => page.nextCursor ?? undefined });
   const items = query.data?.pages.flatMap((p) => p.items) ?? [];
   return <PageLayout title="Пользователи"><TextInput label="Поиск по ФИО или email" value={search} onChange={(e) => setSearch(e.currentTarget.value)} />
-    <NativeSelect label="Роль" value={role} onChange={(e) => setRole(e.currentTarget.value)} data={[{ value: '', label: 'Все' }, { value: 'STUDENT', label: 'Студенты' }, { value: 'TEACHER', label: 'Преподаватели' }, { value: 'ADMIN', label: 'Администраторы' }]} />
+    <NativeSelect label="Роль" value={role} onChange={(e) => setRole(e.currentTarget.value as RoleFilter)} data={[{ value: '', label: 'Все' }, { value: 'STUDENT', label: 'Студенты' }, { value: 'TEACHER', label: 'Преподаватели' }, { value: 'ADMIN', label: 'Администраторы' }]} />
     <TeacherTableLayout caption="Пользователи" rows={items} keyForRow={(r) => r.id} state={loadState(query, items.length === 0, 'Никого не нашли')}
       columns={[{ key: 'name', title: 'ФИО', render: (r) => <Anchor component={Link} to={`/users/${r.id}`}>{r.fullName}</Anchor> },
         { key: 'email', title: 'Email', render: (r) => r.email }, { key: 'role', title: 'Роль', render: (r) => roleNames[r.role] },

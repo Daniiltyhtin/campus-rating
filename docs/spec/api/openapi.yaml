@@ -27,7 +27,7 @@ security:
   - session: []
 tags:
   - name: settings
-    description: ????????? ?????? (??????-U13).
+    description: "Настройки стенда (мастер-U13)."
   - name: identity
     description: Вход, сессия, регистрация, доступные группы (мастер-U5).
   - name: directory
@@ -50,9 +50,7 @@ paths:
         - identity
       operationId: requestEmailVerification
       summary: requestEmailVerification
-      description: ????????????? email ??? U13 ? ?????? required. ?????? ?????? ??
-        ?????????? ????????????? ????????. ?????? ???????????, 24 ????. ??
-        ????????????? ????????? ?????? ???????? ??????????????.
+      description: "Подтверждение email для U13 в режиме required: запрос ссылки, подтверждение по токену из письма и статус. Ссылка одноразовая, действует 24 часа. До подтверждения остальные вызовы получают EMAIL_NOT_VERIFIED."
       x-status: implemented
       x-public: true
       security: []
@@ -64,7 +62,7 @@ paths:
               $ref: "#/components/schemas/EmailVerificationRequest"
       responses:
         "204":
-          description: ???????? ?????????
+          description: "Операция выполнена"
         "400":
           $ref: "#/components/responses/ValidationFailed"
         "403":
@@ -77,9 +75,7 @@ paths:
         - identity
       operationId: confirmEmail
       summary: confirmEmail
-      description: ????????????? email ??? U13 ? ?????? required. ?????? ?????? ??
-        ?????????? ????????????? ????????. ?????? ???????????, 24 ????. ??
-        ????????????? ????????? ?????? ???????? ??????????????.
+      description: "Подтверждение email для U13 в режиме required: запрос ссылки, подтверждение по токену из письма и статус. Ссылка одноразовая, действует 24 часа. До подтверждения остальные вызовы получают EMAIL_NOT_VERIFIED."
       x-status: implemented
       x-public: true
       security: []
@@ -91,7 +87,7 @@ paths:
               $ref: "#/components/schemas/EmailConfirmationRequest"
       responses:
         "204":
-          description: ???????? ?????????
+          description: "Операция выполнена"
         "400":
           $ref: "#/components/responses/ValidationFailed"
         "403":
@@ -104,15 +100,13 @@ paths:
         - identity
       operationId: getEmailVerificationStatus
       summary: getEmailVerificationStatus
-      description: ????????????? email ??? U13 ? ?????? required. ?????? ?????? ??
-        ?????????? ????????????? ????????. ?????? ???????????, 24 ????. ??
-        ????????????? ????????? ?????? ???????? ??????????????.
+      description: "Подтверждение email для U13 в режиме required: запрос ссылки, подтверждение по токену из письма и статус. Ссылка одноразовая, действует 24 часа. До подтверждения остальные вызовы получают EMAIL_NOT_VERIFIED."
       x-status: implemented
       x-roles:
         - AUTHENTICATED
       responses:
         "200":
-          description: ???????? ?????????
+          description: "Операция выполнена"
           content:
             application/json:
               schema:
@@ -133,14 +127,13 @@ paths:
         - ledger
       operationId: listAdminSemesters
       summary: listAdminSemesters
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - ADMIN
       responses:
         "200":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
           content:
             application/json:
               schema:
@@ -162,21 +155,20 @@ paths:
         - ledger
       operationId: createAdminSemester
       summary: createAdminSemester
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - ADMIN
       responses:
         "201":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdminSemester"
               example:
                 id: 1
-                title: ??????
+                title: Весна 2027
                 startsAt: 2026-11-13T09:00:00Z
                 started: false
                 accrual: null
@@ -202,21 +194,20 @@ paths:
         - ledger
       operationId: updateAdminSemester
       summary: updateAdminSemester
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - ADMIN
       responses:
         "200":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdminSemester"
               example:
                 id: 1
-                title: ??????
+                title: Весна 2027
                 startsAt: 2026-11-13T09:00:00Z
                 started: false
                 accrual: null
@@ -234,7 +225,7 @@ paths:
         - name: semesterId
           in: path
           required: true
-          schema: &a1
+          schema:
             type: integer
             format: int64
             minimum: 1
@@ -249,14 +240,13 @@ paths:
         - ledger
       operationId: deleteAdminSemester
       summary: deleteAdminSemester
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - ADMIN
       responses:
         "204":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
         "400":
           $ref: "#/components/responses/ValidationFailed"
         "401":
@@ -271,28 +261,30 @@ paths:
         - name: semesterId
           in: path
           required: true
-          schema: *a1
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
   /api/v1/admin/semesters/{semesterId}/start:
     post:
       tags:
         - ledger
       operationId: startAdminSemester
       summary: startAdminSemester
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - ADMIN
       responses:
         "200":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdminSemester"
               example:
                 id: 1
-                title: ??????
+                title: Весна 2027
                 startsAt: 2026-11-13T09:00:00Z
                 started: false
                 accrual: null
@@ -310,21 +302,23 @@ paths:
         - name: semesterId
           in: path
           required: true
-          schema: *a1
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
   /api/v1/admin/settings:
     get:
       tags:
         - settings
       operationId: getAdminSettings
       summary: getAdminSettings
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - ADMIN
       responses:
         "200":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
           content:
             application/json:
               schema:
@@ -350,14 +344,13 @@ paths:
         - settings
       operationId: updateAdminSettings
       summary: updateAdminSettings
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - ADMIN
       responses:
         "200":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
           content:
             application/json:
               schema:
@@ -390,14 +383,13 @@ paths:
         - activity
       operationId: listAdminBudgets
       summary: listAdminBudgets
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - ADMIN
       responses:
         "200":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
           content:
             application/json:
               schema:
@@ -417,7 +409,7 @@ paths:
       parameters:
         - name: month
           in: query
-          schema: &a2
+          schema:
             type: string
   /api/v1/admin/budgets/impact:
     get:
@@ -425,14 +417,13 @@ paths:
         - activity
       operationId: getAdminBudgetImpact
       summary: getAdminBudgetImpact
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - ADMIN
       responses:
         "200":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
           content:
             application/json:
               schema:
@@ -455,6 +446,8 @@ paths:
           schema:
             type: integer
             format: int32
+            minimum: 0
+            maximum: 100000
           required: true
   /api/v1/admin/users:
     get:
@@ -462,14 +455,13 @@ paths:
         - identity
       operationId: listAdminUsers
       summary: listAdminUsers
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - ADMIN
       responses:
         "200":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
           content:
             application/json:
               schema:
@@ -490,27 +482,33 @@ paths:
       parameters:
         - name: search
           in: query
-          schema: *a2
+          schema:
+            type: string
         - name: role
           in: query
-          schema: *a2
+          schema:
+            type: string
+            enum:
+              - STUDENT
+              - TEACHER
+              - ADMIN
         - name: cursor
           in: query
-          schema: *a2
+          schema:
+            type: string
   /api/v1/groups/{groupId}/students:
     get:
       tags:
         - identity
       operationId: listGroupStudents
       summary: listGroupStudents
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - TEACHER
       responses:
         "200":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
           content:
             application/json:
               schema:
@@ -531,28 +529,30 @@ paths:
         - name: groupId
           in: path
           required: true
-          schema: *a1
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
   /api/v1/users/{userId}/temporary-password:
     post:
       tags:
         - identity
       operationId: setTemporaryPassword
       summary: setTemporaryPassword
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - ADMIN
         - TEACHER
       responses:
         "200":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/TemporaryPasswordResult"
               example:
-                password: ??????
+                password: Hk7mPq2rTz9x
         "400":
           $ref: "#/components/responses/ValidationFailed"
         "401":
@@ -567,21 +567,23 @@ paths:
         - name: userId
           in: path
           required: true
-          schema: *a1
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
   /api/v1/me/password-audit:
     get:
       tags:
         - identity
       operationId: getOwnPasswordAudit
       summary: getOwnPasswordAudit
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - AUTHENTICATED
       responses:
         "200":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
           content:
             application/json:
               schema:
@@ -589,10 +591,10 @@ paths:
               example:
                 actor:
                   id: 1
-                  fullName: ??????
+                  fullName: Смирнова Анна Олеговна
                 createdAt: 2026-11-13T09:00:00Z
         "204":
-          description: ????????? ?????? ??? ?? ???????????.
+          description: "Временный пароль ещё не выставлялся."
         "400":
           $ref: "#/components/responses/ValidationFailed"
         "401":
@@ -609,14 +611,13 @@ paths:
         - identity
       operationId: importAdminFile
       summary: importAdminFile
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - ADMIN
       responses:
         "200":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
           content:
             application/json:
               schema:
@@ -663,14 +664,13 @@ paths:
         - identity
       operationId: listTeacherAllowlist
       summary: listTeacherAllowlist
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - ADMIN
       responses:
         "200":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
           content:
             application/json:
               schema:
@@ -692,14 +692,13 @@ paths:
         - identity
       operationId: deleteTeacherAllowlistEntry
       summary: deleteTeacherAllowlistEntry
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-roles:
         - ADMIN
       responses:
         "204":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
         "400":
           $ref: "#/components/responses/ValidationFailed"
         "401":
@@ -713,7 +712,8 @@ paths:
       parameters:
         - name: email
           in: query
-          schema: *a2
+          schema:
+            type: string
           required: true
   /api/v1/auth/password/set:
     post:
@@ -721,14 +721,13 @@ paths:
         - identity
       operationId: setImportedStudentPassword
       summary: setImportedStudentPassword
-      description: "U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ??????
-        ??????????? ?? ?????? ???????."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
       x-status: implemented
       x-public: true
       security: []
       responses:
         "204":
-          description: ???????? ?????????.
+          description: "Операция выполнена."
         "400":
           $ref: "#/components/responses/ValidationFailed"
         "401":
@@ -5031,6 +5030,7 @@ components:
         email:
           type: string
           format: email
+          minLength: 1
     EmailConfirmationRequest:
       type: object
       required:
@@ -5360,6 +5360,7 @@ components:
       properties:
         token:
           type: string
+          minLength: 1
         password:
           $ref: "#/components/schemas/Password"
 

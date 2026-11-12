@@ -11,7 +11,7 @@ export interface paths {
         put?: never;
         /**
          * requestEmailVerification
-         * @description ????????????? email ??? U13 ? ?????? required. ?????? ?????? ?? ?????????? ????????????? ????????. ?????? ???????????, 24 ????. ?? ????????????? ????????? ?????? ???????? ??????????????.
+         * @description Подтверждение email для U13 в режиме required: запрос ссылки, подтверждение по токену из письма и статус. Ссылка одноразовая, действует 24 часа. До подтверждения остальные вызовы получают EMAIL_NOT_VERIFIED.
          */
         post: operations["requestEmailVerification"];
         delete?: never;
@@ -31,7 +31,7 @@ export interface paths {
         put?: never;
         /**
          * confirmEmail
-         * @description ????????????? email ??? U13 ? ?????? required. ?????? ?????? ?? ?????????? ????????????? ????????. ?????? ???????????, 24 ????. ?? ????????????? ????????? ?????? ???????? ??????????????.
+         * @description Подтверждение email для U13 в режиме required: запрос ссылки, подтверждение по токену из письма и статус. Ссылка одноразовая, действует 24 часа. До подтверждения остальные вызовы получают EMAIL_NOT_VERIFIED.
          */
         post: operations["confirmEmail"];
         delete?: never;
@@ -49,7 +49,7 @@ export interface paths {
         };
         /**
          * getEmailVerificationStatus
-         * @description ????????????? email ??? U13 ? ?????? required. ?????? ?????? ?? ?????????? ????????????? ????????. ?????? ???????????, 24 ????. ?? ????????????? ????????? ?????? ???????? ??????????????.
+         * @description Подтверждение email для U13 в режиме required: запрос ссылки, подтверждение по токену из письма и статус. Ссылка одноразовая, действует 24 часа. До подтверждения остальные вызовы получают EMAIL_NOT_VERIFIED.
          */
         get: operations["getEmailVerificationStatus"];
         put?: never;
@@ -69,13 +69,13 @@ export interface paths {
         };
         /**
          * listAdminSemesters
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         get: operations["listAdminSemesters"];
         put?: never;
         /**
          * createAdminSemester
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         post: operations["createAdminSemester"];
         delete?: never;
@@ -94,13 +94,13 @@ export interface paths {
         get?: never;
         /**
          * updateAdminSemester
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         put: operations["updateAdminSemester"];
         post?: never;
         /**
          * deleteAdminSemester
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         delete: operations["deleteAdminSemester"];
         options?: never;
@@ -119,7 +119,7 @@ export interface paths {
         put?: never;
         /**
          * startAdminSemester
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         post: operations["startAdminSemester"];
         delete?: never;
@@ -137,12 +137,12 @@ export interface paths {
         };
         /**
          * getAdminSettings
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         get: operations["getAdminSettings"];
         /**
          * updateAdminSettings
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         put: operations["updateAdminSettings"];
         post?: never;
@@ -161,7 +161,7 @@ export interface paths {
         };
         /**
          * listAdminBudgets
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         get: operations["listAdminBudgets"];
         put?: never;
@@ -181,7 +181,7 @@ export interface paths {
         };
         /**
          * getAdminBudgetImpact
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         get: operations["getAdminBudgetImpact"];
         put?: never;
@@ -201,7 +201,7 @@ export interface paths {
         };
         /**
          * listAdminUsers
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         get: operations["listAdminUsers"];
         put?: never;
@@ -221,7 +221,7 @@ export interface paths {
         };
         /**
          * listGroupStudents
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         get: operations["listGroupStudents"];
         put?: never;
@@ -243,7 +243,7 @@ export interface paths {
         put?: never;
         /**
          * setTemporaryPassword
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         post: operations["setTemporaryPassword"];
         delete?: never;
@@ -261,7 +261,7 @@ export interface paths {
         };
         /**
          * getOwnPasswordAudit
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         get: operations["getOwnPasswordAudit"];
         put?: never;
@@ -283,7 +283,7 @@ export interface paths {
         put?: never;
         /**
          * importAdminFile
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         post: operations["importAdminFile"];
         delete?: never;
@@ -301,14 +301,14 @@ export interface paths {
         };
         /**
          * listTeacherAllowlist
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         get: operations["listTeacherAllowlist"];
         put?: never;
         post?: never;
         /**
          * deleteTeacherAllowlistEntry
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         delete: operations["deleteTeacherAllowlistEntry"];
         options?: never;
@@ -327,7 +327,7 @@ export interface paths {
         put?: never;
         /**
          * setImportedStudentPassword
-         * @description U13: ??????? ? ??????? ? ????? 2026-11-12-004?007 ? 008. ?????? ??????????? ?? ?????? ???????.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
          */
         post: operations["setImportedStudentPassword"];
         delete?: never;
@@ -2930,7 +2930,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description ???????? ????????? */
+            /** @description Операция выполнена */
             204: {
                 headers: {
                     [name: string]: unknown;
@@ -2955,7 +2955,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description ???????? ????????? */
+            /** @description Операция выполнена */
             204: {
                 headers: {
                     [name: string]: unknown;
@@ -2976,7 +2976,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description ???????? ????????? */
+            /** @description Операция выполнена */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3005,7 +3005,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3039,7 +3039,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -3048,7 +3048,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "id": 1,
-                     *       "title": "??????",
+                     *       "title": "Весна 2027",
                      *       "startsAt": "2026-11-13T09:00:00Z",
                      *       "started": false,
                      *       "accrual": null
@@ -3079,7 +3079,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3088,7 +3088,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "id": 1,
-                     *       "title": "??????",
+                     *       "title": "Весна 2027",
                      *       "startsAt": "2026-11-13T09:00:00Z",
                      *       "started": false,
                      *       "accrual": null
@@ -3115,7 +3115,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             204: {
                 headers: {
                     [name: string]: unknown;
@@ -3140,7 +3140,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3149,7 +3149,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "id": 1,
-                     *       "title": "??????",
+                     *       "title": "Весна 2027",
                      *       "startsAt": "2026-11-13T09:00:00Z",
                      *       "started": false,
                      *       "accrual": null
@@ -3174,7 +3174,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3212,7 +3212,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3248,7 +3248,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3280,7 +3280,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3305,7 +3305,7 @@ export interface operations {
         parameters: {
             query?: {
                 search?: string;
-                role?: string;
+                role?: "STUDENT" | "TEACHER" | "ADMIN";
                 cursor?: string;
             };
             header?: never;
@@ -3314,7 +3314,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3347,7 +3347,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3379,7 +3379,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3387,7 +3387,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "password": "??????"
+                     *       "password": "Hk7mPq2rTz9x"
                      *     }
                      */
                     "application/json": components["schemas"]["TemporaryPasswordResult"];
@@ -3409,7 +3409,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3419,7 +3419,7 @@ export interface operations {
                      * @example {
                      *       "actor": {
                      *         "id": 1,
-                     *         "fullName": "??????"
+                     *         "fullName": "Смирнова Анна Олеговна"
                      *       },
                      *       "createdAt": "2026-11-13T09:00:00Z"
                      *     }
@@ -3427,7 +3427,7 @@ export interface operations {
                     "application/json": components["schemas"]["PasswordAudit"];
                 };
             };
-            /** @description ????????? ?????? ??? ?? ???????????. */
+            /** @description Временный пароль ещё не выставлялся. */
             204: {
                 headers: {
                     [name: string]: unknown;
@@ -3459,7 +3459,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3491,7 +3491,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3523,7 +3523,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             204: {
                 headers: {
                     [name: string]: unknown;
@@ -3550,7 +3550,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description ???????? ?????????. */
+            /** @description Операция выполнена. */
             204: {
                 headers: {
                     [name: string]: unknown;

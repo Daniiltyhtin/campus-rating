@@ -2,6 +2,7 @@ package ru.campusrating.ledger.api;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -26,7 +27,7 @@ public class AdminSemestersController {
     @PostMapping("/{semesterId}/start")
     public AdminSemester startAdminSemester(@PathVariable long semesterId) { return service.start(semesterId); }
     @Schema(requiredProperties={"id","title","startsAt","started","accrual"})
-    public record AdminSemester(long id, String title, Instant startsAt, boolean started,
+    public record AdminSemester(@Min(1) long id, String title, Instant startsAt, boolean started,
             @Schema(types={"integer","null"}, format="int32") Integer accrual) {}
     @Schema(requiredProperties="items") public record AdminSemesterList(List<AdminSemester> items) {}
     @Schema(requiredProperties={"title","startsAt"})

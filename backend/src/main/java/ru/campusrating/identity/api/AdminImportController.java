@@ -24,6 +24,6 @@ public class AdminImportController {
     public void deleteTeacherAllowlistEntry(@RequestParam String email) {service.deleteAllowlist(email);}
     @Schema(requiredProperties={"row","key","reason"}) public record ImportRejection(int row,String key,String reason) {}
     @Schema(requiredProperties={"created","skipped","rejected"}) public record ImportReport(int created,int skipped,List<ImportRejection> rejected) {}
-    @Schema(requiredProperties={"email","department","registered"}) public record TeacherAllowlistEntry(String email,DepartmentInfo department,boolean registered) {}
+    @Schema(requiredProperties={"email","department","registered"}) public record TeacherAllowlistEntry(@Schema(format="email") String email,DepartmentInfo department,boolean registered) {}
     @Schema(requiredProperties="items") public record TeacherAllowlistList(List<TeacherAllowlistEntry> items) {}
 }
