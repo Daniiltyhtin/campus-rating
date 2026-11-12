@@ -42,6 +42,7 @@ export function AppShell({ session, user }: { session: Session; user: CurrentUse
               component={Link}
               to={item.to}
               label={item.label}
+              leftSection={<NavIcon name={item.icon} />}
               aria-label={item.label}
               rightSection={session.role === 'ADMIN' && item.to === '/admin/users' ? <TeacherBadge viewerId={Number(session.userId)} /> : undefined}
               active={isActive(pathname, item.to)}
