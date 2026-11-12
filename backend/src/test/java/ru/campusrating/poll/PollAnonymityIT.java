@@ -103,12 +103,14 @@ class PollAnonymityIT extends PollTestSupport {
         LogLevel previous = root == null || root.getConfiguredLevel() == null ? LogLevel.INFO : root.getConfiguredLevel();
         int start = output.getAll().length();
         logging.setLogLevel(LoggingSystem.ROOT_LOGGER_NAME, LogLevel.DEBUG);
+        logging.setLogLevel("org.springframework.web.client", LogLevel.INFO);
         try {
             vote(pollId, session, 400, answer(when, morningId, eveningId));
             vote(pollId, session, 200, answer(when, eveningId));
             vote(pollId, session, 409, answer(when, morningId));
             drainEvents();
         } finally {
+            logging.setLogLevel("org.springframework.web.client", null);
             logging.setLogLevel(LoggingSystem.ROOT_LOGGER_NAME, previous);
         }
         String captured = output.getAll().substring(start);
