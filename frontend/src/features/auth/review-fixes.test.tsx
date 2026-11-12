@@ -11,6 +11,8 @@ import { useAuthAction } from './useAuthAction';
 const gates: { resolve: () => void }[] = [];
 const clients: QueryClient[] = [];
 beforeEach(() => server.listen({ onUnhandledFrame: 'error' }));
+server.events.on('request:unhandled', ({ request }) => { console.error('DIAG unhandled', request.method, request.url, expect.getState().currentTestName); });
+server.events.on('request:start', ({ request }) => { if (request.url.includes('/auth/me')) console.error('DIAG start', request.url, expect.getState().currentTestName); });
 afterEach(async () => {
   cleanup();
   gates.splice(0).forEach((gate) => gate.resolve());
@@ -62,7 +64,7 @@ it.each(['login', 'password', 'logout'] as const)('33-2 %s cancels an older quer
   await waitFor(() => expect(h.client.getQueryData(authKeys.user)).toEqual(kind === 'logout' ? null : authUsers.student));
   await settle(h.client); h.client.clear();
 });
-it.skip('33-2 ignores direct finish me after a newer logout', async () => {
+it('33-2 ignores direct finish me after a newer logout', async () => {
   createAuthScenario(authUsers.student); const gate = deferred(); let started = false;
   server.use(http.get('*/api/v1/auth/me', async () => { started = true; await gate.promise; return HttpResponse.json(authUsers.student); }));
   const h = harness(); h.client.setQueryData(authKeys.user, authUsers.student);
