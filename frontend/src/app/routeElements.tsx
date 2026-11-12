@@ -2,6 +2,7 @@ import { Text } from '@mantine/core';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { BrandLoader } from '../theme/Brand';
 import { AppShell } from './AppShell';
 import { authKeys, useAuthSession } from '../features/auth/authQueries';
 import { AuthLayout, RetryNotice } from '../features/auth/AuthLayout';
@@ -59,5 +60,5 @@ export function SectionPlaceholder() {
 }
 
 export function RouteLoading() {
-  return <Text role="status">Загрузка…</Text>;
+  return <BrandLoader session />;
 }

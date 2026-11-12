@@ -1,4 +1,5 @@
-import { Alert, Button, Container, Group, Skeleton, Stack, Text, Title } from '@mantine/core';
+import { Alert, Button, Container, Group, Stack, Text, Title } from '@mantine/core';
+import { BrandLoader } from '../../theme/Brand';
 import type { FormEventHandler, ReactNode } from 'react';
 
 export type LoadState = { status: 'ready' } | { status: 'loading' } | { status: 'empty'; message: string }
@@ -6,7 +7,7 @@ export type LoadState = { status: 'ready' } | { status: 'loading' } | { status: 
 
 export function AsyncContent({ state, children }: { state: LoadState; children: ReactNode }) {
   switch (state.status) {
-    case 'loading': return <Stack role="status" aria-label="Загрузка"><Skeleton h="var(--cr-touch-target)" /><Skeleton h="var(--cr-touch-target)" /></Stack>;
+    case 'loading': return <BrandLoader />;
     case 'empty': return <Text className="cr-caption">{state.message}</Text>;
     case 'error': return <Alert role="alert" title="Не удалось загрузить данные"><Stack><Text>{state.message}</Text><Button variant="default" onClick={state.retry}>Повторить</Button></Stack></Alert>;
     case 'ready': return children;
@@ -18,7 +19,7 @@ export function PageLayout({ title, description, actions, children }: {
 }) {
   return <Container size="lg" className="cr-page"><Stack gap="xl">
     <header className="cr-masthead"><Group justify="space-between" align="start"><Stack gap="xs">
-      <Text className="cr-kicker">Campus Rating</Text><Title order={1}>{title}</Title>
+      <Title order={1}>{title}</Title>
       {description && <Text className="cr-caption">{description}</Text>}
     </Stack>{actions}</Group></header>{children}
   </Stack></Container>;

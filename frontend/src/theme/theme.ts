@@ -46,7 +46,7 @@ export const theme = createTheme({
     NavLink: NavLink.extend({ styles: { root: { minHeight: 'var(--cr-touch-target)' } } }),
     Tabs: Tabs.extend({ styles: { tab: { minHeight: 'var(--cr-touch-target)' } } }),
     SegmentedControl: SegmentedControl.extend({ styles: { root: { background: 'transparent', borderBottom: 'var(--cr-rule-width) solid var(--cr-rule)' },
-      indicator: { background: 'transparent', boxShadow: 'none', borderBottom: '3px solid var(--cr-link)', borderRadius: 0 },
+      indicator: { background: 'transparent', boxShadow: 'none', borderBottom: '0.1875rem solid var(--cr-link)', borderRadius: 0 },
       label: { minHeight: 'var(--cr-touch-target)', display: 'flex', alignItems: 'center', justifyContent: 'center' } } }),
     Checkbox: Checkbox.extend({ vars: () => ({ root: { '--checkbox-size': 'var(--cr-checkbox-size)' } }),
       styles: { body: { minHeight: 'var(--cr-touch-target)', alignItems: 'center' },
@@ -69,15 +69,15 @@ function variables(p: typeof palettes.light) {
 }
 
 export const cssVariablesResolver: CSSVariablesResolver = () => ({
-  variables: { '--cr-touch-target': '44px', '--cr-rule-width': '1px', '--cr-motion-duration': '120ms',
-    '--cr-status-weight': '400', '--cr-status-border': '0px', '--cr-status-radius': '999px', '--cr-body-size': '15px', '--cr-selected-width': '2px',
-    '--cr-checkbox-size': '18px', '--cr-row-height': '52px' },
+  variables: { '--cr-touch-target': '2.75rem', '--cr-rule-width': '0.0625rem', '--cr-motion-duration': '120ms',
+    '--cr-status-weight': '400', '--cr-status-border': '0rem', '--cr-status-radius': '62.4375rem', '--cr-body-size': '0.9375rem', '--cr-selected-width': '0.125rem',
+    '--cr-checkbox-size': '1.125rem', '--cr-row-height': '3.25rem' },
   light: variables(palettes.light), dark: variables(palettes.dark),
 });
 
 export const contrastVariablesResolver: CSSVariablesResolver = () => ({
-  variables: { '--cr-touch-target': '52px', '--cr-rule-width': '2px', '--cr-motion-duration': '120ms',
-    '--cr-status-weight': '700', '--cr-status-border': '2px', '--cr-status-radius': '999px', '--cr-body-size': '17px', '--cr-selected-width': '3px',
-    '--cr-checkbox-size': '22px', '--cr-row-height': '60px' },
+  variables: { '--cr-touch-target': '3.25rem', '--cr-rule-width': '0.125rem', '--cr-motion-duration': '120ms',
+    '--cr-status-weight': '700', '--cr-status-border': '0.125rem', '--cr-status-radius': '62.4375rem', '--cr-body-size': '1.0625rem', '--cr-selected-width': '0.1875rem',
+    '--cr-checkbox-size': '1.375rem', '--cr-row-height': '3.75rem' },
   light: variables(palettes.contrast), dark: variables(palettes.contrast),
 });

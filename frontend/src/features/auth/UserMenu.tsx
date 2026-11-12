@@ -1,4 +1,7 @@
-import { Button, Menu, Stack } from '@mantine/core';
+import { Button, Menu, Stack, UnstyledButton } from '@mantine/core';
+import { useId, useState } from 'react';
+import { useMediaQuery } from '@mantine/hooks';
+import { ThemeOptions } from '../../theme/ThemeMenu';
 import { Link } from 'react-router';
 import { api } from '../../api/client';
 import { ActionError } from './AuthLayout';
@@ -14,10 +17,19 @@ export function LogoutButton() {
 }
 export function UserMenu({ fullName, userId }: { fullName: string; userId: string }) {
   const action = useLogout();
-  return <Stack gap="xs"><Menu position="bottom-end" withinPortal transitionProps={{ duration: 0 }}>
-    <Menu.Target><Button variant="subtle" aria-label={`Меню пользователя: ${fullName}`} className="auth-user">Мой аккаунт</Button></Menu.Target>
+  const [themeOpened, setThemeOpened] = useState(false);
+  const themeId = useId();
+  const wide = useMediaQuery('(min-width: 1280px)', false, { getInitialValueInEffect: false });
+  const [surname = '', ...names] = fullName.trim().split(/\s+/);
+  const initials = `${surname[0] ?? ''}${names[0]?.[0] ?? ''}`;
+  const shortName = [surname, ...names.map((name) => `${name[0]}.`)].join(' ');
+  return <Stack gap="xs"><Menu position="bottom-end" withinPortal transitionProps={{ duration: 0 }} onClose={() => setThemeOpened(false)}>
+    <Menu.Target><UnstyledButton aria-label={`Меню пользователя: ${fullName}`} className="cr-user-trigger"><span className="cr-user-avatar">{initials}</span>{wide && <span className="cr-user-name">{shortName}</span>}</UnstyledButton></Menu.Target>
     <Menu.Dropdown><Menu.Label className="cr-caption">{fullName}</Menu.Label><Menu.Item className="auth-menu-item" component={Link} to={`/users/${userId}`}>Мой профиль</Menu.Item>
-      <Menu.Item className="auth-menu-item" component={Link} to="/password/change">Сменить пароль</Menu.Item><Menu.Divider />
+      <Menu.Item className="auth-menu-item" component={Link} to="/password/change">Сменить пароль</Menu.Item>
+      <Menu.Item className="cr-menu-item" closeMenuOnClick={false} aria-expanded={themeOpened} aria-controls={themeId}
+        onClick={() => setThemeOpened((opened) => !opened)}>Тема</Menu.Item>
+      {themeOpened && <div id={themeId} role="group" aria-label="Тема"><ThemeOptions /></div>}<Menu.Divider />
       <Menu.Item className="auth-menu-item" onClick={() => action.mutate()} disabled={action.isPending}>Выйти</Menu.Item>
     </Menu.Dropdown></Menu>{action.error && <ActionError error={action.error} onReset={action.reset} />}</Stack>;
 }
