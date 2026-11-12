@@ -15,9 +15,12 @@ class AdminUsersSortIT extends U13HttpTestSupport {
         return items(get("/api/v1/admin/users?search=" + prefix + "&sort=" + sort + (direction == null ? "" : "&direction=" + direction)));
     }
     private static List<String> field(List<JsonNode> rows, String name) { return rows.stream().map(row -> row.path(name).asText()).toList(); }
+    private void active(long student) {
+        jdbc.update("update group_membership set state='ACTIVE',activated_at=? where student_id=?", java.sql.Timestamp.from(clock.instant()), student);
+    }
     private void people() {
-        clock.set(Instant.parse("2026-11-12T10:00:00Z")); student("c-student", faculty, group);
-        clock.set(Instant.parse("2026-11-12T11:00:00Z")); student("a-student", otherFaculty, otherGroup);
+        clock.set(Instant.parse("2026-11-12T10:00:00Z")); active(student("c-student", faculty, group));
+        clock.set(Instant.parse("2026-11-12T11:00:00Z")); active(student("a-student", otherFaculty, otherGroup));
         clock.set(Instant.parse("2026-11-12T12:00:00Z")); approve(teacher("b-teacher", "Bteacher"), department);
         clock.set(Instant.parse("2026-11-12T13:00:00Z")); teacher("d-teacher", "Dteacher");
     }
