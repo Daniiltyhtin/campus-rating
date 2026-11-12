@@ -13,6 +13,10 @@ const clients: QueryClient[] = [];
 beforeEach(() => server.listen({ onUnhandledFrame: 'error' }));
 server.events.on('request:unhandled', ({ request }) => { console.error('DIAG unhandled', request.method, request.url, expect.getState().currentTestName); });
 server.events.on('request:start', ({ request }) => { if (request.url.includes('/auth/me')) console.error('DIAG start', request.url, expect.getState().currentTestName); });
+server.events.on('request:match', ({ request }) => { if (request.url.includes('/auth/me')) console.error('DIAG match', expect.getState().currentTestName); });
+server.events.on('response:mocked', ({ request, response }) => { if (request.url.includes('/auth/me')) console.error('DIAG mocked', response.status, expect.getState().currentTestName); });
+server.events.on('response:bypass', ({ request }) => { if (request.url.includes('/auth/me')) console.error('DIAG bypass', expect.getState().currentTestName); });
+server.events.on('unhandledException', ({ request, error }) => { console.error('DIAG exception', request.url, String(error), expect.getState().currentTestName); });
 afterEach(async () => {
   cleanup();
   gates.splice(0).forEach((gate) => gate.resolve());
