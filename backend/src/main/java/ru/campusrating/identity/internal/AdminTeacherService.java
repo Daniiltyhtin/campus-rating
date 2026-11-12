@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -41,8 +42,10 @@ public class AdminTeacherService {
         this.sessions = sessions; this.current = current; this.clock = clock;
     }
 
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public List<AdminTeacher> list() { return repository.teachers().stream().map(this::get).toList(); }
 
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public AdminTeacher get(long id) {
         var user = teacher(id);
         return new AdminTeacher(id, user.fullName(), user.email(), directory.department(user.departmentId()).orElseThrow(), user.approved());
@@ -75,6 +78,7 @@ public class AdminTeacherService {
         });
     }
 
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public List<AdminTeacherGrant> grants(long id) {
         teacher(id);
         return repository.grants(id).stream().map(this::view).toList();
@@ -100,6 +104,7 @@ public class AdminTeacherService {
         if (!repository.deleteGrant(id, grant)) throw notFound();
     }
 
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public List<StudyGroupRef> accessibleGroups(long id) {
         teacher(id);
         return directory.groups(scope.accessibleGroupIds(id)).values().stream()
