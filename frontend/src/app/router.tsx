@@ -17,6 +17,7 @@ export const routes: RouteObject[] = [
       { element: <GuestGate />, children: [{ path: 'login', element: <LoginPage /> }, { path: 'register', element: <RegisterPage /> }] },
       { element: <PasswordGate />, children: [{ path: 'password/change', element: <ChangePasswordPage /> }] },
       { element: <SessionGate />, children: [
+        { path: 'admin/directory', lazy: async () => ({ Component: (await import('../features/admin/directory/DirectoryPage')).DirectoryPage }) },
         { path: 'awards', lazy: async () => ({ Component: (await import('../features/feed/AwardsFeed')).AwardsFeed }) },
         { path: 'groups/:id/ratings', lazy: async () => ({ Component: (await import('../features/feed/GroupRatings')).GroupRatings }) },
         { path: 'users/:id', lazy: async () => ({ Component: (await import('../features/profile/ProfilePage')).ProfilePage }) },

@@ -1,0 +1,13 @@
+.directory-page { min-width: 0; }
+.directory-page .cr-masthead > div > div { min-width: 0; max-width: 100%; }
+.directory-page h1, .directory-page p, .directory-page .cr-table td { overflow-wrap: anywhere; }
+.directory-page .mantine-Tabs-list { flex-wrap: wrap; }
+.directory-page .mantine-Tabs-tab { color: var(--cr-text); min-width: var(--cr-touch-target); }
+.directory-dialog .mantine-Modal-title, .directory-dialog p { overflow-wrap: anywhere; }
+.directory-dialog .mantine-Modal-title { max-width: 100%; }
+.directory-dialog .mantine-Modal-close { min-width: var(--cr-touch-target); min-height: var(--cr-touch-target); }
+.directory-dialog .mantine-InputWrapper-error { color: var(--cr-status-overdue); }
+@media (max-width: 48em) {
+  .directory-page h1 { font-size: var(--mantine-h2-font-size); }
+  .directory-page .cr-table td { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+}

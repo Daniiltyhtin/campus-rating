@@ -803,3 +803,15 @@
 - **Урок:** контрактный пробел закрывается до production отдельным PR; случай зафиксирован здесь, повторяющегося нового правила нет.
 - **Кругов ревью:**0.
 - **Коммит / PR:** spec-u13-directory-api → u11-feed-frontend, публикация по сохранённому разрешению человека; без approve/merge.
+
+### 2026-11-11 — U13 frontend: справочники
+
+- **Кто / агент / модель:** Максим / Codex / GPT-6; отдельный frontend tester по сохранённому разрешению человека.
+- **Поручение:** продолжать frontend; законченная первая часть U13 — факультеты, учебные группы и кафедры. Сначала отдельный контрактный PR40, затем frontend поверх него; без backend изменений и self-approve/merge.
+- **Результат с доказательствами:** CRUD3справочников на /admin/directory, ADMIN guards, полные DTO/валидация, CSRF/error/confirm/pending/invalidation и scoped MSW. Initial Red45:43failed/2guards passed; финальные49acceptance passed, собственные15parser+4mock passed. Frontend check351/351 Vitest +11lint-rule, lint/typecheck exit0; build1042 modules exit0; tools140/140, docs/diff exit0. Финальный composehealthy/e2e4/4/cleanup exit0. Browser48 снимков360/1280 ×3темы: CRUD, длинныеполя, occupied409, validation, Tab/Esc/focus; errors/overflow/малыецели0, mincontrast5.91/HC8.42. Матрица: docs/reviews/u13-directory-frontend/verification.md; browser JSON/script и handoff рядом.
+- **Не проверено:** реальные planned admin API/FK/транзакции/TeacherScope; остальные части U13; независимое ревью реализации. MSW не моделирует изменение всех старых account/profile snapshots. Vite предупреждает об index chunk около554kB, порог не менялся.
+- **Неудачные попытки:** первый Green45/47 — Unicode test type генерировал сотниDOMevents и превысил15s, duplicate error текст был одновременно общим и field. Tester заменил длинный ввод на user.paste и проверил aria-invalid/accessible description без ослабления границ; исполнитель уточнил общий текст. Два дополнительныхкейса не имелиRed, впервые прошли уженаproduction.
+- **Ошибка агента:** двеошибкиTS суженияunion вcallbacks mock → tsc → промежуточныйfacultyId и явнаяветкаrow.kind. Browser обнаружил потерюfocus послеEsc: кнопкаopener отключалась до захватаMantine → browserRed → явныйrefдоdisable, восстановлениепослеcommit;49acceptance/browserpassed. Tester первыйfocusrun использовалPlaywrightmatcher вместоjest-dom; техническийfail исправлен, jsdomRed новыхfocusкейсов не заявляется, реальныйRed былbrowser. Одинapply_patch отклонён до записи из-за двойногоtarget; повторён единымadd без потери данных.
+- **Урок:** frontend/AGENTS.md — сохранятьopener доdisable; scopedhelper долженбыть независимым, tester ожиданияисполнитель не менял.
+- **Кругов ревью:**0; tester не заменяет reviewer.
+- **Коммит / PR:** реализация `e26760a`, [PR41](https://github.com/Daniiltyhtin/campus-rating/pull/41), u13-directory-frontend → spec-u13-directory-api ([PR40](https://github.com/Daniiltyhtin/campus-rating/pull/40));66файлов сверены с явным списком, опубликовано по прямому разрешению человека. Backend/БД/API/generated diff относительно контрактной базы пуст. Approve/merge не выполнялись.
