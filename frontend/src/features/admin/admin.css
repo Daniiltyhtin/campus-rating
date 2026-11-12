@@ -2,6 +2,7 @@
 .admin-page .cr-table td > * { min-width: 0; max-width: 100%; }
 .admin-page .mantine-Button-root { max-width: 100%; height: auto; min-height: var(--cr-touch-target); }
 .admin-page .mantine-Button-label { white-space: normal; overflow-wrap: anywhere; }
+.admin-page .cr-nowrap .mantine-Button-label { white-space: nowrap; overflow-wrap: normal; }
 @media (max-width: 48em) {
   .admin-page .cr-table td { min-width: 0; grid-template-columns: minmax(0, 1fr); }
 }

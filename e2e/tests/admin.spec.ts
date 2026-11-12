@@ -94,3 +94,38 @@ test('ADM-04: материалы сдачи только для чтения —
   await page.goto('/admin/submissions/999999');
   await expect(page.getByRole('heading', { name: 'Нет доступа', exact: true })).toBeVisible();
 });
+
+test('ADM-05: заявки → карточка Волкова → допуск → бейдж исчезает — 011/AE1,4,7', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'одна заявка демо обрабатывается один раз; оба размера проверяются в этом сценарии');
+  await login(page, administrator);
+  for (const width of [1280, 360]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto('/admin/users');
+    const navigation = page.getByRole('navigation', { name: width === 360 ? 'Нижнее меню' : 'Боковое меню' });
+    await expect(navigation.getByRole('link', { name: /Пользователи/ }).getByLabel('Заявки преподавателей: 1')).toBeVisible();
+    await expect(navigation.getByRole('link', { name: 'Справочники', exact: true }).getByLabel(/Заявки преподавателей/)).toHaveCount(0);
+    await page.getByRole('button', { name: 'Показать заявки', exact: true }).click();
+    await expect(page.getByLabel('Роль', { exact: true })).toHaveValue('TEACHER');
+    await expect(page.getByLabel('Статус', { exact: true })).toHaveValue('PENDING');
+    await page.getByRole('link', { name: 'Волков Максим Игоревич', exact: true }).click();
+    await expect(page).toHaveURL(/\/admin\/users\/teachers\/2002$/);
+    await expect(page.getByRole('link', { name: 'Профиль', exact: true })).toHaveAttribute('href', '/users/2002');
+    await expect(page.getByRole('button', { name: 'Допустить', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Выдать доступ', exact: true })).toBeVisible();
+    await evidence(page, `ADM-05-pending-${width}`);
+  }
+  await page.getByRole('button', { name: 'Допустить', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Допустить преподавателя' }).getByRole('button', { name: 'Допустить', exact: true }).click();
+  await expect(page.getByText('Преподаватель допущен', { exact: true })).toBeVisible();
+  for (const width of [360, 1280]) {
+    await page.setViewportSize({ width, height: 800 });
+    await expect(page.getByLabel('Заявки преподавателей: 1')).toHaveCount(0);
+    await page.goto('/admin/users');
+    await expect(page.getByRole('table', { name: 'Пользователи' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Заявки преподавателей/ })).toHaveCount(0);
+    await expect(page.getByLabel(/Заявки преподавателей:/)).toHaveCount(0);
+    const volkov = page.getByRole('row').filter({ has: page.getByRole('link', { name: 'Волков Максим Игоревич', exact: true }) });
+    await expect(volkov.getByText('Допущен', { exact: true })).toBeVisible();
+    await evidence(page, `ADM-05-approved-${width}`);
+  }
+});

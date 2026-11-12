@@ -1747,6 +1747,12 @@ export interface components {
             role: "STUDENT" | "TEACHER" | "ADMIN";
             group: components["schemas"]["StudyGroupRef"] | null;
             department: components["schemas"]["DepartmentRef"] | null;
+            /** @enum {string|null} */
+            status: "PENDING" | "APPROVED" | "MEMBERSHIP_PENDING" | "MEMBERSHIP_ACTIVE" | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            lastLoginAt: string | null;
             /** Format: date-time */
             passwordSetAt: string | null;
         };
@@ -3510,6 +3516,11 @@ export interface operations {
             query?: {
                 search?: string;
                 role?: "STUDENT" | "TEACHER" | "ADMIN";
+                status?: "PENDING" | "APPROVED" | "MEMBERSHIP_PENDING" | "MEMBERSHIP_ACTIVE";
+                /** @description Колонка сортировки; при равенстве — ФИО, затем id. */
+                sort?: "name" | "email" | "role" | "unit" | "status" | "created" | "lastLogin";
+                /** @description Направление; по умолчанию desc для created, asc для остальных. lastLogin asc — сначала без входа. */
+                direction?: "asc" | "desc";
                 cursor?: string;
             };
             header?: never;

@@ -34,6 +34,7 @@ public class SessionService {
         this.setup=setup;
     }
 
+    @Transactional
     public void login(String email, String password, HttpServletRequest request, HttpServletResponse response) {
         passwords.requireByteLimit(password, "password");
         try {
@@ -47,6 +48,7 @@ public class SessionService {
             SecurityContextHolder.setContext(context);
             contexts.saveContext(context, request, response);
             csrf.saveToken(null, request, response);
+            repository.recordLogin(principal.userId());
         } catch (AuthenticationException exception) {
             throw new ApiException(ProblemCode.INVALID_CREDENTIALS, "Неверный email или пароль");
         }
