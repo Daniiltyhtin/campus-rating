@@ -11,12 +11,12 @@ function Icon({ children }: { children: ReactNode }) {
 
 const sun = <Icon><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" /></Icon>;
 const moon = <Icon><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z" /></Icon>;
-const contrast = <Icon><circle cx="12" cy="12" r="9" /><path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor" /></Icon>;
+const monitor = <Icon><rect x="3" y="4" width="18" height="12" rx="1.5" /><path d="M8 20h8M12 16v4" /></Icon>;
 
-const icons: Record<CampusAppearance, ReactNode> = { light: sun, dark: moon, contrast };
+const icons: Record<CampusAppearance, ReactNode> = { light: sun, dark: moon, system: monitor };
 
 const options: readonly (readonly [CampusAppearance, string, ReactNode])[] = [
-  ['light', 'Светлая', sun], ['dark', 'Тёмная', moon], ['contrast', 'Высокий контраст', contrast],
+  ['light', 'Светлая', sun], ['dark', 'Тёмная', moon], ['system', 'Системная', monitor],
 ];
 
 export function ThemeOptions() {
