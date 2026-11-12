@@ -6,11 +6,16 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import ru.campusrating.ledger.Currency;
+import ru.campusrating.ledger.Author;
 import ru.campusrating.ledger.EntryKind;
+import ru.campusrating.ledger.Posting;
+import ru.campusrating.ledger.Source;
+import ru.campusrating.ledger.SourceType;
 import tools.jackson.databind.JsonNode;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,6 +85,33 @@ class AwardsFeedIT extends FeedTestSupport {
         assertThat(seen.stream().filter(expected::contains).toList()).containsExactlyElementsOf(expected);
         assertThat(request(get(AWARDS + "?limit=1"), session, 200).path("items").get(0).path("entryId").asLong())
                 .isEqualTo(newlyInserted);
+    }
+
+    @Test
+    void mineShowsStudentOwnAwardsAndTeacherIssuedAwardsWithBoundCursor() {
+        long other = id("select id from app_user where email=?", prefix + "unapproved@example.test");
+        long first = award(student, Currency.BUA, 10);
+        award(classmate, Currency.BOA, 20);
+        long foreign = post(new Posting(student, Currency.BOA, EntryKind.ACTIVITY_AWARD, 30,
+                new Source(SourceType.ACTIVITY, ACTIVITY_ID, ACTIVITY_TITLE), new Author(other, "Другой преподаватель"),
+                UUID.randomUUID().toString()));
+        long last = award(student, Currency.BOA, 40);
+
+        var mine = request(get(AWARDS + "?mine=true&limit=2"), login("student"), 200);
+        assertThat(ids(mine)).containsExactly(last, foreign);
+        var next = request(get(AWARDS + "?mine=true&cursor=" + encode(mine.path("nextCursor").asText())), login("student"), 200);
+        assertThat(ids(next)).containsExactly(first);
+        validation(request(get(AWARDS + "?cursor=" + encode(mine.path("nextCursor").asText())), login("student"), 400), "cursor");
+
+        assertThat(ids(request(get(AWARDS + "?mine=true"), login("teacher"), 200))).doesNotContain(foreign).contains(last, first);
+        assertThat(request(get(AWARDS + "?mine=true"), login("admin"), 200).path("items")).isEmpty();
+        assertThat(ids(request(get(AWARDS + "?mine=false&limit=100"), login("student"), 200))).contains(foreign, first, last);
+    }
+
+    private static java.util.List<Long> ids(JsonNode page) {
+        var result = new ArrayList<Long>();
+        page.path("items").forEach(item -> result.add(item.path("entryId").asLong()));
+        return result;
     }
 
     @Test

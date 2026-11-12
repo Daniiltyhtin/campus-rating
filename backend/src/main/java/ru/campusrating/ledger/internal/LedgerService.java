@@ -107,8 +107,22 @@ public class LedgerService implements LedgerApi {
 
     @Override
     public LedgerPage<AwardEntryView> awards(Optional<String> cursor, int limit) {
+        return awards(LedgerCursor.AWARDS, "", 0, cursor, limit);
+    }
+
+    @Override
+    public LedgerPage<AwardEntryView> awardsToStudent(long studentId, Optional<String> cursor, int limit) {
+        return awards(LedgerCursor.AWARDS + "/student/" + studentId, "student_id", studentId, cursor, limit);
+    }
+
+    @Override
+    public LedgerPage<AwardEntryView> awardsByAuthor(long authorId, Optional<String> cursor, int limit) {
+        return awards(LedgerCursor.AWARDS + "/author/" + authorId, "author_id", authorId, cursor, limit);
+    }
+
+    private LedgerPage<AwardEntryView> awards(String filter, String column, long id, Optional<String> cursor, int limit) {
         requireLimit(limit);
-        return page(repository.awards(decode(cursor, LedgerCursor.AWARDS), limit + 1), limit, LedgerCursor.AWARDS, entry -> {
+        return page(repository.awards(column, id, decode(cursor, filter), limit + 1), limit, filter, entry -> {
             var view = entry.view();
             return new AwardEntryView(view.id(), view.createdAt(), entry.studentId(), view.amount(),
                     view.currency(), view.source(), view.author());
