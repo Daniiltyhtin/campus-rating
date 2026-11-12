@@ -34,6 +34,12 @@ public class DirectoryQueries implements DirectoryApi {
 
     public DirectoryQueries(JdbcClient jdbc) { this.jdbc = jdbc; }
 
+    @Override
+    public Optional<FacultyInfo> faculty(long facultyId) {
+        return jdbc.sql("select id, code, name from faculty where id = :id").param("id", facultyId)
+                .query((rs, row) -> new FacultyInfo(rs.getLong("id"), rs.getString("code"), rs.getString("name"))).optional();
+    }
+
     public List<FacultyInfo> faculties() {
         return jdbc.sql("select id, code, name from faculty order by name, id")
                 .query((rs, row) -> new FacultyInfo(rs.getLong("id"), rs.getString("code"), rs.getString("name"))).list();

@@ -956,5 +956,48 @@
 - **Не проверено:** экраны ленты и рейтинга против backend на стенде.
 - **Ошибка агента:** нет.
 - **Урок:** нового нет.
+
+### 2026-11-11 — U13 frontend: контракт справочников
+
+- **Кто / агент / модель:** Максим / Codex / GPT-6.
+- **Поручение:** продолжать frontend; первая законченная часть U13 — CRUD трёх справочников. В OpenAPI не было admin-операций, поэтому сначала отдельный контрактный PR.
+- **Результат с доказательствами:**12 planned ADMIN операций GET/POST/PUT/DELETE, DTO/code/name/faculty/admissionYear, CSRF и ошибки409; R/KTD/backend/БД не меняются. Redocly exit0, negative admissionYear0 отвергнут exit1; api:gen exit0 и повтор идентичен по SHA256. Frontend check283/283 Vitest +11 lint-rule, build1037 modules; tools140/140, agent-docs/diff exit0. План docs/spec/plans/2026-11-11-003-feat-u13-directory-frontend-plan.md; отчёт docs/reviews/u13-directory-contract/verification.md.
+- **Не проверено:** реализация planned backend API и frontend CRUD; независимое ревью контракта. UI/MSW и приёмочные тесты — следующий PR поверх этого.
+- **Ошибка агента:** stringify с YAML anchors прошёл lint/генерацию, но backend CI ContractCompatibilityIT не прочёл aliases схем → CI PR40 → отключён aliasDuplicateObjects, parsed YAML до/после deepEqual, generated неизменны, lint exit0; backend не правился.
+- **Урок:** контрактный пробел закрывается до production отдельным PR; случай зафиксирован здесь, повторяющегося нового правила нет.
+- **Кругов ревью:**0.
+- **Коммит / PR:** spec-u13-directory-api → u11-feed-frontend, публикация по сохранённому разрешению человека; без approve/merge.
+
+### 2026-11-11 — U13 frontend: справочники
+
+- **Кто / агент / модель:** Максим / Codex / GPT-6; отдельный frontend tester по сохранённому разрешению человека.
+- **Поручение:** продолжать frontend; законченная первая часть U13 — факультеты, учебные группы и кафедры. Сначала отдельный контрактный PR40, затем frontend поверх него; без backend изменений и self-approve/merge.
+- **Результат с доказательствами:** CRUD3справочников на /admin/directory, ADMIN guards, полные DTO/валидация, CSRF/error/confirm/pending/invalidation и scoped MSW. Initial Red45:43failed/2guards passed; финальные49acceptance passed, собственные15parser+4mock passed. Frontend check351/351 Vitest +11lint-rule, lint/typecheck exit0; build1042 modules exit0; tools140/140, docs/diff exit0. Финальный composehealthy/e2e4/4/cleanup exit0. Browser48 снимков360/1280 ×3темы: CRUD, длинныеполя, occupied409, validation, Tab/Esc/focus; errors/overflow/малыецели0, mincontrast5.91/HC8.42. Матрица: docs/reviews/u13-directory-frontend/verification.md; browser JSON/script и handoff рядом.
+- **Не проверено:** реальные planned admin API/FK/транзакции/TeacherScope; остальные части U13; независимое ревью реализации. MSW не моделирует изменение всех старых account/profile snapshots. Vite предупреждает об index chunk около554kB, порог не менялся.
+- **Неудачные попытки:** первый Green45/47 — Unicode test type генерировал сотниDOMevents и превысил15s, duplicate error текст был одновременно общим и field. Tester заменил длинный ввод на user.paste и проверил aria-invalid/accessible description без ослабления границ; исполнитель уточнил общий текст. Два дополнительныхкейса не имелиRed, впервые прошли уженаproduction.
+- **Ошибка агента:** двеошибкиTS суженияunion вcallbacks mock → tsc → промежуточныйfacultyId и явнаяветкаrow.kind. Browser обнаружил потерюfocus послеEsc: кнопкаopener отключалась до захватаMantine → browserRed → явныйrefдоdisable, восстановлениепослеcommit;49acceptance/browserpassed. Tester первыйfocusrun использовалPlaywrightmatcher вместоjest-dom; техническийfail исправлен, jsdomRed новыхfocusкейсов не заявляется, реальныйRed былbrowser. Одинapply_patch отклонён до записи из-за двойногоtarget; повторён единымadd без потери данных.
+- **Урок:** frontend/AGENTS.md — сохранятьopener доdisable; scopedhelper долженбыть независимым, tester ожиданияисполнитель не менял.
+- **Кругов ревью:**0; tester не заменяет reviewer.
+- **Коммит / PR:** реализация `e26760a`, [PR41](https://github.com/Daniiltyhtin/campus-rating/pull/41), u13-directory-frontend → spec-u13-directory-api ([PR40](https://github.com/Daniiltyhtin/campus-rating/pull/40));66файлов сверены с явным списком, опубликовано по прямому разрешению человека. Backend/БД/API/generated diff относительно контрактной базы пуст. Approve/merge не выполнялись.
+
+### 2026-11-11 — U13: контракт допуска преподавателей и выдач доступа
+
+- **Кто / агент / модель:** Максим / Codex / GPT-6.
+- **Поручение:** продолжить frontend U13 после справочников, следующая законченная часть — заявки преподавателей и4вида выдач доступа; backend не менять, tester до production, публиковать готовый результат.
+- **Результат с доказательствами:**8planned ADMIN операций списка/карточки/approval/reject/grants/scope, строгиеoneOf DTO и правила повторов/CSRF/teacherId. Redocly exit0; заведомо плохие course0/mixedvariant отвергнуты exit1; api:gen повтор идентичен по SHA256. Frontend check351/351 Vitest +11lint-rule/lint/tsc, build1042modules, tools140/140, docs/diff exit0. План docs/spec/plans/2026-11-11-004-feat-u13-teachers-frontend-plan.md, отчёт docs/reviews/u13-teachers-contract/verification.md. Backend/БД не меняются.
+- **Не проверено:**реализацияplanned backend и UI, фактические транзакции/права/завершение сессий. Frontend с независимымtester — следующий PR.
+- **Ошибка агента:**линтер сообщил unused TeacherGrantKind → вспомогательныйenum удалён, variants уже несут const kind; повтор безwarnings. Учтён урокPR40: YAML безanchors.
+- **Урок:**нового повторяющегося правила нет; важные границывариантов заданы контрактом до UI.
+- **Кругов ревью:**0.
+- **Коммит / PR:**spec-u13-teachers-api → u13-directory-frontend (PR41), публикация по разрешению человека; безapprove/merge.
+
+### 2026-11-12 — U13 backend: допуск преподавателей, выдачи доступа, справочники
+
+- **Кто / агент / модель:** Даниил / план и проверки — Claude Code claude-opus-5-5; приёмочные тесты — Codex gpt-6.1-sol (отдельная сессия write-tests); реализация — Codex gpt-6.1-sol.
+- **Поручение:** план `2026-11-12-002-feat-u13-backend-plan.md`: 8 операций допуска и выдач (контракт PR42) и 12 операций справочников (контракт PR40, экраны PR41).
+- **Результат с доказательствами:** приёмочные `AdminTeachersIT` и `AdminDirectoryIT` (84 запуска) написаны до реализации отдельным коммитом, red — 83 из 84 (404). Реализация в `identity` (допуск, отклонение с завершением сессий, выдачи, доступные группы) и `directory` (CRUD, удаление без каскада). Шов `DirectoryApi` дополнен `faculty(id)`; в `ProblemCode` — `DIRECTORY_CODE_TAKEN`, `DIRECTORY_IN_USE`. Ошибки слоя безопасности отдают `application/problem+json` без `charset`, как остальные ошибки API. `-Pquality verify` — 579 тестов, 0 падений.
+- **Не проверено:** экраны допуска (их ещё нет) и справочников против backend на стенде.
+- **Ошибка агента:** в плане коды ошибок справочников были записаны как `INVALID_STATE` вопреки контракту — исполнитель остановился и спросил, план исправлен.
+- **Урок:** коды ошибок в плане сверять с таблицей `ProblemCode` контракта, а не выводить из описания операции.
 - **Кругов ревью:** 0 (ревью Codex — следующим шагом).
 - **Коммит / PR:** этот PR.

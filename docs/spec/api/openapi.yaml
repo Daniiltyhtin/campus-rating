@@ -2520,6 +2520,1012 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /api/v1/admin/directory/faculties:
+    get:
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: listAdminFaculties
+      summary: Список факультетов
+      description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
+        пароля — PASSWORD_CHANGE_REQUIRED. Полный список, порядок name asc, затем id asc, без курсора."
+      security:
+        - session: []
+      responses:
+        "200":
+          description: Список.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminFacultyList"
+              example:
+                items:
+                  - id: 1
+                    code: ФИТ
+                    name: Факультет информационных технологий
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: createAdminFaculty
+      summary: Создать факультет
+      description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
+        пароля — PASSWORD_CHANGE_REQUIRED. Код и название trim; код уникален в своём справочнике, регистр
+        сохраняется. Для группы/кафедры facultyId должен существовать, иначе VALIDATION_FAILED с
+        fieldErrors.facultyId. Повтор POST с тем же кодом —409, не вторая запись."
+      security:
+        - session: []
+          csrf: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FacultyWrite"
+            example:
+              code: ФИТ
+              name: Факультет информационных технологий
+      responses:
+        "201":
+          description: Создано.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminFaculty"
+              example:
+                id: 1
+                code: ФИТ
+                name: Факультет информационных технологий
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Код уже используется другой записью этого справочника, регистр учитывается.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                type: about:blank
+                title: Directory conflict
+                status: 409
+                code: DIRECTORY_CODE_TAKEN
+                detail: Код уже используется.
+  /api/v1/admin/directory/faculties/{id}:
+    put:
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: updateAdminFaculty
+      summary: Изменить факультет
+      description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
+        пароля — PASSWORD_CHANGE_REQUIRED. Полная замена полей write DTO. Правила trim/уникальности/facultyId
+        как у создания. Смена факультета группы/кафедры меняет связь, существующие пользователи и события не
+        пересоздаются."
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FacultyWrite"
+            example:
+              code: ФИТ
+              name: Факультет информационных технологий
+      responses:
+        "200":
+          description: Обновлено.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminFaculty"
+              example:
+                id: 1
+                code: ФИТ
+                name: Факультет информационных технологий
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Код уже используется другой записью этого справочника, регистр учитывается.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                type: about:blank
+                title: Directory conflict
+                status: 409
+                code: DIRECTORY_CODE_TAKEN
+                detail: Код уже используется.
+    delete:
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: deleteAdminFaculty
+      summary: Удалить факультет
+      description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
+        пароля — PASSWORD_CHANGE_REQUIRED. Без каскадного удаления зависимостей. Группу со студентами удалить
+        нельзя (мастер-U13); любые связанные записи сохраняются. Повтор после удаления —404 NOT_FOUND."
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
+      responses:
+        "204":
+          description: Удалено, тело отсутствует.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: "Запись используется: группа студентами/назначениями/активностями, кафедра
+            преподавателями/списком, факультет группами/кафедрами/выдачами. Запись не удаляется."
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                type: about:blank
+                title: Directory conflict
+                status: 409
+                code: DIRECTORY_IN_USE
+                detail: Нельзя удалить используемую запись справочника.
+  /api/v1/admin/directory/groups:
+    get:
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: listAdminGroups
+      summary: Список учебных групп
+      description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
+        пароля — PASSWORD_CHANGE_REQUIRED. Полный список, порядок name asc, затем id asc, без курсора."
+      security:
+        - session: []
+      responses:
+        "200":
+          description: Список.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStudyGroupList"
+              example:
+                items:
+                  - id: 11
+                    code: IVT-21
+                    name: ИВТ-21
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+                    admissionYear: 2025
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: createAdminStudyGroup
+      summary: Создать учебную группу
+      description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
+        пароля — PASSWORD_CHANGE_REQUIRED. Код и название trim; код уникален в своём справочнике, регистр
+        сохраняется. Для группы/кафедры facultyId должен существовать, иначе VALIDATION_FAILED с
+        fieldErrors.facultyId. Повтор POST с тем же кодом —409, не вторая запись."
+      security:
+        - session: []
+          csrf: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyGroupWrite"
+            example:
+              code: IVT-21
+              name: ИВТ-21
+              facultyId: 1
+              admissionYear: 2025
+      responses:
+        "201":
+          description: Создано.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStudyGroup"
+              example:
+                id: 11
+                code: IVT-21
+                name: ИВТ-21
+                faculty:
+                  id: 1
+                  code: ФИТ
+                  name: Факультет информационных технологий
+                admissionYear: 2025
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Код уже используется другой записью этого справочника, регистр учитывается.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                type: about:blank
+                title: Directory conflict
+                status: 409
+                code: DIRECTORY_CODE_TAKEN
+                detail: Код уже используется.
+  /api/v1/admin/directory/groups/{id}:
+    put:
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: updateAdminStudyGroup
+      summary: Изменить учебную группу
+      description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
+        пароля — PASSWORD_CHANGE_REQUIRED. Полная замена полей write DTO. Правила trim/уникальности/facultyId
+        как у создания. Смена факультета группы/кафедры меняет связь, существующие пользователи и события не
+        пересоздаются."
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyGroupWrite"
+            example:
+              code: IVT-21
+              name: ИВТ-21
+              facultyId: 1
+              admissionYear: 2025
+      responses:
+        "200":
+          description: Обновлено.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStudyGroup"
+              example:
+                id: 11
+                code: IVT-21
+                name: ИВТ-21
+                faculty:
+                  id: 1
+                  code: ФИТ
+                  name: Факультет информационных технологий
+                admissionYear: 2025
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Код уже используется другой записью этого справочника, регистр учитывается.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                type: about:blank
+                title: Directory conflict
+                status: 409
+                code: DIRECTORY_CODE_TAKEN
+                detail: Код уже используется.
+    delete:
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: deleteAdminStudyGroup
+      summary: Удалить учебную группу
+      description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
+        пароля — PASSWORD_CHANGE_REQUIRED. Без каскадного удаления зависимостей. Группу со студентами удалить
+        нельзя (мастер-U13); любые связанные записи сохраняются. Повтор после удаления —404 NOT_FOUND."
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
+      responses:
+        "204":
+          description: Удалено, тело отсутствует.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: "Запись используется: группа студентами/назначениями/активностями, кафедра
+            преподавателями/списком, факультет группами/кафедрами/выдачами. Запись не удаляется."
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                type: about:blank
+                title: Directory conflict
+                status: 409
+                code: DIRECTORY_IN_USE
+                detail: Нельзя удалить используемую запись справочника.
+  /api/v1/admin/directory/departments:
+    get:
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: listAdminDepartments
+      summary: Список кафедр
+      description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
+        пароля — PASSWORD_CHANGE_REQUIRED. Полный список, порядок name asc, затем id asc, без курсора."
+      security:
+        - session: []
+      responses:
+        "200":
+          description: Список.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminDepartmentList"
+              example:
+                items:
+                  - id: 101
+                    code: ПИ
+                    name: Кафедра программной инженерии
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: createAdminDepartment
+      summary: Создать кафедру
+      description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
+        пароля — PASSWORD_CHANGE_REQUIRED. Код и название trim; код уникален в своём справочнике, регистр
+        сохраняется. Для группы/кафедры facultyId должен существовать, иначе VALIDATION_FAILED с
+        fieldErrors.facultyId. Повтор POST с тем же кодом —409, не вторая запись."
+      security:
+        - session: []
+          csrf: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepartmentWrite"
+            example:
+              code: ПИ
+              name: Кафедра программной инженерии
+              facultyId: 1
+      responses:
+        "201":
+          description: Создано.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminDepartment"
+              example:
+                id: 101
+                code: ПИ
+                name: Кафедра программной инженерии
+                faculty:
+                  id: 1
+                  code: ФИТ
+                  name: Факультет информационных технологий
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Код уже используется другой записью этого справочника, регистр учитывается.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                type: about:blank
+                title: Directory conflict
+                status: 409
+                code: DIRECTORY_CODE_TAKEN
+                detail: Код уже используется.
+  /api/v1/admin/directory/departments/{id}:
+    put:
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: updateAdminDepartment
+      summary: Изменить кафедру
+      description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
+        пароля — PASSWORD_CHANGE_REQUIRED. Полная замена полей write DTO. Правила trim/уникальности/facultyId
+        как у создания. Смена факультета группы/кафедры меняет связь, существующие пользователи и события не
+        пересоздаются."
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepartmentWrite"
+            example:
+              code: ПИ
+              name: Кафедра программной инженерии
+              facultyId: 1
+      responses:
+        "200":
+          description: Обновлено.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminDepartment"
+              example:
+                id: 101
+                code: ПИ
+                name: Кафедра программной инженерии
+                faculty:
+                  id: 1
+                  code: ФИТ
+                  name: Факультет информационных технологий
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Код уже используется другой записью этого справочника, регистр учитывается.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                type: about:blank
+                title: Directory conflict
+                status: 409
+                code: DIRECTORY_CODE_TAKEN
+                detail: Код уже используется.
+    delete:
+      tags:
+        - directory
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: deleteAdminDepartment
+      summary: Удалить кафедру
+      description: "Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного
+        пароля — PASSWORD_CHANGE_REQUIRED. Без каскадного удаления зависимостей. Группу со студентами удалить
+        нельзя (мастер-U13); любые связанные записи сохраняются. Повтор после удаления —404 NOT_FOUND."
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
+      responses:
+        "204":
+          description: Удалено, тело отсутствует.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: "Запись используется: группа студентами/назначениями/активностями, кафедра
+            преподавателями/списком, факультет группами/кафедрами/выдачами. Запись не удаляется."
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                type: about:blank
+                title: Directory conflict
+                status: 409
+                code: DIRECTORY_IN_USE
+                detail: Нельзя удалить используемую запись справочника.
+
+  /api/v1/admin/teachers:
+    get:
+      tags:
+        - identity
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: listAdminTeachers
+      summary: Преподаватели и заявки
+      description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
+        PASSWORD_CHANGE_REQUIRED. Полный список TEACHER, включая ожидающих допуска, name asc затем id asc.
+        Счётчик заявок — число teacherApproved=false; email/кафедра сами по себе допуска не дают."
+      security:
+        - session: []
+      responses:
+        "200":
+          description: Результат.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTeacherList"
+              example:
+                items:
+                  - id: 2002
+                    fullName: Волков Максим Игоревич
+                    email: volkov@campus.test
+                    department:
+                      id: 101
+                      code: ПИ
+                      name: Кафедра программной инженерии
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    teacherApproved: false
+                  - id: 2001
+                    fullName: Петров Павел Петрович
+                    email: petrov@campus.test
+                    department:
+                      id: 101
+                      code: ПИ
+                      name: Кафедра программной инженерии
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    teacherApproved: true
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /api/v1/admin/teachers/{teacherId}:
+    get:
+      tags:
+        - identity
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: getAdminTeacher
+      summary: Карточка преподавателя
+      description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
+        PASSWORD_CHANGE_REQUIRED."
+      security:
+        - session: []
+      parameters:
+        - name: teacherId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
+      responses:
+        "200":
+          description: Результат.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTeacher"
+              example:
+                id: 2002
+                fullName: Волков Максим Игоревич
+                email: volkov@campus.test
+                department:
+                  id: 101
+                  code: ПИ
+                  name: Кафедра программной инженерии
+                  faculty:
+                    id: 1
+                    code: ФИТ
+                    name: Факультет информационных технологий
+                teacherApproved: false
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/admin/teachers/{teacherId}/approval:
+    post:
+      tags:
+        - identity
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: approveAdminTeacher
+      summary: Допустить преподавателя
+      description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
+        PASSWORD_CHANGE_REQUIRED. Администратор проверяет кафедру: её факультет определяет базовый доступ.
+        departmentId должен существовать, иначе VALIDATION_FAILED с fieldErrors.departmentId. Повтор уже
+        принятой заявки с той же кафедрой возвращает текущее200 без второго эффекта. Другая кафедра у уже
+        допущенного —409 INVALID_STATE; изменение кафедры допущенного этим действием не разрешается. Список
+        преподавателей/допусков и TeacherScope обновляются согласованно."
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: teacherId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeacherApprovalRequest"
+            example:
+              departmentId: 101
+      responses:
+        "200":
+          description: Результат.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTeacher"
+              example:
+                id: 2002
+                fullName: Волков Максим Игоревич
+                email: volkov@campus.test
+                department:
+                  id: 101
+                  code: ПИ
+                  name: Кафедра программной инженерии
+                  faculty:
+                    id: 1
+                    code: ФИТ
+                    name: Факультет информационных технологий
+                teacherApproved: true
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+  /api/v1/admin/teachers/{teacherId}/application:
+    delete:
+      tags:
+        - identity
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: rejectAdminTeacher
+      summary: Отклонить заявку преподавателя
+      description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
+        PASSWORD_CHANGE_REQUIRED. Только teacherApproved=false: удалить аккаунт и его зависимые записи доступа;
+        завершить сессии. Повторная регистрация с email возможна. Уже допущенный —409 INVALID_STATE;
+        отсутствующий или уже отклонённый —404 NOT_FOUND. Требует явного подтверждения в UI. Не удаляет другого
+        пользователя по неподходящей роли."
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: teacherId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
+      responses:
+        "204":
+          description: Заявка отклонена, аккаунт удалён. Тело отсутствует.
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/InvalidState"
+  /api/v1/admin/teachers/{teacherId}/grants:
+    get:
+      tags:
+        - identity
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: listAdminTeacherGrants
+      summary: Выдачи доступа преподавателю
+      description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
+        PASSWORD_CHANGE_REQUIRED. Все дополнительные выдачи, включая выданные до допуска. Базовый факультет
+        кафедры сюда не входит. Порядок id asc, курс не вычисляется клиентом."
+      security:
+        - session: []
+      parameters:
+        - name: teacherId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
+      responses:
+        "200":
+          description: Результат.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTeacherGrantList"
+              example:
+                items:
+                  - id: 7001
+                    kind: GROUP
+                    group:
+                      id: 12
+                      name: ИВТ-22
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                  - id: 7002
+                    kind: FACULTY
+                    faculty:
+                      id: 2
+                      code: ЭФ
+                      name: Экономический факультет
+                  - id: 7003
+                    kind: FACULTY_COURSE
+                    faculty:
+                      id: 2
+                      code: ЭФ
+                      name: Экономический факультет
+                    course: 1
+                  - id: 7004
+                    kind: COURSE
+                    course: 2
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      tags:
+        - identity
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: createAdminTeacherGrant
+      summary: Выдать доступ преподавателю
+      description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
+        PASSWORD_CHANGE_REQUIRED. Только точные сочетания GROUP(groupId), FACULTY(facultyId),
+        FACULTY_COURSE(facultyId,course), COURSE(course). Другие поля, null, неизвестные id и курс вне1…6
+        —VALIDATION_FAILED с fieldErrors. Нет ограничения факультетом кафедры. Одинаковая выдача идемпотентна:
+        новая201, уже существующая200 с тем жеid, без второго эффекта. До допуска TeacherScope остаётся пустым."
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: teacherId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeacherGrantCreate"
+            example:
+              kind: FACULTY_COURSE
+              facultyId: 2
+              course: 1
+      responses:
+        "200":
+          description: Идентичная выдача уже существует.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTeacherGrant"
+              example:
+                id: 7003
+                kind: FACULTY_COURSE
+                faculty:
+                  id: 2
+                  code: ЭФ
+                  name: Экономический факультет
+                course: 1
+        "201":
+          description: Создана новая выдача.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminTeacherGrant"
+              example:
+                id: 7003
+                kind: FACULTY_COURSE
+                faculty:
+                  id: 2
+                  code: ЭФ
+                  name: Экономический факультет
+                course: 1
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/admin/teachers/{teacherId}/grants/{grantId}:
+    delete:
+      tags:
+        - identity
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: deleteAdminTeacherGrant
+      summary: Снять выдачу доступа
+      description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
+        PASSWORD_CHANGE_REQUIRED. Удалить только указанную выдачу этого преподавателя; grant другого teacherId
+        или отсутствующая выдача —404, чужую запись не менять. Повтор после удаления —404. TeacherScope
+        пересчитывается, группа может остаться доступной по кафедре или другой выдаче. Старые авторские ресурсы
+        сохраняются по KTD23."
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: teacherId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
+        - name: grantId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
+      responses:
+        "204":
+          description: Выдача снята, тело отсутствует.
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/admin/teachers/{teacherId}/accessible-groups:
+    get:
+      tags:
+        - identity
+      x-roles:
+        - ADMIN
+      x-status: implemented
+      operationId: listAdminTeacherAccessibleGroups
+      summary: Доступные группы преподавателя
+      description: "Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля —
+        PASSWORD_CHANGE_REQUIRED. Только серверный TeacherScope: факультет кафедры ∪ дополнительные выдачи, для
+        teacherApproved=false пусто. Курс рассчитывается по году набора и текущему учебному году Europe/Moscow с
+        границей1сентября, только1…6. Уникальные группы name asc/id asc. Frontend не повторяет вычисление прав;
+        при снятии выдачи здесь может оставаться группа по другому основанию."
+      security:
+        - session: []
+      parameters:
+        - name: teacherId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
+      responses:
+        "200":
+          description: Результат.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyGroupList"
+              example:
+                items:
+                  - id: 11
+                    name: ИВТ-21
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+                  - id: 12
+                    name: ИВТ-22
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
 components:
   securitySchemes:
     session:
@@ -3225,6 +4231,8 @@ components:
         | `CSRF_INVALID` | 403 | нет или неверен CSRF-заголовок |
         | `NOT_FOUND` | 404 | ресурса нет |
         | `INVALID_STATE` | 409 | недопустимый переход состояния |
+        | `DIRECTORY_CODE_TAKEN` | 409 | код занят внутри справочника R24 |
+        | `DIRECTORY_IN_USE` | 409 | запись справочника используется; удаление отклонено |
         | `EMAIL_TAKEN` | 409 | email уже зарегистрирован |
         | `EMAIL_RESERVED_FOR_TEACHER` | 409 | email из списка преподавателей регистрируется студентом |
         | `ALREADY_CONFIRMED` | 409 | участие уже подтверждено с другим уровнем |
@@ -3248,6 +4256,8 @@ components:
         - CSRF_INVALID
         - NOT_FOUND
         - INVALID_STATE
+        - DIRECTORY_CODE_TAKEN
+        - DIRECTORY_IN_USE
         - EMAIL_TAKEN
         - EMAIL_RESERVED_FOR_TEACHER
         - ALREADY_CONFIRMED
@@ -4673,3 +5683,341 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BalanceMismatch'
+
+    DirectoryCode:
+      type: string
+      minLength: 1
+      maxLength: 64
+      pattern: \S
+      description: Непустой код; внешние пробелы удаляются, регистр сохраняется. Уникален внутри соответствующего справочника.
+    DirectoryName:
+      type: string
+      minLength: 1
+      maxLength: 255
+      pattern: \S
+      description: Непустое название; внешние пробелы удаляются.
+    AdmissionYear:
+      type: integer
+      format: int32
+      minimum: 1
+      maximum: 9999
+      description: Год набора; будущий набор разрешён. Не вычислять курс на frontend.
+    FacultyWrite:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - name
+      properties:
+        code:
+          $ref: "#/components/schemas/DirectoryCode"
+        name:
+          $ref: "#/components/schemas/DirectoryName"
+    StudyGroupWrite:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - name
+        - facultyId
+        - admissionYear
+      properties:
+        code:
+          $ref: "#/components/schemas/DirectoryCode"
+        name:
+          $ref: "#/components/schemas/DirectoryName"
+        facultyId:
+          $ref: "#/components/schemas/Id"
+        admissionYear:
+          $ref: "#/components/schemas/AdmissionYear"
+    DepartmentWrite:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - name
+        - facultyId
+      properties:
+        code:
+          $ref: "#/components/schemas/DirectoryCode"
+        name:
+          $ref: "#/components/schemas/DirectoryName"
+        facultyId:
+          $ref: "#/components/schemas/Id"
+    AdminFaculty:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - code
+        - name
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        code:
+          $ref: "#/components/schemas/DirectoryCode"
+        name:
+          $ref: "#/components/schemas/DirectoryName"
+    AdminStudyGroup:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - code
+        - name
+        - faculty
+        - admissionYear
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        code:
+          $ref: "#/components/schemas/DirectoryCode"
+        name:
+          $ref: "#/components/schemas/DirectoryName"
+        faculty:
+          $ref: "#/components/schemas/AdminFaculty"
+        admissionYear:
+          $ref: "#/components/schemas/AdmissionYear"
+    AdminDepartment:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - code
+        - name
+        - faculty
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        code:
+          $ref: "#/components/schemas/DirectoryCode"
+        name:
+          $ref: "#/components/schemas/DirectoryName"
+        faculty:
+          $ref: "#/components/schemas/AdminFaculty"
+    AdminFacultyList:
+      type: object
+      additionalProperties: false
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminFaculty"
+    AdminStudyGroupList:
+      type: object
+      additionalProperties: false
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminStudyGroup"
+    AdminDepartmentList:
+      type: object
+      additionalProperties: false
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminDepartment"
+
+    AdminTeacher:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - fullName
+        - email
+        - department
+        - teacherApproved
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        fullName:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+        department:
+          $ref: "#/components/schemas/AdminDepartment"
+        teacherApproved:
+          type: boolean
+    AdminTeacherList:
+      type: object
+      additionalProperties: false
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminTeacher"
+    TeacherApprovalRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - departmentId
+      properties:
+        departmentId:
+          $ref: "#/components/schemas/Id"
+    TeacherGrantCourse:
+      type: integer
+      format: int32
+      minimum: 1
+      maximum: 6
+    TeacherGrantGROUPRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - kind
+        - groupId
+      properties:
+        kind:
+          type: string
+          const: GROUP
+        groupId:
+          $ref: "#/components/schemas/Id"
+    TeacherGrantGROUPView:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - kind
+        - group
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        kind:
+          type: string
+          const: GROUP
+        group:
+          $ref: "#/components/schemas/StudyGroupRef"
+    TeacherGrantFACULTYRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - kind
+        - facultyId
+      properties:
+        kind:
+          type: string
+          const: FACULTY
+        facultyId:
+          $ref: "#/components/schemas/Id"
+    TeacherGrantFACULTYView:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - kind
+        - faculty
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        kind:
+          type: string
+          const: FACULTY
+        faculty:
+          $ref: "#/components/schemas/FacultyRef"
+    TeacherGrantFACULTY_COURSERequest:
+      type: object
+      additionalProperties: false
+      required:
+        - kind
+        - facultyId
+        - course
+      properties:
+        kind:
+          type: string
+          const: FACULTY_COURSE
+        facultyId:
+          $ref: "#/components/schemas/Id"
+        course:
+          $ref: "#/components/schemas/TeacherGrantCourse"
+    TeacherGrantFACULTY_COURSEView:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - kind
+        - faculty
+        - course
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        kind:
+          type: string
+          const: FACULTY_COURSE
+        faculty:
+          $ref: "#/components/schemas/FacultyRef"
+        course:
+          $ref: "#/components/schemas/TeacherGrantCourse"
+    TeacherGrantCOURSERequest:
+      type: object
+      additionalProperties: false
+      required:
+        - kind
+        - course
+      properties:
+        kind:
+          type: string
+          const: COURSE
+        course:
+          $ref: "#/components/schemas/TeacherGrantCourse"
+    TeacherGrantCOURSEView:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - kind
+        - course
+      properties:
+        id:
+          $ref: "#/components/schemas/Id"
+        kind:
+          type: string
+          const: COURSE
+        course:
+          $ref: "#/components/schemas/TeacherGrantCourse"
+    TeacherGrantCreate:
+      oneOf:
+        - $ref: "#/components/schemas/TeacherGrantGROUPRequest"
+        - $ref: "#/components/schemas/TeacherGrantFACULTYRequest"
+        - $ref: "#/components/schemas/TeacherGrantFACULTY_COURSERequest"
+        - $ref: "#/components/schemas/TeacherGrantCOURSERequest"
+      discriminator:
+        propertyName: kind
+        mapping:
+          GROUP: "#/components/schemas/TeacherGrantGROUPRequest"
+          FACULTY: "#/components/schemas/TeacherGrantFACULTYRequest"
+          FACULTY_COURSE: "#/components/schemas/TeacherGrantFACULTY_COURSERequest"
+          COURSE: "#/components/schemas/TeacherGrantCOURSERequest"
+    AdminTeacherGrant:
+      oneOf:
+        - $ref: "#/components/schemas/TeacherGrantGROUPView"
+        - $ref: "#/components/schemas/TeacherGrantFACULTYView"
+        - $ref: "#/components/schemas/TeacherGrantFACULTY_COURSEView"
+        - $ref: "#/components/schemas/TeacherGrantCOURSEView"
+      discriminator:
+        propertyName: kind
+        mapping:
+          GROUP: "#/components/schemas/TeacherGrantGROUPView"
+          FACULTY: "#/components/schemas/TeacherGrantFACULTYView"
+          FACULTY_COURSE: "#/components/schemas/TeacherGrantFACULTY_COURSEView"
+          COURSE: "#/components/schemas/TeacherGrantCOURSEView"
+    AdminTeacherGrantList:
+      type: object
+      additionalProperties: false
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminTeacherGrant"
