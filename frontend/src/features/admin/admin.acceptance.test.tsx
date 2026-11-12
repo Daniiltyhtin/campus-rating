@@ -50,7 +50,9 @@ it('показывает временный пароль только после
   server.use(http.get('*/api/v1/admin/users', () => HttpResponse.json({ items: [{ id: 1001, fullName: 'Студент Тест', email: 'student@campus.test', role: 'STUDENT', group: null, department: null, passwordSetAt: null }], nextCursor: null })),
     http.post('*/api/v1/users/1001/temporary-password', () => { writes++; return HttpResponse.json({ password: 'Synthetic234' }); }));
   const user = userEvent.setup(); renderApp('/admin/users', { userId: '9001', role: 'ADMIN' });
-  await user.click(await screen.findByRole('button', { name: 'Выставить временный пароль' }));
+  const trigger = await screen.findByRole('button', { name: 'Выставить временный пароль' });
+  expect(trigger).toHaveTextContent(/^Временный пароль$/); expect(trigger).toHaveClass('cr-nowrap');
+  await user.click(trigger);
   expect(writes).toBe(0); const dialog = within(await screen.findByRole('dialog'));
   await user.click(dialog.getByRole('button', { name: 'Выставить' }));
   expect(await dialog.findByText('Synthetic234')).toBeInTheDocument(); expect(writes).toBe(1);
