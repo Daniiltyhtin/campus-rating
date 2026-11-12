@@ -49,7 +49,8 @@ test('U22: inner nginx keeps the scheme set by the host proxy', async () => {
 test('U22: host nginx example terminates TLS and proxies to loopback', async () => {
   const host = await read('deploy/nginx/campus.conf.example');
   assert.match(host, /listen 80;[\s\S]*return 301 https:\/\/\$host\$request_uri;/);
-  assert.match(host, /listen 443 ssl;/);
+  assert.match(host, /listen 443 ssl http2;/);
+  assert.doesNotMatch(host, /http2 on;/);
   assert.match(host, /ssl_certificate \/etc\/letsencrypt\/live\//);
   assert.match(host, /proxy_pass http:\/\/127\.0\.0\.1:8080;/);
   assert.match(host, /proxy_set_header X-Forwarded-Proto https;/);
