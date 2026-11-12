@@ -53,6 +53,12 @@ html[data-theme='high-contrast'] a { text-decoration: underline; }
 .cr-user-trigger { display: flex; align-items: center; justify-content: center; gap: var(--mantine-spacing-xs); min-width: var(--cr-touch-target); min-height: var(--cr-touch-target); color: var(--cr-text); }
 .cr-user-avatar { width: 2.125rem; height: 2.125rem; background: var(--cr-primary-soft); color: var(--cr-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.8125rem; font-weight: 700; }
 .cr-menu-item { min-height: var(--cr-touch-target); font-size: var(--cr-body-size); }
+.mantine-SegmentedControl-root .mantine-SegmentedControl-control:not(:first-of-type)::before,
+.mantine-SegmentedControl-root .mantine-SegmentedControl-control[data-active]:not(:first-of-type)::before { --separator-color: var(--cr-rule); }
+.cr-theme-switch { display: inline-flex; align-items: center; gap: var(--mantine-spacing-xs); }
+.cr-theme-switch-options { display: inline-flex; align-items: center; gap: var(--mantine-spacing-xs); overflow: hidden; max-width: 0; opacity: 0; transform: translateX(var(--mantine-spacing-md)); transition: max-width 200ms ease, opacity 200ms ease, transform 200ms ease; }
+.cr-theme-switch[data-open] .cr-theme-switch-options { max-width: 8rem; opacity: 1; transform: none; }
+.cr-theme-switch-option[aria-pressed='true'] { background-color: var(--cr-primary-soft); }
 .cr-bottom-link { justify-content: center; text-align: center; }
 .cr-bottom-link[data-active] { background-color: var(--cr-primary-soft); color: var(--cr-primary); }
 .cr-content-loading, .cr-session-loading { display: flex; align-items: center; justify-content: center; color: var(--cr-text); }

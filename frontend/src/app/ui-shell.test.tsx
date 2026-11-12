@@ -72,10 +72,20 @@ it('R28, R29: user menu preserves links and selected theme after remount', async
 it.each(['/login', '/register'])('R30, R29: guest theme menu on %s carries contrast into login', async (path) => {
   const state = createAuthScenario(); state.loginUser = authUsers.teacher;
   const view = mountAuth(path);
-  await view.user.click(await screen.findByRole('button', { name: 'Тема' }));
-  expect(screen.getAllByRole('menuitemradio')).toHaveLength(3);
-  await view.user.click(screen.getByRole('menuitemradio', { name: 'Высокий контраст' }));
+  const toggle = await screen.findByRole('button', { name: 'Тема' });
+  expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await view.user.click(toggle);
+  expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  const options = within(screen.getByRole('group', { name: 'Выбор темы' })).getAllByRole('button');
+  expect(options.map((option) => option.getAttribute('aria-label'))).toEqual(['Светлая', 'Тёмная', 'Высокий контраст']);
+  await view.user.click(screen.getByRole('button', { name: 'Высокий контраст' }));
   await waitFor(() => expect(document.documentElement.dataset.theme).toBe('high-contrast'));
+  expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  expect(toggle).toHaveFocus();
+  await view.user.click(toggle);
+  expect(screen.getByRole('button', { name: 'Высокий контраст' })).toHaveAttribute('aria-pressed', 'true');
+  await view.user.keyboard('{Escape}');
+  expect(toggle).toHaveAttribute('aria-expanded', 'false');
   if (path === '/register') await view.user.click(screen.getByRole('link', { name: 'Войти' }));
   await view.user.type(await screen.findByLabelText('Email'), 'teacher@campus.test');
   await view.user.type(screen.getByLabelText('Пароль', { exact: true }), 'password');
