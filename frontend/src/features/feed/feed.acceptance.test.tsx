@@ -211,11 +211,18 @@ describe('U11 рейтинги — R3/R22/KTD23', { timeout: 12_000 }, () => {
     expect(studentOrder()).toEqual(rating.items.map((row) => row.student.fullName));
   });
 
-  it.each([authUsers.student, { ...authUsers.admin, mustChangePassword: false }])('роль $role не запрашивает рейтинг и доступные группы', async (viewer) => {
-    const state = createFeedScenario(viewer);
+  it('студент не запрашивает рейтинг и доступные группы', async () => {
+    const state = createFeedScenario(authUsers.student);
     mountFeed('/groups/11/ratings');
     expect(await screen.findByText('Нет доступа', { exact: true })).toBeInTheDocument();
     expect(state.requests).toHaveLength(0);
+  });
+
+  it('администратор видит рейтинг любой группы (U17 R2)', async () => {
+    createFeedScenario({ ...authUsers.admin, mustChangePassword: false });
+    mountFeed('/groups/11/ratings');
+    expect(await screen.findByRole('table')).toBeInTheDocument();
+    expect(screen.queryByText('Нет доступа', { exact: true })).not.toBeInTheDocument();
   });
 
   it.each(['abc', '0', '-1', '9007199254740992'])('id %s отклоняется без rating-запроса', async (id) => {

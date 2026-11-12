@@ -9,35 +9,26 @@ import ru.campusrating.feed.api.GroupRatingsController.FacultyRef;
 import ru.campusrating.feed.api.GroupRatingsController.GroupRating;
 import ru.campusrating.feed.api.GroupRatingsController.RatingRow;
 import ru.campusrating.feed.api.GroupRatingsController.StudyGroupRef;
-import ru.campusrating.identity.CurrentUser;
 import ru.campusrating.identity.GroupMembers;
-import ru.campusrating.identity.TeacherScope;
+import ru.campusrating.identity.GroupReadAccess;
 import ru.campusrating.ledger.Currency;
 import ru.campusrating.ledger.LedgerApi;
-import ru.campusrating.shared.error.ApiException;
-import ru.campusrating.shared.error.ProblemCode;
 
 @Service
 public class GroupRatingService {
     private final GroupMembers members;
-    private final TeacherScope scope;
-    private final CurrentUser current;
+    private final GroupReadAccess access;
     private final LedgerApi ledger;
 
-    public GroupRatingService(GroupMembers members, TeacherScope scope, CurrentUser current, LedgerApi ledger) {
+    public GroupRatingService(GroupMembers members, ru.campusrating.identity.TeacherScope scope, ru.campusrating.identity.CurrentUser current, LedgerApi ledger) {
         this.members = members;
-        this.scope = scope;
-        this.current = current;
+        this.access = new GroupReadAccess(members, current, scope);
         this.ledger = ledger;
     }
 
     public GroupRating get(long groupId, Currency sort) {
         var ids = List.of(groupId);
-        var group = members.groups(ids).get(groupId);
-        if (group == null) {
-            throw new ApiException(ProblemCode.NOT_FOUND, "Группа не найдена");
-        }
-        scope.requireAccessible(current.require().id(), ids);
+        var group = access.require(groupId);
         var students = members.activeStudents(ids);
         var balances = ledger.balances(students.stream().map(student -> student.studentId()).toList());
         var rows = students.stream().map(student -> {

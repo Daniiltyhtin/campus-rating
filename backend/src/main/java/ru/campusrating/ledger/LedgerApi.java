@@ -23,4 +23,10 @@ public interface LedgerApi {
     LedgerPage<AwardEntryView> awards(Optional<String> cursor, int limit);
 
     ReconciliationResult reconcile();
+
+    Map<Long, Integer> arBalancesAt(Collection<Long> studentIds, java.time.Instant at);
+    List<ArDayChange> arChangesByDay(Collection<Long> studentIds, java.time.LocalDate from, java.time.LocalDate to);
+    List<ActivityAwardTotal> activityAwardTotals(Collection<Long> studentIds, java.time.LocalDate from, java.time.LocalDate to);
+    Optional<java.time.Instant> latestSemesterStart(java.time.Instant at);
+
 }

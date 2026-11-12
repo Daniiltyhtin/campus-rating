@@ -31,6 +31,6 @@ test('ANL-01 U17/U6: преподаватель открывает аналит�
   await expect(daily.getByRole('row')).toHaveCount(91);
   await expect(page).toHaveURL(/period=90/);
   await expect(points).toBeVisible();
-  await expect(budget).toHaveText(budgetBefore);
+  await expect.poll(() => budget.innerText()).toBe(budgetBefore);
   await evidence(page, 'ANL-01-90-days');
 });

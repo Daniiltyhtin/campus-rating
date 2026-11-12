@@ -145,4 +145,49 @@ class LedgerRepository {
         return new LedgerEntryView(rs.getLong("id"), rs.getTimestamp("created_at").toInstant(),
                 Currency.valueOf(rs.getString("currency")), rs.getInt("amount"), EntryKind.valueOf(rs.getString("kind")), source, author);
     }
+
+    Map<Long, Integer> arBalancesAt(Collection<Long> ids, Instant at) {
+        var result = new LinkedHashMap<Long, Integer>();
+        ids.forEach(id -> result.put(id, 0));
+        if (!ids.isEmpty()) {
+            jdbc.sql("""
+                    select student_id, sum(amount) amount from ledger_entry
+                    where student_id in (:ids) and currency = 'AR' and created_at <= :at group by student_id
+                    """).param("ids", ids).param("at", Timestamp.from(at))
+                    .query((rs, row) -> Map.entry(rs.getLong("student_id"), rs.getInt("amount")))
+                    .list().forEach(row -> result.put(row.getKey(), row.getValue()));
+        }
+        return result;
+    }
+
+    List<ru.campusrating.ledger.ArDayChange> arChangesByDay(Collection<Long> ids, java.time.LocalDate from, java.time.LocalDate to) {
+        if (ids.isEmpty()) return List.of();
+        return interval("""
+                select student_id, (created_at at time zone 'Europe/Moscow')::date as entry_day, sum(amount) amount
+                from ledger_entry where student_id in (:ids) and currency = 'AR'
+                and created_at >= :from and created_at < :until
+                group by student_id, entry_day order by entry_day, student_id
+                """, ids, from, to)
+                .query((rs, row) -> new ru.campusrating.ledger.ArDayChange(rs.getLong("student_id"),
+                        rs.getDate("entry_day").toLocalDate(), rs.getInt("amount"))).list();
+    }
+
+    List<ru.campusrating.ledger.ActivityAwardTotal> activityAwardTotals(Collection<Long> ids, java.time.LocalDate from, java.time.LocalDate to) {
+        if (ids.isEmpty()) return List.of();
+        return interval("""
+                select student_id, currency, sum(amount) amount from ledger_entry
+                where student_id in (:ids) and kind = 'ACTIVITY_AWARD' and currency in ('BUA','BOA')
+                and created_at >= :from and created_at < :until group by student_id, currency
+                """, ids, from, to)
+                .query((rs, row) -> new ru.campusrating.ledger.ActivityAwardTotal(rs.getLong("student_id"),
+                        Currency.valueOf(rs.getString("currency")), rs.getInt("amount"))).list();
+    }
+
+    private JdbcClient.StatementSpec interval(String sql, Collection<Long> ids, java.time.LocalDate from, java.time.LocalDate to) {
+        var zone = java.time.ZoneId.of("Europe/Moscow");
+        return jdbc.sql(sql).param("ids", ids)
+                .param("from", Timestamp.from(from.atStartOfDay(zone).toInstant()))
+                .param("until", Timestamp.from(to.plusDays(1).atStartOfDay(zone).toInstant()));
+    }
+
 }

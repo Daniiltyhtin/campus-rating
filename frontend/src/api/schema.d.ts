@@ -1303,9 +1303,49 @@ export interface paths {
          * @description Студенты группы с `ACTIVE`-членством и их балансы из снимка (мастер-R22, KTD3), по убыванию выбранной
          *     валюты, при равенстве — по ФИО, затем по id. Список целиком.
          *
-         *     Доступ: преподаватель, группа — из доступных (`403 GROUP_NOT_ACCESSIBLE`).
+         *     Доступ: администратор — любая группа; преподаватель, группа — из доступных (`403 GROUP_NOT_ACCESSIBLE`).
          */
         get: operations["getGroupRating"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/groups/{groupId}/analytics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Аналитика группы
+         * @description Сутки Москвы, включительно, максимум 366 суток; без параметров последние 30 суток. Среднее АР округлено HALF_UP до одного знака.
+         */
+        get: operations["getGroupAnalytics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/groups/{groupId}/analytics/budget": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Расход бюджета группы по месяцам
+         * @description Текущий и пять предыдущих месяцев Москвы, новые сверху. Преподавателю свой бюджет, администратору все преподаватели; лимит текущий.
+         */
+        get: operations["getGroupAnalyticsBudget"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2687,6 +2727,48 @@ export interface components {
             group: components["schemas"]["StudyGroupRef"];
             sort: components["schemas"]["Currency"];
             items: components["schemas"]["RatingRow"][];
+        };
+        AnalyticsDay: {
+            /** Format: date */
+            date: string;
+            averageAr: number | null;
+            /** Format: int32 */
+            students: number;
+        };
+        AnalyticsPoints: {
+            student: components["schemas"]["UserRef"];
+            /** Format: int32 */
+            bua: number;
+            /** Format: int32 */
+            boa: number;
+            /** Format: int32 */
+            ar: number;
+        };
+        GroupAnalytics: {
+            group: components["schemas"]["StudyGroupRef"];
+            /** Format: date */
+            semesterStart: string | null;
+            days: components["schemas"]["AnalyticsDay"][];
+            items: components["schemas"]["AnalyticsPoints"][];
+        };
+        AnalyticsBudgetMonth: {
+            month: string;
+            teacher: components["schemas"]["UserRef"] | null;
+            /** Format: int32 */
+            limit: number;
+            /** Format: int32 */
+            spent: number;
+            /** Format: int32 */
+            remaining: number | null;
+            /** Format: int32 */
+            awards: number;
+            /** Format: int32 */
+            bua: number;
+            /** Format: int32 */
+            boa: number;
+        };
+        GroupAnalyticsBudget: {
+            items: components["schemas"]["AnalyticsBudgetMonth"][];
         };
         BalanceMismatch: {
             studentId: components["schemas"]["Id"];
@@ -5846,6 +5928,112 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["GroupRating"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["GroupForbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getGroupAnalytics: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path: {
+                groupId: components["parameters"]["GroupId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Аналитика группы. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "group": {
+                     *         "id": 11,
+                     *         "name": "ИВТ-21",
+                     *         "faculty": {
+                     *           "id": 1,
+                     *           "code": "ФИТ",
+                     *           "name": "Факультет информационных технологий"
+                     *         }
+                     *       },
+                     *       "semesterStart": "2026-09-01",
+                     *       "days": [
+                     *         {
+                     *           "date": "2026-11-01",
+                     *           "averageAr": 990,
+                     *           "students": 2
+                     *         }
+                     *       ],
+                     *       "items": [
+                     *         {
+                     *           "student": {
+                     *             "id": 1001,
+                     *             "fullName": "Смирнова Анна Олеговна"
+                     *           },
+                     *           "bua": 30,
+                     *           "boa": 0,
+                     *           "ar": 980
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GroupAnalytics"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["GroupForbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getGroupAnalyticsBudget: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                groupId: components["parameters"]["GroupId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Расход бюджета группы по месяцам. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "month": "2026-11",
+                     *           "teacher": {
+                     *             "id": 201,
+                     *             "fullName": "Петров Пётр Петрович"
+                     *           },
+                     *           "limit": 1000,
+                     *           "spent": 950,
+                     *           "remaining": 50,
+                     *           "awards": 3,
+                     *           "bua": 800,
+                     *           "boa": 150
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GroupAnalyticsBudget"];
                 };
             };
             400: components["responses"]["ValidationFailed"];
