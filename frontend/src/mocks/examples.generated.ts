@@ -6300,6 +6300,138 @@ export const examples: ExampleOperation[] = [
     ]
   },
   {
+    "path": "/api/v1/feed/personal",
+    "method": "get",
+    "operationId": "listPersonalFeed",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "items": [
+            {
+              "id": 5107,
+              "kind": "POINTS_AWARDED",
+              "createdAt": "2026-11-21T12:00:00Z",
+              "activityId": 601,
+              "activityTitle": "Субботник",
+              "amount": 5,
+              "currency": "BOA"
+            },
+            {
+              "id": 5106,
+              "kind": "ACTIVITY_CREATED",
+              "createdAt": "2026-11-19T08:00:00Z",
+              "activityId": 601,
+              "activityTitle": "Субботник"
+            },
+            {
+              "id": 5105,
+              "kind": "WORK_ACCEPTED",
+              "createdAt": "2026-11-18T16:00:00Z",
+              "assignmentId": 7001,
+              "checkpointTitle": "Эссе"
+            },
+            {
+              "id": 5104,
+              "kind": "WORK_RETURNED",
+              "createdAt": "2026-11-18T12:00:00Z",
+              "assignmentId": 7001,
+              "checkpointTitle": "Эссе"
+            },
+            {
+              "id": 5103,
+              "kind": "DEADLINE_REMINDER",
+              "createdAt": "2026-11-17T09:00:00Z",
+              "assignmentId": 7002,
+              "checkpointTitle": "Реферат",
+              "deadline": "2026-11-18T06:00:00Z"
+            },
+            {
+              "id": 5102,
+              "kind": "WORK_SUBMITTED",
+              "createdAt": "2026-11-16T10:00:00Z",
+              "checkpointId": 501,
+              "checkpointTitle": "Эссе",
+              "studentFullName": "Смирнова Анна Олеговна"
+            },
+            {
+              "id": 5101,
+              "kind": "ASSIGNMENT_CREATED",
+              "createdAt": "2026-11-13T09:00:00Z",
+              "assignmentId": 7001,
+              "checkpointTitle": "Эссе",
+              "deadline": "2026-11-20T15:00:00Z"
+            }
+          ],
+          "nextCursor": null
+        }
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      }
+    ]
+  },
+  {
     "path": "/api/v1/groups/{groupId}/ratings",
     "method": "get",
     "operationId": "getGroupRating",

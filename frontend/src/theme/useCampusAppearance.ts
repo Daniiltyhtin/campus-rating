@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-export type CampusAppearance = 'light' | 'dark' | 'contrast';
+export type CampusAppearance = 'light' | 'dark' | 'system';
 export const AppearanceContext = createContext<{ appearance: CampusAppearance; setAppearance: (value: CampusAppearance) => void } | null>(null);
 
 export function useCampusAppearance() {

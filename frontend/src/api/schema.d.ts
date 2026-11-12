@@ -1266,6 +1266,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/feed/personal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Персональная лента
+         * @description События получателя (мастер-R28–R30, план U14): новые задачи, напоминания о дедлайне, приём и возврат работ,
+         *     начисления и новые активности — студенту; сдачи работ — автору точки. Новые сверху, курсор по
+         *     `(createdAt desc, id desc)`. Строка — снимок на момент события: переименование точки или активности старые
+         *     события не меняет. Текст события собирает клиент по `kind`.
+         *
+         *     Доступ: любой вошедший видит только свою ленту; администратору — пустая страница.
+         */
+        get: operations["listPersonalFeed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/groups/{groupId}/ratings": {
         parameters: {
             query?: never;
@@ -2556,6 +2581,102 @@ export interface components {
         };
         AwardFeedPage: {
             items: components["schemas"]["AwardFeedItem"][];
+            nextCursor: components["schemas"]["NextCursor"];
+        };
+        /** @description «Новая задача «<точка>» · до <дедлайн>», ссылка `/tasks/{assignmentId}`. */
+        AssignmentCreatedEvent: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "ASSIGNMENT_CREATED";
+            createdAt: components["schemas"]["Instant"];
+            assignmentId: components["schemas"]["Id"];
+            checkpointTitle: string;
+            deadline: components["schemas"]["Instant"];
+        };
+        /** @description «До дедлайна «<точка>» меньше суток», ссылка `/tasks/{assignmentId}`. */
+        DeadlineReminderEvent: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "DEADLINE_REMINDER";
+            createdAt: components["schemas"]["Instant"];
+            assignmentId: components["schemas"]["Id"];
+            checkpointTitle: string;
+            deadline: components["schemas"]["Instant"];
+        };
+        /** @description «Работа «<точка>» принята», ссылка `/tasks/{assignmentId}`. */
+        WorkAcceptedEvent: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "WORK_ACCEPTED";
+            createdAt: components["schemas"]["Instant"];
+            assignmentId: components["schemas"]["Id"];
+            checkpointTitle: string;
+        };
+        /** @description «Работу «<точка>» вернули на доработку», ссылка `/tasks/{assignmentId}`. */
+        WorkReturnedEvent: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "WORK_RETURNED";
+            createdAt: components["schemas"]["Instant"];
+            assignmentId: components["schemas"]["Id"];
+            checkpointTitle: string;
+        };
+        /** @description «Начислено <amount> <валюта> за «<активность>»», ссылка на профиль получателя. */
+        PointsAwardedEvent: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "POINTS_AWARDED";
+            createdAt: components["schemas"]["Instant"];
+            activityId: components["schemas"]["Id"];
+            activityTitle: string;
+            /** Format: int32 */
+            amount: number;
+            currency: components["schemas"]["Currency"];
+        };
+        /** @description «Новая активность «<активность>» для вашей группы», ссылка `/activities`. */
+        ActivityCreatedEvent: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "ACTIVITY_CREATED";
+            createdAt: components["schemas"]["Instant"];
+            activityId: components["schemas"]["Id"];
+            activityTitle: string;
+        };
+        /** @description «Сдана работа «<точка>» · <ФИО студента>», ссылка `/checkpoints/{checkpointId}`. */
+        WorkSubmittedEvent: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "WORK_SUBMITTED";
+            createdAt: components["schemas"]["Instant"];
+            checkpointId: components["schemas"]["Id"];
+            checkpointTitle: string;
+            studentFullName: string;
+        };
+        /** @description Событие персональной ленты; набор полей зависит от `kind`. */
+        PersonalFeedItem: components["schemas"]["AssignmentCreatedEvent"] | components["schemas"]["DeadlineReminderEvent"] | components["schemas"]["WorkAcceptedEvent"] | components["schemas"]["WorkReturnedEvent"] | components["schemas"]["PointsAwardedEvent"] | components["schemas"]["ActivityCreatedEvent"] | components["schemas"]["WorkSubmittedEvent"];
+        PersonalFeedPage: {
+            items: components["schemas"]["PersonalFeedItem"][];
             nextCursor: components["schemas"]["NextCursor"];
         };
         RatingRow: {
@@ -5555,6 +5676,99 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["AwardFeedPage"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    listPersonalFeed: {
+        parameters: {
+            query?: {
+                /**
+                 * @description Непрозрачный курсор из `nextCursor` предыдущей страницы; без него — первая страница.
+                 *     Курсор привязан к сортировке и фильтрам списка: курсор от другого фильтра или битый —
+                 *     `400 VALIDATION_FAILED` с полем `cursor`.
+                 */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Размер страницы. */
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Страница персональной ленты. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": 5107,
+                     *           "kind": "POINTS_AWARDED",
+                     *           "createdAt": "2026-11-21T12:00:00Z",
+                     *           "activityId": 601,
+                     *           "activityTitle": "Субботник",
+                     *           "amount": 5,
+                     *           "currency": "BOA"
+                     *         },
+                     *         {
+                     *           "id": 5106,
+                     *           "kind": "ACTIVITY_CREATED",
+                     *           "createdAt": "2026-11-19T08:00:00Z",
+                     *           "activityId": 601,
+                     *           "activityTitle": "Субботник"
+                     *         },
+                     *         {
+                     *           "id": 5105,
+                     *           "kind": "WORK_ACCEPTED",
+                     *           "createdAt": "2026-11-18T16:00:00Z",
+                     *           "assignmentId": 7001,
+                     *           "checkpointTitle": "Эссе"
+                     *         },
+                     *         {
+                     *           "id": 5104,
+                     *           "kind": "WORK_RETURNED",
+                     *           "createdAt": "2026-11-18T12:00:00Z",
+                     *           "assignmentId": 7001,
+                     *           "checkpointTitle": "Эссе"
+                     *         },
+                     *         {
+                     *           "id": 5103,
+                     *           "kind": "DEADLINE_REMINDER",
+                     *           "createdAt": "2026-11-17T09:00:00Z",
+                     *           "assignmentId": 7002,
+                     *           "checkpointTitle": "Реферат",
+                     *           "deadline": "2026-11-18T06:00:00Z"
+                     *         },
+                     *         {
+                     *           "id": 5102,
+                     *           "kind": "WORK_SUBMITTED",
+                     *           "createdAt": "2026-11-16T10:00:00Z",
+                     *           "checkpointId": 501,
+                     *           "checkpointTitle": "Эссе",
+                     *           "studentFullName": "Смирнова Анна Олеговна"
+                     *         },
+                     *         {
+                     *           "id": 5101,
+                     *           "kind": "ASSIGNMENT_CREATED",
+                     *           "createdAt": "2026-11-13T09:00:00Z",
+                     *           "assignmentId": 7001,
+                     *           "checkpointTitle": "Эссе",
+                     *           "deadline": "2026-11-20T15:00:00Z"
+                     *         }
+                     *       ],
+                     *       "nextCursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PersonalFeedPage"];
                 };
             };
             400: components["responses"]["ValidationFailed"];

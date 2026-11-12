@@ -24,7 +24,7 @@ class SubmissionFiles {
         this.repository = repository;
     }
 
-    void save(long assignment, MultipartFile file, Instant now) throws IOException {
+    long save(long assignment, MultipartFile file, Instant now) throws IOException {
         SubmissionRules.validateFileSize(file.getSize());
         String type;
         try (var stream = file.getInputStream()) {
@@ -36,7 +36,7 @@ class SubmissionFiles {
             key = storage.save(stream, meta);
             rollbackCleanup(key);
         }
-        repository.file(assignment, key, meta, now);
+        return repository.file(assignment, key, meta, now);
     }
 
     Resource open(SubmissionData file) throws IOException {

@@ -61,6 +61,8 @@ export function createAuthScenario(initialUser: CurrentUser | null = null) {
     http.get('*/api/v1/auth/me', () => state.currentUser
       ? HttpResponse.json(state.currentUser) : problem('UNAUTHENTICATED', 401)),
     http.get('*/api/v1/auth/config', () => HttpResponse.json(state.config)),
+    http.get('*/api/v1/feed/personal', () => state.currentUser
+      ? HttpResponse.json({ items: [], nextCursor: null }) : problem('UNAUTHENTICATED', 401)),
     http.post('*/api/v1/auth/login', async ({ request }) => {
       await record(request);
       if (request.headers.get('X-XSRF-TOKEN') !== state.token || !state.token) return problem('CSRF_INVALID', 403);

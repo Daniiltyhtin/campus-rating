@@ -3164,6 +3164,82 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /api/v1/feed/personal:
+    get:
+      tags: [feed]
+      operationId: listPersonalFeed
+      summary: Персональная лента
+      description: |
+        События получателя (мастер-R28–R30, план U14): новые задачи, напоминания о дедлайне, приём и возврат работ,
+        начисления и новые активности — студенту; сдачи работ — автору точки. Новые сверху, курсор по
+        `(createdAt desc, id desc)`. Строка — снимок на момент события: переименование точки или активности старые
+        события не меняет. Текст события собирает клиент по `kind`.
+
+        Доступ: любой вошедший видит только свою ленту; администратору — пустая страница.
+      x-roles: [AUTHENTICATED]
+      x-status: implemented
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Страница персональной ленты.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonalFeedPage'
+              example:
+                items:
+                  - id: 5107
+                    kind: POINTS_AWARDED
+                    createdAt: '2026-11-21T12:00:00Z'
+                    activityId: 601
+                    activityTitle: Субботник
+                    amount: 5
+                    currency: BOA
+                  - id: 5106
+                    kind: ACTIVITY_CREATED
+                    createdAt: '2026-11-19T08:00:00Z'
+                    activityId: 601
+                    activityTitle: Субботник
+                  - id: 5105
+                    kind: WORK_ACCEPTED
+                    createdAt: '2026-11-18T16:00:00Z'
+                    assignmentId: 7001
+                    checkpointTitle: Эссе
+                  - id: 5104
+                    kind: WORK_RETURNED
+                    createdAt: '2026-11-18T12:00:00Z'
+                    assignmentId: 7001
+                    checkpointTitle: Эссе
+                  - id: 5103
+                    kind: DEADLINE_REMINDER
+                    createdAt: '2026-11-17T09:00:00Z'
+                    assignmentId: 7002
+                    checkpointTitle: Реферат
+                    deadline: '2026-11-18T06:00:00Z'
+                  - id: 5102
+                    kind: WORK_SUBMITTED
+                    createdAt: '2026-11-16T10:00:00Z'
+                    checkpointId: 501
+                    checkpointTitle: Эссе
+                    studentFullName: Смирнова Анна Олеговна
+                  - id: 5101
+                    kind: ASSIGNMENT_CREATED
+                    createdAt: '2026-11-13T09:00:00Z'
+                    assignmentId: 7001
+                    checkpointTitle: Эссе
+                    deadline: '2026-11-20T15:00:00Z'
+                nextCursor: null
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /api/v1/groups/{groupId}/ratings:
     get:
       tags: [feed]
@@ -6795,6 +6871,154 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AwardFeedItem'
+        nextCursor:
+          $ref: '#/components/schemas/NextCursor'
+
+    AssignmentCreatedEvent:
+      type: object
+      description: «Новая задача «<точка>» · до <дедлайн>», ссылка `/tasks/{assignmentId}`.
+      required: [id, kind, createdAt, assignmentId, checkpointTitle, deadline]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        kind:
+          const: ASSIGNMENT_CREATED
+        createdAt:
+          $ref: '#/components/schemas/Instant'
+        assignmentId:
+          $ref: '#/components/schemas/Id'
+        checkpointTitle:
+          type: string
+        deadline:
+          $ref: '#/components/schemas/Instant'
+    DeadlineReminderEvent:
+      type: object
+      description: «До дедлайна «<точка>» меньше суток», ссылка `/tasks/{assignmentId}`.
+      required: [id, kind, createdAt, assignmentId, checkpointTitle, deadline]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        kind:
+          const: DEADLINE_REMINDER
+        createdAt:
+          $ref: '#/components/schemas/Instant'
+        assignmentId:
+          $ref: '#/components/schemas/Id'
+        checkpointTitle:
+          type: string
+        deadline:
+          $ref: '#/components/schemas/Instant'
+    WorkAcceptedEvent:
+      type: object
+      description: «Работа «<точка>» принята», ссылка `/tasks/{assignmentId}`.
+      required: [id, kind, createdAt, assignmentId, checkpointTitle]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        kind:
+          const: WORK_ACCEPTED
+        createdAt:
+          $ref: '#/components/schemas/Instant'
+        assignmentId:
+          $ref: '#/components/schemas/Id'
+        checkpointTitle:
+          type: string
+    WorkReturnedEvent:
+      type: object
+      description: «Работу «<точка>» вернули на доработку», ссылка `/tasks/{assignmentId}`.
+      required: [id, kind, createdAt, assignmentId, checkpointTitle]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        kind:
+          const: WORK_RETURNED
+        createdAt:
+          $ref: '#/components/schemas/Instant'
+        assignmentId:
+          $ref: '#/components/schemas/Id'
+        checkpointTitle:
+          type: string
+    PointsAwardedEvent:
+      type: object
+      description: «Начислено <amount> <валюта> за «<активность>»», ссылка на профиль получателя.
+      required: [id, kind, createdAt, activityId, activityTitle, amount, currency]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        kind:
+          const: POINTS_AWARDED
+        createdAt:
+          $ref: '#/components/schemas/Instant'
+        activityId:
+          $ref: '#/components/schemas/Id'
+        activityTitle:
+          type: string
+        amount:
+          type: integer
+          format: int32
+          minimum: 1
+        currency:
+          $ref: '#/components/schemas/Currency'
+    ActivityCreatedEvent:
+      type: object
+      description: «Новая активность «<активность>» для вашей группы», ссылка `/activities`.
+      required: [id, kind, createdAt, activityId, activityTitle]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        kind:
+          const: ACTIVITY_CREATED
+        createdAt:
+          $ref: '#/components/schemas/Instant'
+        activityId:
+          $ref: '#/components/schemas/Id'
+        activityTitle:
+          type: string
+    WorkSubmittedEvent:
+      type: object
+      description: «Сдана работа «<точка>» · <ФИО студента>», ссылка `/checkpoints/{checkpointId}`.
+      required: [id, kind, createdAt, checkpointId, checkpointTitle, studentFullName]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        kind:
+          const: WORK_SUBMITTED
+        createdAt:
+          $ref: '#/components/schemas/Instant'
+        checkpointId:
+          $ref: '#/components/schemas/Id'
+        checkpointTitle:
+          type: string
+        studentFullName:
+          type: string
+    PersonalFeedItem:
+      description: Событие персональной ленты; набор полей зависит от `kind`.
+      oneOf:
+        - $ref: '#/components/schemas/AssignmentCreatedEvent'
+        - $ref: '#/components/schemas/DeadlineReminderEvent'
+        - $ref: '#/components/schemas/WorkAcceptedEvent'
+        - $ref: '#/components/schemas/WorkReturnedEvent'
+        - $ref: '#/components/schemas/PointsAwardedEvent'
+        - $ref: '#/components/schemas/ActivityCreatedEvent'
+        - $ref: '#/components/schemas/WorkSubmittedEvent'
+      discriminator:
+        propertyName: kind
+        mapping:
+          ASSIGNMENT_CREATED: '#/components/schemas/AssignmentCreatedEvent'
+          DEADLINE_REMINDER: '#/components/schemas/DeadlineReminderEvent'
+          WORK_ACCEPTED: '#/components/schemas/WorkAcceptedEvent'
+          WORK_RETURNED: '#/components/schemas/WorkReturnedEvent'
+          POINTS_AWARDED: '#/components/schemas/PointsAwardedEvent'
+          ACTIVITY_CREATED: '#/components/schemas/ActivityCreatedEvent'
+          WORK_SUBMITTED: '#/components/schemas/WorkSubmittedEvent'
+    PersonalFeedPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonalFeedItem'
         nextCursor:
           $ref: '#/components/schemas/NextCursor'
 

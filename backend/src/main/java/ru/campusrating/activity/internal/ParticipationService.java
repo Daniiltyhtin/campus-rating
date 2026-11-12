@@ -17,8 +17,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.campusrating.activity.PointsAwarded;
 import ru.campusrating.activity.api.ActivityController.UserRef;
 import ru.campusrating.activity.api.ParticipationController.AwardLine;
 import ru.campusrating.activity.api.ParticipationController.ConfirmedParticipation;
@@ -86,9 +88,11 @@ public class ParticipationService {
     private final SettingsApi settings;
     private final LedgerApi ledger;
     private final Clock clock;
+    private final ApplicationEventPublisher publisher;
 
     ParticipationService(ActivityRepository activities, AwardRepository awards, BudgetRepository budgets, CurrentUser current,
-                         GroupMembers members, SettingsApi settings, LedgerApi ledger, Clock clock) {
+                         GroupMembers members, SettingsApi settings, LedgerApi ledger, Clock clock,
+                         ApplicationEventPublisher publisher) {
         this.activities = activities;
         this.awards = awards;
         this.budgets = budgets;
@@ -97,6 +101,7 @@ public class ParticipationService {
         this.settings = settings;
         this.ledger = ledger;
         this.clock = clock;
+        this.publisher = publisher;
     }
 
     @Transactional(readOnly = true)
@@ -285,7 +290,11 @@ public class ParticipationService {
         }
         var results = ledger.post(postings);
         for (int index = 0; index < ids.size(); index++) {
-            awards.link(ids.get(index), entryId(results.get(index)));
+            long entry = entryId(results.get(index));
+            awards.link(ids.get(index), entry);
+            var award = plan.awards().get(index);
+            publisher.publishEvent(new PointsAwarded(entry, award.studentId(), award.amount(), currency, activity.id(),
+                    activity.title(), now));
         }
     }
 

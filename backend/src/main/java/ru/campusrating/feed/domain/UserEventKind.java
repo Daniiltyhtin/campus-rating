@@ -1,0 +1,5 @@
+package ru.campusrating.feed.domain;
+
+public enum UserEventKind {
+    ASSIGNMENT_CREATED, DEADLINE_REMINDER, WORK_ACCEPTED, WORK_RETURNED, POINTS_AWARDED, ACTIVITY_CREATED, WORK_SUBMITTED
+}

@@ -4,11 +4,15 @@ import java.io.IOException;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import ru.campusrating.checkpoint.AssignmentAccepted;
+import ru.campusrating.checkpoint.AssignmentReturned;
 import ru.campusrating.checkpoint.AssignmentState;
+import ru.campusrating.checkpoint.AssignmentSubmitted;
 import ru.campusrating.checkpoint.api.AssignmentRequests.Accepted;
 import ru.campusrating.checkpoint.api.AssignmentRequests.Skipped;
 import ru.campusrating.checkpoint.api.AssignmentView;
@@ -29,6 +33,7 @@ public class SubmissionService {
     private final SubmissionFiles files;
     private final CurrentUser current;
     private final Clock clock;
+    private final ApplicationEventPublisher publisher;
 
     SubmissionService(
             SubmissionRepository repository,
@@ -36,13 +41,15 @@ public class SubmissionService {
             AssignmentReader reader,
             SubmissionFiles files,
             CurrentUser current,
-            Clock clock) {
+            Clock clock,
+            ApplicationEventPublisher publisher) {
         this.repository = repository;
         this.checkpoints = checkpoints;
         this.reader = reader;
         this.files = files;
         this.current = current;
         this.clock = clock;
+        this.publisher = publisher;
     }
 
     @Transactional(readOnly = true)
@@ -58,14 +65,19 @@ public class SubmissionService {
         var assignment = require(id, true);
         requireStudent(assignment);
         var target = AssignmentTransitions.submit(assignment.state());
+        var now = clock.instant();
+        long submission;
         if (file == null) {
             SubmissionRules.validateLink(link);
-            repository.link(id, link, clock.instant());
+            submission = repository.link(id, link, now);
         } else {
-            files.save(id, file, clock.instant());
+            submission = files.save(id, file, now);
         }
         repository.state(id, target);
-        return reader.view(require(id, false), checkpoint(assignment.checkpointId()));
+        var checkpoint = checkpoint(assignment.checkpointId());
+        publisher.publishEvent(new AssignmentSubmitted(submission, checkpoint.id(), checkpoint.authorId(), checkpoint.title(),
+                assignment.studentFullName(), now));
+        return reader.view(require(id, false), checkpoint);
     }
 
     @Transactional
@@ -88,14 +100,17 @@ public class SubmissionService {
         requireAuthor(checkpoint);
         var target = AssignmentTransitions.returnBack(assignment.state());
         var latest = repository.versions(id).getFirst();
-        repository.returnVersion(latest.id(), comment, clock.instant());
+        var now = clock.instant();
+        repository.returnVersion(latest.id(), comment, now);
         repository.state(id, target);
+        publisher.publishEvent(new AssignmentReturned(latest.id(), id, assignment.studentId(), checkpoint.title(), now));
         return reader.view(require(id, false), checkpoint);
     }
 
     @Transactional
     public Accepted accept(long checkpointId, List<Long> ids) {
-        requireAuthor(checkpoint(checkpointId));
+        var checkpoint = checkpoint(checkpointId);
+        requireAuthor(checkpoint);
         var unique = ids.stream().distinct().sorted().toList();
         if (unique.isEmpty()) {
             throw CheckpointValidation.invalid("assignmentIds", "Выберите хотя бы одну работу");
@@ -105,7 +120,7 @@ public class SubmissionService {
         var accepted = new ArrayList<Long>();
         var skipped = new ArrayList<Skipped>();
         for (var assignment : assignments) {
-            acceptOne(assignment, accepted, skipped);
+            acceptOne(assignment, checkpoint, accepted, skipped);
         }
         return new Accepted(accepted, skipped);
     }
@@ -117,15 +132,17 @@ public class SubmissionService {
         }
     }
 
-    private void acceptOne(AssignmentData assignment, List<Long> accepted, List<Skipped> skipped) {
+    private void acceptOne(AssignmentData assignment, CheckpointData checkpoint, List<Long> accepted, List<Skipped> skipped) {
         try {
             AssignmentTransitions.accept(assignment.state());
         } catch (InvalidAssignmentStateException exception) {
             skipped.add(new Skipped(assignment.id(), "INVALID_STATE"));
             return;
         }
-        repository.accept(assignment.id(), clock.instant());
+        var now = clock.instant();
+        repository.accept(assignment.id(), now);
         accepted.add(assignment.id());
+        publisher.publishEvent(new AssignmentAccepted(assignment.id(), assignment.studentId(), checkpoint.title(), now));
     }
 
     @Transactional(readOnly = true)

@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { parseGroups } from '../features/activities/contracts';
-import { parseAwardsPage, parseGroupRating } from '../features/feed/contracts';
+import { parseAwardsPage, parseGroupRating, parsePersonalPage } from '../features/feed/contracts';
 import { readUser } from './auth';
 import { examples } from './examples.generated';
 
@@ -16,7 +16,13 @@ export function createFeedMockHandlers() {
   const awards = parseAwardsPage(example('listAwardsFeed'));
   const rating = parseGroupRating(example('getGroupRating'));
   const groups = parseGroups(example('listAccessibleGroups')).items;
+  const personal = parsePersonalPage(example('listPersonalFeed'));
   return [
+    http.get('*/api/v1/feed/personal', () => {
+      const viewer = readUser();
+      if (!viewer) return problem('UNAUTHENTICATED', 401);
+      return HttpResponse.json(viewer.role === 'ADMIN' ? { items: [], nextCursor: null } : personal);
+    }),
     http.get('*/api/v1/feed/awards', ({ request }) => {
       if (!readUser()) return problem('UNAUTHENTICATED', 401);
       const query = new URL(request.url).searchParams;
