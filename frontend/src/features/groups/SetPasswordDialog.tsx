@@ -1,4 +1,4 @@
-import { Button, Group, Modal, Stack, Text } from '@mantine/core';
+import { Button, Group, Modal, Stack, Text, Tooltip } from '@mantine/core';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../../api/client';
@@ -11,7 +11,8 @@ export function SetPasswordDialog({ user }: { user: { id: number; fullName: stri
     mutationFn: () => dataOf(api.POST('/api/v1/users/{userId}/temporary-password', { params: { path: { userId: user.id } } })),
     onSuccess: () => { void client.invalidateQueries({ queryKey: ['admin-users'] }); void client.invalidateQueries({ queryKey: ['group-students'] }); } });
   function close() { if (!mutation.isPending) { setOpened(false); mutation.reset(); setCopied(false); } }
-  return <><Button variant="default" onClick={() => { mutation.reset(); setOpened(true); }}>Выставить временный пароль</Button>
+  return <><Tooltip label="Выставить временный пароль"><Button variant="default" className="cr-nowrap" aria-label="Выставить временный пароль"
+    onClick={() => { mutation.reset(); setOpened(true); }}>Временный пароль</Button></Tooltip>
     <Modal opened={opened} onClose={close} title="Временный пароль" closeOnEscape={!mutation.isPending} closeOnClickOutside={!mutation.isPending}>
       <Stack>{mutation.data ? <><Text>Пароль выставлен, {user.role === 'STUDENT' ? 'студент' : 'преподаватель'} сменит его при входе</Text>
         <Text component="code" aria-label="Временный пароль">{mutation.data.password}</Text>
