@@ -26,6 +26,7 @@ class AdminUsersListIT extends U13HttpTestSupport {
         clock.set(Instant.parse("2026-11-12T15:00:00Z"));
         long smirnova = namedStudent("smirnova", "Смирнова Анна Олеговна");
         long orlov = namedStudent("orlov", "Орлов");
+        jdbc.update("update group_membership set state='PENDING',activated_at=null where student_id=?", orlov);
         jdbc.update("update group_membership set state='ACTIVE',activated_at=? where student_id=?", java.sql.Timestamp.from(clock.instant()), smirnova);
         long petrov = teacher("petrov", "Петров Павел Петрович"); approve(petrov, department);
         long volkov = teacher("volkov", "Волков Максим Игоревич");
@@ -62,6 +63,7 @@ class AdminUsersListIT extends U13HttpTestSupport {
         long smirnova = namedStudent("smirnova", "Смирнова Анна Олеговна");
         jdbc.update("update group_membership set state='ACTIVE',activated_at=? where student_id=?", java.sql.Timestamp.from(clock.instant()), smirnova);
         long orlov = namedStudent("orlov", "Орлов");
+        jdbc.update("update group_membership set state='PENDING',activated_at=null where student_id=?", orlov);
         teacher("volkov", "Волков Максим Игоревич");
         assertThat(ids(get(USERS + "?search=PETROV@"))).containsExactly(petrov);
         assertThat(ids(get(USERS + "?search=смир"))).containsExactly(smirnova);
@@ -76,6 +78,7 @@ class AdminUsersListIT extends U13HttpTestSupport {
         clock.set(Instant.parse("2026-11-12T15:00:00Z"));
         long smirnova = namedStudent("smirnova", "Смирнова Анна Олеговна");
         long orlov = namedStudent("orlov", "Орлов");
+        jdbc.update("update group_membership set state='PENDING',activated_at=null where student_id=?", orlov);
         long petrov = teacher("petrov", "Петров Павел Петрович");
         long volkov = teacher("volkov", "Волков Максим Игоревич");
         clock.set(Instant.parse("2026-11-13T06:00:00Z")); login("petrov");

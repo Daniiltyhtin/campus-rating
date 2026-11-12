@@ -1747,6 +1747,12 @@ export interface components {
             role: "STUDENT" | "TEACHER" | "ADMIN";
             group: components["schemas"]["StudyGroupRef"] | null;
             department: components["schemas"]["DepartmentRef"] | null;
+            /** @enum {string|null} */
+            status: "PENDING" | "APPROVED" | "MEMBERSHIP_PENDING" | "MEMBERSHIP_ACTIVE" | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            lastLoginAt: string | null;
             /** Format: date-time */
             passwordSetAt: string | null;
         };
@@ -3510,6 +3516,8 @@ export interface operations {
             query?: {
                 search?: string;
                 role?: "STUDENT" | "TEACHER" | "ADMIN";
+                status?: "PENDING" | "APPROVED" | "MEMBERSHIP_PENDING" | "MEMBERSHIP_ACTIVE";
+                sort?: "name" | "created" | "lastLogin";
                 cursor?: string;
             };
             header?: never;

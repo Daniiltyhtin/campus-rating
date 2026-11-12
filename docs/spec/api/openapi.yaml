@@ -525,6 +525,17 @@ paths:
               - STUDENT
               - TEACHER
               - ADMIN
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, APPROVED, MEMBERSHIP_PENDING, MEMBERSHIP_ACTIVE]
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [name, created, lastLogin]
+            default: name
         - name: cursor
           in: query
           schema:
@@ -5414,6 +5425,9 @@ components:
         - group
         - department
         - passwordSetAt
+        - status
+        - createdAt
+        - lastLoginAt
       properties:
         id:
           type: integer
@@ -5438,6 +5452,15 @@ components:
           oneOf:
             - $ref: "#/components/schemas/DepartmentRef"
             - type: "null"
+        status:
+          type: [string, "null"]
+          enum: [PENDING, APPROVED, MEMBERSHIP_PENDING, MEMBERSHIP_ACTIVE, null]
+        createdAt:
+          type: string
+          format: date-time
+        lastLoginAt:
+          type: [string, "null"]
+          format: date-time
         passwordSetAt:
           type:
             - string

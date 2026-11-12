@@ -36,7 +36,7 @@ class UserTimesIT extends U13MailTestSupport {
         clock.set(Instant.parse("2026-11-13T08:20:00Z"));
         request(browser(), "POST", "/api/v1/auth/login", Map.of("email", email("ivanov"), "password", temporary), 200);
         time(row(ivanov), "lastLoginAt", "2026-11-13T08:20:00Z");
-        String csv = "email,full_name,faculty_code,group_code\n" + email("ivanov") + ",Иванов," + prefix + "f1," + prefix + "g1\n";
+        String csv = "email,full_name,faculty_code,group_code\n" + email("ivanov") + ",Импортированный," + prefix + "f1," + prefix + "g1\n";
         assertThat(adminWire().upload("/api/v1/admin/import/STUDENTS", "students.csv", csv.getBytes(java.nio.charset.StandardCharsets.UTF_8), 200).path("skipped").asInt()).isEqualTo(1);
         time(row(ivanov), "createdAt", "2026-11-13T08:00:00Z");
         time(row(ivanov), "lastLoginAt", "2026-11-13T08:20:00Z");
