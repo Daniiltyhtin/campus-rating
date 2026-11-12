@@ -1,0 +1,125 @@
+{
+  "participant": "Максим",
+  "period": {
+    "since": "20261022",
+    "through": "2026-11-12"
+  },
+  "sources": {
+    "claude": {
+      "status": "ok",
+      "coverage": "проект C--Java-Projects-campus-rating",
+      "daily": [
+        {
+          "date": "2026-11-07",
+          "tokens": {
+            "input": 312,
+            "output": 75519,
+            "cache": 25484567,
+            "total": 25560398
+          },
+          "costUSD": 9.098551,
+          "models": [
+            "claude-opus-5-5"
+          ]
+        },
+        {
+          "date": "2026-11-09",
+          "tokens": {
+            "input": 82,
+            "output": 24054,
+            "cache": 4145168,
+            "total": 4169304
+          },
+          "costUSD": 2.4618386000000005,
+          "models": [
+            "claude-opus-5-5"
+          ]
+        },
+        {
+          "date": "2026-11-12",
+          "tokens": {
+            "input": 64,
+            "output": 11060,
+            "cache": 2231653,
+            "total": 2242777
+          },
+          "costUSD": 1.474564,
+          "models": [
+            "claude-opus-5-5"
+          ]
+        }
+      ]
+    },
+    "codex": {
+      "status": "ok",
+      "coverage": "вся машина",
+      "daily": [
+        {
+          "date": "2026-11-06",
+          "tokens": {
+            "input": 173245,
+            "output": 78663,
+            "cache": 20972416,
+            "total": 21224324
+          },
+          "costUSD": 3.2303615999999997,
+          "models": [
+            "gpt-6.1-sol"
+          ]
+        },
+        {
+          "date": "2026-11-09",
+          "tokens": {
+            "input": 1086895,
+            "output": 213767,
+            "cache": 57524736,
+            "total": 58825398
+          },
+          "costUSD": 16.0029028,
+          "models": [
+            "gpt-6.1-sol"
+          ]
+        },
+        {
+          "date": "2026-11-10",
+          "tokens": {
+            "input": 755867,
+            "output": 147499,
+            "cache": 41647104,
+            "total": 42550470
+          },
+          "costUSD": 9.0838956,
+          "models": [
+            "gpt-6.1-sol"
+          ]
+        },
+        {
+          "date": "2026-11-11",
+          "tokens": {
+            "input": 2251885,
+            "output": 560379,
+            "cache": 189432064,
+            "total": 192244328
+          },
+          "costUSD": 42.381167000000005,
+          "models": [
+            "gpt-6.1-sol"
+          ]
+        },
+        {
+          "date": "2026-11-12",
+          "tokens": {
+            "input": 1306180,
+            "output": 154443,
+            "cache": 44145280,
+            "total": 45605903
+          },
+          "costUSD": 11.6403812,
+          "models": [
+            "gpt-6.1-sol"
+          ]
+        }
+      ]
+    }
+  }
+}
