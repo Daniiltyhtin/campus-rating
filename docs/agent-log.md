@@ -1096,6 +1096,14 @@
 - **Результат с доказательствами:** `AdminTeacherService.list()` делал 1 + 2N запросов (пользователь и кафедра на каждого преподавателя); теперь два пакетных — `IdentityRepository.users` и новый `DirectoryApi.departments`, порядок строк прежний. `AdminTeacherListQueriesTest` проверяет порядок, данные и отсутствие поштучных вызовов; на старом коде падает. `./backend/mvnw -f backend/pom.xml -Pquality verify` — 356 unit + 440 IT, 0 ошибок.
 - **Не проверено:** число SQL-запросов на живой базе — проверено вызовами репозиториев.
 - **Ошибка агента:** нет.
+
+### 2026-11-12 — U22: локальная часть стенда на сервере
+
+- **Кто / агент / модель:** Даниил / план и реализация — Claude Code claude-opus-5-5.
+- **Поручение:** план `docs/spec/plans/2026-11-12-012-feat-u22-server-stand-plan.md`: override compose, nginx хоста с TLS, SMTP Яндекса, шаблон окружения, инструкция, тесты режимов запуска.
+- **Результат с доказательствами:** `docker-compose.server.yml` (наружу только `web` на `127.0.0.1`, обязательные `POSTGRES_PASSWORD`/`EMAIL_VERIFICATION`/`CAMPUS_PUBLIC_URL`, почта — только через `env_file`, `forward-headers-strategy=native`, проверка здоровья почты выключена), `deploy/server.env.example`, `deploy/nginx/campus.conf.example`, `deploy/README.md`; внутренний nginx больше не затирает `X-Forwarded-Proto`. Тесты: `tools/test/server-stand.test.mjs` (5), `RunModeConfigTest` (2). Живой прогон override локально (`-p campus-srv`): три контейнера healthy, опубликован только `127.0.0.1:8095`; с `X-Forwarded-Proto: https` CSRF-cookie получает `Secure`, без заголовка — нет. `nginx -t` внутреннего конфига — ок. Без обязательных переменных `docker compose config` останавливается с именем переменной.
+- **Не проверено:** развёртывание на сервере, выпуск сертификата и `nginx -t` примера хоста (нет сертификата локально), отправка письма через SMTP Яндекса.
+- **Ошибка агента:** первая версия override передавала пустые `SPRING_MAIL_*` в `environment` — Spring создал бы почтовый клиент с пустым хостом и уронил healthcheck; заменено на `env_file`.
 - **Урок:** нового нет.
 - **Кругов ревью:** 0.
 - **Коммит / PR:** этот PR.
