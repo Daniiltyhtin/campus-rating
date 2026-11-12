@@ -12,4 +12,5 @@ public interface DirectoryApi {
     List<GroupInfo> groupsOfFaculty(long facultyId);
     List<GroupInfo> allGroups();
     Optional<DepartmentInfo> department(long departmentId);
+    Map<Long, DepartmentInfo> departments(Collection<Long> departmentIds);
 }
