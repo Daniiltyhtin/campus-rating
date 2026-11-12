@@ -43,7 +43,13 @@ public class AdminTeacherService {
     }
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
-    public List<AdminTeacher> list() { return repository.teachers().stream().map(this::get).toList(); }
+    public List<AdminTeacher> list() {
+        var ids = repository.teachers();
+        var accounts = users.users(ids).stream().collect(java.util.stream.Collectors.toMap(UserAccount::id, account -> account));
+        var departments = directory.departments(accounts.values().stream().map(UserAccount::departmentId).filter(java.util.Objects::nonNull).distinct().toList());
+        return ids.stream().map(accounts::get).map(user -> new AdminTeacher(user.id(), user.fullName(), user.email(),
+                departments.get(user.departmentId()), user.approved())).toList();
+    }
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public AdminTeacher get(long id) {

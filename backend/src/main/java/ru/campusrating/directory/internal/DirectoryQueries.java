@@ -79,6 +79,13 @@ public class DirectoryQueries implements DirectoryApi {
                 .query(DEPARTMENT_MAPPER).optional();
     }
 
+    @Override
+    public Map<Long, DepartmentInfo> departments(Collection<Long> departmentIds) {
+        if (departmentIds.isEmpty()) return Map.of();
+        return jdbc.sql(DEPARTMENTS + " where d.id in (:ids)").param("ids", departmentIds).query(DEPARTMENT_MAPPER).list().stream()
+                .collect(Collectors.toMap(DepartmentInfo::id, department -> department));
+    }
+
     public List<DepartmentInfo> departmentsOfFaculty(long facultyId) {
         return jdbc.sql(DEPARTMENTS + " where d.faculty_id = :id order by d.name, d.id")
                 .param("id", facultyId).query(DEPARTMENT_MAPPER).list();
