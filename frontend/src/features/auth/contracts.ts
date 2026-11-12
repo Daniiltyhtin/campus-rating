@@ -24,7 +24,7 @@ function isCurrentUser(value: unknown): value is CurrentUser {
   if (!record(value) || !id(value.id) || typeof value.fullName !== 'string'
     || typeof value.email !== 'string' || typeof value.mustChangePassword !== 'boolean') return false;
   switch (value.role) {
-    case 'STUDENT': return group(value.group) && ['ACTIVE', 'PENDING'].includes(String(value.membershipState));
+    case 'STUDENT': return group(value.group) && ['ACTIVE', 'PENDING', 'REJECTED'].includes(String(value.membershipState)) && typeof value.groupHead === 'boolean';
     case 'TEACHER': return department(value.department) && typeof value.teacherApproved === 'boolean';
     case 'ADMIN': return true;
     default: return false;

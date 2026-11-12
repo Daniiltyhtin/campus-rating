@@ -8,12 +8,14 @@ import type { DirectoryEntry, DirectoryKind } from './contracts';
 import { directoryError, useDirectory } from './queries';
 import './directory.css';
 import { TeacherLink } from '../teachers/TeacherShared';
+import { HeadCell } from './GroupHeads';
+import { useGroupHeads } from './groupHeadsQuery';
 
 type Editor = { action: 'add'; kind: DirectoryKind } | { action: 'edit' | 'delete'; kind: DirectoryKind; entry: DirectoryEntry };
 function Directory({ viewerId }: { viewerId: number }) {
   const [kind, setKind] = useState<DirectoryKind>('faculties'), [editor, setEditor] = useState<Editor | null>(null), [result, setResult] = useState('');
   const opener = useRef<HTMLButtonElement | null>(null), addButton = useRef<HTMLButtonElement>(null);
-  const list = useDirectory(kind, viewerId), faculties = useDirectory('faculties', viewerId);
+  const list = useDirectory(kind, viewerId), faculties = useDirectory('faculties', viewerId), heads = useGroupHeads(kind === 'groups');
   const restore = (target: HTMLButtonElement | null) => { requestAnimationFrame(() => { if (target?.isConnected) target.focus(); else addButton.current?.focus(); }); };
   const close = () => { setEditor(null); restore(opener.current); };
   const finished = (message: string) => { setEditor(null); setResult(message); restore(editor?.action === 'delete' ? addButton.current : opener.current); };
@@ -31,7 +33,8 @@ function Directory({ viewerId }: { viewerId: number }) {
             : !list.data?.items.length ? { status: 'empty', message: `${labels[kind].title}: записей пока нет. Добавьте первую запись.` } : { status: 'ready' }}
           columns={[{ key: 'code', title: 'Код', render: (row) => row.code }, { key: 'name', title: 'Название', render: (row) => row.name },
             ...(kind !== 'faculties' ? [{ key: 'faculty', title: 'Факультет', render: (row: DirectoryEntry) => row.kind !== 'faculties' ? row.faculty.name : '' }] : []),
-            ...(kind === 'groups' ? [{ key: 'year', title: 'Год набора', render: (row: DirectoryEntry) => row.kind === 'groups' ? row.admissionYear : '' }] : []),
+            ...(kind === 'groups' ? [{ key: 'year', title: 'Год набора', render: (row: DirectoryEntry) => row.kind === 'groups' ? row.admissionYear : '' },
+              { key: 'head', title: 'Староста', render: (row: DirectoryEntry) => <HeadCell group={row} heads={heads} disabled={busy} /> }] : []),
             { key: 'actions', title: 'Действия', render: (row) => <Group gap="xs"><Button variant="default" aria-label={`Редактировать ${row.name}`} disabled={busy} onClick={(event) => open({ action: 'edit', kind, entry: row }, event.currentTarget)}>Редактировать</Button>
               <Button variant="default" aria-label={`Удалить ${row.name}`} disabled={busy} onClick={(event) => open({ action: 'delete', kind, entry: row }, event.currentTarget)}>Удалить</Button></Group> }]} />
       </>}</Stack></Tabs.Panel>)}

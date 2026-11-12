@@ -533,10 +533,11 @@ paths:
         - identity
       operationId: listGroupStudents
       summary: listGroupStudents
-      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер."
+      description: "U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер. Администратор видит любую группу — для выбора старосты (U15, план 2026-11-12-010)."
       x-status: implemented
       x-roles:
         - TEACHER
+        - ADMIN
       security:
         - session: []
       responses:
@@ -978,6 +979,7 @@ paths:
                         code: ФИТ
                         name: Факультет информационных технологий
                     membershipState: PENDING
+                    groupHead: false
                 teacher:
                   $ref: '#/components/examples/CurrentTeacher'
                 teacherNotApproved:
@@ -1009,7 +1011,7 @@ paths:
       operationId: registerStudent
       summary: Регистрация студента
       description: |
-        Создаёт студента, членство в выбранной группе (`ACTIVE` до мастер-U15, затем `PENDING`) и проводку
+        Создаёт студента, членство `PENDING` в выбранной группе (мастер-U15, R32; подтверждает преподаватель или староста) и проводку
         `INITIAL` +1000 АР (мастер-R1, R8). Сессию не создаёт: дальше — вход или подтверждение email
         (`nextStep`).
 
@@ -1214,6 +1216,280 @@ paths:
           $ref: '#/components/responses/Unauthenticated'
         '403':
           $ref: '#/components/responses/CsrfForbidden'
+
+  /api/v1/memberships/pending:
+    get:
+      tags: [identity]
+      operationId: listPendingMemberships
+      summary: Заявки в группы
+      description: |
+        Членства `PENDING` в группах, где текущий пользователь может подтверждать (мастер-R32): у
+        преподавателя — группы `TeacherScope` (KTD23), у старосты — его группа. Список целиком, по времени
+        заявки, затем id. Недопущенный преподаватель и студент-не-староста получают пустой список.
+
+        Доступ: преподаватель и студент.
+      x-roles: [TEACHER, STUDENT]
+      x-status: implemented
+      security:
+        - session: []
+      responses:
+        '200':
+          description: Заявки.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingMembershipList'
+              example:
+                items:
+                  - studentId: 1004
+                    fullName: Орлов Никита Сергеевич
+                    email: orlov@student.campus.test
+                    group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    requestedAt: '2026-11-12T09:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/memberships/{studentId}/approval:
+    post:
+      tags: [identity]
+      operationId: approveMembership
+      summary: Подтвердить членство
+      description: |
+        `PENDING` → `ACTIVE`, время активации — сейчас, публикуется `MembershipActivated` (мастер-R16, R32,
+        KTD11). Подтверждает преподаватель, у которого группа студента в `TeacherScope`, или староста этой
+        группы; иначе `403`. Повтор для `ACTIVE` — `204` без второго события. `REJECTED` — `409 INVALID_STATE`.
+        Нет студента или членства — `404`.
+
+        Доступ: преподаватель и студент-староста; нужен CSRF-заголовок.
+      x-roles: [TEACHER, STUDENT]
+      x-status: implemented
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Id'
+      responses:
+        '204':
+          description: Членство активно.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/InvalidState'
+
+  /api/v1/memberships/{studentId}/rejection:
+    post:
+      tags: [identity]
+      operationId: rejectMembership
+      summary: Отклонить заявку в группу
+      description: |
+        `PENDING` → `REJECTED`, группа в записи сохраняется; аккаунт, проводки и сессии не меняются
+        (мастер-R32). Кто может — как у подтверждения. Повтор — `204`. `ACTIVE` — `409 INVALID_STATE`.
+        Нет студента или членства — `404`.
+
+        Доступ: преподаватель и студент-староста; нужен CSRF-заголовок.
+      x-roles: [TEACHER, STUDENT]
+      x-status: implemented
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Id'
+      responses:
+        '204':
+          description: Заявка отклонена.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/InvalidState'
+
+  /api/v1/me/membership:
+    put:
+      tags: [identity]
+      operationId: requestMembership
+      summary: Новая заявка в группу
+      description: |
+        Только из `REJECTED`: членство переходит в `PENDING` в выбранной группе (можно ту же), время заявки
+        обновляется. Из `PENDING` и `ACTIVE` — `409 INVALID_STATE`. Факультет и группа проверяются как при
+        регистрации: группа не того факультета или несуществующая — `400` по полю `groupId`.
+
+        Доступ: студент, только своё членство; нужен CSRF-заголовок.
+      x-roles: [STUDENT]
+      x-status: implemented
+      security:
+        - session: []
+          csrf: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipRequest'
+            example:
+              facultyId: 1
+              groupId: 12
+      responses:
+        '200':
+          description: Заявка подана; текущий пользователь.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+              example:
+                role: STUDENT
+                id: 1004
+                fullName: Орлов Никита Сергеевич
+                email: orlov@student.campus.test
+                mustChangePassword: false
+                group:
+                  id: 12
+                  name: ИВТ-22
+                  faculty:
+                    id: 1
+                    code: ФИТ
+                    name: Факультет информационных технологий
+                membershipState: PENDING
+                groupHead: false
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/InvalidState'
+
+  /api/v1/admin/group-heads:
+    get:
+      tags: [identity]
+      operationId: listGroupHeads
+      summary: Старосты групп
+      description: |
+        Все назначенные старосты — для колонки «Староста» в справочнике групп. По id группы.
+
+        Доступ: только администратор.
+      x-roles: [ADMIN]
+      x-status: implemented
+      security:
+        - session: []
+      responses:
+        '200':
+          description: Старосты.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupHeadList'
+              example:
+                items:
+                  - groupId: 11
+                    student:
+                      id: 1001
+                      fullName: Смирнова Анна Олеговна
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/admin/group-heads/{groupId}:
+    put:
+      tags: [identity]
+      operationId: assignGroupHead
+      summary: Назначить старосту
+      description: |
+        Один староста на группу; новое назначение заменяет прежнего. Назначить можно только студента с
+        `ACTIVE`-членством в этой группе, иначе `400` по полю `studentId`. Нет группы — `404`.
+
+        Доступ: только администратор; нужен CSRF-заголовок.
+      x-roles: [ADMIN]
+      x-status: implemented
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupHeadAssignment'
+            example:
+              studentId: 1001
+      responses:
+        '200':
+          description: Староста назначен.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupHead'
+              example:
+                groupId: 11
+                student:
+                  id: 1001
+                  fullName: Смирнова Анна Олеговна
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [identity]
+      operationId: removeGroupHead
+      summary: Снять старосту
+      description: |
+        Снимает старосту группы; он сразу теряет право подтверждать членство. Старосты нет — `404`.
+
+        Доступ: только администратор; нужен CSRF-заголовок.
+      x-roles: [ADMIN]
+      x-status: implemented
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Id'
+      responses:
+        '204':
+          description: Староста снят.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /api/v1/me/accessible-groups:
     get:
@@ -4446,6 +4722,7 @@ components:
             code: ФИТ
             name: Факультет информационных технологий
         membershipState: ACTIVE
+        groupHead: false
     CurrentTeacher:
       value:
         role: TEACHER
@@ -5387,6 +5664,7 @@ components:
           enum:
             - ACTIVE
             - PENDING
+            - REJECTED
         passwordSetAt:
           type:
             - string
@@ -5681,7 +5959,61 @@ components:
       enum: [25, 50, 75, 100]
     GroupMembershipState:
       type: string
-      enum: [PENDING, ACTIVE]
+      description: '`PENDING` — ждёт подтверждения, `ACTIVE` — подтверждено, `REJECTED` — заявка отклонена, студент выбирает группу заново (мастер-R32).'
+      enum: [PENDING, ACTIVE, REJECTED]
+    PendingMembership:
+      type: object
+      required: [studentId, fullName, email, group, requestedAt]
+      properties:
+        studentId:
+          $ref: '#/components/schemas/Id'
+        fullName:
+          type: string
+        email:
+          $ref: '#/components/schemas/Email'
+        group:
+          $ref: '#/components/schemas/StudyGroupRef'
+        requestedAt:
+          type: string
+          format: date-time
+    PendingMembershipList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PendingMembership'
+    MembershipRequest:
+      type: object
+      required: [facultyId, groupId]
+      properties:
+        facultyId:
+          $ref: '#/components/schemas/Id'
+        groupId:
+          $ref: '#/components/schemas/Id'
+    GroupHeadAssignment:
+      type: object
+      required: [studentId]
+      properties:
+        studentId:
+          $ref: '#/components/schemas/Id'
+    GroupHead:
+      type: object
+      required: [groupId, student]
+      properties:
+        groupId:
+          $ref: '#/components/schemas/Id'
+        student:
+          $ref: '#/components/schemas/UserRef'
+    GroupHeadList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupHead'
 
     UserRef:
       type: object
@@ -5785,7 +6117,7 @@ components:
     CurrentStudent:
       type: object
       description: Варианты `CurrentUser` плоские, без `allOf`, чтобы линтер ловил лишние поля в примерах.
-      required: [role, id, fullName, email, mustChangePassword, group, membershipState]
+      required: [role, id, fullName, email, mustChangePassword, group, membershipState, groupHead]
       properties:
         role:
           const: STUDENT
@@ -5802,6 +6134,9 @@ components:
           $ref: '#/components/schemas/StudyGroupRef'
         membershipState:
           $ref: '#/components/schemas/GroupMembershipState'
+        groupHead:
+          type: boolean
+          description: Староста своей группы — подтверждает в ней членство (мастер-R32).
     CurrentTeacher:
       type: object
       required: [role, id, fullName, email, mustChangePassword, department, teacherApproved]

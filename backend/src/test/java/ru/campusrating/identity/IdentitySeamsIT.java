@@ -18,7 +18,10 @@ class IdentitySeamsIT extends IdentityAcceptanceSupport {
         long active = registerStudent(browser(), "active");
         long pending = registerStudent(browser(), "pending");
         long teacher = registerTeacher(browser(), "teacher");
-        jdbc.update("update group_membership set state='PENDING',activated_at=null where student_id=?", pending);
+        jdbc.update("insert into teacher_approval(teacher_id, approved_at) values (?, now())", teacher);
+        var teacherSession = browser();
+        login(teacherSession, email("teacher"));
+        assertThat(teacherSession.post("/api/v1/memberships/" + active + "/approval", java.util.Map.of()).status()).isEqualTo(204);
         assertThat(members.activeStudents(List.of(group))).extracting(StudentMember::studentId).containsExactly(active);
         assertThat(members.membership(pending)).hasValueSatisfying(member -> {
             assertThat(member.state().name()).isEqualTo("PENDING");

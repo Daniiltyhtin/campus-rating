@@ -1,3 +1,3 @@
 package ru.campusrating.identity;
 
-public enum GroupMembershipState { PENDING, ACTIVE }
+public enum GroupMembershipState { PENDING, ACTIVE, REJECTED }

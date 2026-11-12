@@ -56,8 +56,12 @@ public class RegistrationService {
         if (group.faculty().id() != facultyId) throw Passwords.invalid("groupId", "MISMATCH", "Группа не принадлежит факультету");
         long id = create(email, fullName, password, Role.STUDENT, null, false);
         var time = clock.instant().truncatedTo(ChronoUnit.MICROS);
-        repository.addMembership(id, groupId, GroupMembershipState.ACTIVE, time);
-        events.publishEvent(new MembershipActivated(id, groupId, time));
+        if (imported) {
+            repository.addMembership(id, groupId, GroupMembershipState.ACTIVE, time, time);
+            events.publishEvent(new MembershipActivated(id, groupId, time));
+        } else {
+            repository.addMembership(id, groupId, GroupMembershipState.PENDING, null, time);
+        }
         ledger.post(List.of(initial(id)));
         if(!imported) setup.sendVerification(id,email);
         return id;

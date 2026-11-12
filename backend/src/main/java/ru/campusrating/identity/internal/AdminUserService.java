@@ -53,7 +53,7 @@ public class AdminUserService {
     private StudyGroupRef group(Long id) { return id==null?null:directory.group(id).map(g->new StudyGroupRef(g.id(),g.name(),g.faculty())).orElse(null); }
     private ru.campusrating.directory.DepartmentInfo department(Long id) { return id==null?null:directory.department(id).orElse(null); }
     public List<GroupStudent> students(long groupId) {
-        var actor=current.require();if(actor.role()!=Role.TEACHER||!scope.accessibleGroupIds(actor.id()).contains(groupId)) throw forbidden();
+        var actor=current.require();if(actor.role()!=Role.ADMIN&&(actor.role()!=Role.TEACHER||!scope.accessibleGroupIds(actor.id()).contains(groupId))) throw forbidden();
         return jdbc.sql("select u.id,u.full_name,u.email,m.state,"+AUDIT+" password_set_at from app_user u join group_membership m on m.student_id=u.id where m.group_id=:group and m.state in ('ACTIVE','PENDING') order by u.full_name,u.id")
                 .param("group",groupId).query((rs,n)->new GroupStudent(rs.getLong("id"),rs.getString("full_name"),rs.getString("email"),GroupMembershipState.valueOf(rs.getString("state")),rs.getTimestamp("password_set_at")==null?null:rs.getTimestamp("password_set_at").toInstant())).list();
     }
