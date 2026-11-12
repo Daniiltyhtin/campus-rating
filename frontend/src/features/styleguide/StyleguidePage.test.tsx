@@ -32,13 +32,13 @@ describe('styleguide', () => {
     expect(screen.getAllByText('Лабораторная 3. Деревья поиска').length).toBeGreaterThan(0);
   });
 
-  it('offers the final contrast theme and reports partial acceptance without losing selection', async () => {
+  it('offers the system theme and reports partial acceptance without losing selection', async () => {
     const user = userEvent.setup();
     renderApp('/styleguide');
     await user.click(await screen.findByRole('combobox', { name: 'Тема интерфейса' }));
     await user.keyboard('{ArrowDown}{ArrowDown}{Enter}');
-    expect(screen.getByRole('combobox', { name: 'Тема интерфейса' })).toHaveValue('Высокий контраст');
-    expect(localStorage.getItem('campus-appearance')).toBe('"contrast"');
+    expect(screen.getByRole('combobox', { name: 'Тема интерфейса' })).toHaveValue('Системная');
+    expect(localStorage.getItem('campus-appearance')).toBe('"system"');
     await user.click(screen.getByRole('button', { name: 'Принять' }));
     expect(screen.getByRole('status')).toHaveTextContent('Принято 1 из 2.');
     expect(screen.getByRole('checkbox', { name: 'Смирнова Анна Олеговна' })).toBeChecked();

@@ -20,8 +20,8 @@ export function StyleguidePage() {
     : status === 'empty' ? { status, message: 'Здесь пока нет данных' } : { status };
   return <PageLayout title="Редакция" description="Холодная бумага, синий акцент. Literata и PT Sans, ясная типографика и линейки."
     actions={<Select label="Тема интерфейса" allowDeselect={false} value={appearance} onChange={(value) => {
-      if (value === 'light' || value === 'dark' || value === 'contrast') setAppearance(value);
-    }} data={[{ value: 'light', label: 'Светлая' }, { value: 'dark', label: 'Тёмная' }, { value: 'contrast', label: 'Высокий контраст' }]} />}>
+      if (value === 'light' || value === 'dark' || value === 'system') setAppearance(value);
+    }} data={[{ value: 'light', label: 'Светлая' }, { value: 'dark', label: 'Тёмная' }, { value: 'system', label: 'Системная' }]} />}>
     <Stack gap="md"><Text className="cr-kicker">Компоненты и состояния</Text>
       <SegmentedControl aria-label="Состояние примеров" value={status} onChange={(value) => setStatus(value as LoadState['status'])}
         data={[{ value: 'ready', label: 'Данные' }, { value: 'loading', label: 'Загрузка' }, { value: 'empty', label: 'Пусто' }, { value: 'error', label: 'Ошибка' }]} />
