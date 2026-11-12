@@ -63,11 +63,12 @@ execution: code
 | `GET /api/v1/memberships/pending` (`listPendingMemberships`) | `TEACHER`, `STUDENT` | → `{items:[{studentId, fullName, email, group: StudyGroupRef, requestedAt}]}` |
 | `POST /api/v1/memberships/{studentId}/approval` (`approveMembership`) | `TEACHER`, `STUDENT` | → `204`; `403`, `404` (нет студента или членства), `409 INVALID_STATE` |
 | `POST /api/v1/memberships/{studentId}/rejection` (`rejectMembership`) | `TEACHER`, `STUDENT` | → `204`; `403`, `404`, `409 INVALID_STATE` |
-| `PUT /api/v1/me/membership` (`requestMembership`) | `STUDENT` | `{facultyId, groupId}` → `200 CurrentStudent`; `400` по полю, `409 INVALID_STATE` |
-| `PUT /api/v1/admin/directory/groups/{groupId}/head` (`assignGroupHead`) | `ADMIN` | `{studentId}` → `200 {student: UserRef}`; `400` по `studentId`, `404` группы |
-| `DELETE /api/v1/admin/directory/groups/{groupId}/head` (`removeGroupHead`) | `ADMIN` | → `204`; `404` |
+| `PUT /api/v1/me/membership` (`requestMembership`) | `STUDENT` | `{facultyId, groupId}` → `200 CurrentUser` (вариант студента); `400` по полю, `409 INVALID_STATE` |
+| `GET /api/v1/admin/group-heads` (`listGroupHeads`) | `ADMIN` | → `{items:[{groupId, student: UserRef}]}` |
+| `PUT /api/v1/admin/group-heads/{groupId}` (`assignGroupHead`) | `ADMIN` | `{studentId}` → `200 {groupId, student: UserRef}`; `400` по `studentId`, `404` группы |
+| `DELETE /api/v1/admin/group-heads/{groupId}` (`removeGroupHead`) | `ADMIN` | → `204`; `404` |
 
-Схемы: `GroupMembershipState` += `REJECTED`; `CurrentStudent` += обязательное `groupHead: boolean`; элемент админского списка групп += `head: UserRef | null`; `listGroupStudents` += роль `ADMIN` (выбор старосты из студентов группы). Новые операции — `x-status: planned` до U1–U3. Фронтовые моки и `examples.generated.ts` обновляются генератором.
+Схемы: `GroupMembershipState` += `REJECTED`; `CurrentStudent` += обязательное `groupHead: boolean`; старосты читаются отдельной операцией `identity`, а не полем `AdminStudyGroup`: иначе `directory` зависел бы от `identity` по кругу; `listGroupStudents` += роль `ADMIN` (выбор старосты из студентов группы). Новые операции — `x-status: planned` до U1–U2. Фронтовые моки и `examples.generated.ts` обновляются генератором.
 
 ## Implementation Units
 
@@ -75,7 +76,7 @@ execution: code
 
 - **Goal.** Контракт из таблицы выше, правки спеки под решения этого плана.
 - **Files:** `docs/spec/api/openapi.yaml`, `docs/spec/api/module-seams.md` (публикатор `MembershipActivated`; права старосты), `docs/spec/glossary.md` (`REJECTED`, «Заявка в группу»), мастер-план: U15 Files (`EmailVerification.tsx` вместо `VerifyEmailPage.tsx`, новые файлы этого плана), строка KTD22 про `docker-compose.server.yml` не меняется — она за U22.
-- **Verification.** Линтер контракта и `ContractCompatibilityIT` зелёные; `node tools/check-agent-docs.mjs`.
+- **Verification.** Линтер контракта и `ContractCompatibilityIT` зелёные; `npm --prefix frontend run api:gen`; `node tools/check-agent-docs.mjs`.
 
 ### U1. Подтверждение и отклонение членства (backend)
 
@@ -96,11 +97,11 @@ execution: code
 
 ### U2. Старосты (backend)
 
-- **Goal.** П7–П8: назначение и снятие старосты, `groupHead` в `/auth/me`, `head` в админском списке групп.
-- **Files:** `backend/src/main/java/ru/campusrating/identity/internal/GroupHeads.java`, `backend/src/main/java/ru/campusrating/identity/api/AdminGroupHeadController.java`, правка чтения `CurrentStudent`; админский список групп в `directory` получает `head` через шов `identity` (метод `GroupMembers.head(groupId)` — дополнение шва, правка `module-seams.md` в U0); тест `backend/src/test/java/ru/campusrating/identity/GroupHeadIT.java`.
+- **Goal.** П7–П8: список, назначение и снятие старост, `groupHead` в `/auth/me`.
+- **Files:** `backend/src/main/java/ru/campusrating/identity/internal/GroupHeads.java`, `backend/src/main/java/ru/campusrating/identity/api/AdminGroupHeadsController.java`, правка чтения `CurrentStudent`; тест `backend/src/test/java/ru/campusrating/identity/GroupHeadIT.java`.
 - **Test scenarios:**
   - Не администратор — `403`; гость — `401`.
-  - Назначение `ACTIVE`-студента группы: `groupHead: true` у него, `head` в списке групп; он подтверждает заявку своей группы.
+  - Назначение `ACTIVE`-студента группы: `groupHead: true` у него, он есть в `listGroupHeads`; он подтверждает заявку своей группы.
   - Назначение другого студента заменяет прежнего: прежний получает `403` на подтверждение, `groupHead: false`.
   - `PENDING`-студент, студент другой группы, преподаватель — `400` по `studentId`; несуществующая группа — `404`.
   - Снятие: староста теряет права (`403`); повторное снятие — `404`.
@@ -156,4 +157,4 @@ execution: code
 
 ## Definition of Done
 
-- Сценарии U1–U5 зелёные; шесть новых операций — `implemented`; скриншоты U3 на 360 и 1280 px; запись в `docs/agent-log.md` и уроки в той же ветке.
+- Сценарии U1–U5 зелёные; семь новых операций — `implemented`; скриншоты U3 на 360 и 1280 px; запись в `docs/agent-log.md` и уроки в той же ветке.
