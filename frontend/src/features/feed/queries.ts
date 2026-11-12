@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { api, ApiError } from '../../api/client';
 import type { LoadState } from '../../app/layouts/PageLayouts';
-import { parseAwardsPage, parseGroupRating } from './contracts';
+import { parseAwardsPage, parseGroupRating, parsePersonalPage } from './contracts';
 import type { Currency } from './contracts';
 
 export const awardsKey = (viewerId: number) => ['awards', viewerId, 'list'] as const;
@@ -41,4 +41,9 @@ export function useGroupRating(viewerId: number, groupId: number, sort: Currency
     if (rating.group.id !== groupId || rating.sort !== sort) throw new Error('Ответ рейтинга не соответствует запросу');
     return rating;
   } });
+}
+export function usePersonalFeed(viewerId: number) {
+  return useInfiniteQuery({ queryKey: ['personal-feed', viewerId], initialPageParam: null as string | null, retry: false,
+    queryFn: ({ signal, pageParam }) => read(api.GET('/api/v1/feed/personal', { params: { query: { cursor: pageParam ?? undefined } }, signal }), parsePersonalPage),
+    getNextPageParam: (last, _pages, _param, params) => last.nextCursor && !params.includes(last.nextCursor) ? last.nextCursor : undefined });
 }

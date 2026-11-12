@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { examples } from '../../mocks/examples.generated';
-import { parseAwardsPage, parseGroupRating } from './contracts';
+import { parseAwardsPage, parseGroupRating, parsePersonalPage } from './contracts';
 
 function example(operationId: string): unknown {
   return structuredClone(examples.find((item) => item.operationId === operationId)!.responses.find((item) => item.status === 200)!.body);
@@ -9,6 +9,13 @@ describe('feed input boundary', () => {
   it('accepts dereferenced contract examples without changing order or balances', () => {
     expect(parseAwardsPage(example('listAwardsFeed'))).toEqual(example('listAwardsFeed'));
     expect(parseGroupRating(example('getGroupRating'))).toEqual(example('getGroupRating'));
+    expect(parsePersonalPage(example('listPersonalFeed'))).toEqual(example('listPersonalFeed'));
+  });
+  it.each(['assignmentId', 'checkpointTitle', 'deadline', 'kind'])('personal event requires %s', (field) => {
+    const value = parsePersonalPage(example('listPersonalFeed'));
+    const created = value.items.find((item) => item.kind === 'ASSIGNMENT_CREATED') as Record<string, unknown>;
+    delete created[field];
+    expect(() => parsePersonalPage(value)).toThrow();
   });
   it.each([0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1, 2_147_483_648])('rejects invalid award amount %s', (amount) => {
     const value = parseAwardsPage(example('listAwardsFeed'));

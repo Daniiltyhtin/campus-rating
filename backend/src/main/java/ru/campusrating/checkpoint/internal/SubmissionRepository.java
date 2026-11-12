@@ -49,19 +49,20 @@ class SubmissionRepository {
                 .optional();
     }
 
-    void link(long assignment, String url, Instant now) {
-        jdbc.sql(
+    long link(long assignment, String url, Instant now) {
+        return jdbc.sql(
                         "insert into submission(assignment_id,kind,url,submitted_at) values"
-                            + " (?,'LINK',?,?)")
+                            + " (?,'LINK',?,?) returning id")
                 .params(assignment, url, Timestamp.from(now))
-                .update();
+                .query(Long.class)
+                .single();
     }
 
-    void file(long assignment, String key, FileStorage.Metadata meta, Instant now) {
-        jdbc.sql(
+    long file(long assignment, String key, FileStorage.Metadata meta, Instant now) {
+        return jdbc.sql(
                         """
                 insert into submission(assignment_id,kind,file_key,file_name,size_bytes,content_type,submitted_at)
-                values (?,'FILE',?,?,?,?,?)
+                values (?,'FILE',?,?,?,?,?) returning id
                 """)
                 .params(
                         assignment,
@@ -70,7 +71,8 @@ class SubmissionRepository {
                         meta.sizeBytes(),
                         meta.contentType(),
                         Timestamp.from(now))
-                .update();
+                .query(Long.class)
+                .single();
     }
 
     void state(long id, AssignmentState state) {

@@ -7,8 +7,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.jspecify.annotations.Nullable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.campusrating.activity.ActivityCreated;
 import ru.campusrating.activity.api.ActivityController.Activity;
 import ru.campusrating.activity.api.ActivityController.MyAward;
 import ru.campusrating.activity.api.ActivityController.UserRef;
@@ -21,6 +23,7 @@ import ru.campusrating.identity.GroupMembers;
 import ru.campusrating.identity.GroupMembershipState;
 import ru.campusrating.identity.GroupRef;
 import ru.campusrating.identity.Role;
+import ru.campusrating.identity.StudentMember;
 import ru.campusrating.identity.TeacherScope;
 import ru.campusrating.shared.error.ApiException;
 import ru.campusrating.shared.error.FieldError;
@@ -34,13 +37,16 @@ public class ActivityService {
     private final TeacherScope scope;
     private final GroupMembers members;
     private final Clock clock;
+    private final ApplicationEventPublisher publisher;
 
-    public ActivityService(ActivityRepository repository, CurrentUser current, TeacherScope scope, GroupMembers members, Clock clock) {
+    public ActivityService(ActivityRepository repository, CurrentUser current, TeacherScope scope, GroupMembers members, Clock clock,
+                           ApplicationEventPublisher publisher) {
         this.repository = repository;
         this.current = current;
         this.scope = scope;
         this.members = members;
         this.clock = clock;
+        this.publisher = publisher;
     }
 
     @Transactional
@@ -56,6 +62,10 @@ public class ActivityService {
         scope.requireAccessible(user.id(), groups);
         long id = repository.insert(user.id(), title, description, type, startsAt, maxPoints, now);
         repository.addGroups(id, groups);
+        var students = members.activeStudents(groups).stream()
+                .filter(member -> member.state() == GroupMembershipState.ACTIVE && groups.contains(member.groupId()))
+                .map(StudentMember::studentId).distinct().toList();
+        publisher.publishEvent(new ActivityCreated(id, title, students, now));
         return view(requireActivity(id, user), user, now);
     }
 
