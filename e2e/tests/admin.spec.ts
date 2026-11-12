@@ -104,7 +104,7 @@ test('ADM-05: заявки → карточка Волкова → допуск 
     const navigation = page.getByRole('navigation', { name: width === 360 ? 'Нижнее меню' : 'Боковое меню' });
     await expect(navigation.getByRole('link', { name: /Пользователи/ }).getByLabel('Заявки преподавателей: 1')).toBeVisible();
     await expect(navigation.getByRole('link', { name: 'Справочники', exact: true }).getByLabel(/Заявки преподавателей/)).toHaveCount(0);
-    await page.getByRole('button', { name: 'Заявки преподавателей (1)', exact: true }).click();
+    await page.getByRole('button', { name: 'Показать заявки', exact: true }).click();
     await expect(page.getByLabel('Роль', { exact: true })).toHaveValue('TEACHER');
     await expect(page.getByLabel('Статус', { exact: true })).toHaveValue('PENDING');
     await page.getByRole('link', { name: 'Волков Максим Игоревич', exact: true }).click();

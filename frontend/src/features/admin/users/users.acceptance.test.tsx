@@ -73,22 +73,22 @@ async function search(view: ReturnType<typeof mountTeachers>, text: string) {
 async function select(view: ReturnType<typeof mountTeachers>, label: string, value: string) { await choose(view.user, label, value); }
 
 describe('users-node AE1–AE10', { timeout: 20000 }, () => {
-  it('AE2: all nine columns, statuses, affiliations and Moscow times', async () => {
+  it('AE2: eight columns, statuses, affiliations and Moscow times; password time under the action', async () => {
     scenario(); mountTeachers('/admin/users');
     const users = await table();
-    expect(users.getAllByRole('columnheader').map((cell) => cell.textContent)).toEqual(['ФИО', 'Email', 'Роль', 'Группа / кафедра', 'Статус', 'Создан', 'Последний вход', 'Пароль выставлен', 'Действия']);
+    expect(users.getAllByRole('columnheader').map((cell) => cell.textContent)).toEqual(['ФИО', 'Email', 'Роль', 'Группа / кафедра', 'Статус', 'Создан', 'Последний вход', 'Действия']);
     for (const [name, status] of [['Смирнова', 'Членство подтверждено'], ['Орлов', 'Ждёт подтверждения'], ['Петров', 'Допущен'], ['Волков', 'Заявка']]) {
       const item = within(await row(name!));
       expect(item.getByText(status!, { exact: true })).toBeInTheDocument();
       expect(item.getByText('12.11.2026 18:00', { exact: true })).toBeInTheDocument();
-      expect(item.getAllByText('—', { exact: true })).toHaveLength(2);
+      expect(item.getAllByText('—', { exact: true })).toHaveLength(1);
       expect(item.getByRole('button', { name: 'Выставить временный пароль' })).toHaveTextContent('Временный пароль');
     }
     expect(within(await row('Смирнова')).getByText('ИВТ-21')).toBeInTheDocument();
     expect(within(await row('Орлов')).getByText('ИВТ-21')).toBeInTheDocument();
     expect(within(await row('Петров')).getByText('Кафедра программной инженерии · Факультет информационных технологий')).toBeInTheDocument();
     const admin = within(await row('Администратор Демо'));
-    expect(admin.getAllByText('—', { exact: true })).toHaveLength(4);
+    expect(admin.getAllByText('—', { exact: true })).toHaveLength(3);
     expect(admin.queryByRole('button')).not.toBeInTheDocument();
   });
 
@@ -116,7 +116,11 @@ describe('users-node AE1–AE10', { timeout: 20000 }, () => {
     const state = scenario(), view = mountTeachers('/admin/users');
     await search(view, 'смир');
     await waitFor(async () => expect(await names()).toEqual(['Смирнова Анна Олеговна']));
-    await view.user.click(await screen.findByRole('button', { name: 'Заявки преподавателей (1)' }));
+    await screen.findByText('1 заявка преподавателя ждёт решения');
+    const banner = screen.getAllByRole('status').find((node) => node.textContent?.includes('ждёт решения'));
+    expect(banner).toHaveTextContent('1 заявка преподавателя ждёт решения');
+    expect(banner).toHaveTextContent('Волков Максим Игоревич · ');
+    await view.user.click(await screen.findByRole('button', { name: 'Показать заявки' }));
     expect(screen.getByRole('textbox', { name: 'Поиск по ФИО или email' })).toHaveValue('');
     expect(screen.getByRole('combobox', { name: 'Роль' })).toHaveDisplayValue('Преподаватели');
     expect(screen.getByRole('combobox', { name: 'Статус' })).toHaveDisplayValue('Заявка');
@@ -132,7 +136,7 @@ describe('users-node AE1–AE10', { timeout: 20000 }, () => {
     state.teachers.teachers.set(2002, { ...state.teachers.teachers.get(2002)!, teacherApproved: true });
     mountTeachers('/admin/users'); await table();
     await waitFor(() => expect(state.teachers.requests.some((request) => request.path === '/api/v1/admin/teachers')).toBe(true));
-    expect(screen.queryByRole('button', { name: /Заявки преподавателей/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Показать заявки' })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/Заявки преподавателей:/)).not.toBeInTheDocument();
   });
 
@@ -252,7 +256,7 @@ describe('users-node AE1–AE10', { timeout: 20000 }, () => {
     expect(await screen.findByText('Преподаватель допущен', { exact: true })).toBeInTheDocument();
     await waitFor(() => expect(screen.queryByLabelText('Заявки преподавателей: 1')).not.toBeInTheDocument());
     await act(async () => { await view.router.navigate('/admin/users'); });
-    await table(); expect(screen.queryByRole('button', { name: /Заявки преподавателей/ })).not.toBeInTheDocument();
+    await table(); expect(screen.queryByRole('button', { name: 'Показать заявки' })).not.toBeInTheDocument();
   });
 
   it('AE10: teacher allowlist stays in Import and unregistered record can be deleted', async () => {

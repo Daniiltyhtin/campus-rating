@@ -18,3 +18,10 @@ export function userTime(value: string | null | undefined): string {
     timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
   }).format(new Date(value)).replace(',', '');
 }
+export function requestsTitle(count: number): string {
+  const tens = count % 100, ones = count % 10;
+  if (tens >= 11 && tens <= 14) return `${count} заявок преподавателей ждут решения`;
+  if (ones === 1) return `${count} заявка преподавателя ждёт решения`;
+  if (ones >= 2 && ones <= 4) return `${count} заявки преподавателей ждут решения`;
+  return `${count} заявок преподавателей ждут решения`;
+}
