@@ -90,10 +90,10 @@ class CheckpointModuleTest {
                     .andWaitForStateChange(
                             () ->
                                     jdbc.queryForObject(
-                                            "select count(*) from event_publication where event_type=? and completion_date is not null",
+                                            "select count(*) from event_publication where event_type=?",
                                             Integer.class,
                                             MembershipActivated.class.getName()),
-                            n -> n > 0)
+                            n -> n == 0)
                     .andVerify(n -> assertThat(count(point)).isEqualTo(1));
         } finally {
             jdbc.update("delete from assignment where checkpoint_id=?", point);
