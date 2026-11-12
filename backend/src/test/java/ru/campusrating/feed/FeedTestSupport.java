@@ -137,7 +137,7 @@ abstract class FeedTestSupport extends PostgresIntegrationTest {
                 new Source(type, 742L, "Системное начисление"), null, UUID.randomUUID().toString()));
     }
 
-    private long post(Posting posting) {
+    long post(Posting posting) {
         var results = new TransactionTemplate(transactions).execute(status -> ledger.post(List.of(posting)));
         assertThat(results).singleElement().isInstanceOf(PostingResult.Posted.class);
         return ((PostingResult.Posted) results.getFirst()).entryId();

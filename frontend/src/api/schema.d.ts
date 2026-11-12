@@ -1255,6 +1255,9 @@ export interface paths {
          *     id desc)`. Штрафы, начисления семестра и стартовые баллы в ленту не попадают. Новые записи фронт
          *     находит опросом первой страницы и показывает плашкой «Новые награды: N».
          *
+         *     `mine=true` — только свои: студенту — награды, начисленные ему, преподавателю — выданные им,
+         *     администратору — пустая лента. Курсор привязан к фильтру: курсор другого фильтра — `400` по полю `cursor`.
+         *
          *     Доступ: любой вошедший.
          */
         get: operations["listAwardsFeed"];
@@ -5713,6 +5716,8 @@ export interface operations {
                 cursor?: components["parameters"]["Cursor"];
                 /** @description Размер страницы. */
                 limit?: components["parameters"]["Limit"];
+                /** @description Только свои награды. */
+                mine?: boolean;
             };
             header?: never;
             path?: never;

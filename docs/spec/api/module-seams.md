@@ -105,6 +105,8 @@ public interface LedgerApi {
     LedgerPage<LedgerEntryView> history(long studentId, Optional<Currency> currency,
                                         Optional<String> cursor, int limit);
     LedgerPage<AwardEntryView> awards(Optional<String> cursor, int limit); // только ACTIVITY_AWARD
+    LedgerPage<AwardEntryView> awardsToStudent(long studentId, Optional<String> cursor, int limit);
+    LedgerPage<AwardEntryView> awardsByAuthor(long authorId, Optional<String> cursor, int limit);
 
     ReconciliationResult reconcile();
 }
