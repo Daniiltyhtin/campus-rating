@@ -35,10 +35,12 @@ import ru.campusrating.shared.error.ValidationFailedException;
 public class LedgerService implements LedgerApi {
     private final LedgerRepository repository;
     private final Clock clock;
+    private final SemesterRepository semesters;
 
-    LedgerService(LedgerRepository repository, Clock clock) {
+    LedgerService(LedgerRepository repository, Clock clock, SemesterRepository semesters) {
         this.repository = repository;
         this.clock = clock;
+        this.semesters = semesters;
     }
 
     @Override
@@ -145,4 +147,25 @@ public class LedgerService implements LedgerApi {
         }
         return new LedgerPage<>(visible.stream().map(mapper).toList(), next);
     }
+
+    @Override
+    public Map<Long, Integer> arBalancesAt(Collection<Long> studentIds, java.time.Instant at) {
+        return repository.arBalancesAt(studentIds, at);
+    }
+
+    @Override
+    public List<ru.campusrating.ledger.ArDayChange> arChangesByDay(Collection<Long> studentIds, java.time.LocalDate from, java.time.LocalDate to) {
+        return repository.arChangesByDay(studentIds, from, to);
+    }
+
+    @Override
+    public List<ru.campusrating.ledger.ActivityAwardTotal> activityAwardTotals(Collection<Long> studentIds, java.time.LocalDate from, java.time.LocalDate to) {
+        return repository.activityAwardTotals(studentIds, from, to);
+    }
+
+    @Override
+    public Optional<java.time.Instant> latestSemesterStart(java.time.Instant at) {
+        return semesters.latestStart(at);
+    }
+
 }

@@ -79,8 +79,9 @@ class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/register/student", "/api/v1/auth/register/teacher").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/checkpoints", "/api/v1/checkpoints/defaults", "/api/v1/me/accessible-groups",
-                                "/api/v1/budgets", "/api/v1/me/awards", "/api/v1/me/awards/summary", "/api/v1/groups/*/ratings").hasRole("TEACHER")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/checkpoints/*", "/api/v1/checkpoints/*/assignments").hasAnyRole("TEACHER", "ADMIN")
+                                "/api/v1/budgets", "/api/v1/me/awards", "/api/v1/me/awards/summary").hasRole("TEACHER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/checkpoints/*", "/api/v1/checkpoints/*/assignments",
+                                "/api/v1/groups/*/ratings").hasAnyRole("TEACHER", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/checkpoints", "/api/v1/checkpoints/*/assignments/accept", "/api/v1/assignments/*/return",
                                 "/api/v1/activities", "/api/v1/activities/*/participation", "/api/v1/activities/*/participation/preview").hasRole("TEACHER")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/checkpoints/*").hasRole("TEACHER")
