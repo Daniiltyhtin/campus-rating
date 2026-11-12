@@ -1148,7 +1148,7 @@
 
 - **Кто / агент / модель:** Максим / Claude Code / claude-opus-5-5.
 - **Поручение:** план юнита мастер-U15 на остаток после PR #55 (там уже сделано подтверждение email).
-- **Результат с доказательствами:** `docs/spec/plans/2026-11-12-011-feat-u15-membership-verification-plan.md`: контракт шести операций, U1–U5 со сценариями. Решения человека: отклонённая заявка — состояние `REJECTED` с повторной заявкой студента; староста — один на группу и входит в U15. `node tools/check-agent-docs.mjs` — passed.
+- **Результат с доказательствами:** `docs/spec/plans/2026-11-12-013-feat-u15-membership-verification-plan.md`: контракт шести операций, U1–U5 со сценариями. Решения человека: отклонённая заявка — состояние `REJECTED` с повторной заявкой студента; староста — один на группу и входит в U15. `node tools/check-agent-docs.mjs` — passed.
 - **Не проверено:** HTTP API GreenMail — проба на образе заложена в план (KTD6); раздел «что сделано в #55» сверить после его слияния.
 - **Ошибка агента:** нет.
 - **Урок:** нового нет.
@@ -1158,7 +1158,7 @@
 ### 2026-11-12 — U15: реализация подтверждения членства, старост и e2e с почтой
 
 - **Кто / агент / модель:** Максим / Claude Code / claude-opus-5-5 (две сессии: первая написала код и тесты, вторая проверила, доделала и слила `main`).
-- **Поручение:** U0–U5 плана `docs/spec/plans/2026-11-12-011-feat-u15-membership-verification-plan.md`.
+- **Поручение:** U0–U5 плана `docs/spec/plans/2026-11-12-013-feat-u15-membership-verification-plan.md`.
 - **Результат с доказательствами:** контракт семи операций (`implemented`), changeset `identity/202611131000-membership-approval.sql` (`REJECTED`, `requested_at`, `group_head`), `MembershipApproval`, `GroupHeads`, `MembershipsController`, `AdminGroupHeadsController`, экраны `/memberships`, плашки на «Главной», колонка «Староста», e2e-стек с `required` и GreenMail, сценарий REG-03. До слияния `main`: `mvn -B -f backend/pom.xml verify` в `maven:3.9.16-eclipse-temurin-25` — 355 unit + 455 IT, 0 падений (`MembershipApprovalIT` 13, `GroupHeadIT` 7, `VerificationIT` 8), `crap.mjs` rc=0. На слитом с `main` SHA: `npm --prefix frontend run check` — 625 passed, 1 skipped; `build` — успешно; `api:gen` — без изменений; `redocly lint` — valid; `check-agent-docs` — passed.
 - **Не проверено:** PIT (`-Pquality`) и e2e (`npm --prefix e2e test` на стеке с GreenMail) — переданы тестировщику; скриншоты U3 на 360 и 1280 px — через e2e (`evidence`); red приёмочных тестов до реализации не наблюдался.
 - **Ошибка агента:** тесты писала та же сессия, что и код, и после него (16:15 против 16:10), а не отдельная сессия `write-tests` до реализации → заметили по времени файлов при приёмке → нужна независимая приёмка тестировщиком. Админские операции старост лежали в `MembershipsController` вопреки Files U2 → вынесены в `AdminGroupHeadsController`.
