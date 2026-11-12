@@ -858,7 +858,7 @@ U15–U19 (P2–P4) по KTD20 вне графика: берутся, тольк
 - **Goal.** Опросы с анонимностью и статистикой.
 - **Requirements.** R3, R33, R34, R35, события опросов из R28 и R29; KTD11, KTD14, KTD23.
 - **Dependencies.** U5, U14.
-- **Files:** `backend/.../poll/`, `backend/src/main/resources/db/changelog/poll/<ts>-poll.sql`, `backend/.../feed/internal/PollEventListeners.java`, `frontend/src/features/polls/`, `backend/src/test/java/ru/campusrating/poll/PollIT.java`, `backend/src/test/java/ru/campusrating/poll/VoteValidationTest.java`.
+- **Files:** `backend/.../poll/`, `backend/src/main/resources/db/changelog/poll/<ts>-poll.sql`, `backend/.../feed/internal/PollEventListeners.java`, `frontend/src/features/polls/`, `backend/src/test/java/ru/campusrating/poll/PollIT.java`, `backend/src/test/java/ru/campusrating/poll/VoteValidationTest.java`; детальный план — `docs/spec/plans/2026-11-12-014-feat-u16-polls-plan.md`.
 - **Approach.** Голосование — одна транзакция: вставка `PollParticipation` (уникальна по опросу и пользователю) и голоса. В анонимном опросе голос пишется без `user_id`. Создание опроса публикует `PollCreated` (событие студентам целевых групп), закрытие по дате — `PollClosed` (событие автору); лента подписывается на них по образцу U14.
 - **Test scenarios:**
   - `SINGLE` с двумя вариантами отклоняется; `MULTIPLE` с двумя проходит.
