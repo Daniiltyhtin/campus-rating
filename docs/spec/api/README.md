@@ -60,10 +60,14 @@ npx --yes @redocly/cli@2.76.0 lint --config docs/spec/api/redocly.yaml docs/spec
 1. Правка `openapi.yaml` в PR юнита до кода: операция с `x-status: planned`, роли, «Доступ:», ответы, примеры на демо-данных. Новый код ошибки — только в `ProblemCode` и его таблице.
 2. Линтер зелёный.
 3. После мастер-U2 и U7 плана U3: `npm --prefix frontend run api:gen` перегенерирует типы и примеры для моков; пустой `git diff` проверяет CI.
-4. Реализация. Юнит, реализовавший операцию, переводит её в `x-status: implemented`. `ContractCompatibilityIT` требует присутствия операции в springdoc и проверяет совместимость исходных схем OpenAPI 3.1 через oasdiff. DTO явно описывает обязательность, nullable и ограничения из контракта: например, `@Schema(requiredProperties = ...)` и Bean Validation. Проверяются параметры, тела запросов и успешные ответы без понижения формата и удаления ограничений ответа. Перед verify установите закреплённый инструмент: `node tools/install-oasdiff.mjs`.
+4. Реализация. Юнит, реализовавший операцию, переводит её в `x-status: implemented`. `ContractCompatibilityIT` требует присутствия операции в springdoc и проверяет совместимость исходных схем OpenAPI 3.1 через oasdiff. DTO явно описывает обязательность, nullable и ограничения из контракта: например, `@Schema(requiredProperties = ...)` и Bean Validation. Проверяются параметры, тела запросов и успешные ответы без понижения формата и удаления ограничений ответа. Перед verify установите закреплённый инструмент: `node tools/install-oasdiff.mjs`. Варианты `anyOf`/`oneOf` oasdiff сравнивает по именам схем: DTO-варианту нужен `@Schema(name = …)` как в контракте (`UserRef` у автора истории, `ledger/api/LedgerEntriesController.java`), а совпавшее имя у DTO другого модуля держится той же структуры.
 5. Изменение шва — правкой `module-seams.md` с ревью владельца и потребителей.
 
 Администрирование (мастер-U13), подтверждение email и членства (мастер-U15) и модули P2–P4 добавляют свои операции так же.
+
+Первая часть U13 описана как planned: `/admin/directory/faculties`, `/groups`, `/departments` (последние два — с тем же префиксом `/admin/directory`). Полные admin DTO сохраняют code и admissionYear, которых нет в публичном StudyGroupRef. Чтение/создание/полная правка/удаление доступны только ADMIN; запись требует CSRF. Код занят — `DIRECTORY_CODE_TAKEN`, удаление используемой записи — `DIRECTORY_IN_USE` (409). Существующие публичные DTO и backend не меняются. Границы и frontend-проверки — [план U13](../plans/2026-11-11-003-feat-u13-directory-frontend-plan.md).
+
+Следующая часть U13 — planned `/admin/teachers`: список/карточка, допуск с проверенной кафедрой, отклонение заявки, четыре варианта выдач и серверный список доступных групп. Grant request/view — строгие плоские oneOf с discriminator kind; чужие поля не принимаются. Повтор одинаковой выдачи возвращает существующую200, новая —201; снятие пары teacherId/grantId не затрагивает чужую выдачу. Scope вычисляет сервер по KTD23, до допуска он пуст. [План](../plans/2026-11-11-004-feat-u13-teachers-frontend-plan.md). Backend не меняется этим расширением.
 
 ## Матрица сценариев
 

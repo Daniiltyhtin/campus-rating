@@ -4577,5 +4577,1817 @@ export const examples: ExampleOperation[] = [
         }
       }
     ]
+  },
+  {
+    "path": "/api/v1/admin/directory/faculties",
+    "method": "get",
+    "operationId": "listAdminFaculties",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "items": [
+            {
+              "id": 1,
+              "code": "ФИТ",
+              "name": "Факультет информационных технологий"
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/directory/faculties",
+    "method": "post",
+    "operationId": "createAdminFaculty",
+    "responses": [
+      {
+        "status": 201,
+        "contentType": "application/json",
+        "body": {
+          "id": 1,
+          "code": "ФИТ",
+          "name": "Факультет информационных технологий"
+        }
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Directory conflict",
+          "status": 409,
+          "code": "DIRECTORY_CODE_TAKEN",
+          "detail": "Код уже используется."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/directory/faculties/{id}",
+    "method": "put",
+    "operationId": "updateAdminFaculty",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "id": 1,
+          "code": "ФИТ",
+          "name": "Факультет информационных технологий"
+        }
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Directory conflict",
+          "status": 409,
+          "code": "DIRECTORY_CODE_TAKEN",
+          "detail": "Код уже используется."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/directory/faculties/{id}",
+    "method": "delete",
+    "operationId": "deleteAdminFaculty",
+    "responses": [
+      {
+        "status": 204,
+        "contentType": "",
+        "body": null
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Directory conflict",
+          "status": 409,
+          "code": "DIRECTORY_IN_USE",
+          "detail": "Нельзя удалить используемую запись справочника."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/directory/groups",
+    "method": "get",
+    "operationId": "listAdminGroups",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "items": [
+            {
+              "id": 11,
+              "code": "IVT-21",
+              "name": "ИВТ-21",
+              "faculty": {
+                "id": 1,
+                "code": "ФИТ",
+                "name": "Факультет информационных технологий"
+              },
+              "admissionYear": 2025
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/directory/groups",
+    "method": "post",
+    "operationId": "createAdminStudyGroup",
+    "responses": [
+      {
+        "status": 201,
+        "contentType": "application/json",
+        "body": {
+          "id": 11,
+          "code": "IVT-21",
+          "name": "ИВТ-21",
+          "faculty": {
+            "id": 1,
+            "code": "ФИТ",
+            "name": "Факультет информационных технологий"
+          },
+          "admissionYear": 2025
+        }
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Directory conflict",
+          "status": 409,
+          "code": "DIRECTORY_CODE_TAKEN",
+          "detail": "Код уже используется."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/directory/groups/{id}",
+    "method": "put",
+    "operationId": "updateAdminStudyGroup",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "id": 11,
+          "code": "IVT-21",
+          "name": "ИВТ-21",
+          "faculty": {
+            "id": 1,
+            "code": "ФИТ",
+            "name": "Факультет информационных технологий"
+          },
+          "admissionYear": 2025
+        }
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Directory conflict",
+          "status": 409,
+          "code": "DIRECTORY_CODE_TAKEN",
+          "detail": "Код уже используется."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/directory/groups/{id}",
+    "method": "delete",
+    "operationId": "deleteAdminStudyGroup",
+    "responses": [
+      {
+        "status": 204,
+        "contentType": "",
+        "body": null
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Directory conflict",
+          "status": 409,
+          "code": "DIRECTORY_IN_USE",
+          "detail": "Нельзя удалить используемую запись справочника."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/directory/departments",
+    "method": "get",
+    "operationId": "listAdminDepartments",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "items": [
+            {
+              "id": 101,
+              "code": "ПИ",
+              "name": "Кафедра программной инженерии",
+              "faculty": {
+                "id": 1,
+                "code": "ФИТ",
+                "name": "Факультет информационных технологий"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/directory/departments",
+    "method": "post",
+    "operationId": "createAdminDepartment",
+    "responses": [
+      {
+        "status": 201,
+        "contentType": "application/json",
+        "body": {
+          "id": 101,
+          "code": "ПИ",
+          "name": "Кафедра программной инженерии",
+          "faculty": {
+            "id": 1,
+            "code": "ФИТ",
+            "name": "Факультет информационных технологий"
+          }
+        }
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Directory conflict",
+          "status": 409,
+          "code": "DIRECTORY_CODE_TAKEN",
+          "detail": "Код уже используется."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/directory/departments/{id}",
+    "method": "put",
+    "operationId": "updateAdminDepartment",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "id": 101,
+          "code": "ПИ",
+          "name": "Кафедра программной инженерии",
+          "faculty": {
+            "id": 1,
+            "code": "ФИТ",
+            "name": "Факультет информационных технологий"
+          }
+        }
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Directory conflict",
+          "status": 409,
+          "code": "DIRECTORY_CODE_TAKEN",
+          "detail": "Код уже используется."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/directory/departments/{id}",
+    "method": "delete",
+    "operationId": "deleteAdminDepartment",
+    "responses": [
+      {
+        "status": 204,
+        "contentType": "",
+        "body": null
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Directory conflict",
+          "status": 409,
+          "code": "DIRECTORY_IN_USE",
+          "detail": "Нельзя удалить используемую запись справочника."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/teachers",
+    "method": "get",
+    "operationId": "listAdminTeachers",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "items": [
+            {
+              "id": 2002,
+              "fullName": "Волков Максим Игоревич",
+              "email": "volkov@campus.test",
+              "department": {
+                "id": 101,
+                "code": "ПИ",
+                "name": "Кафедра программной инженерии",
+                "faculty": {
+                  "id": 1,
+                  "code": "ФИТ",
+                  "name": "Факультет информационных технологий"
+                }
+              },
+              "teacherApproved": false
+            },
+            {
+              "id": 2001,
+              "fullName": "Петров Павел Петрович",
+              "email": "petrov@campus.test",
+              "department": {
+                "id": 101,
+                "code": "ПИ",
+                "name": "Кафедра программной инженерии",
+                "faculty": {
+                  "id": 1,
+                  "code": "ФИТ",
+                  "name": "Факультет информационных технологий"
+                }
+              },
+              "teacherApproved": true
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/teachers/{teacherId}",
+    "method": "get",
+    "operationId": "getAdminTeacher",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "id": 2002,
+          "fullName": "Волков Максим Игоревич",
+          "email": "volkov@campus.test",
+          "department": {
+            "id": 101,
+            "code": "ПИ",
+            "name": "Кафедра программной инженерии",
+            "faculty": {
+              "id": 1,
+              "code": "ФИТ",
+              "name": "Факультет информационных технологий"
+            }
+          },
+          "teacherApproved": false
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/teachers/{teacherId}/approval",
+    "method": "post",
+    "operationId": "approveAdminTeacher",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "id": 2002,
+          "fullName": "Волков Максим Игоревич",
+          "email": "volkov@campus.test",
+          "department": {
+            "id": 101,
+            "code": "ПИ",
+            "name": "Кафедра программной инженерии",
+            "faculty": {
+              "id": 1,
+              "code": "ФИТ",
+              "name": "Факультет информационных технологий"
+            }
+          },
+          "teacherApproved": true
+        }
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Conflict",
+          "status": 409,
+          "code": "INVALID_STATE",
+          "detail": "Действие недоступно в текущем состоянии."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/teachers/{teacherId}/application",
+    "method": "delete",
+    "operationId": "rejectAdminTeacher",
+    "responses": [
+      {
+        "status": 204,
+        "contentType": "",
+        "body": null
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Conflict",
+          "status": 409,
+          "code": "INVALID_STATE",
+          "detail": "Действие недоступно в текущем состоянии."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/teachers/{teacherId}/grants",
+    "method": "get",
+    "operationId": "listAdminTeacherGrants",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "items": [
+            {
+              "id": 7001,
+              "kind": "GROUP",
+              "group": {
+                "id": 12,
+                "name": "ИВТ-22",
+                "faculty": {
+                  "id": 1,
+                  "code": "ФИТ",
+                  "name": "Факультет информационных технологий"
+                }
+              }
+            },
+            {
+              "id": 7002,
+              "kind": "FACULTY",
+              "faculty": {
+                "id": 2,
+                "code": "ЭФ",
+                "name": "Экономический факультет"
+              }
+            },
+            {
+              "id": 7003,
+              "kind": "FACULTY_COURSE",
+              "faculty": {
+                "id": 2,
+                "code": "ЭФ",
+                "name": "Экономический факультет"
+              },
+              "course": 1
+            },
+            {
+              "id": 7004,
+              "kind": "COURSE",
+              "course": 2
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/teachers/{teacherId}/grants",
+    "method": "post",
+    "operationId": "createAdminTeacherGrant",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "id": 7003,
+          "kind": "FACULTY_COURSE",
+          "faculty": {
+            "id": 2,
+            "code": "ЭФ",
+            "name": "Экономический факультет"
+          },
+          "course": 1
+        }
+      },
+      {
+        "status": 201,
+        "contentType": "application/json",
+        "body": {
+          "id": 7003,
+          "kind": "FACULTY_COURSE",
+          "faculty": {
+            "id": 2,
+            "code": "ЭФ",
+            "name": "Экономический факультет"
+          },
+          "course": 1
+        }
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/teachers/{teacherId}/grants/{grantId}",
+    "method": "delete",
+    "operationId": "deleteAdminTeacherGrant",
+    "responses": [
+      {
+        "status": 204,
+        "contentType": "",
+        "body": null
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/teachers/{teacherId}/accessible-groups",
+    "method": "get",
+    "operationId": "listAdminTeacherAccessibleGroups",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "items": [
+            {
+              "id": 11,
+              "name": "ИВТ-21",
+              "faculty": {
+                "id": 1,
+                "code": "ФИТ",
+                "name": "Факультет информационных технологий"
+              }
+            },
+            {
+              "id": 12,
+              "name": "ИВТ-22",
+              "faculty": {
+                "id": 1,
+                "code": "ФИТ",
+                "name": "Факультет информационных технологий"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      }
+    ]
   }
 ];

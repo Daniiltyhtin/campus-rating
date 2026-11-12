@@ -976,6 +976,294 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/directory/faculties": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Список факультетов
+         * @description Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Полный список, порядок name asc, затем id asc, без курсора.
+         */
+        get: operations["listAdminFaculties"];
+        put?: never;
+        /**
+         * Создать факультет
+         * @description Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Код и название trim; код уникален в своём справочнике, регистр сохраняется. Для группы/кафедры facultyId должен существовать, иначе VALIDATION_FAILED с fieldErrors.facultyId. Повтор POST с тем же кодом —409, не вторая запись.
+         */
+        post: operations["createAdminFaculty"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/directory/faculties/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Изменить факультет
+         * @description Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Полная замена полей write DTO. Правила trim/уникальности/facultyId как у создания. Смена факультета группы/кафедры меняет связь, существующие пользователи и события не пересоздаются.
+         */
+        put: operations["updateAdminFaculty"];
+        post?: never;
+        /**
+         * Удалить факультет
+         * @description Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Без каскадного удаления зависимостей. Группу со студентами удалить нельзя (мастер-U13); любые связанные записи сохраняются. Повтор после удаления —404 NOT_FOUND.
+         */
+        delete: operations["deleteAdminFaculty"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/directory/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Список учебных групп
+         * @description Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Полный список, порядок name asc, затем id asc, без курсора.
+         */
+        get: operations["listAdminGroups"];
+        put?: never;
+        /**
+         * Создать учебную группу
+         * @description Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Код и название trim; код уникален в своём справочнике, регистр сохраняется. Для группы/кафедры facultyId должен существовать, иначе VALIDATION_FAILED с fieldErrors.facultyId. Повтор POST с тем же кодом —409, не вторая запись.
+         */
+        post: operations["createAdminStudyGroup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/directory/groups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Изменить учебную группу
+         * @description Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Полная замена полей write DTO. Правила trim/уникальности/facultyId как у создания. Смена факультета группы/кафедры меняет связь, существующие пользователи и события не пересоздаются.
+         */
+        put: operations["updateAdminStudyGroup"];
+        post?: never;
+        /**
+         * Удалить учебную группу
+         * @description Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Без каскадного удаления зависимостей. Группу со студентами удалить нельзя (мастер-U13); любые связанные записи сохраняются. Повтор после удаления —404 NOT_FOUND.
+         */
+        delete: operations["deleteAdminStudyGroup"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/directory/departments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Список кафедр
+         * @description Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Полный список, порядок name asc, затем id asc, без курсора.
+         */
+        get: operations["listAdminDepartments"];
+        put?: never;
+        /**
+         * Создать кафедру
+         * @description Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Код и название trim; код уникален в своём справочнике, регистр сохраняется. Для группы/кафедры facultyId должен существовать, иначе VALIDATION_FAILED с fieldErrors.facultyId. Повтор POST с тем же кодом —409, не вторая запись.
+         */
+        post: operations["createAdminDepartment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/directory/departments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Изменить кафедру
+         * @description Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Полная замена полей write DTO. Правила trim/уникальности/facultyId как у создания. Смена факультета группы/кафедры меняет связь, существующие пользователи и события не пересоздаются.
+         */
+        put: operations["updateAdminDepartment"];
+        post?: never;
+        /**
+         * Удалить кафедру
+         * @description Мастер-R24/U13. Доступ: только администратор, в том числе в режиме prod. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Без каскадного удаления зависимостей. Группу со студентами удалить нельзя (мастер-U13); любые связанные записи сохраняются. Повтор после удаления —404 NOT_FOUND.
+         */
+        delete: operations["deleteAdminDepartment"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teachers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Преподаватели и заявки
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Полный список TEACHER, включая ожидающих допуска, name asc затем id asc. Счётчик заявок — число teacherApproved=false; email/кафедра сами по себе допуска не дают.
+         */
+        get: operations["listAdminTeachers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teachers/{teacherId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Карточка преподавателя
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED.
+         */
+        get: operations["getAdminTeacher"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teachers/{teacherId}/approval": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Допустить преподавателя
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Администратор проверяет кафедру: её факультет определяет базовый доступ. departmentId должен существовать, иначе VALIDATION_FAILED с fieldErrors.departmentId. Повтор уже принятой заявки с той же кафедрой возвращает текущее200 без второго эффекта. Другая кафедра у уже допущенного —409 INVALID_STATE; изменение кафедры допущенного этим действием не разрешается. Список преподавателей/допусков и TeacherScope обновляются согласованно.
+         */
+        post: operations["approveAdminTeacher"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teachers/{teacherId}/application": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Отклонить заявку преподавателя
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Только teacherApproved=false: удалить аккаунт и его зависимые записи доступа; завершить сессии. Повторная регистрация с email возможна. Уже допущенный —409 INVALID_STATE; отсутствующий или уже отклонённый —404 NOT_FOUND. Требует явного подтверждения в UI. Не удаляет другого пользователя по неподходящей роли.
+         */
+        delete: operations["rejectAdminTeacher"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teachers/{teacherId}/grants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Выдачи доступа преподавателю
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Все дополнительные выдачи, включая выданные до допуска. Базовый факультет кафедры сюда не входит. Порядок id asc, курс не вычисляется клиентом.
+         */
+        get: operations["listAdminTeacherGrants"];
+        put?: never;
+        /**
+         * Выдать доступ преподавателю
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Только точные сочетания GROUP(groupId), FACULTY(facultyId), FACULTY_COURSE(facultyId,course), COURSE(course). Другие поля, null, неизвестные id и курс вне1…6 —VALIDATION_FAILED с fieldErrors. Нет ограничения факультетом кафедры. Одинаковая выдача идемпотентна: новая201, уже существующая200 с тем жеid, без второго эффекта. До допуска TeacherScope остаётся пустым.
+         */
+        post: operations["createAdminTeacherGrant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teachers/{teacherId}/grants/{grantId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Снять выдачу доступа
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Удалить только указанную выдачу этого преподавателя; grant другого teacherId или отсутствующая выдача —404, чужую запись не менять. Повтор после удаления —404. TeacherScope пересчитывается, группа может остаться доступной по кафедре или другой выдаче. Старые авторские ресурсы сохраняются по KTD23.
+         */
+        delete: operations["deleteAdminTeacherGrant"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/teachers/{teacherId}/accessible-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Доступные группы преподавателя
+         * @description Мастер-R2/R24, KTD23/ADR007. Доступ: только администратор. До смены временного пароля — PASSWORD_CHANGE_REQUIRED. Только серверный TeacherScope: факультет кафедры ∪ дополнительные выдачи, для teacherApproved=false пусто. Курс рассчитывается по году набора и текущему учебному году Europe/Moscow с границей1сентября, только1…6. Уникальные группы name asc/id asc. Frontend не повторяет вычисление прав; при снятии выдачи здесь может оставаться группа по другому основанию.
+         */
+        get: operations["listAdminTeacherAccessibleGroups"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -996,6 +1284,8 @@ export interface components {
          *     | `CSRF_INVALID` | 403 | нет или неверен CSRF-заголовок |
          *     | `NOT_FOUND` | 404 | ресурса нет |
          *     | `INVALID_STATE` | 409 | недопустимый переход состояния |
+         *     | `DIRECTORY_CODE_TAKEN` | 409 | код занят внутри справочника R24 |
+         *     | `DIRECTORY_IN_USE` | 409 | запись справочника используется; удаление отклонено |
          *     | `EMAIL_TAKEN` | 409 | email уже зарегистрирован |
          *     | `EMAIL_RESERVED_FOR_TEACHER` | 409 | email из списка преподавателей регистрируется студентом |
          *     | `ALREADY_CONFIRMED` | 409 | участие уже подтверждено с другим уровнем |
@@ -1011,7 +1301,7 @@ export interface components {
          *     | `INTERNAL_ERROR` | 500 | непредвиденная ошибка сервера; подробности только в логе backend |
          * @enum {string}
          */
-        ProblemCode: "UNAUTHENTICATED" | "INVALID_CREDENTIALS" | "FORBIDDEN" | "GROUP_NOT_ACCESSIBLE" | "PASSWORD_CHANGE_REQUIRED" | "EMAIL_NOT_VERIFIED" | "CSRF_INVALID" | "NOT_FOUND" | "INVALID_STATE" | "EMAIL_TAKEN" | "EMAIL_RESERVED_FOR_TEACHER" | "ALREADY_CONFIRMED" | "VALIDATION_FAILED" | "PASSWORD_REUSED" | "FILE_TOO_LARGE" | "FILE_TYPE_NOT_ALLOWED" | "BUDGET_EXCEEDED" | "NOT_ENROLLED" | "STUDENT_NOT_ELIGIBLE" | "MEMBERSHIP_NOT_ACTIVE" | "ENROLLMENT_CLOSED" | "INTERNAL_ERROR";
+        ProblemCode: "UNAUTHENTICATED" | "INVALID_CREDENTIALS" | "FORBIDDEN" | "GROUP_NOT_ACCESSIBLE" | "PASSWORD_CHANGE_REQUIRED" | "EMAIL_NOT_VERIFIED" | "CSRF_INVALID" | "NOT_FOUND" | "INVALID_STATE" | "DIRECTORY_CODE_TAKEN" | "DIRECTORY_IN_USE" | "EMAIL_TAKEN" | "EMAIL_RESERVED_FOR_TEACHER" | "ALREADY_CONFIRMED" | "VALIDATION_FAILED" | "PASSWORD_REUSED" | "FILE_TOO_LARGE" | "FILE_TYPE_NOT_ALLOWED" | "BUDGET_EXCEEDED" | "NOT_ENROLLED" | "STUDENT_NOT_ELIGIBLE" | "MEMBERSHIP_NOT_ACTIVE" | "ENROLLMENT_CLOSED" | "INTERNAL_ERROR";
         /** @description Ошибка по RFC 9457 (`ProblemDetail` Spring) с доменным `code`. */
         Problem: {
             /**
@@ -1827,6 +2117,148 @@ export interface components {
             /** Format: int32 */
             checkedPairs: number;
             mismatches: components["schemas"]["BalanceMismatch"][];
+        };
+        /** @description Непустой код; внешние пробелы удаляются, регистр сохраняется. Уникален внутри соответствующего справочника. */
+        DirectoryCode: string;
+        /** @description Непустое название; внешние пробелы удаляются. */
+        DirectoryName: string;
+        /**
+         * Format: int32
+         * @description Год набора; будущий набор разрешён. Не вычислять курс на frontend.
+         */
+        AdmissionYear: number;
+        FacultyWrite: {
+            code: components["schemas"]["DirectoryCode"];
+            name: components["schemas"]["DirectoryName"];
+        };
+        StudyGroupWrite: {
+            code: components["schemas"]["DirectoryCode"];
+            name: components["schemas"]["DirectoryName"];
+            facultyId: components["schemas"]["Id"];
+            admissionYear: components["schemas"]["AdmissionYear"];
+        };
+        DepartmentWrite: {
+            code: components["schemas"]["DirectoryCode"];
+            name: components["schemas"]["DirectoryName"];
+            facultyId: components["schemas"]["Id"];
+        };
+        AdminFaculty: {
+            id: components["schemas"]["Id"];
+            code: components["schemas"]["DirectoryCode"];
+            name: components["schemas"]["DirectoryName"];
+        };
+        AdminStudyGroup: {
+            id: components["schemas"]["Id"];
+            code: components["schemas"]["DirectoryCode"];
+            name: components["schemas"]["DirectoryName"];
+            faculty: components["schemas"]["AdminFaculty"];
+            admissionYear: components["schemas"]["AdmissionYear"];
+        };
+        AdminDepartment: {
+            id: components["schemas"]["Id"];
+            code: components["schemas"]["DirectoryCode"];
+            name: components["schemas"]["DirectoryName"];
+            faculty: components["schemas"]["AdminFaculty"];
+        };
+        AdminFacultyList: {
+            items: components["schemas"]["AdminFaculty"][];
+        };
+        AdminStudyGroupList: {
+            items: components["schemas"]["AdminStudyGroup"][];
+        };
+        AdminDepartmentList: {
+            items: components["schemas"]["AdminDepartment"][];
+        };
+        AdminTeacher: {
+            id: components["schemas"]["Id"];
+            fullName: string;
+            /** Format: email */
+            email: string;
+            department: components["schemas"]["AdminDepartment"];
+            teacherApproved: boolean;
+        };
+        AdminTeacherList: {
+            items: components["schemas"]["AdminTeacher"][];
+        };
+        TeacherApprovalRequest: {
+            departmentId: components["schemas"]["Id"];
+        };
+        /** Format: int32 */
+        TeacherGrantCourse: number;
+        TeacherGrantGROUPRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "GROUP";
+            groupId: components["schemas"]["Id"];
+        };
+        TeacherGrantGROUPView: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "GROUP";
+            group: components["schemas"]["StudyGroupRef"];
+        };
+        TeacherGrantFACULTYRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "FACULTY";
+            facultyId: components["schemas"]["Id"];
+        };
+        TeacherGrantFACULTYView: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "FACULTY";
+            faculty: components["schemas"]["FacultyRef"];
+        };
+        TeacherGrantFACULTY_COURSERequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "FACULTY_COURSE";
+            facultyId: components["schemas"]["Id"];
+            course: components["schemas"]["TeacherGrantCourse"];
+        };
+        TeacherGrantFACULTY_COURSEView: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "FACULTY_COURSE";
+            faculty: components["schemas"]["FacultyRef"];
+            course: components["schemas"]["TeacherGrantCourse"];
+        };
+        TeacherGrantCOURSERequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "COURSE";
+            course: components["schemas"]["TeacherGrantCourse"];
+        };
+        TeacherGrantCOURSEView: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "COURSE";
+            course: components["schemas"]["TeacherGrantCourse"];
+        };
+        TeacherGrantCreate: components["schemas"]["TeacherGrantGROUPRequest"] | components["schemas"]["TeacherGrantFACULTYRequest"] | components["schemas"]["TeacherGrantFACULTY_COURSERequest"] | components["schemas"]["TeacherGrantCOURSERequest"];
+        AdminTeacherGrant: components["schemas"]["TeacherGrantGROUPView"] | components["schemas"]["TeacherGrantFACULTYView"] | components["schemas"]["TeacherGrantFACULTY_COURSEView"] | components["schemas"]["TeacherGrantCOURSEView"];
+        AdminTeacherGrantList: {
+            items: components["schemas"]["AdminTeacherGrant"][];
         };
     };
     responses: {
@@ -4111,6 +4543,1019 @@ export interface operations {
             };
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];
+        };
+    };
+    listAdminFaculties: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Список. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": 1,
+                     *           "code": "ФИТ",
+                     *           "name": "Факультет информационных технологий"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminFacultyList"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    createAdminFaculty: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "code": "ФИТ",
+                 *       "name": "Факультет информационных технологий"
+                 *     }
+                 */
+                "application/json": components["schemas"]["FacultyWrite"];
+            };
+        };
+        responses: {
+            /** @description Создано. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 1,
+                     *       "code": "ФИТ",
+                     *       "name": "Факультет информационных технологий"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminFaculty"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            /** @description Код уже используется другой записью этого справочника, регистр учитывается. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "about:blank",
+                     *       "title": "Directory conflict",
+                     *       "status": 409,
+                     *       "code": "DIRECTORY_CODE_TAKEN",
+                     *       "detail": "Код уже используется."
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateAdminFaculty: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "code": "ФИТ",
+                 *       "name": "Факультет информационных технологий"
+                 *     }
+                 */
+                "application/json": components["schemas"]["FacultyWrite"];
+            };
+        };
+        responses: {
+            /** @description Обновлено. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 1,
+                     *       "code": "ФИТ",
+                     *       "name": "Факультет информационных технологий"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminFaculty"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description Код уже используется другой записью этого справочника, регистр учитывается. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "about:blank",
+                     *       "title": "Directory conflict",
+                     *       "status": 409,
+                     *       "code": "DIRECTORY_CODE_TAKEN",
+                     *       "detail": "Код уже используется."
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteAdminFaculty: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Удалено, тело отсутствует. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description Запись используется: группа студентами/назначениями/активностями, кафедра преподавателями/списком, факультет группами/кафедрами/выдачами. Запись не удаляется. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "about:blank",
+                     *       "title": "Directory conflict",
+                     *       "status": 409,
+                     *       "code": "DIRECTORY_IN_USE",
+                     *       "detail": "Нельзя удалить используемую запись справочника."
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listAdminGroups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Список. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": 11,
+                     *           "code": "IVT-21",
+                     *           "name": "ИВТ-21",
+                     *           "faculty": {
+                     *             "id": 1,
+                     *             "code": "ФИТ",
+                     *             "name": "Факультет информационных технологий"
+                     *           },
+                     *           "admissionYear": 2025
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminStudyGroupList"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    createAdminStudyGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "code": "IVT-21",
+                 *       "name": "ИВТ-21",
+                 *       "facultyId": 1,
+                 *       "admissionYear": 2025
+                 *     }
+                 */
+                "application/json": components["schemas"]["StudyGroupWrite"];
+            };
+        };
+        responses: {
+            /** @description Создано. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 11,
+                     *       "code": "IVT-21",
+                     *       "name": "ИВТ-21",
+                     *       "faculty": {
+                     *         "id": 1,
+                     *         "code": "ФИТ",
+                     *         "name": "Факультет информационных технологий"
+                     *       },
+                     *       "admissionYear": 2025
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminStudyGroup"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            /** @description Код уже используется другой записью этого справочника, регистр учитывается. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "about:blank",
+                     *       "title": "Directory conflict",
+                     *       "status": 409,
+                     *       "code": "DIRECTORY_CODE_TAKEN",
+                     *       "detail": "Код уже используется."
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateAdminStudyGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "code": "IVT-21",
+                 *       "name": "ИВТ-21",
+                 *       "facultyId": 1,
+                 *       "admissionYear": 2025
+                 *     }
+                 */
+                "application/json": components["schemas"]["StudyGroupWrite"];
+            };
+        };
+        responses: {
+            /** @description Обновлено. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 11,
+                     *       "code": "IVT-21",
+                     *       "name": "ИВТ-21",
+                     *       "faculty": {
+                     *         "id": 1,
+                     *         "code": "ФИТ",
+                     *         "name": "Факультет информационных технологий"
+                     *       },
+                     *       "admissionYear": 2025
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminStudyGroup"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description Код уже используется другой записью этого справочника, регистр учитывается. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "about:blank",
+                     *       "title": "Directory conflict",
+                     *       "status": 409,
+                     *       "code": "DIRECTORY_CODE_TAKEN",
+                     *       "detail": "Код уже используется."
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteAdminStudyGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Удалено, тело отсутствует. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description Запись используется: группа студентами/назначениями/активностями, кафедра преподавателями/списком, факультет группами/кафедрами/выдачами. Запись не удаляется. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "about:blank",
+                     *       "title": "Directory conflict",
+                     *       "status": 409,
+                     *       "code": "DIRECTORY_IN_USE",
+                     *       "detail": "Нельзя удалить используемую запись справочника."
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listAdminDepartments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Список. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": 101,
+                     *           "code": "ПИ",
+                     *           "name": "Кафедра программной инженерии",
+                     *           "faculty": {
+                     *             "id": 1,
+                     *             "code": "ФИТ",
+                     *             "name": "Факультет информационных технологий"
+                     *           }
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminDepartmentList"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    createAdminDepartment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "code": "ПИ",
+                 *       "name": "Кафедра программной инженерии",
+                 *       "facultyId": 1
+                 *     }
+                 */
+                "application/json": components["schemas"]["DepartmentWrite"];
+            };
+        };
+        responses: {
+            /** @description Создано. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 101,
+                     *       "code": "ПИ",
+                     *       "name": "Кафедра программной инженерии",
+                     *       "faculty": {
+                     *         "id": 1,
+                     *         "code": "ФИТ",
+                     *         "name": "Факультет информационных технологий"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminDepartment"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            /** @description Код уже используется другой записью этого справочника, регистр учитывается. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "about:blank",
+                     *       "title": "Directory conflict",
+                     *       "status": 409,
+                     *       "code": "DIRECTORY_CODE_TAKEN",
+                     *       "detail": "Код уже используется."
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    updateAdminDepartment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "code": "ПИ",
+                 *       "name": "Кафедра программной инженерии",
+                 *       "facultyId": 1
+                 *     }
+                 */
+                "application/json": components["schemas"]["DepartmentWrite"];
+            };
+        };
+        responses: {
+            /** @description Обновлено. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 101,
+                     *       "code": "ПИ",
+                     *       "name": "Кафедра программной инженерии",
+                     *       "faculty": {
+                     *         "id": 1,
+                     *         "code": "ФИТ",
+                     *         "name": "Факультет информационных технологий"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminDepartment"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description Код уже используется другой записью этого справочника, регистр учитывается. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "about:blank",
+                     *       "title": "Directory conflict",
+                     *       "status": 409,
+                     *       "code": "DIRECTORY_CODE_TAKEN",
+                     *       "detail": "Код уже используется."
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    deleteAdminDepartment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Удалено, тело отсутствует. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description Запись используется: группа студентами/назначениями/активностями, кафедра преподавателями/списком, факультет группами/кафедрами/выдачами. Запись не удаляется. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "about:blank",
+                     *       "title": "Directory conflict",
+                     *       "status": 409,
+                     *       "code": "DIRECTORY_IN_USE",
+                     *       "detail": "Нельзя удалить используемую запись справочника."
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listAdminTeachers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Результат. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": 2002,
+                     *           "fullName": "Волков Максим Игоревич",
+                     *           "email": "volkov@campus.test",
+                     *           "department": {
+                     *             "id": 101,
+                     *             "code": "ПИ",
+                     *             "name": "Кафедра программной инженерии",
+                     *             "faculty": {
+                     *               "id": 1,
+                     *               "code": "ФИТ",
+                     *               "name": "Факультет информационных технологий"
+                     *             }
+                     *           },
+                     *           "teacherApproved": false
+                     *         },
+                     *         {
+                     *           "id": 2001,
+                     *           "fullName": "Петров Павел Петрович",
+                     *           "email": "petrov@campus.test",
+                     *           "department": {
+                     *             "id": 101,
+                     *             "code": "ПИ",
+                     *             "name": "Кафедра программной инженерии",
+                     *             "faculty": {
+                     *               "id": 1,
+                     *               "code": "ФИТ",
+                     *               "name": "Факультет информационных технологий"
+                     *             }
+                     *           },
+                     *           "teacherApproved": true
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminTeacherList"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    getAdminTeacher: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                teacherId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Результат. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 2002,
+                     *       "fullName": "Волков Максим Игоревич",
+                     *       "email": "volkov@campus.test",
+                     *       "department": {
+                     *         "id": 101,
+                     *         "code": "ПИ",
+                     *         "name": "Кафедра программной инженерии",
+                     *         "faculty": {
+                     *           "id": 1,
+                     *           "code": "ФИТ",
+                     *           "name": "Факультет информационных технологий"
+                     *         }
+                     *       },
+                     *       "teacherApproved": false
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminTeacher"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    approveAdminTeacher: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                teacherId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "departmentId": 101
+                 *     }
+                 */
+                "application/json": components["schemas"]["TeacherApprovalRequest"];
+            };
+        };
+        responses: {
+            /** @description Результат. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 2002,
+                     *       "fullName": "Волков Максим Игоревич",
+                     *       "email": "volkov@campus.test",
+                     *       "department": {
+                     *         "id": 101,
+                     *         "code": "ПИ",
+                     *         "name": "Кафедра программной инженерии",
+                     *         "faculty": {
+                     *           "id": 1,
+                     *           "code": "ФИТ",
+                     *           "name": "Факультет информационных технологий"
+                     *         }
+                     *       },
+                     *       "teacherApproved": true
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminTeacher"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["InvalidState"];
+        };
+    };
+    rejectAdminTeacher: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                teacherId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Заявка отклонена, аккаунт удалён. Тело отсутствует. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["InvalidState"];
+        };
+    };
+    listAdminTeacherGrants: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                teacherId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Результат. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": 7001,
+                     *           "kind": "GROUP",
+                     *           "group": {
+                     *             "id": 12,
+                     *             "name": "ИВТ-22",
+                     *             "faculty": {
+                     *               "id": 1,
+                     *               "code": "ФИТ",
+                     *               "name": "Факультет информационных технологий"
+                     *             }
+                     *           }
+                     *         },
+                     *         {
+                     *           "id": 7002,
+                     *           "kind": "FACULTY",
+                     *           "faculty": {
+                     *             "id": 2,
+                     *             "code": "ЭФ",
+                     *             "name": "Экономический факультет"
+                     *           }
+                     *         },
+                     *         {
+                     *           "id": 7003,
+                     *           "kind": "FACULTY_COURSE",
+                     *           "faculty": {
+                     *             "id": 2,
+                     *             "code": "ЭФ",
+                     *             "name": "Экономический факультет"
+                     *           },
+                     *           "course": 1
+                     *         },
+                     *         {
+                     *           "id": 7004,
+                     *           "kind": "COURSE",
+                     *           "course": 2
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminTeacherGrantList"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createAdminTeacherGrant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                teacherId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "kind": "FACULTY_COURSE",
+                 *       "facultyId": 2,
+                 *       "course": 1
+                 *     }
+                 */
+                "application/json": components["schemas"]["TeacherGrantCreate"];
+            };
+        };
+        responses: {
+            /** @description Идентичная выдача уже существует. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 7003,
+                     *       "kind": "FACULTY_COURSE",
+                     *       "faculty": {
+                     *         "id": 2,
+                     *         "code": "ЭФ",
+                     *         "name": "Экономический факультет"
+                     *       },
+                     *       "course": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminTeacherGrant"];
+                };
+            };
+            /** @description Создана новая выдача. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 7003,
+                     *       "kind": "FACULTY_COURSE",
+                     *       "faculty": {
+                     *         "id": 2,
+                     *         "code": "ЭФ",
+                     *         "name": "Экономический факультет"
+                     *       },
+                     *       "course": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminTeacherGrant"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deleteAdminTeacherGrant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                teacherId: components["schemas"]["Id"];
+                grantId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Выдача снята, тело отсутствует. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    listAdminTeacherAccessibleGroups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                teacherId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Результат. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": 11,
+                     *           "name": "ИВТ-21",
+                     *           "faculty": {
+                     *             "id": 1,
+                     *             "code": "ФИТ",
+                     *             "name": "Факультет информационных технологий"
+                     *           }
+                     *         },
+                     *         {
+                     *           "id": 12,
+                     *           "name": "ИВТ-22",
+                     *           "faculty": {
+                     *             "id": 1,
+                     *             "code": "ФИТ",
+                     *             "name": "Факультет информационных технологий"
+                     *           }
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StudyGroupList"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
 }

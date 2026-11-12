@@ -59,6 +59,7 @@ public record BudgetCheck(long groupId, String groupName, int needed, int remain
 package ru.campusrating.directory;
 
 public interface DirectoryApi {
+    Optional<FacultyInfo> faculty(long facultyId);
     Optional<GroupInfo> group(long groupId);
     Map<Long, GroupInfo> groups(Collection<Long> groupIds);
     List<GroupInfo> groupsOfFaculty(long facultyId);

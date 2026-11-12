@@ -16,7 +16,6 @@ class SecurityProblems {
     void write(HttpServletRequest request, HttpServletResponse response, ProblemCode code) throws IOException {
         response.setStatus(code.status());
         response.setContentType("application/problem+json");
-        response.setCharacterEncoding("UTF-8");
         mapper.writeValue(response.getOutputStream(), Map.of("type", "about:blank", "title", HttpStatus.valueOf(code.status()).getReasonPhrase(),
                 "status", code.status(), "code", code.name(), "detail", detail(code), "instance", request.getRequestURI()));
     }

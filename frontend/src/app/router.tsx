@@ -17,6 +17,7 @@ export const routes: RouteObject[] = [
       { element: <GuestGate />, children: [{ path: 'login', element: <LoginPage /> }, { path: 'register', element: <RegisterPage /> }] },
       { element: <PasswordGate />, children: [{ path: 'password/change', element: <ChangePasswordPage /> }] },
       { element: <SessionGate />, children: [
+        { path: 'admin/directory', lazy: async () => ({ Component: (await import('../features/admin/directory/DirectoryPage')).DirectoryPage }) },
         { path: 'tasks', lazy: async () => ({ Component: (await import('../features/tasks/TaskList')).TaskList }) },
         { path: 'tasks/:id', lazy: async () => ({ Component: (await import('../features/tasks/TaskPage')).TaskPage }) },
         { path: 'checkpoints', lazy: async () => ({ Component: (await import('../features/tasks/CheckpointList')).CheckpointList }) },

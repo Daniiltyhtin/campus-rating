@@ -47,6 +47,8 @@ React 19, Vite, TypeScript, Mantine, React Router, TanStack Query, Vitest. До�
 
 ## Уроки
 
+- Отключённый opener терял focus → QA → сохранять ссылку до disable (`src/features/admin/directory/DirectoryPage.tsx`).
+
 - Lazy UI превысил findBy 1 s → tester подтвердил loading DOM → локальные async/test timeouts с restore без смены ожиданий (`src/features/profile/profile.acceptance.test.tsx`).
 
 - Выбор участников сохранялся при переходе на другую уже закешированную активность → воспроизвёл тест с двумя заполненными query keys → состояние формы подтверждения привязывать к activity.id через key; проверять переход и на холодные, и на прогретые данные (`src/features/activities/ConfirmParticipationPage.tsx`, `navigation.test.tsx`).
