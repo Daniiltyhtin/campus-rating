@@ -1,4 +1,5 @@
 import { Anchor, Stack, Text } from '@mantine/core';
+import { CurrencyIcon } from '../../app/CurrencyMark';
 import { Link } from 'react-router';
 import type { ReactNode } from 'react';
 import { ApiError } from '../../api/client';
@@ -35,5 +36,5 @@ export function ActivityFailure({ error, participants = [] }: { error: unknown; 
     {error instanceof ApiError && error.problem.code === 'BUDGET_EXCEEDED' && <BudgetChecks budgets={error.problem.budgets} />}</div>;
 }
 export function Points({ amount, currency }: { amount: number; currency: string }) {
-  return <span className={`cr-number ${currency === 'BUA' ? 'cr-bua' : 'cr-boa'}`}>{amount} {currency === 'BUA' ? 'БУА' : 'БОА'}</span>;
+  return <span className={`cr-number cr-currency-mark ${currency === 'BUA' ? 'cr-bua' : 'cr-boa'}`}><CurrencyIcon currency={currency === 'BUA' ? 'BUA' : 'BOA'} />{amount} {currency === 'BUA' ? 'БУА' : 'БОА'}</span>;
 }

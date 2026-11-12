@@ -31,6 +31,10 @@ html[data-theme='high-contrast'] a { text-decoration: underline; }
 .cr-ar { color: var(--cr-currency-ar); }
 .cr-bua { color: var(--cr-currency-bua); }
 .cr-boa { color: var(--cr-currency-boa); }
+.cr-currency-mark { display: inline-flex; align-items: center; gap: 4px; text-decoration: none; cursor: help; }
+.cr-currency-icon { flex: none; vertical-align: -3px; }
+.cr-currency-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.cr-currency-legend span { display: inline-flex; align-items: center; gap: 4px; }
 .mantine-Checkbox-label { position: relative; }
 .mantine-Checkbox-label::before { content: ''; position: absolute; inset: 0; inset-inline-start: calc(-1 * var(--mantine-spacing-xl)); }
 @media (max-width: 48em) {
