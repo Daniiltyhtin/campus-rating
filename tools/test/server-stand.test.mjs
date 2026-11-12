@@ -21,7 +21,7 @@ test('U22: override publishes only web on loopback', async () => {
 
 test('U22: override requires stand settings and runs demo behind a proxy', async () => {
   const backend = serviceBlock(await read('docker-compose.server.yml'), 'backend');
-  for (const name of ['POSTGRES_PASSWORD', 'EMAIL_VERIFICATION', 'CAMPUS_PUBLIC_URL']) {
+  for (const name of ['POSTGRES_PASSWORD', 'EMAIL_VERIFICATION', 'CAMPUS_PUBLIC_URL', 'DEMO_PASSWORD_PREFIX']) {
     assert.match(backend, new RegExp(`\\$\\{${name}:\\?`), `${name} must be required`);
   }
   assert.match(backend, /SPRING_PROFILES_ACTIVE: demo/);
@@ -37,6 +37,12 @@ test('U22: env example has no secret values and server.env is ignored', async ()
     assert.match(example, new RegExp(`^#?\\s?${name}=$`, 'm'), `${name} must be empty`);
   }
   assert.match(await read('.gitignore'), /^deploy\/server\.env$/m);
+});
+
+test('U22: env example asks for a demo password prefix and pins the project name', async () => {
+  const example = await read('deploy/server.env.example');
+  assert.match(example, /^DEMO_PASSWORD_PREFIX=$/m);
+  assert.match(example, /^COMPOSE_PROJECT_NAME=campus-rating$/m);
 });
 
 test('U22: inner nginx keeps the scheme set by the host proxy', async () => {
