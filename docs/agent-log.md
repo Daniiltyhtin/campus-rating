@@ -815,3 +815,14 @@
 - **Урок:** frontend/AGENTS.md — сохранятьopener доdisable; scopedhelper долженбыть независимым, tester ожиданияисполнитель не менял.
 - **Кругов ревью:**0; tester не заменяет reviewer.
 - **Коммит / PR:** реализация `e26760a`, [PR41](https://github.com/Daniiltyhtin/campus-rating/pull/41), u13-directory-frontend → spec-u13-directory-api ([PR40](https://github.com/Daniiltyhtin/campus-rating/pull/40));66файлов сверены с явным списком, опубликовано по прямому разрешению человека. Backend/БД/API/generated diff относительно контрактной базы пуст. Approve/merge не выполнялись.
+
+### 2026-11-11 — U13: контракт допуска преподавателей и выдач доступа
+
+- **Кто / агент / модель:** Максим / Codex / GPT-6.
+- **Поручение:** продолжить frontend U13 после справочников, следующая законченная часть — заявки преподавателей и4вида выдач доступа; backend не менять, tester до production, публиковать готовый результат.
+- **Результат с доказательствами:**8planned ADMIN операций списка/карточки/approval/reject/grants/scope, строгиеoneOf DTO и правила повторов/CSRF/teacherId. Redocly exit0; заведомо плохие course0/mixedvariant отвергнуты exit1; api:gen повтор идентичен по SHA256. Frontend check351/351 Vitest +11lint-rule/lint/tsc, build1042modules, tools140/140, docs/diff exit0. План docs/spec/plans/2026-11-11-004-feat-u13-teachers-frontend-plan.md, отчёт docs/reviews/u13-teachers-contract/verification.md. Backend/БД не меняются.
+- **Не проверено:**реализацияplanned backend и UI, фактические транзакции/права/завершение сессий. Frontend с независимымtester — следующий PR.
+- **Ошибка агента:**линтер сообщил unused TeacherGrantKind → вспомогательныйenum удалён, variants уже несут const kind; повтор безwarnings. Учтён урокPR40: YAML безanchors.
+- **Урок:**нового повторяющегося правила нет; важные границывариантов заданы контрактом до UI.
+- **Кругов ревью:**0.
+- **Коммит / PR:**spec-u13-teachers-api → u13-directory-frontend (PR41), публикация по разрешению человека; безapprove/merge.
