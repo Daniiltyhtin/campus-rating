@@ -29,7 +29,7 @@ class EventPublicationIT extends PostgresIntegrationTest {
     @Autowired private Environment environment;
 
     @Test
-    void liquibaseOwnsV2SchemaAndCommittedPublicationCompletesAfterListener() throws Exception {
+    void liquibaseOwnsV2SchemaAndCommittedPublicationIsRemovedAfterListener() throws Exception {
         assertThat(environment.getProperty("spring.modulith.events.jdbc.schema-initialization.enabled", Boolean.class)).isFalse();
         assertThat(jdbc.queryForObject("""
                 select count(*) from databasechangelog where author = 'u4' and id = 'event-publication'
@@ -44,11 +44,11 @@ class EventPublicationIT extends PostgresIntegrationTest {
                 assertThat(publicationCount(event)).isEqualTo(1);
             });
             assertThat(listener.awaitStarted()).isTrue();
-            assertThat(completedCount(event)).isZero();
+            assertThat(publicationCount(event)).isEqualTo(1);
         } finally {
             listener.release();
         }
-        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> assertThat(completedCount(event)).isEqualTo(1));
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> assertThat(publicationCount(event)).isZero());
     }
 
     @Test
@@ -67,11 +67,6 @@ class EventPublicationIT extends PostgresIntegrationTest {
                 Integer.class, "%" + event.token() + "%");
     }
 
-    private int completedCount(Probe event) {
-        return jdbc.queryForObject("""
-                select count(*) from event_publication where serialized_event like ? and completion_date is not null
-                """, Integer.class, "%" + event.token() + "%");
-    }
 
     public record Probe(String token) {}
 

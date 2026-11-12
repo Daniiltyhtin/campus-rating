@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
+import { PasswordAudit } from '../groups/PasswordAudit';
 import { AsyncContent, PageLayout } from '../../app/layouts/PageLayouts';
 import { useAuthSession } from '../auth/authQueries';
 import type { CurrentUser } from '../auth/contracts';
@@ -83,7 +84,7 @@ function LoadedProfile({ viewer, userId }: { viewer: CurrentUser; userId: number
       <Button variant="default" onClick={() => { void query.refetch(); }}>Повторить</Button></ProfileLayout>;
   }
   return <ProfileLayout title={query.data?.fullName ?? 'Профиль'}><AsyncContent state={query.isPending ? { status: 'loading' } : { status: 'ready' }}>
-    {query.data && <ProfileContent key={`${viewer.id}-${query.data.id}`} profile={query.data} viewer={viewer} />}
+    {query.data && <>{viewer.id === query.data.id && <PasswordAudit />}<ProfileContent key={`${viewer.id}-${query.data.id}`} profile={query.data} viewer={viewer} /></>}
   </AsyncContent></ProfileLayout>;
 }
 export function ProfilePage() {

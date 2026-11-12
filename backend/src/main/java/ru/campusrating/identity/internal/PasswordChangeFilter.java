@@ -11,7 +11,7 @@ import ru.campusrating.identity.CurrentUser;
 import ru.campusrating.shared.error.ProblemCode;
 
 final class PasswordChangeFilter extends OncePerRequestFilter {
-    private static final Set<String> ALLOWED = Set.of("/api/v1/auth/me", "/api/v1/auth/csrf", "/api/v1/auth/logout", "/api/v1/auth/password");
+    private static final Set<String> ALLOWED = Set.of("/api/v1/auth/me", "/api/v1/auth/csrf", "/api/v1/auth/logout", "/api/v1/auth/password", "/api/v1/auth/email/status");
     private final CurrentUser current;
     private final SecurityProblems problems;
     PasswordChangeFilter(CurrentUser current, SecurityProblems problems) { this.current = current; this.problems = problems; }

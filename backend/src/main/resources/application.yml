@@ -7,6 +7,7 @@ spring:
     name: campus-rating
   modulith:
     events:
+      completion-mode: delete
       jdbc:
         schema-initialization:
           enabled: false
@@ -15,9 +16,11 @@ spring:
     contexts: default
 
 campus:
+  public-url: ${CAMPUS_PUBLIC_URL:http://localhost:8080}
   storage:
     dir: ${CAMPUS_STORAGE_DIR:/app/uploads}
   mail:
+    from: ${CAMPUS_MAIL_FROM:${SPRING_MAIL_USERNAME:}}
     email-verification: ${EMAIL_VERIFICATION}
   penalty:
     scheduler:
@@ -29,6 +32,9 @@ campus:
     accrual: ${CAMPUS_SEMESTER_ACCRUAL:200}
   budget:
     monthly-limit: ${CAMPUS_BUDGET_MONTHLY_LIMIT:1000}
+  feed:
+    scheduler:
+      enabled: true
 
 server:
   tomcat:

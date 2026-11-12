@@ -54,7 +54,7 @@ describe('AppShell', () => {
     renderApp('/admin/directory', admin);
 
     const side = await screen.findByRole('navigation', { name: 'Боковое меню' });
-    expect(linkNames(side)).toEqual(['Справочники', 'Импорт', 'Семестры', 'Настройки', 'Старосты']);
+    expect(linkNames(side)).toEqual(['Справочники', 'Пользователи', 'Импорт', 'Семестры', 'Настройки', 'Бюджеты']);
   });
 
   it('отмечает текущим только пункт открытого раздела', async () => {
@@ -77,7 +77,7 @@ describe('AppShell', () => {
   });
 
   it('показывает заглушку раздела внутри AppShell', async () => {
-    renderApp('/', student);
+    renderApp('/unknown-section', student);
 
     expect(await screen.findByText('Раздел появится')).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Боковое меню' })).toBeInTheDocument();

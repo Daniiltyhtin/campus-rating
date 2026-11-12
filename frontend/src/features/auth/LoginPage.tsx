@@ -1,7 +1,8 @@
 import { Anchor, Button, Stack, Text, TextInput } from '@mantine/core';
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { api } from '../../api/client';
+import { api, ApiError } from '../../api/client';
+import { SendVerification } from './EmailVerification';
 import { FormLayout } from '../../app/layouts/PageLayouts';
 import { ActionError, AuthLayout, ConfigNotices, PasswordField, RetryNotice } from './AuthLayout';
 import { useAuthConfig } from './authQueries';
@@ -31,6 +32,7 @@ export function LoginPage() {
       <Button type="submit" loading={action.isPending || action.refreshing} disabled={action.isPending || action.needsRefresh}>Войти</Button>
     </FormLayout>
     <Stack gap="xs"><Text className="cr-caption">Первый раз здесь?</Text><Anchor component={Link} to="/register" c="var(--cr-link)">Создать аккаунт</Anchor></Stack>
+    {action.error instanceof ApiError && action.error.code === 'EMAIL_NOT_VERIFIED' && <SendVerification email={email} />}
     <ConfigNotices config={config.data} />
   </AuthLayout>;
 }

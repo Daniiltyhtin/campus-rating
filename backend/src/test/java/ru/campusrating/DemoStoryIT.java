@@ -7,6 +7,7 @@ import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -36,6 +37,8 @@ class DemoStoryIT {
                 assertThat(jdbc.queryForObject("select count(*) from app_user where id between 11001 and 11006", Integer.class))
                         .isEqualTo(6);
                 assertThat(app.getBean(LedgerApi.class).reconcile().mismatches()).isEmpty();
+                assertThat(jdbc.queryForList("select email from app_user where email_verified order by email", String.class))
+                        .containsExactly("admin@campus.test", "petrov@campus.test", "smirnova@student.campus.test");
                 assertAccounting(jdbc);
                 assertHttp(app);
             }
@@ -101,7 +104,15 @@ class DemoStoryIT {
         });
         var awards = student.get("/api/v1/feed/awards").path("items");
         assertThat(awards).isNotEmpty();
+        var kinds = new HashSet<String>();
+        student.get("/api/v1/feed/personal").path("items").forEach(item -> kinds.add(item.path("kind").asText()));
+        assertThat(kinds).containsExactlyInAnyOrder("ASSIGNMENT_CREATED", "DEADLINE_REMINDER", "WORK_RETURNED",
+                "WORK_ACCEPTED", "POINTS_AWARDED", "ACTIVITY_CREATED");
         var teacher = new Browser(port, "petrov@campus.test", "demo-teacher-1");
+        assertThat(teacher.get("/api/v1/feed/personal").path("items")).anySatisfy(item -> {
+            assertThat(item.path("kind").asText()).isEqualTo("WORK_SUBMITTED");
+            assertThat(item.path("studentFullName").asText()).isEqualTo("Кузнецов Дмитрий Андреевич");
+        });
         var rating = teacher.get("/api/v1/groups/11/ratings?sort=AR").path("items");
         var balances = new ArrayList<Integer>();
         rating.forEach(row -> balances.add(row.path("balances").path("AR").asInt()));

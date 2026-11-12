@@ -12,10 +12,5 @@ public class MailModeValidator {
             throw new IllegalStateException(
                     "spring.mail.host must be set when campus.mail.email-verification=required");
         }
-        // Master-U15 removes this guard once email verification is implemented.
-        if (properties.emailVerification() == MailModeProperties.EmailVerification.REQUIRED) {
-            throw new IllegalStateException(
-                    "campus.mail.email-verification=required is unavailable until master-U15");
-        }
     }
 }
