@@ -43,7 +43,7 @@ export function AppShell({ session, user }: { session: Session; user: CurrentUse
               to={item.to}
               label={item.label}
               aria-label={item.label}
-              rightSection={session.role === 'ADMIN' && item.to === '/admin/directory' ? <TeacherBadge viewerId={Number(session.userId)} /> : undefined}
+              rightSection={session.role === 'ADMIN' && item.to === '/admin/users' ? <TeacherBadge viewerId={Number(session.userId)} /> : undefined}
               active={isActive(pathname, item.to)}
               aria-current={isActive(pathname, item.to) ? 'page' : undefined}
             />
@@ -59,7 +59,7 @@ export function AppShell({ session, user }: { session: Session; user: CurrentUse
                 to={item.to}
                 label={<span className="cr-bottom-label"><NavIcon name={item.icon} />{item.label}</span>}
                 aria-label={item.label}
-                rightSection={session.role === 'ADMIN' && item.to === '/admin/directory' ? <TeacherBadge viewerId={Number(session.userId)} /> : undefined}
+                rightSection={session.role === 'ADMIN' && item.to === '/admin/users' ? <TeacherBadge viewerId={Number(session.userId)} /> : undefined}
                 active={isActive(pathname, item.to)}
                 aria-current={isActive(pathname, item.to) ? 'page' : undefined}
                 h="100%"

@@ -1,4 +1,5 @@
 import { http, HttpResponse } from 'msw';
+import { createUsersMockHandlers } from './users';
 import { parseGrants, parseTeachers, validateGrant } from '../features/admin/teachers/contracts';
 import type { Grant, GrantCreate, Teacher } from '../features/admin/teachers/contracts';
 import { activityClock } from '../features/activities/time';
@@ -72,6 +73,7 @@ export function createTeacherMockHandlers(directory = createDirectoryMockState()
   }
   const authenticated = (request: Request, teacherId: number) => access(request) ?? (!teachers.has(teacherId) ? problem('NOT_FOUND', 404) : null);
   return [
+    ...createUsersMockHandlers(() => [...teachers.values()].map(view), () => groups()[0] ?? null, clock),
     http.get('*/api/v1/admin/teachers', ({ request }) => access(request) ?? HttpResponse.json({ items: [...teachers.values()].map(view).sort((a, b) => a.fullName.localeCompare(b.fullName, 'ru') || a.id - b.id) })),
     http.get('*/api/v1/admin/teachers/:teacherId', ({ request, params }) => { const id = Number(params.teacherId); return authenticated(request, id) ?? HttpResponse.json(view(teachers.get(id)!)); }),
     http.post('*/api/v1/admin/teachers/:teacherId/approval', async ({ request, params }) => {

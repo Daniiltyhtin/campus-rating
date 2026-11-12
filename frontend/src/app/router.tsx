@@ -19,8 +19,9 @@ export const routes: RouteObject[] = [
       { element: <GuestGate />, children: [{ path: 'login', element: <LoginPage /> }, { path: 'register', element: <RegisterPage /> }] },
       { element: <PasswordGate />, children: [{ path: 'password/change', element: <ChangePasswordPage /> }] },
       { element: <SessionGate />, children: [
-        { path: 'admin/directory/teachers', lazy: async () => ({ Component: (await import('../features/admin/teachers/TeacherListPage')).TeacherListPage }) },
-        { path: 'admin/directory/teachers/:id', lazy: async () => ({ Component: (await import('../features/admin/teachers/TeacherPage')).TeacherPage }) },
+        { path: 'admin/directory/teachers', loader: () => redirect('/admin/users?role=TEACHER&status=PENDING') },
+        { path: 'admin/directory/teachers/:id', loader: ({ params }) => redirect(`/admin/users/teachers/${params.id}`) },
+        { path: 'admin/users/teachers/:id', lazy: async () => ({ Component: (await import('../features/admin/teachers/TeacherPage')).TeacherPage }) },
         { path: 'admin/import', lazy: async () => ({ Component: (await import('../features/admin/import/AdminImportPage')).AdminImportPage }) },
         { path: 'admin/submissions/:assignmentId', lazy: async () => ({ Component: (await import('../features/admin/submissions/AdminSubmissionPage')).AdminSubmissionPage }) },
         { path: 'admin/users', lazy: async () => ({ Component: (await import('../features/admin/users/AdminUsersPage')).AdminUsersPage }) },

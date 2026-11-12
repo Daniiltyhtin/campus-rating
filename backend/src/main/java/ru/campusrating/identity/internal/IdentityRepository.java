@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.Clock;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +29,8 @@ class IdentityRepository {
             rs.getString("full_name"), rs.getLong("group_id"), GroupMembershipState.valueOf(rs.getString("state")),
             rs.getTimestamp("activated_at") == null ? null : rs.getTimestamp("activated_at").toInstant());
     private final JdbcClient jdbc;
-    IdentityRepository(JdbcClient jdbc) { this.jdbc = jdbc; }
+    private final Clock clock;
+    IdentityRepository(JdbcClient jdbc, Clock clock) { this.jdbc = jdbc; this.clock = clock; }
 
     Optional<UserAccount> byId(long id) {
         return jdbc.sql(USERS + " where u.id=:id").param("id", id).query((rs, row) -> user(rs)).optional();
@@ -46,10 +48,14 @@ class IdentityRepository {
     }
     long insert(String email, String name, String hash, Role role, Long department, boolean mustChange) {
         return jdbc.sql("""
-                insert into app_user(email,full_name,password_hash,role,department_id,must_change_password)
-                values (:email,:name,:hash,:role,:department,:change) returning id
+                insert into app_user(email,full_name,password_hash,role,department_id,must_change_password,created_at)
+                values (:email,:name,:hash,:role,:department,:change,:created) returning id
                 """).param("email", email).param("name", name).param("hash", hash).param("role", role.name())
-                .param("department", department).param("change", mustChange).query(Long.class).single();
+                .param("department", department).param("change", mustChange).param("created", Timestamp.from(clock.instant())).query(Long.class).single();
+    }
+    void recordLogin(long id) {
+        jdbc.sql("update app_user set last_login_at=:time where id=:id")
+                .param("time", Timestamp.from(clock.instant())).param("id", id).update();
     }
     boolean addMembership(long id, long group, GroupMembershipState state, Instant activatedAt) {
         return jdbc.sql("""

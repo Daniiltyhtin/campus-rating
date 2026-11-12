@@ -525,6 +525,24 @@ paths:
               - STUDENT
               - TEACHER
               - ADMIN
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, APPROVED, MEMBERSHIP_PENDING, MEMBERSHIP_ACTIVE]
+        - name: sort
+          in: query
+          description: Колонка сортировки; при равенстве — ФИО, затем id.
+          schema:
+            type: string
+            enum: [name, email, role, unit, status, created, lastLogin]
+            default: name
+        - name: direction
+          in: query
+          description: Направление; по умолчанию desc для created, asc для остальных. lastLogin asc — сначала без входа.
+          schema:
+            type: string
+            enum: [asc, desc]
         - name: cursor
           in: query
           schema:
@@ -5414,6 +5432,9 @@ components:
         - group
         - department
         - passwordSetAt
+        - status
+        - createdAt
+        - lastLoginAt
       properties:
         id:
           type: integer
@@ -5438,6 +5459,15 @@ components:
           oneOf:
             - $ref: "#/components/schemas/DepartmentRef"
             - type: "null"
+        status:
+          type: [string, "null"]
+          enum: [PENDING, APPROVED, MEMBERSHIP_PENDING, MEMBERSHIP_ACTIVE, null]
+        createdAt:
+          type: string
+          format: date-time
+        lastLoginAt:
+          type: [string, "null"]
+          format: date-time
         passwordSetAt:
           type:
             - string

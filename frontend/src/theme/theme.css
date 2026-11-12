@@ -70,3 +70,6 @@ html[data-theme='high-contrast'] a { text-decoration: underline; }
   html { font-size: 112.5%; }
 }
 .cr-nowrap { white-space: nowrap; }
+.cr-sort-button { display: inline-flex; align-items: center; gap: calc(var(--mantine-spacing-xs) / 2); min-height: var(--cr-touch-target); padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; cursor: pointer; text-align: start; }
+.cr-sort-button svg[data-direction='none'] { color: var(--cr-muted); }
+.cr-sort-button:focus-visible { outline: var(--cr-rule-width) solid var(--cr-link); outline-offset: 2px; }

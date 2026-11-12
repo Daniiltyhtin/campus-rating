@@ -78,7 +78,11 @@ docker compose down
 
 ## Переменные prod
 
-Первый запуск профиля `prod` требует явных переменных процесса `CAMPUS_BOOTSTRAP_ADMIN_EMAIL`, `CAMPUS_BOOTSTRAP_ADMIN_PASSWORD` и `EMAIL_VERIFICATION=off`. Первому администратору обязательна смена пароля; при существующем ADMIN новые bootstrap-значения игнорируются. До U15 режим `required` по-прежнему запрещён guard ADR008.
+Первый запуск профиля `prod` требует явных переменных процесса `CAMPUS_BOOTSTRAP_ADMIN_EMAIL`, `CAMPUS_BOOTSTRAP_ADMIN_PASSWORD` и `EMAIL_VERIFICATION=off`. Первому администратору обязательна смена пароля; при существующем ADMIN новые bootstrap-значения игнорируются. Режим `required` требует настроенного SMTP — без него backend не стартует.
+
+## Стенд на сервере
+
+Демо-стенд за nginx хоста с TLS и почтой через SMTP Яндекса — [deploy/README.md](deploy/README.md).
 
 ## Документация
 
