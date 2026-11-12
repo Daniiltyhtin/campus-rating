@@ -8,13 +8,14 @@ import { createProfileMockHandlers } from './profile';
 import { createFeedMockHandlers } from './feed';
 import { createDirectoryMockHandlers, createDirectoryMockState } from './directory';
 import { createTeacherMockHandlers } from './teachers';
+import { createPollMockHandlers } from './polls';
 
 function cursorPage(body: unknown): body is { items: unknown[]; nextCursor: string | null } {
   return !!body && typeof body === 'object' && 'items' in body && Array.isArray(body.items) && 'nextCursor' in body;
 }
 
 const directory = createDirectoryMockState();
-export const handlers = [...createDirectoryMockHandlers(directory), ...createTeacherMockHandlers(directory), ...createAuthMockHandlers(), ...createActivityMockHandlers(), ...createProfileMockHandlers(), ...createAnalyticsMockHandlers(), ...createFeedMockHandlers(), ...examples.map((operation) => {
+export const handlers = [...createDirectoryMockHandlers(directory), ...createTeacherMockHandlers(directory), ...createAuthMockHandlers(), ...createActivityMockHandlers(), ...createProfileMockHandlers(), ...createAnalyticsMockHandlers(), ...createFeedMockHandlers(), ...createPollMockHandlers(), ...examples.map((operation) => {
   const example = operation.responses.find(({ status }) => status >= 200 && status < 300)!;
   const path = operation.path.replaceAll(/\{([^}]+)\}/g, ':$1');
   return http.all(`*${path}`, ({ request }) => {
