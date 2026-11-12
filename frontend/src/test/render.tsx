@@ -1,3 +1,4 @@
+import { MantineProvider } from '@mantine/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
@@ -17,11 +18,11 @@ export function renderApp(path: string, session: Session | null = null) {
   queryClient.setQueryData(['auth', 'config'], { demo: false, emailVerification: 'OFF' });
   queryClient.setQueryData(authKeys.user, user ? { ...user, id: Number(session?.userId), mustChangePassword: false } : null);
   render(
-    <CampusThemeProvider>
+    <CampusThemeProvider><MantineProvider env="test" withCssVariables={false} withGlobalClasses={false}>
       <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
       </QueryClientProvider>
-    </CampusThemeProvider>,
+    </MantineProvider></CampusThemeProvider>,
   );
   return router;
 }

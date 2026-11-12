@@ -7,12 +7,11 @@
 .auth-form a { display: inline-flex; align-items: center; min-height: var(--cr-touch-target); }
 .auth-grid .cr-balances { flex-wrap: wrap; }
 .auth-user { max-width: 100%; overflow-wrap: anywhere; }
-.auth-shell-header { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 12rem) auto; }
+.auth-shell-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
 .auth-shell-header > * { min-width: 0; }
 .auth-menu-item { min-height: var(--cr-touch-target); }
 @media (max-width: 48em) {
   .auth-grid { grid-template-columns: minmax(0, 1fr); }
   .auth-intro { display: none; }
   .auth-shell-header { grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--mantine-spacing-xs); }
-  .auth-shell-header > h3 { grid-column: 1 / -1; }
 }

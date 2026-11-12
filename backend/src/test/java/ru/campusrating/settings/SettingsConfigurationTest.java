@@ -20,7 +20,7 @@ class SettingsConfigurationTest {
         runner.run(context -> {
             assertThat(context).hasNotFailed();
             var defaults = context.getBean(SettingsDefaults.class);
-            assertThat(defaults.penalty().defaultStep()).isEqualTo(20);
+            assertThat(defaults.penalty().defaultStep()).isEqualTo(4);
             assertThat(defaults.penalty().defaultInterval()).isEqualTo(Duration.ofMinutes(1));
             assertThat(defaults.penalty().pollPeriod()).isEqualTo(Duration.ofSeconds(1));
             assertThat(defaults.semester().accrual()).isEqualTo(200);

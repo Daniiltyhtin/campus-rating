@@ -13,13 +13,15 @@ record SubmissionData(
         String contentType,
         Instant submittedAt,
         String returnComment,
-        Instant returnedAt) {
+        Instant returnedAt,
+        Instant withdrawnAt) {
     AssignmentView.Submission view() {
         if (kind.equals("LINK")) {
             return new AssignmentView.LinkSubmission(
-                    id, kind, url, submittedAt, returnComment, returnedAt);
+                    id, kind, url, submittedAt, returnComment, returnedAt, withdrawnAt);
         }
         return new AssignmentView.FileSubmission(
-                id, kind, fileName, sizeBytes, contentType, submittedAt, returnComment, returnedAt);
+                id, kind, fileName, sizeBytes, contentType, submittedAt,
+                returnComment, returnedAt, withdrawnAt);
     }
 }

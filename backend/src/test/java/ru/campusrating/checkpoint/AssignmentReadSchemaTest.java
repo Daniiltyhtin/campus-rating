@@ -99,10 +99,13 @@ class AssignmentReadSchemaTest {
                                             "status",
                                             "charged",
                                             "submittedAt",
-                                            "submissionKind");
+                                            "submissionKind",
+                                            "hasSubmissions");
                             assertThat(row.at("/properties/submittedAt/type"))
                                     .extracting(node -> node.asText())
                                     .containsExactlyInAnyOrder("string", "null");
+                            assertThat(row.at("/properties/hasSubmissions/type").asText())
+                                    .isEqualTo("boolean");
                             var kind = row.at("/properties/submissionKind");
                             if (kind.has("$ref")) {
                                 kind = document.at(kind.path("$ref").asText().substring(1));

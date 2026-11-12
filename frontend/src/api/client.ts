@@ -48,12 +48,20 @@ export const csrfMiddleware: Middleware = {
   },
   async onResponse({ request, response }) {
     if (!response.ok && response.headers.get('content-type')?.split(';')[0] === 'application/problem+json') {
-      const problem: unknown = await response.clone().json();
+      const problem: unknown = await response.clone().json().catch(() => undefined);
       if (isProblem(problem)) {
         if (problem.code === 'UNAUTHENTICATED' && !request.url.endsWith('/auth/me')) window.dispatchEvent(new Event('campus:session-expired'));
         if (problem.code === 'PASSWORD_CHANGE_REQUIRED') window.dispatchEvent(new Event('campus:password-required'));
         throw new ApiError(problem);
       }
+    }
+    if (request.method === 'GET' && [403, 404].includes(response.status) && /\/(assignments|checkpoints)\//.test(new URL(request.url).pathname)) {
+      throw new ApiError({ type: 'about:blank', title: 'Error', status: response.status, code: response.status === 403 ? 'FORBIDDEN' : 'NOT_FOUND' });
+    }
+    if (response.status === 413 && /\/assignments\/[^/]+\/submission$/.test(new URL(request.url).pathname)) {
+      throw new ApiError({ type: 'about:blank', title: 'Payload Too Large', status: 413, code: 'FILE_TOO_LARGE' });
+    }
+    if (!response.ok && response.headers.get('content-type')?.split(';')[0] === 'application/problem+json') {
       throw new Error('Некорректный ответ application/problem+json');
     }
     return response;

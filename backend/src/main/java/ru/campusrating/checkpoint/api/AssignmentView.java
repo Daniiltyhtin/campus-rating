@@ -102,7 +102,8 @@ public record AssignmentView(
                 "url",
                 "submittedAt",
                 "returnComment",
-                "returnedAt"
+                "returnedAt",
+                "withdrawnAt"
             })
     public record LinkSubmission(
             @Min(1) long id,
@@ -113,7 +114,11 @@ public record AssignmentView(
             @Schema(
                             types = {"string", "null"},
                             format = "date-time")
-                    Instant returnedAt)
+                    Instant returnedAt,
+            @Schema(
+                            types = {"string", "null"},
+                            format = "date-time")
+                    Instant withdrawnAt)
             implements Submission {}
 
     @Schema(
@@ -125,7 +130,8 @@ public record AssignmentView(
                 "contentType",
                 "submittedAt",
                 "returnComment",
-                "returnedAt"
+                "returnedAt",
+                "withdrawnAt"
             })
     public record FileSubmission(
             @Min(1) long id,
@@ -138,6 +144,10 @@ public record AssignmentView(
             @Schema(
                             types = {"string", "null"},
                             format = "date-time")
-                    Instant returnedAt)
+                    Instant returnedAt,
+            @Schema(
+                            types = {"string", "null"},
+                            format = "date-time")
+                    Instant withdrawnAt)
             implements Submission {}
 }

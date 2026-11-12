@@ -1,5 +1,6 @@
 package ru.campusrating.checkpoint.domain;
 
+import java.time.Instant;
 import java.util.Objects;
 import ru.campusrating.checkpoint.AssignmentState;
 
@@ -19,6 +20,15 @@ public final class AssignmentTransitions {
 
     public static AssignmentState returnBack(AssignmentState state) {
         return transition(state, SUBMITTED, OPEN, RETURN_BACK);
+    }
+
+    public static AssignmentState withdraw(AssignmentState state, Instant deadline, Instant now) {
+        var target = transition(state, SUBMITTED, OPEN, WITHDRAW);
+        if (!now.isBefore(deadline)) {
+            throw new InvalidAssignmentStateException(
+                    state, WITHDRAW, InvalidAssignmentStateException.Reason.DEADLINE_REACHED);
+        }
+        return target;
     }
 
     private static AssignmentState transition(AssignmentState state, AssignmentState required,

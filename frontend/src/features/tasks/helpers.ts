@@ -66,9 +66,14 @@ export function loadState(
   return empty ? { status: 'empty', message } : { status: 'ready' };
 }
 
-export async function dataOf<T>(request: Promise<{ data?: T; error?: unknown }>): Promise<T> {
+export async function dataOf<T>(request: Promise<{ data?: T; error?: unknown; response?: Response }>): Promise<T> {
   const response = await request;
-  if (response.data === undefined) throw new Error('Нет данных');
+  if (response.error) throw response.error;
+  if (response.data === undefined) {
+    const status = response.response?.status;
+    if (status === 403 || status === 404) throw new ApiError({ type: 'about:blank', title: 'Error', status, code: status === 403 ? 'FORBIDDEN' : 'NOT_FOUND' });
+    throw new Error('Нет данных');
+  }
   return response.data;
 }
 
@@ -79,4 +84,33 @@ export function moscowDeadline(local: string) {
 
 export function invalidateTaskData(client: QueryClient) {
   return client.invalidateQueries({ predicate: (query) => query.queryKey[0] !== 'auth' });
+}
+
+export function fileValidation(file: File): string | undefined {
+  if (!/\.(pdf|docx|zip|png|jpg)$/i.test(file.name)) return 'Можно загрузить pdf, docx, zip, png или jpg';
+  if (file.size > 10485760) return 'Файл больше 10 МБ';
+}
+
+export function fileSize(bytes: number): string {
+  return bytes >= 1048576 ? `${(bytes / 1048576).toFixed(1).replace('.', ',')} МБ` : `${Math.ceil(bytes / 1024)} КБ`;
+}
+
+export function linkValidation(link: string): string | undefined {
+  if (!link.trim()) return 'Укажите ссылку на работу';
+  try {
+    const url = new URL(link);
+    if (['http:', 'https:'].includes(url.protocol) && link.length <= 2000) return;
+  } catch { return 'Укажите ссылку http или https длиной до 2000 символов'; }
+  return 'Укажите ссылку http или https длиной до 2000 символов';
+}
+
+export function teacherCommentLabel(author: string, returnedAt: string): string {
+  const [surname, ...names] = author.trim().split(/\s+/);
+  const name = [surname, ...names.map((part) => `${part[0]}.`)].join(' ');
+  const date = new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(returnedAt));
+  return `Замечание преподавателя · ${name} · ${date}`;
+}
+
+export function isAccessFailure(error: unknown) {
+  return error instanceof ApiError && (error.code === 'FORBIDDEN' || error.code === 'NOT_FOUND');
 }

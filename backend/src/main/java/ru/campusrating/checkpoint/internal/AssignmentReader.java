@@ -107,7 +107,8 @@ class AssignmentReader {
                                     row.submittedAt(),
                                     row.submissionKind() == null
                                             ? null
-                                            : SubmissionKind.valueOf(row.submissionKind()));
+                                            : SubmissionKind.valueOf(row.submissionKind()),
+                                    row.hasSubmissions());
                         })
                 .toList();
     }

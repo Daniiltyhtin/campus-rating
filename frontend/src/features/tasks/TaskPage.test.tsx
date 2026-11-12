@@ -41,10 +41,10 @@ it('415 показана у поля файла', async () => {
   renderApp('/tasks/7001', student);
   const user = userEvent.setup({ applyAccept: false });
   await user.click(await screen.findByRole('tab', { name: 'Файл' }));
-  await user.upload(screen.getByLabelText('Файл работы'), new File(['x'], 'bad.exe'));
+  await user.upload(screen.getByLabelText(/Файл работы/, { selector: 'input' }), new File(['x'], 'work.pdf'));
   await user.click(screen.getByRole('button', { name: 'Сдать работу' }));
   expect(await screen.findByText('Можно pdf, docx, zip, png или jpg')).toBeInTheDocument();
-  expect(screen.getByLabelText('Файл работы')).toHaveAttribute('aria-invalid', 'true');
+  expect(screen.getByRole('button', { name: /Файл работы/ })).toHaveAttribute('aria-invalid', 'true');
 });
 it('история сохраняет порядок версий и адрес скачивания', async () => {
   const assignment = example<Schemas['Assignment']>('getAssignment');
@@ -56,6 +56,7 @@ it('история сохраняет порядок версий и адрес 
       submittedAt: '2026-11-10T12:00:00Z',
       returnComment: null,
       returnedAt: null,
+      withdrawnAt: null,
     },
     {
       id: 1,
@@ -66,6 +67,7 @@ it('история сохраняет порядок версий и адрес 
       submittedAt: '2026-11-09T12:00:00Z',
       returnComment: 'Дополните',
       returnedAt: '2026-11-10T00:00:00Z',
+      withdrawnAt: null,
     },
   ];
   server.use(http.get('*/api/v1/assignments/:id', () => HttpResponse.json(assignment)));
@@ -132,8 +134,8 @@ it.each([
   renderApp('/tasks/7001', student);
   const user = userEvent.setup();
   await user.click(await screen.findByRole('tab', { name: 'Файл' }));
-  await user.upload(screen.getByLabelText('Файл работы'), new File(['x'], 'work.pdf', { type: 'application/pdf' }));
+  await user.upload(screen.getByLabelText(/Файл работы/, { selector: 'input' }), new File(['x'], 'work.pdf', { type: 'application/pdf' }));
   await user.click(screen.getByRole('button', { name: 'Сдать работу' }));
   expect(await screen.findByText(message)).toBeInTheDocument();
-  expect(screen.getByLabelText('Файл работы')).toHaveAttribute('aria-invalid', 'true');
+  expect(screen.getByRole('button', { name: /Файл работы/ })).toHaveAttribute('aria-invalid', 'true');
 });

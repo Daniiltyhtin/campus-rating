@@ -1,15 +1,17 @@
-import { Button, Checkbox, Stack, Text, Textarea, TextInput } from '@mantine/core';
+import { Button, Checkbox, Input, Stack, Text, Textarea, TextInput } from '@mantine/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { api } from '../../api/client';
 import { AsyncContent, FormLayout, PageLayout } from '../../app/layouts/PageLayouts';
-import { ErrorMessage } from './shared';
+import { useAuthSession } from '../auth/authQueries';
+import { ErrorMessage, TaskButton, TaskFailure } from './shared';
 import { dataOf, fieldError, loadState, moscowDeadline, type Schemas, invalidateTaskData } from './helpers';
 
 export function CheckpointEdit({ checkpoint, onSaved }: { checkpoint: Schemas['Checkpoint']; onSaved: () => void }) {
   const [title, setTitle] = useState(checkpoint.title);
   const [description, setDescription] = useState(checkpoint.description);
+  const [titleError, setTitleError] = useState<string>();
   const client = useQueryClient();
   const mutation = useMutation({
     mutationFn: () =>
@@ -27,8 +29,10 @@ export function CheckpointEdit({ checkpoint, onSaved }: { checkpoint: Schemas['C
   return (
     <FormLayout
       title="Редактировать описание"
+      noValidate
       onSubmit={(event) => {
         event.preventDefault();
+        if (!title.trim()) { setTitleError('Укажите название'); return; }
         mutation.mutate();
       }}
     >
@@ -37,8 +41,8 @@ export function CheckpointEdit({ checkpoint, onSaved }: { checkpoint: Schemas['C
         required
         maxLength={200}
         value={title}
-        onChange={(event) => setTitle(event.currentTarget.value)}
-        error={fieldError(mutation.error, 'title')}
+        onChange={(event) => { setTitle(event.currentTarget.value); setTitleError(undefined); }}
+        error={titleError ?? fieldError(mutation.error, 'title')}
       />
       <Textarea
         label="Описание"
@@ -47,10 +51,10 @@ export function CheckpointEdit({ checkpoint, onSaved }: { checkpoint: Schemas['C
         onChange={(event) => setDescription(event.currentTarget.value)}
         error={fieldError(mutation.error, 'description')}
       />
-      <ErrorMessage error={mutation.error} />
-      <Button type="submit" loading={mutation.isPending}>
+      {!['title', 'description', 'groupIds', 'deadline', 'cost'].some((field) => fieldError(mutation.error, field)) && <ErrorMessage error={mutation.error} />}
+      <TaskButton type="submit" loading={mutation.isPending}>
         Сохранить
-      </Button>
+      </TaskButton>
       <Button variant="default" onClick={onSaved}>
         Отмена
       </Button>
@@ -59,6 +63,12 @@ export function CheckpointEdit({ checkpoint, onSaved }: { checkpoint: Schemas['C
 }
 
 export function CheckpointNew() {
+  const user = useAuthSession().session.data;
+  if (user?.role !== 'TEACHER') return <TaskFailure forbidden />;
+  return <CheckpointNewForm />;
+}
+
+function CheckpointNewForm() {
   const defaults = useQuery({
     queryKey: ['checkpoint-defaults'],
     queryFn: () => dataOf(api.GET('/api/v1/checkpoints/defaults')),
@@ -72,7 +82,7 @@ export function CheckpointNew() {
   const [deadline, setDeadline] = useState('');
   const [cost, setCost] = useState('60');
   const [groupIds, setGroupIds] = useState<number[]>([]);
-  const [groupRequired, setGroupRequired] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const navigate = useNavigate();
   const client = useQueryClient();
   const mutation = useMutation({
@@ -105,12 +115,18 @@ export function CheckpointNew() {
         >
           <FormLayout
             title="Параметры точки"
+            noValidate
+            maxWidth="44rem"
             onSubmit={(event) => {
               event.preventDefault();
-              if (!groupIds.length) {
-                setGroupRequired(true);
-                return;
-              }
+              const nextErrors = {
+                title: title.trim() ? undefined : 'Укажите название',
+                groupIds: groupIds.length ? undefined : 'Выберите хотя бы одну группу',
+                deadline: deadline && Number.isFinite(Date.parse(moscowDeadline(deadline))) ? undefined : 'Укажите дедлайн',
+                cost: Number.isInteger(Number(cost)) && Number(cost) >= 1 && Number(cost) <= 1000 ? undefined : 'Укажите стоимость от 1 до 1000 АР',
+              };
+              setErrors(nextErrors);
+              if (Object.values(nextErrors).some(Boolean)) return;
               mutation.mutate();
             }}
           >
@@ -120,7 +136,7 @@ export function CheckpointNew() {
               required
               maxLength={200}
               onChange={(event) => setTitle(event.currentTarget.value)}
-              error={fieldError(mutation.error, 'title')}
+              error={errors.title ?? fieldError(mutation.error, 'title')}
             />
             <Textarea
               label="Описание"
@@ -129,8 +145,9 @@ export function CheckpointNew() {
               onChange={(event) => setDescription(event.currentTarget.value)}
               error={fieldError(mutation.error, 'description')}
             />
-            <fieldset>
-              <legend>Группы</legend>
+            <fieldset aria-required="true" aria-invalid={!!(errors.groupIds ?? fieldError(mutation.error, 'groupIds'))}
+              style={{ border: `var(--cr-rule-width) solid var(${errors.groupIds || fieldError(mutation.error, 'groupIds') ? '--cr-status-overdue' : '--cr-field'})`, borderRadius: 'var(--mantine-radius-sm)' }}>
+              <legend><Input.Label required>Группы</Input.Label></legend>
               <Stack>
                 {groups.data?.items.map((group) => (
                   <Checkbox
@@ -138,7 +155,7 @@ export function CheckpointNew() {
                     label={group.name}
                     checked={groupIds.includes(group.id)}
                     onChange={(event) => {
-                      setGroupRequired(false);
+                      setErrors((current) => ({ ...current, groupIds: undefined }));
                       setGroupIds(
                         event.currentTarget.checked
                           ? [...groupIds, group.id]
@@ -148,8 +165,8 @@ export function CheckpointNew() {
                   />
                 ))}
               </Stack>
-              {(groupRequired || fieldError(mutation.error, 'groupIds')) && (
-                <Text role="alert">{fieldError(mutation.error, 'groupIds') ?? 'Выберите хотя бы одну группу'}</Text>
+              {(errors.groupIds || fieldError(mutation.error, 'groupIds')) && (
+                <Text role="alert" c="var(--cr-status-overdue)">{fieldError(mutation.error, 'groupIds') ?? 'Выберите хотя бы одну группу'}</Text>
               )}
             </fieldset>
             <TextInput
@@ -158,7 +175,7 @@ export function CheckpointNew() {
               required
               value={deadline}
               onChange={(event) => setDeadline(event.currentTarget.value)}
-              error={fieldError(mutation.error, 'deadline')}
+              error={errors.deadline ?? fieldError(mutation.error, 'deadline')}
             />
             <TextInput
               type="number"
@@ -169,16 +186,16 @@ export function CheckpointNew() {
               step={1}
               value={cost}
               onChange={(event) => setCost(event.currentTarget.value)}
-              error={fieldError(mutation.error, 'cost')}
+              error={errors.cost ?? fieldError(mutation.error, 'cost')}
             />
             <Text>
               Шаг штрафа: {defaults.data?.penaltyStep} АР; интервал: {defaults.data?.penaltyIntervalSeconds} с.
               Фиксируются при создании.
             </Text>
-            <ErrorMessage error={mutation.error} />
-            <Button type="submit" loading={mutation.isPending}>
+            {!['title', 'description', 'groupIds', 'deadline', 'cost'].some((field) => fieldError(mutation.error, field)) && <ErrorMessage error={mutation.error} />}
+            <TaskButton type="submit" loading={mutation.isPending}>
               Создать точку
-            </Button>
+            </TaskButton>
           </FormLayout>
         </AsyncContent>
       </AsyncContent>

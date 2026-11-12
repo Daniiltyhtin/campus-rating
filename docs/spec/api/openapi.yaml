@@ -937,6 +937,7 @@ paths:
                     charged: 0
                     submittedAt: '2026-11-11T18:20:00Z'
                     submissionKind: FILE
+                    hasSubmissions: true
                   - assignmentId: 7002
                     student:
                       id: 1002
@@ -953,6 +954,7 @@ paths:
                     charged: 40
                     submittedAt: null
                     submissionKind: null
+                    hasSubmissions: false
                 nextCursor: eyJuIjoi0JrRg9C30L3QtdGG0L7QsiIsImlkIjo3MDAyfQ
                 statusCounts:
                   IN_PROGRESS: 0
@@ -1246,6 +1248,55 @@ paths:
                 status: 415
                 code: FILE_TYPE_NOT_ALLOWED
                 detail: 'Допустимы pdf, docx, zip, png, jpg.'
+
+  /api/v1/assignments/{assignmentId}/submission/withdrawal:
+    post:
+      tags: [checkpoint]
+      operationId: withdrawSubmission
+      summary: Отозвать сдачу
+      description: |
+        Отзыв из `SUBMITTED` строго до дедлайна по времени сервера под блокировкой назначения.
+        Переводит работу в `OPEN`, помечает текущую версию `withdrawnAt`; история и файлы сохраняются.
+
+        Доступ: только студент-владелец; остальным — `403 FORBIDDEN`.
+      x-roles: [STUDENT]
+      x-status: implemented
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - $ref: '#/components/parameters/AssignmentId'
+      responses:
+        '200':
+          description: Сдача отозвана.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assignment'
+              examples:
+                withdrawn:
+                  $ref: '#/components/examples/AssignmentWithdrawn'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: |
+            Дедлайн наступил — «Срок сдачи прошёл — отозвать работу нельзя»;
+            `ACCEPTED` — «Работу уже приняли — отозвать нельзя»;
+            прочее состояние — «Отозвать можно только сданную работу».
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InvalidStateProblem'
+              example:
+                type: about:blank
+                title: Conflict
+                status: 409
+                code: INVALID_STATE
+                detail: Срок сдачи прошёл — отозвать работу нельзя
 
   /api/v1/assignments/{assignmentId}/submission/file:
     get:
@@ -3593,6 +3644,57 @@ components:
         email: admin@campus.test
         mustChangePassword: true
 
+    AssignmentWithdrawn:
+      value:
+        id: 7001
+        checkpoint:
+          id: 501
+          title: Лабораторная 3. Деревья поиска
+          description: Реализовать АВЛ-дерево, покрыть тестами вставку и удаление, приложить отчёт.
+          deadline: '2026-11-12T09:00:00Z'
+          cost: 60
+          author:
+            id: 2001
+            fullName: Петров Павел Петрович
+        student:
+          id: 1001
+          fullName: Смирнова Анна Олеговна
+        group:
+          id: 11
+          name: ИВТ-21
+          faculty:
+            id: 1
+            code: ФИТ
+            name: Факультет информационных технологий
+        state: OPEN
+        status: IN_PROGRESS
+        penalty:
+          charged: 0
+          cap: 60
+          step: 20
+          intervalSeconds: 60
+          phase: BEFORE_DEADLINE
+          nextAt: '2026-11-12T09:00:00Z'
+          nextAmount: 20
+        returnComment: null
+        submission:
+          id: 9001
+          kind: LINK
+          url: https://example.org/report
+          submittedAt: '2026-11-12T08:00:00Z'
+          returnComment: null
+          returnedAt: null
+          withdrawnAt: '2026-11-12T08:30:00Z'
+        submissions:
+          - id: 9001
+            kind: LINK
+            url: https://example.org/report
+            submittedAt: '2026-11-12T08:00:00Z'
+            returnComment: null
+            returnedAt: null
+            withdrawnAt: '2026-11-12T08:30:00Z'
+        submittedAt: '2026-11-12T08:00:00Z'
+        acceptedAt: null
     AssignmentBeforeDeadline:
       value:
         id: 7001
@@ -3781,6 +3883,7 @@ components:
           submittedAt: '2026-11-12T09:01:30Z'
           returnComment: null
           returnedAt: null
+          withdrawnAt: null
         submissions:
           - id: 9001
             kind: LINK
@@ -3788,6 +3891,7 @@ components:
             submittedAt: '2026-11-12T09:01:30Z'
             returnComment: null
             returnedAt: null
+            withdrawnAt: null
         submittedAt: '2026-11-12T09:01:30Z'
         acceptedAt: null
     AssignmentReturned:
@@ -3830,6 +3934,7 @@ components:
           submittedAt: '2026-11-12T09:01:30Z'
           returnComment: Нет тестов на удаление корня.
           returnedAt: '2026-11-12T09:05:10Z'
+          withdrawnAt: null
         submissions:
           - id: 9001
             kind: LINK
@@ -3837,6 +3942,7 @@ components:
             submittedAt: '2026-11-12T09:01:30Z'
             returnComment: Нет тестов на удаление корня.
             returnedAt: '2026-11-12T09:05:10Z'
+            withdrawnAt: null
         submittedAt: '2026-11-12T09:01:30Z'
         acceptedAt: null
     AssignmentResubmitted:
@@ -3881,6 +3987,7 @@ components:
           submittedAt: '2026-11-12T09:20:00Z'
           returnComment: null
           returnedAt: null
+          withdrawnAt: null
         submissions:
           - id: 9002
             kind: FILE
@@ -3890,12 +3997,14 @@ components:
             submittedAt: '2026-11-12T09:20:00Z'
             returnComment: null
             returnedAt: null
+            withdrawnAt: null
           - id: 9001
             kind: LINK
             url: https://github.com/smirnova-demo/avl-tree
             submittedAt: '2026-11-12T09:01:30Z'
             returnComment: Нет тестов на удаление корня.
             returnedAt: '2026-11-12T09:05:10Z'
+            withdrawnAt: null
         submittedAt: '2026-11-12T09:20:00Z'
         acceptedAt: null
 
@@ -4826,7 +4935,7 @@ components:
 
     LinkSubmission:
       type: object
-      required: [id, kind, url, submittedAt, returnComment, returnedAt]
+      required: [id, kind, url, submittedAt, returnComment, returnedAt, withdrawnAt]
       properties:
         id:
           $ref: '#/components/schemas/Id'
@@ -4842,9 +4951,12 @@ components:
           description: Комментарий, с которым эту версию вернули; `null`, если не возвращали.
         returnedAt:
           $ref: '#/components/schemas/NullableInstant'
+        withdrawnAt:
+          $ref: '#/components/schemas/NullableInstant'
+          description: Время отзыва студентом; `null`, если версия не отозвана.
     FileSubmission:
       type: object
-      required: [id, kind, fileName, sizeBytes, contentType, submittedAt, returnComment, returnedAt]
+      required: [id, kind, fileName, sizeBytes, contentType, submittedAt, returnComment, returnedAt, withdrawnAt]
       properties:
         id:
           $ref: '#/components/schemas/Id'
@@ -4865,6 +4977,9 @@ components:
           description: Комментарий, с которым эту версию вернули; `null`, если не возвращали.
         returnedAt:
           $ref: '#/components/schemas/NullableInstant'
+        withdrawnAt:
+          $ref: '#/components/schemas/NullableInstant'
+          description: Время отзыва студентом; `null`, если версия не отозвана.
     Submission:
       description: |
         Версия сдачи. Каждая сдача — новая версия, прежние сохраняются (мастер-R10). Файл версии —
@@ -4980,7 +5095,7 @@ components:
 
     CheckpointAssignmentRow:
       type: object
-      required: [assignmentId, student, group, state, status, charged, submittedAt, submissionKind]
+      required: [assignmentId, student, group, state, status, charged, submittedAt, submissionKind, hasSubmissions]
       properties:
         assignmentId:
           $ref: '#/components/schemas/Id'
@@ -4995,9 +5110,14 @@ components:
         charged:
           type: integer
           format: int32
+        hasSubmissions:
+          type: boolean
+          description: Есть хотя бы одна версия сдачи, включая отозванные.
         submittedAt:
+          description: Время последней неотозванной версии; `null`, если её нет.
           $ref: '#/components/schemas/NullableInstant'
         submissionKind:
+          description: Тип последней неотозванной версии; `null`, если её нет.
           anyOf:
             - $ref: '#/components/schemas/SubmissionKind'
             - type: 'null'

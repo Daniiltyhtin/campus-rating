@@ -85,3 +85,37 @@ it.each(['NOT_ENROLLED', 'STUDENT_NOT_ELIGIBLE', 'ALREADY_CONFIRMED'])('preserve
   )));
   await expect(createApiClient('http://localhost').GET('/api/v1/feed/awards')).rejects.toMatchObject({ code, problem: { studentIds: [1001, 1002] } });
 });
+
+it('preserves PASSWORD_CHANGE_REQUIRED on assignment reads and announces the password change', async () => {
+  const listener = vi.fn();
+  window.addEventListener('campus:password-required', listener);
+  try {
+    server.use(http.get('http://localhost/api/v1/assignments/1', () => HttpResponse.json(
+      { type: 'about:blank', title: 'Change password', status: 403, code: 'PASSWORD_CHANGE_REQUIRED' },
+      { status: 403, headers: { 'Content-Type': 'application/problem+json' } },
+    )));
+    await expect(createApiClient('http://localhost').GET('/api/v1/assignments/{assignmentId}', {
+      params: { path: { assignmentId: 1 } },
+    })).rejects.toMatchObject({ code: 'PASSWORD_CHANGE_REQUIRED' });
+    expect(listener).toHaveBeenCalledOnce();
+  } finally {
+    window.removeEventListener('campus:password-required', listener);
+  }
+});
+
+it('uses FORBIDDEN for an assignment response with an HTML body', async () => {
+  server.use(http.get('http://localhost/api/v1/assignments/1', () => new HttpResponse('<html>Forbidden</html>', {
+    status: 403, headers: { 'Content-Type': 'text/html' },
+  })));
+  await expect(createApiClient('http://localhost').GET('/api/v1/assignments/{assignmentId}', {
+    params: { path: { assignmentId: 1 } },
+  })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+});
+
+it('uses FILE_TOO_LARGE for an upload response with an HTML body', async () => {
+  server.use(http.post('http://localhost/api/v1/assignments/1/submission', () => new HttpResponse('<html>Too large</html>', {
+    status: 413, headers: { 'Content-Type': 'text/html' },
+  })));
+  await expect(submitAssignment(createApiClient('http://localhost'), 1, { link: 'https://example.com' }))
+    .rejects.toMatchObject({ code: 'FILE_TOO_LARGE' });
+});
