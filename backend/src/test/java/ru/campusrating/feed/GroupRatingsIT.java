@@ -78,9 +78,20 @@ class GroupRatingsIT extends FeedTestSupport {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"student", "admin"})
-    void studentAndAdminCannotReadRating(String role) {
+    @ValueSource(strings = {"student"})
+    void studentCannotReadRating(String role) {
         problem(request(get(path(group)), login(role), 403), 403, "FORBIDDEN");
+    }
+
+    @Test
+    void administratorCanReadRatingsOfAnyFaculty() {
+        seedBalances();
+        var session = login("admin");
+        for (long target : List.of(group, otherGroup)) {
+            var rating = request(get(path(target)), session, 200);
+            assertThat(rating.path("group").path("id").asLong()).isEqualTo(target);
+            assertThat(rating.path("items")).isNotEmpty();
+        }
     }
 
     @Test
