@@ -35,60 +35,58 @@ public class AdminUserService {
               case when exists(select 1 from teacher_approval a where a.teacher_id=u.id) then 'APPROVED' else 'PENDING' end
             when u.role='STUDENT' then 'MEMBERSHIP_' || m.state end
             """;
-    private record Position(String name, long id, Instant time) {}
+    private static final String UNIT="coalesce((select g.name from study_group g where g.id=m.group_id),(select d.name from department d where d.id=u.department_id))";
+    private static final String ROLE_RANK="case u.role when 'ADMIN' then 1 when 'TEACHER' then 2 else 3 end";
+    private static final String STATUS_RANK="case "+STATUS+" when 'PENDING' then 1 when 'MEMBERSHIP_PENDING' then 2 when 'APPROVED' then 3 when 'MEMBERSHIP_ACTIVE' then 4 end";
 
     @Transactional(readOnly=true)
-    public AdminUserPage list(String query,Role role,UserStatus status,UserSort sort,String cursor) {
+    public AdminUserPage list(String query,Role role,UserStatus status,UserSort sort,SortDirection direction,String cursor) {
         if(current.require().role()!=Role.ADMIN) throw forbidden();
         String search=query==null?"":query.strip().toLowerCase(Locale.ROOT);
         if(search.length()<2) search="";
-        String filter=search+"\0"+(role==null?"":role.name())+"\0"+(status==null?"":status.name())+"\0"+sort.name();
-        Position after=position(cursor,filter,sort);
+        SortDirection order=direction!=null?direction:sort==UserSort.created?SortDirection.desc:SortDirection.asc;
+        String filter=search+"\0"+(role==null?"":role.name())+"\0"+(status==null?"":status.name())+"\0"+sort.name()+"\0"+order.name();
+        int offset=offset(cursor,filter);
         String sql="select u.*,m.group_id,"+AUDIT+" password_set_at,"+STATUS+" user_status from app_user u "+
                 "left join group_membership m on m.student_id=u.id where "+
                 "(:search='' or strpos(lower(u.full_name),:search)>0 or strpos(lower(u.email),:search)>0) "+
                 "and (:role='' or u.role=:role) and (:status='' or ("+STATUS+")=:status) "+
-                "and (:after=0 or ("+afterCondition(sort,after.time()==null)+")) order by "+order(sort)+" limit 51";
-        var statement=jdbc.sql(sql).param("search",search).param("role",role==null?"":role.name())
-                .param("status",status==null?"":status.name()).param("after",after.id()).param("name",after.name());
-        if(sort!=UserSort.name && after.time()!=null) statement=statement.param("time",Timestamp.from(after.time()));
-        var rows=statement.query((rs,n)->new AdminUser(rs.getLong("id"),rs.getString("full_name"),rs.getString("email"),Role.valueOf(rs.getString("role")),
+                "order by "+order(sort,order)+" limit 51 offset :offset";
+        var rows=jdbc.sql(sql).param("search",search).param("role",role==null?"":role.name())
+                .param("status",status==null?"":status.name()).param("offset",offset)
+                .query((rs,n)->new AdminUser(rs.getLong("id"),rs.getString("full_name"),rs.getString("email"),Role.valueOf(rs.getString("role")),
                 group(rs.getObject("group_id",Long.class)),department(rs.getObject("department_id",Long.class)),
                 instant(rs.getTimestamp("password_set_at")),rs.getString("user_status")==null?null:UserStatus.valueOf(rs.getString("user_status")),
                 instant(rs.getTimestamp("created_at")),instant(rs.getTimestamp("last_login_at")))).list();
         var page=rows.subList(0,Math.min(rows.size(),50));
-        return new AdminUserPage(page,rows.size()>50?cursor(page.getLast(),sort,filter):null);
+        return new AdminUserPage(page,rows.size()>50?cursor(offset+50,filter):null);
     }
     private static Instant instant(Timestamp value) { return value==null?null:value.toInstant(); }
-    private static Position position(String cursor,String filter,UserSort sort) {
-        if(cursor==null) return new Position("",0,null);
+    private static int offset(String cursor,String filter) {
+        if(cursor==null) return 0;
         try {
-            var parts=new String(Base64.getUrlDecoder().decode(cursor),StandardCharsets.UTF_8).split("\0",4);
-            long id=Long.parseLong(parts[1]);
-            Instant time=parts[2].isEmpty()?null:Instant.parse(parts[2]);
-            if(id<=0 || !parts[3].equals(filter) || (sort==UserSort.created && time==null)) throw new IllegalArgumentException();
-            return new Position(parts[0],id,time);
+            var parts=new String(Base64.getUrlDecoder().decode(cursor),StandardCharsets.UTF_8).split("\0",2);
+            int offset=Integer.parseInt(parts[0]);
+            if(offset<=0 || offset%50!=0 || !parts[1].equals(filter)) throw new IllegalArgumentException();
+            return offset;
         } catch(RuntimeException e) { throw Passwords.invalid("cursor","INVALID","Курсор не подходит к списку"); }
     }
-    private static String cursor(AdminUser last,UserSort sort,String filter) {
-        Instant time=switch(sort) { case name -> null; case created -> last.createdAt(); case lastLogin -> last.lastLoginAt(); };
-        return Base64.getUrlEncoder().withoutPadding().encodeToString((last.fullName()+"\0"+last.id()+"\0"+(time==null?"":time)+"\0"+filter).getBytes(StandardCharsets.UTF_8));
+    private static String cursor(int offset,String filter) {
+        return Base64.getUrlEncoder().withoutPadding().encodeToString((offset+"\0"+filter).getBytes(StandardCharsets.UTF_8));
     }
-    private static String order(UserSort sort) {
-        return switch(sort) {
-            case name -> "u.full_name,u.id";
-            case created -> "u.created_at desc,u.full_name,u.id";
-            case lastLogin -> "u.last_login_at nulls first,u.full_name,u.id";
+    private static String order(UserSort sort,SortDirection direction) {
+        String key=switch(sort) {
+            case name -> "u.full_name";
+            case email -> "lower(u.email)";
+            case role -> ROLE_RANK;
+            case unit -> UNIT;
+            case status -> STATUS_RANK;
+            case created -> "u.created_at";
+            case lastLogin -> "u.last_login_at";
         };
-    }
-    private static String afterCondition(UserSort sort,boolean nullTime) {
-        String name="(u.full_name,u.id)>(:name,:after)";
-        return switch(sort) {
-            case name -> name;
-            case created -> nullTime?name:"u.created_at<:time or (u.created_at=:time and "+name+")";
-            case lastLogin -> nullTime?"u.last_login_at is not null or (u.last_login_at is null and "+name+")":
-                    "u.last_login_at>:time or (u.last_login_at=:time and "+name+")";
-        };
+        boolean asc=direction==SortDirection.asc;
+        String nulls=sort==UserSort.lastLogin&&asc?" nulls first":" nulls last";
+        return key+(asc?" asc":" desc")+nulls+",u.full_name,u.id";
     }
     private StudyGroupRef group(Long id) { return id==null?null:directory.group(id).map(g->new StudyGroupRef(g.id(),g.name(),g.faculty())).orElse(null); }
     private ru.campusrating.directory.DepartmentInfo department(Long id) { return id==null?null:directory.department(id).orElse(null); }

@@ -3517,7 +3517,10 @@ export interface operations {
                 search?: string;
                 role?: "STUDENT" | "TEACHER" | "ADMIN";
                 status?: "PENDING" | "APPROVED" | "MEMBERSHIP_PENDING" | "MEMBERSHIP_ACTIVE";
-                sort?: "name" | "created" | "lastLogin";
+                /** @description Колонка сортировки; при равенстве — ФИО, затем id. */
+                sort?: "name" | "email" | "role" | "unit" | "status" | "created" | "lastLogin";
+                /** @description Направление; по умолчанию desc для created, asc для остальных. lastLogin asc — сначала без входа. */
+                direction?: "asc" | "desc";
                 cursor?: string;
             };
             header?: never;

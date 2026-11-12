@@ -2,13 +2,18 @@
 .admin-users-requests-icon { display: flex; color: var(--cr-status-submitted); }
 .admin-users-requests-text { display: flex; flex-direction: column; flex: 1 1 16rem; min-width: 0; }
 .admin-users-requests-text strong { color: var(--cr-status-submitted); }
-.admin-users-filters { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: var(--mantine-spacing-sm); align-items: end; }
+.admin-users-filters { display: grid; grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); gap: var(--mantine-spacing-sm); align-items: end; }
 .admin-users-summary { display: flex; align-items: center; justify-content: space-between; gap: var(--mantine-spacing-sm); }
 .admin-users-reset { color: var(--cr-link); text-decoration: underline; min-height: var(--cr-touch-target); }
 .admin-users-muted { color: var(--cr-muted); }
 .admin-users-actions { display: flex; flex-direction: column; align-items: flex-start; gap: calc(var(--mantine-spacing-xs) / 2); }
 .admin-users-audit { font-size: var(--mantine-font-size-xs); }
 .admin-users-table { min-width: 0; overflow-x: auto; }
+@media (min-width: 48em) {
+  .admin-users-sort { display: none; }
+  .admin-users-table .admin-users-status { text-align: center; }
+}
+.admin-users-table .cr-status { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; line-height: 1.4; }
 @media (max-width: 48em) {
   .admin-users-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .admin-users-filters > :first-child { grid-column: 1 / -1; }

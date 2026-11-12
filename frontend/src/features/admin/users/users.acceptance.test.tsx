@@ -274,4 +274,27 @@ describe('users-node AE1–AE10', { timeout: 20000 }, () => {
     expect(deleted).toEqual(['petrov@campus.test']);
     expect(await screen.findByText('Список преподавателей пуст', { exact: true })).toBeInTheDocument();
   });
+
+  it('column headers sort on the server both ways with aria-sort and created starts newest first', async () => {
+    const state = scenario(), view = mountTeachers('/admin/users');
+    const header = async (name: string) => (await table()).getByRole('columnheader', { name: new RegExp(name) });
+    expect(await header('ФИО')).toHaveAttribute('aria-sort', 'ascending');
+    expect(await header('Email')).toHaveAttribute('aria-sort', 'none');
+    await view.user.click(within(await header('Email')).getByRole('button', { name: 'Email' }));
+    await waitFor(() => expect(state.requests.at(-1)?.get('sort')).toBe('email'));
+    expect(state.requests.at(-1)?.get('direction')).toBeNull();
+    expect(await header('Email')).toHaveAttribute('aria-sort', 'ascending');
+    expect(await header('ФИО')).toHaveAttribute('aria-sort', 'none');
+    await view.user.click(within(await header('Email')).getByRole('button', { name: 'Email' }));
+    await waitFor(() => expect(state.requests.at(-1)?.get('direction')).toBe('desc'));
+    expect(await header('Email')).toHaveAttribute('aria-sort', 'descending');
+    await view.user.click(within(await header('Создан')).getByRole('button', { name: 'Создан' }));
+    await waitFor(() => expect(state.requests.at(-1)?.get('sort')).toBe('created'));
+    expect(state.requests.at(-1)?.get('direction')).toBeNull();
+    expect(await header('Создан')).toHaveAttribute('aria-sort', 'descending');
+    for (const [name, key] of [['Роль', 'role'], ['Группа / кафедра', 'unit'], ['Статус', 'status'], ['Последний вход', 'lastLogin']] as const) {
+      await view.user.click(within(await header(name)).getByRole('button', { name }));
+      await waitFor(() => expect(state.requests.at(-1)?.get('sort')).toBe(key));
+    }
+  });
 });

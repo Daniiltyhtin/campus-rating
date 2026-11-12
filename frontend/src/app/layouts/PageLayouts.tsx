@@ -42,14 +42,23 @@ export function FormLayout({ title, children, onSubmit, noValidate = false, maxW
   return <section className="cr-card" style={{ maxWidth }}><Title order={2} mb="md">{title}</Title><form noValidate={noValidate} onSubmit={onSubmit}><Stack>{children}</Stack></form></section>;
 }
 
+export type TableSort = { direction: 'asc' | 'desc' | null; onSort: () => void };
+const sortArrows = { asc: 'M12 19V5M6 11l6-6 6 6', desc: 'M12 5v14M6 13l6 6 6-6', none: 'M8 9l4-4 4 4M8 15l4 4 4-4' };
+function SortHeader({ title, sort }: { title: string; sort: TableSort }) {
+  return <button type="button" className="cr-sort-button" onClick={sort.onSort}>{title}
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true" data-direction={sort.direction ?? 'none'}><path d={sortArrows[sort.direction ?? 'none']} /></svg></button>;
+}
 export function TeacherTableLayout<T>({ caption, rows, columns, keyForRow, state, isSelected }: {
-  caption: string; rows: readonly T[]; columns: { key: string; title: string; render: (row: T) => ReactNode }[];
+  caption: string; rows: readonly T[]; columns: { key: string; title: string; render: (row: T) => ReactNode; sort?: TableSort; className?: string }[];
   keyForRow: (row: T) => number | string; state: LoadState;
   isSelected?: (row: T) => boolean;
 }) {
   return <AsyncContent state={state}><table className="cr-table" role="table"><caption>{caption}</caption>
-    <thead role="rowgroup"><tr role="row">{columns.map((column) => <th scope="col" role="columnheader" key={column.key}>{column.title}</th>)}</tr></thead>
+    <thead role="rowgroup"><tr role="row">{columns.map((column) => <th scope="col" role="columnheader" key={column.key} className={column.className}
+      aria-sort={column.sort ? column.sort.direction === 'asc' ? 'ascending' : column.sort.direction === 'desc' ? 'descending' : 'none' : undefined}>
+      {column.sort ? <SortHeader title={column.title} sort={column.sort} /> : column.title}</th>)}</tr></thead>
     <tbody role="rowgroup">{rows.map((row) => <tr role="row" key={keyForRow(row)} data-selected={isSelected?.(row) || undefined}>{columns.map((column) =>
-      <td role="cell" key={column.key} data-label={column.title}>{column.render(row)}</td>)}</tr>)}</tbody>
+      <td role="cell" key={column.key} data-label={column.title} className={column.className}>{column.render(row)}</td>)}</tr>)}</tbody>
   </table></AsyncContent>;
 }

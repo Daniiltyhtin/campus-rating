@@ -10,9 +10,13 @@ export function userFilters(params: URLSearchParams): Filters {
     search: params.get('search') ?? '',
     role: (['STUDENT', 'TEACHER', 'ADMIN'] as const).find((value) => value === params.get('role')),
     status: (['PENDING', 'APPROVED', 'MEMBERSHIP_PENDING', 'MEMBERSHIP_ACTIVE'] as const).find((value) => value === params.get('status')),
-    sort: (['name', 'created', 'lastLogin'] as const).find((value) => value === params.get('sort')) ?? 'name',
+    sort: sortKeys.find((value) => value === params.get('sort')) ?? 'name',
+    direction: (['asc', 'desc'] as const).find((value) => value === params.get('direction')),
   };
 }
+export const sortKeys = ['name', 'email', 'role', 'unit', 'status', 'created', 'lastLogin'] as const;
+export type SortKey = typeof sortKeys[number];
+export function defaultDirection(key: SortKey): 'asc' | 'desc' { return key === 'created' ? 'desc' : 'asc'; }
 export function userTime(value: string | null | undefined): string {
   return value == null ? '—' : new Intl.DateTimeFormat('ru-RU', {
     timeZone: 'Europe/Moscow', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',

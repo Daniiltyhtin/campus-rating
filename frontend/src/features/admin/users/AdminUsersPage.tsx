@@ -8,7 +8,8 @@ import { useAuthSession } from '../../auth/authQueries';
 import { AdminOnly } from '../shared';
 import { SetPasswordDialog } from '../../groups/SetPasswordDialog';
 import { useTeachers } from '../teachers/queries';
-import { requestsTitle, statusNames, userFilters, userTime } from './contracts';
+import { defaultDirection, requestsTitle, statusNames, userFilters, userTime } from './contracts';
+import type { SortKey } from './contracts';
 import './users.css';
 
 const roleNames = { STUDENT: 'Студент', TEACHER: 'Преподаватель', ADMIN: 'Администратор' };
@@ -28,7 +29,18 @@ function Users() {
     setParams((previous) => { const next = new URLSearchParams(previous); if (value) next.set(key, value); else next.delete(key); return next; }, { replace: true });
   }
   const items = query.data?.pages.flatMap((p) => p.items) ?? [];
-  const filtered = Boolean(filters.search || filters.role || filters.status || filters.sort !== 'name');
+  const filtered = Boolean(filters.search || filters.role || filters.status || filters.sort !== 'name' || filters.direction);
+  const direction = filters.direction ?? defaultDirection(filters.sort!);
+  function sortBy(key: SortKey) {
+    setParams((previous) => {
+      const next = new URLSearchParams(previous);
+      const flip = filters.sort === key ? (direction === 'asc' ? 'desc' : 'asc') : defaultDirection(key);
+      if (key === 'name') next.delete('sort'); else next.set('sort', key);
+      if (flip === defaultDirection(key)) next.delete('direction'); else next.set('direction', flip);
+      return next;
+    }, { replace: true });
+  }
+  const sortable = (key: SortKey) => ({ direction: filters.sort === key ? direction : null, onSort: () => sortBy(key) });
   const first = pending[0];
   return <PageLayout title="Пользователи" description="Студенты, преподаватели и администраторы стенда">
     {first && !teachers.isError && <div className="admin-users-requests" role="status">
@@ -44,20 +56,20 @@ function Users() {
         value={filters.search} onChange={(e) => change('search', e.currentTarget.value)} />
       <NativeSelect label="Роль" value={filters.role ?? ''} onChange={(e) => change('role', e.currentTarget.value)} data={[{ value: '', label: 'Все' }, { value: 'STUDENT', label: 'Студенты' }, { value: 'TEACHER', label: 'Преподаватели' }, { value: 'ADMIN', label: 'Администраторы' }]} />
       <NativeSelect label="Статус" value={filters.status ?? ''} onChange={(e) => change('status', e.currentTarget.value)} data={[{ value: '', label: 'Все' }, ...Object.entries(statusNames).map(([value, label]) => ({ value, label }))]} />
-      <NativeSelect label="Сортировка" value={filters.sort} onChange={(e) => change('sort', e.currentTarget.value)} data={[{ value: 'name', label: 'ФИО' }, { value: 'created', label: 'Создан' }, { value: 'lastLogin', label: 'Последний вход' }]} />
+      <NativeSelect className="admin-users-sort" label="Сортировка" value={filters.sort} onChange={(e) => { setParams((previous) => { const next = new URLSearchParams(previous); next.delete('direction'); if (e.currentTarget.value === 'name') next.delete('sort'); else next.set('sort', e.currentTarget.value); return next; }, { replace: true }); }} data={[{ value: 'name', label: 'ФИО' }, { value: 'email', label: 'Email' }, { value: 'role', label: 'Роль' }, { value: 'unit', label: 'Группа / кафедра' }, { value: 'status', label: 'Статус' }, { value: 'created', label: 'Создан' }, { value: 'lastLogin', label: 'Последний вход' }]} />
     </form>
     <div className="admin-users-summary">
       <Text c="dimmed" size="sm">{query.data ? `Показано: ${items.length}${query.hasNextPage ? ', есть ещё' : ''}` : ''}</Text>
       {filtered && <UnstyledButton className="admin-users-reset" onClick={() => setParams({}, { replace: true })}>Сбросить фильтры</UnstyledButton>}
     </div>
     <div className="admin-users-table"><TeacherTableLayout caption="Пользователи" rows={items} keyForRow={(r) => r.id} state={loadState(query, items.length === 0, 'Никого не нашли')}
-      columns={[{ key: 'name', title: 'ФИО', render: (r) => <Anchor component={Link} fw={700} to={r.role === 'TEACHER' ? `/admin/users/teachers/${r.id}` : `/users/${r.id}`}>{r.fullName}</Anchor> },
-        { key: 'email', title: 'Email', render: (r) => <span className="admin-users-muted">{r.email}</span> },
-        { key: 'role', title: 'Роль', render: (r) => roleNames[r.role] },
-        { key: 'group', title: 'Группа / кафедра', render: (r) => r.group?.name ?? (r.department ? `${r.department.name} · ${r.department.faculty.name}` : '—') },
-        { key: 'status', title: 'Статус', render: (r) => r.status ? <span className={`cr-status cr-status-${['APPROVED', 'MEMBERSHIP_ACTIVE'].includes(r.status) ? 'accepted' : 'submitted'}`}>{statusNames[r.status]}</span> : '—' },
-        { key: 'created', title: 'Создан', render: (r) => <span className="admin-users-muted">{userTime(r.createdAt)}</span> },
-        { key: 'login', title: 'Последний вход', render: (r) => <span className="admin-users-muted">{userTime(r.lastLoginAt)}</span> },
+      columns={[{ key: 'name', title: 'ФИО', sort: sortable('name'), render: (r) => <Anchor component={Link} fw={700} to={r.role === 'TEACHER' ? `/admin/users/teachers/${r.id}` : `/users/${r.id}`}>{r.fullName}</Anchor> },
+        { key: 'email', title: 'Email', sort: sortable('email'), render: (r) => <span className="admin-users-muted">{r.email}</span> },
+        { key: 'role', title: 'Роль', sort: sortable('role'), render: (r) => roleNames[r.role] },
+        { key: 'group', title: 'Группа / кафедра', sort: sortable('unit'), render: (r) => r.group?.name ?? (r.department ? `${r.department.name} · ${r.department.faculty.name}` : '—') },
+        { key: 'status', title: 'Статус', sort: sortable('status'), className: 'admin-users-status', render: (r) => r.status ? <span className={`cr-status cr-status-${['APPROVED', 'MEMBERSHIP_ACTIVE'].includes(r.status) ? 'accepted' : 'submitted'}`}>{statusNames[r.status]}</span> : '—' },
+        { key: 'created', title: 'Создан', sort: sortable('created'), render: (r) => <span className="admin-users-muted">{userTime(r.createdAt)}</span> },
+        { key: 'login', title: 'Последний вход', sort: sortable('lastLogin'), render: (r) => <span className="admin-users-muted">{userTime(r.lastLoginAt)}</span> },
         { key: 'actions', title: 'Действия', render: (r) => r.role !== 'ADMIN' && <div className="admin-users-actions">
           <SetPasswordDialog user={{ ...r, role: r.role }} />
           {r.passwordSetAt && <span className="admin-users-muted admin-users-audit">Пароль выставлен <time dateTime={r.passwordSetAt}>{userTime(r.passwordSetAt)}</time></span>}

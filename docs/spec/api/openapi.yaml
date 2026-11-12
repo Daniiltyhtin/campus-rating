@@ -532,10 +532,17 @@ paths:
             enum: [PENDING, APPROVED, MEMBERSHIP_PENDING, MEMBERSHIP_ACTIVE]
         - name: sort
           in: query
+          description: Колонка сортировки; при равенстве — ФИО, затем id.
           schema:
             type: string
-            enum: [name, created, lastLogin]
+            enum: [name, email, role, unit, status, created, lastLogin]
             default: name
+        - name: direction
+          in: query
+          description: Направление; по умолчанию desc для created, asc для остальных. lastLogin asc — сначала без входа.
+          schema:
+            type: string
+            enum: [asc, desc]
         - name: cursor
           in: query
           schema:
