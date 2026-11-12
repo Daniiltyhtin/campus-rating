@@ -26,6 +26,9 @@ import ru.campusrating.shared.mail.MailModeProperties;
 @Service
 public class PasswordSetupService {
     private static final Logger LOG=LoggerFactory.getLogger(PasswordSetupService.class);
+    private static final Duration TOKEN_TTL=Duration.ofHours(24);
+    private static final Duration RESEND_INTERVAL=Duration.ofMinutes(1);
+    private static final int RESEND_DAILY_LIMIT=5;
     private final JdbcClient jdbc;private final Passwords passwords;private final Clock clock;private final Environment environment;
     private final ObjectProvider<JavaMailSender> senders;private final MailModeProperties mode;private final SessionRegistry sessions;
     private final SecureRandom random=new SecureRandom();
@@ -38,15 +41,23 @@ public class PasswordSetupService {
     public void sendVerification(long id,String email) {if(required()) issue(id,email,"EMAIL_VERIFICATION","/email/confirm/","Подтверждение email");}
     @Transactional public void resend(String email) {
         if(!required()) return;
-        jdbc.sql("select id,email from app_user where lower(email)=lower(:email) and email_verified=false").param("email",email.strip())
-                .query((rs,n)->new Account(rs.getLong(1),rs.getString(2))).optional().ifPresent(u->sendVerification(u.id(),u.email()));
+        jdbc.sql("select id,email from app_user where lower(email)=lower(:email) and email_verified=false for update").param("email",email.strip())
+                .query((rs,n)->new Account(rs.getLong(1),rs.getString(2))).optional().filter(u->canResend(u.id())).ifPresent(u->sendVerification(u.id(),u.email()));
+    }
+    private boolean canResend(long id) {
+        var now=clock.instant();
+        var issued=jdbc.sql("select expires_at,consumed_at is null from password_setup_token where user_id=:id and purpose='EMAIL_VERIFICATION' and expires_at>:now")
+                .param("id",id).param("now",Timestamp.from(now)).query((rs,n)->new Issued(rs.getTimestamp(1).toInstant().minus(TOKEN_TTL),rs.getBoolean(2))).list();
+        return issued.size()<RESEND_DAILY_LIMIT&&issued.stream().noneMatch(t->t.active()&&t.at().isAfter(now.minus(RESEND_INTERVAL)));
+    }
+    private record Issued(java.time.Instant at,boolean active) {
     }
     private record Account(long id,String email) {}
     private boolean smtp() {String host=environment.getProperty("spring.mail.host");return host!=null&&!host.isBlank();}
     private void issue(long id,String email,String purpose,String route,String subject) {
         byte[] bytes=new byte[32];random.nextBytes(bytes);String token=Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
         jdbc.sql("insert into password_setup_token(token_hash,user_id,purpose,expires_at) values(:hash,:user,:purpose,:expires)")
-                .param("hash",hash(token)).param("user",id).param("purpose",purpose).param("expires",Timestamp.from(clock.instant().plus(Duration.ofHours(24)))).update();
+                .param("hash",hash(token)).param("user",id).param("purpose",purpose).param("expires",Timestamp.from(clock.instant().plus(TOKEN_TTL))).update();
         var message=new SimpleMailMessage();message.setTo(email);message.setSubject(subject);
         String from=environment.getProperty("campus.mail.from",environment.getProperty("spring.mail.username",""));if(!from.isBlank()) message.setFrom(from);
         message.setText(subject+": "+environment.getProperty("campus.public-url","http://localhost:8080").replaceAll("/$","")+route+token+"\nСсылка действует 24 часа.");

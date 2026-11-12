@@ -36,6 +36,8 @@ class DemoStoryIT {
                 assertThat(jdbc.queryForObject("select count(*) from app_user where id between 11001 and 11006", Integer.class))
                         .isEqualTo(6);
                 assertThat(app.getBean(LedgerApi.class).reconcile().mismatches()).isEmpty();
+                assertThat(jdbc.queryForList("select email from app_user where email_verified order by email", String.class))
+                        .containsExactly("admin@campus.test", "petrov@campus.test", "smirnova@student.campus.test");
                 assertAccounting(jdbc);
                 assertHttp(app);
             }
