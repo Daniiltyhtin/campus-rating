@@ -14,11 +14,21 @@ beforeEach(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(async () => {
   cleanup();
   gates.splice(0).forEach((gate) => gate.resolve());
-  await Promise.all(clients.splice(0).map(async (client) => { await client.cancelQueries(); client.clear(); }));
+  await Promise.all(clients.splice(0).map(async (client) => {
+    await waitFor(() => {
+      expect(client.isMutating()).toBe(0);
+      expect(client.isFetching()).toBe(0);
+    });
+    await client.cancelQueries();
+    client.clear();
+  }));
   server.resetHandlers(); server.close();
   document.cookie = 'XSRF-TOKEN=; Max-Age=0; Path=/';
 });
 function deferred() { let resolve!: () => void; const promise = new Promise<void>((done) => { resolve = done; }); const gate = { promise, resolve }; gates.push(gate); return gate; }
+async function settle(client: QueryClient) {
+  await waitFor(() => expect(client.isFetching()).toBe(0));
+}
 function harness(client = new QueryClient({ defaultOptions: { queries: { retry: false } } })) {
   clients.push(client);
   return { client, wrapper: ({ children }: { children: ReactNode }) => <QueryClientProvider client={client}>{children}</QueryClientProvider> };
@@ -37,7 +47,7 @@ it('33-1 clears and cancels private queries before publishing a changed user', a
   expect(signal?.aborted).toBe(true);
   expect(h.client.getQueryData(['private-cache'])).toBeUndefined();
   expect(published.length).toBeGreaterThan(0); expect(published.every(Boolean)).toBe(true);
-  gate.resolve(); await pending; h.client.clear();
+  gate.resolve(); await pending; await settle(h.client); h.client.clear();
 });
 it.each(['login', 'password', 'logout'] as const)('33-2 %s cancels an older query me response', async (kind) => {
   createAuthScenario(); const gate = deferred(); let started = false; let aborted = false;
@@ -50,7 +60,7 @@ it.each(['login', 'password', 'logout'] as const)('33-2 %s cancels an older quer
   expect(aborted).toBe(true);
   gate.resolve();
   await waitFor(() => expect(h.client.getQueryData(authKeys.user)).toEqual(kind === 'logout' ? null : authUsers.student));
-  h.client.clear();
+  await settle(h.client); h.client.clear();
 });
 it('33-2 ignores direct finish me after a newer logout', async () => {
   createAuthScenario(authUsers.student); const gate = deferred(); let started = false;
@@ -62,7 +72,7 @@ it('33-2 ignores direct finish me after a newer logout', async () => {
   await waitFor(() => expect(started).toBe(true));
   await act(async () => { await hook.result.current.logout.mutateAsync(undefined); });
   await act(async () => { gate.resolve(); await pending; });
-  expect(h.client.getQueryData(authKeys.user)).toBeNull(); h.client.clear();
+  expect(h.client.getQueryData(authKeys.user)).toBeNull(); await settle(h.client); h.client.clear();
 });
 it.each(['login', 'password', 'logout'] as const)('33-3 scenario invalidates token after %s', async (kind) => {
   createAuthScenario(kind === 'login' ? null : authUsers.student);
@@ -95,7 +105,9 @@ it.each(['login', 'password'] as const)('33-4 %s shows loading until refresh act
   const retryGate = deferred(); server.use(http.get('*/api/v1/auth/csrf', async () => { calls++; await retryGate.promise; return problem('INTERNAL_ERROR', 500); }));
   await view.user.click(screen.getByRole('button', { name: 'Повторить' }));
   expect(screen.queryByRole('button', { name: 'Повторить' })).not.toBeInTheDocument();
-  retryGate.resolve(); view.router.dispose(); view.queryClient.clear();
+  await act(async () => { retryGate.resolve(); });
+  await screen.findByRole('button', { name: 'Повторить' });
+  view.router.dispose(); view.queryClient.clear();
 });
 it.each(['login', 'password', 'logout'] as const)('33-2 %s also cancels me started while the auth POST was pending', async (kind) => {
   createAuthScenario(); const h = harness();
