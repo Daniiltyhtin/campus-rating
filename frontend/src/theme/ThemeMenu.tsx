@@ -1,5 +1,4 @@
-import { ActionIcon, Menu } from '@mantine/core';
-import { useEffect, useId, useRef, useState } from 'react';
+import { ActionIcon, Tooltip } from '@mantine/core';
 import type { ReactNode } from 'react';
 import type { CampusAppearance } from './useCampusAppearance';
 import { useCampusAppearance } from './useCampusAppearance';
@@ -15,38 +14,13 @@ const monitor = <Icon><rect x="3" y="4" width="18" height="12" rx="1.5" /><path 
 
 const icons: Record<CampusAppearance, ReactNode> = { light: sun, dark: moon, system: monitor };
 
-const options: readonly (readonly [CampusAppearance, string, ReactNode])[] = [
-  ['light', 'Светлая', sun], ['dark', 'Тёмная', moon], ['system', 'Системная', monitor],
-];
-
-export function ThemeOptions() {
-  const { appearance, setAppearance } = useCampusAppearance();
-  return <>{options.map(([value, label]) => <Menu.RadioItem key={value} value={value}
-    checked={appearance === value} onChange={() => setAppearance(value)} className="cr-menu-item"
-    checkIcon={<span aria-hidden="true">✓</span>}>{label}</Menu.RadioItem>)}</>;
-}
+const labels: Record<CampusAppearance, string> = { light: 'Светлая тема', dark: 'Тёмная тема', system: 'Системная тема' };
+const next: Record<CampusAppearance, CampusAppearance> = { light: 'dark', dark: 'system', system: 'light' };
 
 export function ThemeMenu() {
   const { appearance, setAppearance } = useCampusAppearance();
-  const [open, setOpen] = useState(false);
-  const root = useRef<HTMLDivElement>(null);
-  const toggle = useRef<HTMLButtonElement>(null);
-  const id = useId();
-  useEffect(() => {
-    if (!open) return;
-    const outside = (event: PointerEvent) => { if (!root.current?.contains(event.target as Node)) setOpen(false); };
-    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') { setOpen(false); toggle.current?.focus(); } };
-    document.addEventListener('pointerdown', outside);
-    document.addEventListener('keydown', escape);
-    return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape); };
-  }, [open]);
-  return <div ref={root} className="cr-theme-switch" data-open={open || undefined}>
-    <div id={id} className="cr-theme-switch-options" role="group" aria-label="Выбор темы" inert={!open} aria-hidden={!open}>
-      {options.map(([value, label, icon]) => <ActionIcon key={value} variant="subtle" color="var(--cr-primary)" aria-label={label}
-        aria-pressed={appearance === value} className="cr-theme-switch-option"
-        onClick={() => { setAppearance(value); setOpen(false); toggle.current?.focus(); }}>{icon}</ActionIcon>)}
-    </div>
-    <ActionIcon ref={toggle} variant="subtle" aria-label="Тема" color="var(--cr-primary)" aria-expanded={open} aria-controls={id}
-      onClick={() => setOpen((value) => !value)}>{icons[appearance]}</ActionIcon>
-  </div>;
+  return <Tooltip label={labels[appearance]} withArrow events={{ hover: true, focus: true, touch: false }}>
+    <ActionIcon variant="subtle" color="var(--cr-primary)" className="cr-theme-toggle" aria-label={`Тема: ${labels[appearance]}`}
+      onClick={() => setAppearance(next[appearance])}>{icons[appearance]}</ActionIcon>
+  </Tooltip>;
 }

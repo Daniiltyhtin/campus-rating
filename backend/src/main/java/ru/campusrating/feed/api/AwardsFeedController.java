@@ -38,7 +38,8 @@ public class AwardsFeedController {
     @GetMapping("/api/v1/feed/awards")
     public AwardFeedPage listAwardsFeed(
             @Parameter(schema = @Schema(minLength = 1)) @RequestParam(required = false) @Nullable String cursor,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
-        return service.list(cursor, limit);
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit,
+            @RequestParam(defaultValue = "false") boolean mine) {
+        return service.list(cursor, limit, mine);
     }
 }

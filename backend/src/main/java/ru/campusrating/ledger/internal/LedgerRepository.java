@@ -109,8 +109,11 @@ class LedgerRepository {
         return entries(where, params, cursor, limit);
     }
 
-    List<Entry> awards(Optional<LedgerCursor> cursor, int limit) {
-        return entries("kind = 'ACTIVITY_AWARD'", new LinkedHashMap<>(), cursor, limit);
+    List<Entry> awards(String column, long id, Optional<LedgerCursor> cursor, int limit) {
+        var params = new LinkedHashMap<String, Object>();
+        if (column.isEmpty()) return entries("kind = 'ACTIVITY_AWARD'", params, cursor, limit);
+        params.put("party", id);
+        return entries("kind = 'ACTIVITY_AWARD' and " + column + " = :party", params, cursor, limit);
     }
 
     private List<Entry> entries(String where, Map<String, Object> params, Optional<LedgerCursor> cursor, int limit) {

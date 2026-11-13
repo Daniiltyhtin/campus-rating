@@ -19,6 +19,11 @@ test('PRF-01 свой профиль: балансы, история R6, акт�
   await expect(balances.getByText('1000', { exact: true })).toBeVisible();
   await expect(balances.getByText('38', { exact: true })).toBeVisible();
   await expect(balances.getByText('0', { exact: true })).toBeVisible();
+  const hitArea = await balances.locator('.cr-currency-mark').first().evaluate((mark) => {
+    const area = getComputedStyle(mark, '::before');
+    return [parseFloat(area.width), parseFloat(area.height)];
+  });
+  for (const size of hitArea) expect(size).toBeGreaterThanOrEqual(44);
   const entry = page.getByRole('article').filter({ hasText: activity.title });
   await expect(entry).toContainText('+38 БУА');
   await expect(entry.getByRole('link', { name: teacher.fullName, exact: true })).toBeVisible();
