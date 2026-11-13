@@ -119,3 +119,11 @@ it('uses FILE_TOO_LARGE for an upload response with an HTML body', async () => {
   await expect(submitAssignment(createApiClient('http://localhost'), 1, { link: 'https://example.com' }))
     .rejects.toMatchObject({ code: 'FILE_TOO_LARGE' });
 });
+
+it('maps any 429 from the host proxy to RATE_LIMITED', async () => {
+  server.use(http.post('http://localhost/api/v1/auth/login', () => new HttpResponse('<html>429</html>', {
+    status: 429, headers: { 'Content-Type': 'text/html' },
+  })));
+  await expect(createApiClient('http://localhost').POST('/api/v1/auth/login', { body: { email: 'a@b.test', password: 'secret123' } }))
+    .rejects.toMatchObject({ code: 'RATE_LIMITED' });
+});

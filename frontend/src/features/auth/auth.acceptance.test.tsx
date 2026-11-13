@@ -75,6 +75,16 @@ describe('U5 frontend: сессия и вход — R3, KTD8', () => {
     expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
   });
 
+  it('при 429 от nginx хоста показывает «Слишком много попыток»', async () => {
+    createAuthScenario();
+    server.use(http.post('*/api/v1/auth/login', () => new HttpResponse('<html>429</html>', { status: 429, headers: { 'Content-Type': 'text/html' } })));
+    const { user } = mountAuth();
+    await user.type(await screen.findByLabelText('Email'), 'unknown@campus.test');
+    await user.type(screen.getByLabelText('Пароль', { exact: true }), 'some-password');
+    await user.click(screen.getByRole('button', { name: 'Войти' }));
+    expect(await screen.findByText('Слишком много попыток. Подождите минуту и попробуйте снова.')).toBeInTheDocument();
+  });
+
   it('блокирует повторную отправку пока login выполняется', async () => {
     createAuthScenario();
     let posts = 0;
@@ -212,7 +222,7 @@ describe('U5 frontend: регистрация — R1, R2, R47, R48', { timeout: 
   it('показывает обе честные пометки demo/OFF', async () => {
     createAuthScenario();
     mountAuth('/register');
-    expect(await screen.findByText(/демо-стенд, данные удаляются/i)).toBeInTheDocument();
+    expect(await screen.findByText(/демо-стенд: данные могут быть сброшены/i)).toBeInTheDocument();
     expect(screen.getByText(/подтверждение email на этом стенде выключено/i)).toBeInTheDocument();
   });
 
@@ -222,7 +232,7 @@ describe('U5 frontend: регистрация — R1, R2, R47, R48', { timeout: 
     state.nextStep = 'CONFIRM_EMAIL';
     const { user } = mountAuth('/register');
     await fillRegistration(user);
-    expect(screen.queryByText(/демо-стенд, данные удаляются/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/демо-стенд: данные могут быть сброшены/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/подтверждение email на этом стенде выключено/i)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /зарегистрироваться/i }));
     expect(await screen.findByText(/письм/i)).toBeInTheDocument();

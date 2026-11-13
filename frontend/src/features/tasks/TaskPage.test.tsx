@@ -139,3 +139,19 @@ it.each([
   expect(await screen.findByText(message)).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /Файл работы/ })).toHaveAttribute('aria-invalid', 'true');
 });
+it('предел версий сдачи показан текстом сервера', async () => {
+  const detail = 'Достигнут предел: 20 сдач по одной задаче. Обратитесь к преподавателю.';
+  server.use(
+    http.post('*/api/v1/assignments/:id/submission', () =>
+      HttpResponse.json(
+        { type: 'about:blank', title: 'Conflict', status: 409, code: 'SUBMISSION_LIMIT_REACHED', detail },
+        { status: 409, headers: { 'Content-Type': 'application/problem+json' } },
+      ),
+    ),
+  );
+  renderApp('/tasks/7001', student);
+  const user = userEvent.setup();
+  await user.type(await screen.findByRole('textbox', { name: 'Ссылка на работу' }), 'https://example.org/work');
+  await user.click(screen.getByRole('button', { name: 'Сдать работу' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent(detail);
+});

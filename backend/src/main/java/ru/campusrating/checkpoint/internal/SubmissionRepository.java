@@ -42,6 +42,13 @@ class SubmissionRepository {
                 .list();
     }
 
+    int count(long assignment) {
+        return jdbc.sql("select count(*) from submission where assignment_id=?")
+                .param(assignment)
+                .query(Integer.class)
+                .single();
+    }
+
     Optional<SubmissionData> version(long assignment, long version) {
         return jdbc.sql("select * from submission where assignment_id=? and id=?")
                 .params(assignment, version)

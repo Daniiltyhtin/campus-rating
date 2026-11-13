@@ -32,6 +32,18 @@ class StorageConfigurationTest {
     }
 
     @Test
+    void demoWithoutResetPreservesVolume() throws Exception {
+        Files.writeString(directory.resolve("old-file"), "old");
+        runner("demo")
+                .withPropertyValues("campus.demo.reset=false")
+                .run(
+                        context -> {
+                            assertThat(context).hasNotFailed();
+                            assertThat(directory.resolve("old-file")).hasContent("old");
+                        });
+    }
+
+    @Test
     void prodPreservesVolumeAndMultipartLimits() throws Exception {
         Files.writeString(directory.resolve("old-file"), "old");
         runner("prod")

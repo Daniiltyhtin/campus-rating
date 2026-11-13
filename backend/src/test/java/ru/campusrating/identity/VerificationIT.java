@@ -110,6 +110,18 @@ class VerificationIT extends U13MailTestSupport {
     }
 
     @Test
+    void r31PendingMembershipIsListedOnlyAfterStudentConfirmsEmail() {
+        long teacher = teacher("approver", "Approver");
+        jdbc.update("update app_user set email_verified=true where id=?", teacher);
+        approve(teacher, department);
+        var session = login("approver");
+        long student = student("waiting", faculty, group);
+        assertThat(pending(session)).doesNotContain(student);
+        request(browser(), "POST", "/api/v1/auth/email/confirmation", Map.of("token", token(email("waiting"), CONFIRM)), 204);
+        assertThat(pending(session)).contains(student);
+    }
+
+    @Test
     void r48OffModeSendsNoMailAndLetsStudentAndTeacherInImmediately() {
         try (var database = new PostgreSQLContainer("postgres:18.6-alpine")) {
             database.start();
@@ -165,6 +177,10 @@ class VerificationIT extends U13MailTestSupport {
                 assertThat(session.get("/api/v1/auth/me").status()).isEqualTo(200);
             }
         }
+    }
+
+    private List<Long> pending(Browser session) {
+        return items(get(session, "/api/v1/memberships/pending")).stream().map(n -> n.path("studentId").asLong()).toList();
     }
 
     private boolean verified(String suffix) {

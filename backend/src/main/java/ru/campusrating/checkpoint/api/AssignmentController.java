@@ -174,6 +174,10 @@ public class AssignmentController {
                             ProblemCode.FILE_TOO_LARGE, "Файл больше 10 МБ");
                     case FILE_TYPE_NOT_ALLOWED -> new ApiException(
                             ProblemCode.FILE_TYPE_NOT_ALLOWED, "Можно pdf, docx, zip, png или jpg");
+                    case VERSION_LIMIT_REACHED -> new ApiException(
+                            ProblemCode.SUBMISSION_LIMIT_REACHED,
+                            "Достигнут предел: " + SubmissionRules.VERSION_LIMIT
+                                    + " сдач по одной задаче. Обратитесь к преподавателю.");
                 };
         return errors.api(failure, request);
     }

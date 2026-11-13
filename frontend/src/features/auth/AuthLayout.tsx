@@ -25,7 +25,7 @@ export function RetryNotice({ message, retry }: { message: string; retry: () => 
   return <Stack gap="sm"><Text role="alert">{message}</Text><Button variant="default" onClick={retry}>Повторить</Button></Stack>;
 }
 export function ConfigNotices({ config }: { config: AuthConfig | undefined }) {
-  return <Stack gap="xs">{config?.demo && <Text className="cr-caption">Демо-стенд, данные удаляются</Text>}
+  return <Stack gap="xs">{config?.demo && <Text className="cr-caption">Демо-стенд: данные могут быть сброшены</Text>}
     {config?.emailVerification === 'OFF' && <Text className="cr-caption">Подтверждение email на этом стенде выключено</Text>}</Stack>;
 }
 export function LoginLink() { return <Anchor component={Link} to="/login" c="var(--cr-link)">Войти</Anchor>; }

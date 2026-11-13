@@ -24,13 +24,15 @@ const messages: Partial<Record<ApiError['code'], string>> = {
   GROUP_NOT_ACCESSIBLE: 'Группа вам недоступна',
   VALIDATION_FAILED: 'Проверьте заполнение полей',
   INVALID_STATE: 'Состояние работы изменилось. Обновите данные.',
+  SUBMISSION_LIMIT_REACHED: 'Достигнут предел сдач по этой задаче. Обратитесь к преподавателю.',
+  RATE_LIMITED: 'Слишком много попыток. Подождите минуту и попробуйте снова.',
   FORBIDDEN: 'Нет доступа',
   NOT_FOUND: 'Данные не найдены',
 };
 
 export function errorText(error: unknown): string {
   if (error instanceof ApiError)
-    return error.code === 'GROUP_NOT_ACCESSIBLE' || error.code === 'INVALID_STATE'
+    return error.code === 'GROUP_NOT_ACCESSIBLE' || error.code === 'INVALID_STATE' || error.code === 'SUBMISSION_LIMIT_REACHED'
       ? (error.problem.detail ?? messages[error.code]!)
       : (messages[error.code] ?? 'Не удалось выполнить действие. Попробуйте снова.');
   return 'Не удалось выполнить действие. Проверьте соединение и попробуйте снова.';

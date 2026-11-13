@@ -844,7 +844,7 @@ paths:
       operationId: getAuthConfig
       summary: Настройки стенда для формы регистрации
       description: |
-        Режим запуска и режим подтверждения email — для пометок «Демо-стенд, данные удаляются» и
+        Режим запуска и режим подтверждения email — для пометок «Демо-стенд: данные могут быть сброшены» и
         «Подтверждение email на этом стенде выключено» (мастер-R47, R48).
 
         Доступ: все, включая гостя.
@@ -1247,7 +1247,8 @@ paths:
       description: |
         Членства `PENDING` в группах, где текущий пользователь может подтверждать (мастер-R32): у
         преподавателя — группы `TeacherScope` (KTD23), у старосты — его группа. Список целиком, по времени
-        заявки, затем id. Недопущенный преподаватель и студент-не-староста получают пустой список.
+        заявки, затем id. Недопущенный преподаватель и студент-не-староста получают пустой список. При
+        `emailVerification: required` в списке только студенты с подтверждённым email; при `off` — все.
 
         Доступ: преподаватель и студент.
       x-roles: [TEACHER, STUDENT]
@@ -2235,6 +2236,9 @@ paths:
         обе — `400`. Каждая сдача — новая версия; прежние версии и их файлы сохраняются. Ответ — назначение
         в `SUBMITTED` с `phase: STOPPED` и `returnComment: null`.
 
+        Не больше 20 версий на назначение, отозванные тоже считаются: 21-я сдача — `409 SUBMISSION_LIMIT_REACHED`,
+        файл не сохраняется.
+
         Доступ: только студент-владелец.
       x-roles: [STUDENT]
       x-status: implemented
@@ -2271,7 +2275,26 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          $ref: '#/components/responses/InvalidState'
+          description: Работа уже сдана или принята, либо достигнут предел версий сдачи.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                invalidState:
+                  value:
+                    type: about:blank
+                    title: Conflict
+                    status: 409
+                    code: INVALID_STATE
+                    detail: Работа уже сдана
+                limitReached:
+                  value:
+                    type: about:blank
+                    title: Conflict
+                    status: 409
+                    code: SUBMISSION_LIMIT_REACHED
+                    detail: 'Достигнут предел: 20 сдач по одной задаче. Обратитесь к преподавателю.'
         '413':
           description: Файл больше 10 МБ.
           content:
@@ -6258,6 +6281,7 @@ components:
         | `EMAIL_TAKEN` | 409 | email уже зарегистрирован |
         | `EMAIL_RESERVED_FOR_TEACHER` | 409 | email из списка преподавателей регистрируется студентом |
         | `ALREADY_CONFIRMED` | 409 | участие уже подтверждено с другим уровнем |
+        | `SUBMISSION_LIMIT_REACHED` | 409 | у назначения уже 20 версий сдачи, включая отозванные |
         | `VALIDATION_FAILED` | 400 | тело или параметры не прошли проверку |
         | `PASSWORD_REUSED` | 400 | новый пароль совпадает с текущим |
         | `FILE_TOO_LARGE` | 413 | файл сдачи больше 10 МБ |
@@ -6269,6 +6293,7 @@ components:
         | `ENROLLMENT_CLOSED` | 422 | запись или отмена после времени начала активности |
         | `ALREADY_VOTED` | 409 | студент уже голосовал в опросе |
         | `POLL_CLOSED` | 422 | голос после окончания опроса |
+        | `RATE_LIMITED` | 429 | только nginx хоста на сервере: превышен лимит частоты входа, регистрации, писем или смены пароля; приложение этот код не отдаёт |
         | `INTERNAL_ERROR` | 500 | непредвиденная ошибка сервера; подробности только в логе backend |
       enum:
         - UNAUTHENTICATED
@@ -6285,6 +6310,7 @@ components:
         - EMAIL_TAKEN
         - EMAIL_RESERVED_FOR_TEACHER
         - ALREADY_CONFIRMED
+        - SUBMISSION_LIMIT_REACHED
         - VALIDATION_FAILED
         - PASSWORD_REUSED
         - FILE_TOO_LARGE
@@ -6296,6 +6322,7 @@ components:
         - ENROLLMENT_CLOSED
         - ALREADY_VOTED
         - POLL_CLOSED
+        - RATE_LIMITED
         - INTERNAL_ERROR
 
     Problem:
@@ -6570,7 +6597,7 @@ components:
       properties:
         demo:
           type: boolean
-          description: Профиль `demo` — данные пересоздаются при каждом запуске (мастер-R47).
+          description: Профиль `demo` — синтетический сид; данные пересоздаются при запуске, если сброс не выключен (`CAMPUS_DEMO_RESET=false` на серверном стенде, мастер-R47).
         emailVerification:
           $ref: '#/components/schemas/EmailVerificationMode'
 
