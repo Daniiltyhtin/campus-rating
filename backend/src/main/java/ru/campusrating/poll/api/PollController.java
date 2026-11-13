@@ -86,10 +86,20 @@ public class PollController {
 
     @Schema(requiredProperties = {"questionId", "optionIds"})
     public record PollAnswer(@NotNull @Min(1) Long questionId,
-            @NotNull @ArraySchema(minItems = 1, uniqueItems = true) List<@NotNull @Min(1) Long> optionIds) {}
+            @NotNull @ArraySchema(minItems = 1, uniqueItems = true) List<@NotNull @Min(1) Long> optionIds) {
+        @Override
+        public String toString() {
+            return "PollAnswer[questionId=" + questionId + ", optionCount=" + (optionIds == null ? 0 : optionIds.size()) + "]";
+        }
+    }
 
     @Schema(requiredProperties = "answers")
-    public record PollVote(@NotEmpty List<@NotNull @Valid PollAnswer> answers) {}
+    public record PollVote(@NotEmpty List<@NotNull @Valid PollAnswer> answers) {
+        @Override
+        public String toString() {
+            return "PollVote[answerCount=" + (answers == null ? 0 : answers.size()) + "]";
+        }
+    }
 
     @Schema(requiredProperties = {"student", "group", "answers"})
     public record PollResponse(UserRef student, StudyGroupRef group, List<PollAnswer> answers) {}

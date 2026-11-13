@@ -164,3 +164,13 @@ it('R41: reduced-motion session loader is static', () => {
   expect(screen.getByRole('status', { name: 'Загрузка' }).querySelector('animate, animateTransform')).toBeNull();
   expect(screen.getByRole('status', { name: 'Загрузка' }).querySelector('svg path')).not.toBeNull();
 });
+
+
+it('Radio labels and bodies use the 44px touch target', () => {
+  expect(theme.components?.Radio?.styles).toMatchObject({
+    body: { minHeight: 'var(--cr-touch-target)', alignItems: 'center' },
+    label: { minHeight: 'var(--cr-touch-target)', display: 'flex', alignItems: 'center' },
+  });
+  expect(styles).toMatch(/\.mantine-Radio-label[^{}]*\{[^}]*position:\s*relative/);
+  expect(styles).toMatch(/\.mantine-Radio-label::before[^{}]*\{[^}]*inset:\s*0[^}]*inset-inline-start:/);
+});

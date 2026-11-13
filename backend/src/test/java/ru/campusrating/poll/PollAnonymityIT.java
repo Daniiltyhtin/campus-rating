@@ -127,7 +127,7 @@ class PollAnonymityIT extends PollTestSupport {
                 assertThat(option.matcher(line).find()).as("id варианта рядом с id студента: %s", line).isFalse();
             }
         }
-        assertThat(captured).doesNotContain("\"optionIds\"");
+        assertThat(captured).doesNotContain("\"optionIds\"", "optionIds=");
     }
 
     private List<String> pollTables() {

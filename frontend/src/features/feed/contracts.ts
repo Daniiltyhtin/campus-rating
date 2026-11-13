@@ -47,28 +47,29 @@ export function parseGroupRating(value: unknown): GroupRating {
   const row = object(value);
   return { group: group(row.group), sort: parseCurrency(row.sort), items: list(row.items, ratingRow) };
 }
-function personalEvent(value: unknown): PersonalEvent {
-  const row = object(value), base = { id: id(row.id), createdAt: instant(row.createdAt) };
-  switch (row.kind) {
+function personalEvent(value: unknown): PersonalEvent | null {
+  const row = object(value), kind = text(row.kind);
+  const base = () => ({ id: id(row.id), createdAt: instant(row.createdAt) });
+  switch (kind) {
     case 'ASSIGNMENT_CREATED': case 'DEADLINE_REMINDER':
-      return { ...base, kind: row.kind, assignmentId: id(row.assignmentId), checkpointTitle: text(row.checkpointTitle), deadline: instant(row.deadline) };
+      return { ...base(), kind, assignmentId: id(row.assignmentId), checkpointTitle: text(row.checkpointTitle), deadline: instant(row.deadline) };
     case 'WORK_ACCEPTED': case 'WORK_RETURNED':
-      return { ...base, kind: row.kind, assignmentId: id(row.assignmentId), checkpointTitle: text(row.checkpointTitle) };
+      return { ...base(), kind, assignmentId: id(row.assignmentId), checkpointTitle: text(row.checkpointTitle) };
     case 'POINTS_AWARDED':
-      return { ...base, kind: row.kind, activityId: id(row.activityId), activityTitle: text(row.activityTitle),
+      return { ...base(), kind, activityId: id(row.activityId), activityTitle: text(row.activityTitle),
         amount: integer(row.amount, 1, 2_147_483_647), currency: parseCurrency(row.currency) };
     case 'ACTIVITY_CREATED':
-      return { ...base, kind: row.kind, activityId: id(row.activityId), activityTitle: text(row.activityTitle) };
+      return { ...base(), kind, activityId: id(row.activityId), activityTitle: text(row.activityTitle) };
     case 'WORK_SUBMITTED':
-      return { ...base, kind: row.kind, checkpointId: id(row.checkpointId), checkpointTitle: text(row.checkpointTitle), studentFullName: text(row.studentFullName) };
+      return { ...base(), kind, checkpointId: id(row.checkpointId), checkpointTitle: text(row.checkpointTitle), studentFullName: text(row.studentFullName) };
     case 'POLL_CREATED':
-      return { ...base, kind: row.kind, pollId: id(row.pollId), pollTitle: text(row.pollTitle), endsAt: instant(row.endsAt) };
+      return { ...base(), kind, pollId: id(row.pollId), pollTitle: text(row.pollTitle), endsAt: instant(row.endsAt) };
     case 'POLL_CLOSED':
-      return { ...base, kind: row.kind, pollId: id(row.pollId), pollTitle: text(row.pollTitle), voted: integer(row.voted), eligible: integer(row.eligible) };
-    default: return invalid();
+      return { ...base(), kind, pollId: id(row.pollId), pollTitle: text(row.pollTitle), voted: integer(row.voted), eligible: integer(row.eligible) };
+    default: return null;
   }
 }
 export function parsePersonalPage(value: unknown): PersonalPage {
   const row = object(value);
-  return { items: list(row.items, personalEvent), nextCursor: row.nextCursor === null ? null : text(row.nextCursor) };
+  return { items: list(row.items, personalEvent).filter((item): item is PersonalEvent => item !== null), nextCursor: row.nextCursor === null ? null : text(row.nextCursor) };
 }

@@ -50,11 +50,12 @@ class PollViews {
     }
 
     PollResults results(long poll) {
-        int voted = repository.participants(poll);
+        var options = repository.results(poll);
+        int voted = options.isEmpty() ? 0 : options.getFirst().voted();
         var byQuestion = new LinkedHashMap<Long, List<PollOptionResult>>();
-        repository.questions(poll).forEach(question -> byQuestion.put(question.id(), new java.util.ArrayList<>()));
-        for (var option : repository.options(poll)) {
-            byQuestion.get(option.questionId()).add(new PollOptionResult(option.id(), option.votes(), share(option.votes(), voted)));
+        for (var option : options) {
+            byQuestion.computeIfAbsent(option.questionId(), ignored -> new java.util.ArrayList<>())
+                    .add(new PollOptionResult(option.id(), option.votes(), share(option.votes(), voted)));
         }
         return new PollResults(voted, byQuestion.entrySet().stream()
                 .map(entry -> new PollQuestionResult(entry.getKey(), List.copyOf(entry.getValue()))).toList());

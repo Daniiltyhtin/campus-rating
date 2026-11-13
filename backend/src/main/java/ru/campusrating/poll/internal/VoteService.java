@@ -39,8 +39,9 @@ public class VoteService {
         if (user.membership() == null || user.membership().state() != GroupMembershipState.ACTIVE) {
             throw new ApiException(ProblemCode.MEMBERSHIP_NOT_ACTIVE, "Голосовать можно после подтверждения членства");
         }
+        var state = repository.lockForVote(pollId);
         var now = clock.instant();
-        if (!PollRules.open(row.endsAt(), now)) throw new ApiException(ProblemCode.POLL_CLOSED, "Опрос завершён");
+        if (state.closed() || !PollRules.open(state.endsAt(), now)) throw new ApiException(ProblemCode.POLL_CLOSED, "Опрос завершён");
         var options = repository.options(pollId);
         var questions = repository.questions(pollId).stream().map(question -> new VoteValidation.Question(question.id(), question.type(),
                 options.stream().filter(option -> option.questionId() == question.id()).map(PollRepository.OptionRow::id).toList()))

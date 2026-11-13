@@ -1209,3 +1209,16 @@
 - **Урок:** чекбоксы Mantine в e2e — в `e2e/AGENTS.md`.
 - **Кругов ревью:** 0.
 - **Коммит / PR:** этот PR.
+
+
+### 2026-11-13 — U16: семь исправлений по ревью PR #72
+
+- **Кто / агент / модель:** ревьюер — владелец второй ветки; статическое ревью и исправления — Codex gpt-6.1-sol, приёмка правок — Claude Code claude-opus-5-5.
+- **Поручение:** исправить гонку голоса с закрытием, снимок статистики, PIT опросов, область Radio, DEBUG-утечку выбора, совместимость ленты и идемпотентность демо-вставок; без коммитов и пуша.
+- **Результат с доказательствами:** до правки `PollVoteLoggingTest,PollReviewConfigurationTest` — 5 падений: раскрытые варианты, отсутствующее PIT-выполнение, раздельные чтения статистики, отсутствие `ON CONFLICT`. После — 27 целевых тестов опросов зелёные. `JAVA_HOME=<JDK25> ./backend/mvnw -f backend/pom.xml '-Dtest=*Test,!CheckpointModuleTest,!AdminSchemaTest,!FeedSchemaTest,!SubmissionSchemaTest' test` — 381 тест, 0 ошибок. `-Pquality test-compile org.pitest:pitest-maven:mutationCoverage@pit-poll` — 48/48 мутаций уничтожены, порог 70 не менялся. Frontend: новые проверки Radio и неизвестного события сначала красные; после `npm --prefix frontend run check` — 660 passed, 1 skipped, 11 проверок линтера темы; `build` зелёный. Повтор на исходном `contracts.ts` подтвердил падение неизвестного вида на `default: return invalid()`; затем 55/55 целевых frontend-тестов зелёные. `npm --prefix e2e run check` — typecheck и ESLint зелёные без запуска сценариев. `node tools/check-agent-docs.mjs` и `git diff --check` — зелёные.
+- **Не проверено:** скриншоты 360 и 1280 px. Ворота ревьюера на ветке с правками: `-Pquality verify` — 891 тест, 0 падений, PIT `poll` в отчёте; `frontend check` — 660 passed, 1 skipped; `build`, `redocly lint`, `node --test tools/test`, `check-agent-docs` — зелёные; e2e — 60 passed, 2 skipped.
+- **Неудачные попытки:** первый frontend-прогон после исправлений нашёл старое ожидание ошибки на неизвестном виде; приёмочный тест обновлён под требование пользователя. Общий backend-прогон без фильтра включает `CheckpointModuleTest`, которому нужен Docker.
+- **Ошибка агента:** запустил общий `mvn test`, не проверив зависимость `CheckpointModuleTest` от Testcontainers → увидел запуск PostgreSQL в логе → остановил прогон и повторил с явным исключением; `*IT` не запускались.
+- **Урок:** перекрытие Radio и Checkbox расширенной подписью → проверка области и прежний случай POLL-01 → кликать подпись и проверять выбранное состояние; уточнён существующий урок в `e2e/AGENTS.md`.
+- **Кругов ревью:** 1 (исправления по переданному списку, независимая повторная приёмка не проводилась).
+- **Коммит / PR:** #72.

@@ -17,6 +17,10 @@ class PollRepository {
 
     record OptionRow(long id, long questionId, String text, int votes) {}
 
+    record VotingState(Instant endsAt, boolean closed) {}
+
+    record OptionResultRow(long id, long questionId, int votes, int voted) {}
+
     record GroupLink(long pollId, long groupId) {}
 
     record Choice(long studentId, long optionId) {}
@@ -59,6 +63,12 @@ class PollRepository {
                 .query(PollRepository::poll).optional();
     }
 
+    VotingState lockForVote(long poll) {
+        return jdbc.sql("select ends_at,closed_at from poll where id=:poll for update").param("poll", poll)
+                .query((rs, row) -> new VotingState(rs.getTimestamp("ends_at").toInstant(),
+                        rs.getTimestamp("closed_at") != null)).single();
+    }
+
     List<PollRow> byAuthor(long author) {
         return jdbc.sql("select " + POLL_COLUMNS + " from poll p where p.author_id=:author").param("author", author)
                 .query(PollRepository::poll).list();
@@ -89,6 +99,17 @@ class PollRepository {
                 """).param("poll", poll)
                 .query((rs, row) -> new OptionRow(rs.getLong("id"), rs.getLong("question_id"), rs.getString("text"),
                         rs.getInt("vote_count"))).list();
+    }
+
+    List<OptionResultRow> results(long poll) {
+        return jdbc.sql("""
+                select o.id,o.question_id,o.vote_count,
+                    (select count(*) from poll_participation where poll_id=:poll) as voted
+                from poll_option o join poll_question q on q.id=o.question_id
+                where q.poll_id=:poll order by q.position,o.position
+                """).param("poll", poll)
+                .query((rs, row) -> new OptionResultRow(rs.getLong("id"), rs.getLong("question_id"),
+                        rs.getInt("vote_count"), rs.getInt("voted"))).list();
     }
 
     int participants(long poll) {

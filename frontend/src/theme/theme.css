@@ -31,8 +31,8 @@ html[data-theme='high-contrast'] a { text-decoration: underline; }
 .cr-ar { color: var(--cr-currency-ar); }
 .cr-bua { color: var(--cr-currency-bua); }
 .cr-boa { color: var(--cr-currency-boa); }
-.mantine-Checkbox-label { position: relative; }
-.mantine-Checkbox-label::before { content: ''; position: absolute; inset: 0; inset-inline-start: calc(-1 * var(--mantine-spacing-xl)); }
+.mantine-Checkbox-label, .mantine-Radio-label { position: relative; }
+.mantine-Checkbox-label::before, .mantine-Radio-label::before { content: ''; position: absolute; inset: 0; inset-inline-start: calc(-1 * var(--mantine-spacing-xl)); }
 @media (max-width: 48em) {
   .cr-template-grid { grid-template-columns: minmax(0, 1fr); }
   .cr-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }

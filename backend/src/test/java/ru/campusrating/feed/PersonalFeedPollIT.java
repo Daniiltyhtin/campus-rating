@@ -97,9 +97,15 @@ class PersonalFeedPollIT extends PersonalFeedSupport {
         assertThat(pollEvents(student, "POLL_CLOSED")).isZero();
         assertThat(pollEvents(classmate, "POLL_CLOSED")).isZero();
 
+        update("update poll set ends_at=? where id=?", ENDS.plus(Duration.ofDays(1)), pollId);
         var vote = exchange(post(POLLS + "/" + pollId + "/vote").content(ballot(question, evening)), login("classmate"));
         assertThat(vote.status()).isEqualTo(422);
         assertThat(JSON.readTree(vote.body()).path("code").asText()).isEqualTo("POLL_CLOSED");
+
+        var finalResults = request(get(POLLS + "/" + pollId), teacherSession, 200).path("results");
+        assertThat(finalResults.path("voted").asInt()).isEqualTo(item.path("voted").asInt());
+        assertThat(count("select count(*) from poll_participation where poll_id=?", pollId))
+                .isEqualTo(item.path("voted").asInt());
 
         var untouched = request(get(POLLS + "/" + later), teacherSession, 200);
         assertThat(untouched.path("open").asBoolean()).isTrue();
