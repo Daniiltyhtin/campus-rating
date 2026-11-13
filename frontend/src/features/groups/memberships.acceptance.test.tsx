@@ -121,11 +121,13 @@ describe('U15 заявки в группу — преподаватель', { ti
 });
 
 describe('U15 заявки в группу — староста и студент', { timeout: 15_000 }, () => {
-  it('староста видит плашку «Ждут подтверждения: N» на «Главной» и по ней — заявки своей группы', async () => {
+  it('староста видит карточку «Заявки в группу» с числом и пояснением на «Главной» и по ней — заявки своей группы', async () => {
     createAuthScenario(head);
     memberships([request(1004, 'Орлов Никита Сергеевич', 'orlov@student.campus.test')]);
     const view = mount('/');
-    await view.user.click(await screen.findByRole('link', { name: /Ждут подтверждения: 1/ }));
+    const notice = await screen.findByRole('region', { name: /^Заявки в группу/ });
+    expect(notice).toHaveTextContent('1 студент ждёт подтверждения членства');
+    await view.user.click(within(notice).getByRole('link', { name: 'Проверить заявки' }));
     await waitFor(() => expect(view.router.state.location.pathname).toBe('/memberships'));
     expect(await screen.findByText('Орлов Никита Сергеевич')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Подтвердить/ })).toBeInTheDocument();
@@ -137,7 +139,7 @@ describe('U15 заявки в группу — староста и студен�
     mount('/');
     expect(await screen.findByText('Событий пока нет')).toBeInTheDocument();
     await waitFor(() => expect(state.reads).toBeGreaterThan(0));
-    expect(screen.queryByText(/Ждут подтверждения/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Заявки в группу/)).not.toBeInTheDocument();
   });
 
   it('обычный студент плашки не видит, а прямой переход на /memberships — «Нет доступа»', async () => {
@@ -145,7 +147,7 @@ describe('U15 заявки в группу — староста и студен�
     memberships([request(1004, 'Орлов Никита Сергеевич', 'orlov@student.campus.test')]);
     mount('/');
     expect(await screen.findByText('Событий пока нет')).toBeInTheDocument();
-    expect(screen.queryByText(/Ждут подтверждения/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Заявки в группу/)).not.toBeInTheDocument();
     cleanup();
     mount('/memberships');
     expect(await screen.findByRole('heading', { name: 'Нет доступа' })).toBeInTheDocument();

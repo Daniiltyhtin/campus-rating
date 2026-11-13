@@ -39,6 +39,6 @@ export function HomePage() {
   const notice = user.role === 'TEACHER' && !user.teacherApproved ? 'Заявка ждёт подтверждения администратора'
     : user.role === 'STUDENT' && user.membershipState === 'PENDING' ? `Членство в ${user.group.name} ждёт подтверждения старосты или преподавателя` : undefined;
   const extra = user.role !== 'STUDENT' ? undefined : user.membershipState === 'REJECTED' ? <RequestMembership groupName={user.group.name} />
-    : user.groupHead ? <HeadRequestsNotice /> : undefined;
+    : user.groupHead ? <HeadRequestsNotice groupName={user.group.name} /> : undefined;
   return <Events viewerId={user.id} key={user.id} notice={notice} extra={extra} />;
 }

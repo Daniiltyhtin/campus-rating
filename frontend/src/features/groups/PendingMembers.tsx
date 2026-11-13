@@ -1,4 +1,4 @@
-import { Anchor, Button, Group, Modal, Stack, Text } from '@mantine/core';
+import { Anchor, Button, Group, Modal, Stack, Text, Title } from '@mantine/core';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import type { components } from '../../api/schema';
@@ -7,6 +7,7 @@ import { useAuthSession } from '../auth/authQueries';
 import { dateTime, errorText, loadState } from '../tasks/helpers';
 import { TaskFailure } from '../tasks/shared';
 import { useMembershipDecision, usePendingMemberships } from './memberships';
+import './memberships.css';
 
 type Pending = components['schemas']['PendingMembership'];
 
@@ -49,9 +50,20 @@ export function TeacherRequestsLink() {
   return <Anchor component={Link} to="/memberships" c="var(--cr-link)">Заявки: {query.data.items.length}</Anchor>;
 }
 
-export function HeadRequestsNotice() {
+function students(count: number) {
+  const last = count % 10, tens = count % 100;
+  if (last === 1 && tens !== 11) return `${count} студент ждёт`;
+  if (last >= 2 && last <= 4 && (tens < 12 || tens > 14)) return `${count} студента ждут`;
+  return `${count} студентов ждут`;
+}
+
+export function HeadRequestsNotice({ groupName }: { groupName: string }) {
   const query = usePendingMemberships();
   const count = query.data?.items.length ?? 0;
   if (count === 0) return null;
-  return <Anchor component={Link} to="/memberships" c="var(--cr-link)">Ждут подтверждения: {count}</Anchor>;
+  return <section className="membership-notice" aria-label={`Заявки в группу ${groupName}`}><Stack gap="xs">
+    <Title order={2}>Заявки в группу {groupName}</Title>
+    <Text>{students(count)} подтверждения членства. Вы староста группы: проверьте, что это ваши одногруппники, и подтвердите или отклоните заявки.</Text>
+    <div><Button component={Link} to="/memberships">Проверить заявки</Button></div>
+  </Stack></section>;
 }

@@ -126,7 +126,7 @@ test('REG-03 полный путь: письмо, подтверждение ema
   try {
     const headPage = await headContext.newPage();
     await login(headPage, head);
-    await headPage.getByRole('link', { name: 'Ждут подтверждения: 1', exact: true }).click();
+    await headPage.getByRole('link', { name: 'Проверить заявки', exact: true }).click();
     await expect(headPage).toHaveURL(/\/memberships$/);
     await headPage.getByRole('button', { name: `Подтвердить ${user.fullName}`, exact: true }).click();
     await expect(headPage.getByText('Новых заявок нет', { exact: true })).toBeVisible();
