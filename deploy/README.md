@@ -9,33 +9,50 @@
 - Docker Engine и Docker Compose 2.24 или новее (`docker compose version`).
 - nginx и certbot (`apt install nginx certbot python3-certbot-nginx`).
 - DNS: запись `A` домена стенда на IP сервера.
-- Свободный порт `8080` на `127.0.0.1` (или другой — `WEB_PORT`).
+- Свободный порт на `127.0.0.1` для `web` — `WEB_PORT`; проверьте по `ss -tln`, что его никто не слушает.
 
 ## Первый запуск
 
-1. Склонируйте репозиторий и перейдите в него.
+1. Положите код нужного коммита на сервер (`git clone` или копия `git archive`) и перейдите в каталог.
 2. Окружение:
    ```bash
    cp deploy/server.env.example deploy/server.env
    ```
-   Заполните `POSTGRES_PASSWORD` (длинный случайный), `CAMPUS_PUBLIC_URL` (`https://<домен>`), `EMAIL_VERIFICATION` (`off` без почты). Файл `deploy/server.env` не коммитится.
+   Заполните `POSTGRES_PASSWORD` и `DEMO_PASSWORD_PREFIX` (по 16 случайных символов, команда — в комментарии файла), `CAMPUS_PUBLIC_URL` (`https://<домен>`), `EMAIL_VERIFICATION` (`off` без почты), `WEB_PORT`. Дайте файлу права `600`. Файл `deploy/server.env` не коммитится.
+
+   Без `DEMO_PASSWORD_PREFIX` стенд не запустится: демо-аккаунты на сервере входят только паролями с префиксом — `demo` в паролях из корневого README заменяется префиксом (`<префикс>-admin-1`). Раздайте префикс команде отдельно от репозитория.
 3. Стек:
    ```bash
    docker compose --env-file deploy/server.env -f docker-compose.yml -f docker-compose.server.yml up -d --build --wait
    ```
    Без обязательных переменных compose остановится с сообщением, какой не хватает.
-4. nginx:
-   ```bash
-   sudo cp deploy/nginx/campus.conf.example /etc/nginx/sites-available/campus.conf
-   # замените campus.example.ru на домен; WEB_PORT, если меняли
-   sudo ln -s /etc/nginx/sites-available/campus.conf /etc/nginx/sites-enabled/
-   sudo certbot --nginx -d <домен>
-   sudo nginx -t && sudo systemctl reload nginx
-   ```
+4. nginx и сертификат. Конфиг стенда — отдельный файл; чужие файлы в `/etc/nginx` не меняются, `nginx -t` — перед каждым `reload`.
+   1. Временный конфиг только с портом 80 — чтобы certbot прошёл проверку домена:
+      ```nginx
+      server {
+          listen 80;
+          server_name <домен>;
+          location / { proxy_pass http://127.0.0.1:<WEB_PORT>; }
+      }
+      ```
+      ```bash
+      sudoedit /etc/nginx/sites-available/campus.conf   # вставьте блок выше
+      sudo ln -s /etc/nginx/sites-available/campus.conf /etc/nginx/sites-enabled/
+      sudo nginx -t && sudo systemctl reload nginx
+      ```
+   2. Сертификат без правки конфигов:
+      ```bash
+      sudo certbot certonly --nginx -d <домен> --deploy-hook "nginx -t && systemctl reload nginx"
+      ```
+   3. Полный конфиг из шаблона: замените `campus.example.ru` на домен и `WEB_PORT` на значение из `deploy/server.env`.
+      ```bash
+      sudo cp deploy/nginx/campus.conf.example /etc/nginx/sites-available/campus.conf   # затем правка
+      sudo nginx -t && sudo systemctl reload nginx
+      ```
 5. Проверка:
-   - `curl -fsS http://127.0.0.1:8080/ >/dev/null && echo ok` — web отвечает;
-   - `https://<домен>/login` открывается, сертификат валиден;
-   - вход `admin@campus.test` / `demo-admin-1` (демо-аккаунты — в корневом README).
+   - `curl -fsS http://127.0.0.1:<WEB_PORT>/ >/dev/null && echo ok` — web отвечает;
+   - `https://<домен>/login` открывается, сертификат валиден, `http://` отвечает 301 на `https://`;
+   - вход `admin@campus.test` паролем `<префикс>-admin-1`; пароль `demo-admin-1` отклоняется.
 
 ## Почта (SMTP Яндекса)
 
