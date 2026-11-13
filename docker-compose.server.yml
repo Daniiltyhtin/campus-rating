@@ -14,6 +14,7 @@ services:
       SPRING_PROFILES_ACTIVE: demo
       EMAIL_VERIFICATION: ${EMAIL_VERIFICATION:?EMAIL_VERIFICATION is required (off or required), see deploy/server.env.example}
       CAMPUS_PUBLIC_URL: ${CAMPUS_PUBLIC_URL:?CAMPUS_PUBLIC_URL is required, see deploy/server.env.example}
+      DEMO_PASSWORD_PREFIX: ${DEMO_PASSWORD_PREFIX:?DEMO_PASSWORD_PREFIX is required on the server, see deploy/server.env.example}
       SERVER_FORWARD_HEADERS_STRATEGY: native
       MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
 
