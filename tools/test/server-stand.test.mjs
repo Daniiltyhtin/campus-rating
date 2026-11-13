@@ -21,7 +21,7 @@ test('U22: override publishes only web on loopback', async () => {
 
 test('U22: override requires stand settings and runs demo behind a proxy', async () => {
   const backend = serviceBlock(await read('docker-compose.server.yml'), 'backend');
-  for (const name of ['POSTGRES_PASSWORD', 'EMAIL_VERIFICATION', 'CAMPUS_PUBLIC_URL']) {
+  for (const name of ['POSTGRES_PASSWORD', 'EMAIL_VERIFICATION', 'CAMPUS_PUBLIC_URL', 'DEMO_PASSWORD_PREFIX']) {
     assert.match(backend, new RegExp(`\\$\\{${name}:\\?`), `${name} must be required`);
   }
   assert.match(backend, /SPRING_PROFILES_ACTIVE: demo/);
@@ -39,6 +39,12 @@ test('U22: env example has no secret values and server.env is ignored', async ()
   assert.match(await read('.gitignore'), /^deploy\/server\.env$/m);
 });
 
+test('U22: env example asks for a demo password prefix and pins the project name', async () => {
+  const example = await read('deploy/server.env.example');
+  assert.match(example, /^DEMO_PASSWORD_PREFIX=$/m);
+  assert.match(example, /^COMPOSE_PROJECT_NAME=campus-rating$/m);
+});
+
 test('U22: inner nginx keeps the scheme set by the host proxy', async () => {
   const nginx = await read('frontend/nginx.conf');
   assert.match(nginx, /map \$http_x_forwarded_proto \$forwarded_proto \{\s+default \$http_x_forwarded_proto;\s+''\s+\$scheme;\s+\}/);
@@ -52,7 +58,8 @@ test('U22: host nginx example terminates TLS and proxies to loopback', async () 
   assert.match(host, /listen 443 ssl http2;/);
   assert.doesNotMatch(host, /http2 on;/);
   assert.match(host, /ssl_certificate \/etc\/letsencrypt\/live\//);
-  assert.match(host, /proxy_pass http:\/\/127\.0\.0\.1:8080;/);
+  assert.match(host, /proxy_pass http:\/\/127\.0\.0\.1:WEB_PORT;/);
+  assert.doesNotMatch(host, /8080/);
   assert.match(host, /proxy_set_header X-Forwarded-Proto https;/);
   assert.match(host, /client_max_body_size 12m;/);
 });
