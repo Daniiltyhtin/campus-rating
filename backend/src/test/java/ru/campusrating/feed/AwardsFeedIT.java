@@ -115,6 +115,27 @@ class AwardsFeedIT extends FeedTestSupport {
     }
 
     @Test
+    void cursorIsBoundToFilterInEveryDirectionAndForEveryRole() {
+        award(student, Currency.BUA, 10);
+        award(student, Currency.BOA, 20);
+        String all = cursor(request(get(AWARDS + "?limit=1"), login("student"), 200));
+        String studentOwn = cursor(request(get(AWARDS + "?mine=true&limit=1"), login("student"), 200));
+        String teacherOwn = cursor(request(get(AWARDS + "?mine=true&limit=1"), login("teacher"), 200));
+
+        validation(request(get(AWARDS + "?mine=true&cursor=" + encode(all)), login("student"), 400), "cursor");
+        validation(request(get(AWARDS + "?mine=true&cursor=" + encode(studentOwn)), login("teacher"), 400), "cursor");
+        validation(request(get(AWARDS + "?mine=true&cursor=" + encode(teacherOwn)), login("student"), 400), "cursor");
+        validation(request(get(AWARDS + "?cursor=" + encode(teacherOwn)), login("teacher"), 400), "cursor");
+        validation(request(get(AWARDS + "?mine=true&cursor=" + encode(all)), login("admin"), 400), "cursor");
+        validation(request(get(AWARDS + "?mine=true&cursor=broken"), login("admin"), 400), "cursor");
+    }
+
+    private static String cursor(JsonNode page) {
+        assertThat(page.path("nextCursor").isTextual()).isTrue();
+        return page.path("nextCursor").asText();
+    }
+
+    @Test
     void brokenCursorIdentifiesCursorField() {
         validation(request(get(AWARDS + "?cursor=broken"), login("student"), 400), "cursor");
     }
