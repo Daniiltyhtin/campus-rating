@@ -1,4 +1,4 @@
-import { ActionIcon, Menu } from '@mantine/core';
+import { ActionIcon } from '@mantine/core';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { CampusAppearance } from './useCampusAppearance';
@@ -18,13 +18,6 @@ const icons: Record<CampusAppearance, ReactNode> = { light: sun, dark: moon, sys
 const options: readonly (readonly [CampusAppearance, string, ReactNode])[] = [
   ['light', 'Светлая', sun], ['dark', 'Тёмная', moon], ['system', 'Системная', monitor],
 ];
-
-export function ThemeOptions() {
-  const { appearance, setAppearance } = useCampusAppearance();
-  return <>{options.map(([value, label]) => <Menu.RadioItem key={value} value={value}
-    checked={appearance === value} onChange={() => setAppearance(value)} className="cr-menu-item"
-    checkIcon={<span aria-hidden="true">✓</span>}>{label}</Menu.RadioItem>)}</>;
-}
 
 export function ThemeMenu() {
   const { appearance, setAppearance } = useCampusAppearance();
