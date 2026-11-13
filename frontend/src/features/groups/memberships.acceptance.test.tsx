@@ -55,7 +55,7 @@ function memberships(initial: Pending[]) {
 }
 
 describe('U15 заявки в группу — преподаватель', { timeout: 15_000 }, () => {
-  it('видит «Заявки: N» в «Группах», подтверждает строку и отклоняет через диалог', async () => {
+  it('видит карточку «Заявки в ваши группы» в «Группах», подтверждает строку и отклоняет через диалог', async () => {
     createAuthScenario(authUsers.teacher);
     document.cookie = `campus-mock-user=${encodeURIComponent(JSON.stringify(authUsers.teacher))}; Path=/`;
     const state = memberships([
@@ -63,7 +63,9 @@ describe('U15 заявки в группу — преподаватель', { ti
       request(1005, 'Кузнецова Мария Ивановна', 'kuznetsova@student.campus.test', ivt22, '2026-11-12T10:30:00Z'),
     ]);
     const view = mount('/groups');
-    await view.user.click(await screen.findByRole('link', { name: /Заявки: 2/ }));
+    const notice = await screen.findByRole('region', { name: 'Заявки в ваши группы' });
+    expect(notice).toHaveTextContent('2 студента ждут подтверждения членства: ИВТ-21 — 1, ИВТ-22 — 1');
+    await view.user.click(within(notice).getByRole('link', { name: 'Проверить заявки' }));
     await waitFor(() => expect(view.router.state.location.pathname).toBe('/memberships'));
     expect(await screen.findByText('Орлов Никита Сергеевич')).toBeInTheDocument();
     expect(screen.getByText('orlov@student.campus.test')).toBeInTheDocument();

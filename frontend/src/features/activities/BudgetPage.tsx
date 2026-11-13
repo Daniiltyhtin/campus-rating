@@ -6,7 +6,7 @@ import type { Group } from './contracts';
 import { loadState, useAccessibleGroups, useAwardHistory, useAwardSummary, useBudgets } from './queries';
 import { activityError } from './errors';
 import { formatMoscowTime } from './time';
-import { TeacherRequestsLink } from '../groups/PendingMembers';
+import { TeacherRequestsNotice } from '../groups/PendingMembers';
 
 function History({ userId, month, groupId }: { userId: number; month: string; groupId: string }) {
   const query = useAwardHistory(userId, month, groupId);
@@ -42,9 +42,10 @@ function Budget({ userId }: { userId: number }) {
   for (const item of budgets.data?.items ?? []) groups.set(item.group.id, item.group);
   for (const item of summary.data?.items ?? []) groups.set(item.group.id, item.group);
   return <ActivityPage title="Группы и бюджет" description="Общий бюджет БУА и БОА по вашим группам. Месяц и время начислений — по Москве.">
+    <TeacherRequestsNotice />
     <section><Title order={2} mb="md">Рейтинги доступных групп</Title><AsyncContent state={loadState(accessibleGroups, accessibleGroups.data?.items.length === 0, 'Доступных групп пока нет. Они появятся после допуска или выдачи доступа.')}>
       <Stack gap="xs">{accessibleGroups.data?.items.map((group) => <Stack gap="xs" key={group.id}><ActivityLink to={`/groups/${group.id}`}>{group.name} · {group.faculty.code}</ActivityLink><ActivityLink to={`/groups/${group.id}/students`}>Студенты {group.name}</ActivityLink></Stack>)}</Stack>
-    </AsyncContent><Stack gap="xs" mt="md"><TeacherRequestsLink /><ActivityLink to="/awards">Лента наград</ActivityLink></Stack></section>
+    </AsyncContent><Stack gap="xs" mt="md"><ActivityLink to="/awards">Лента наград</ActivityLink></Stack></section>
     <div className="activity-toolbar"><TextInput type="month" label="Месяц бюджета" value={currentMonth} onChange={(event) => {
       const value = event.currentTarget.value;
       if (value && !/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) return;

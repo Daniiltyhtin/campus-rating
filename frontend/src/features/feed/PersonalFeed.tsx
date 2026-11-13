@@ -4,7 +4,7 @@ import { AsyncContent } from '../../app/layouts/PageLayouts';
 import { SectionPlaceholder } from '../../app/routeElements';
 import { useAuthSession } from '../auth/authQueries';
 import { RequestMembership } from '../auth/RequestMembership';
-import { HeadRequestsNotice } from '../groups/PendingMembers';
+import { HeadRequestsNotice, TeacherRequestsNotice } from '../groups/PendingMembers';
 import type { PersonalEvent } from './contracts';
 import { FeedIcon, FeedLink, FeedPage } from './FeedShared';
 import { formatFeedTime, personalEventView, uniqueEvents } from './presentation';
@@ -38,7 +38,7 @@ export function HomePage() {
   if (user.role === 'ADMIN') return <SectionPlaceholder />;
   const notice = user.role === 'TEACHER' && !user.teacherApproved ? 'Заявка ждёт подтверждения администратора'
     : user.role === 'STUDENT' && user.membershipState === 'PENDING' ? `Членство в ${user.group.name} ждёт подтверждения старосты или преподавателя` : undefined;
-  const extra = user.role !== 'STUDENT' ? undefined : user.membershipState === 'REJECTED' ? <RequestMembership groupName={user.group.name} />
+  const extra = user.role === 'TEACHER' ? (user.teacherApproved ? <TeacherRequestsNotice /> : undefined) : user.membershipState === 'REJECTED' ? <RequestMembership groupName={user.group.name} />
     : user.groupHead ? <HeadRequestsNotice groupName={user.group.name} /> : undefined;
   return <Events viewerId={user.id} key={user.id} notice={notice} extra={extra} />;
 }

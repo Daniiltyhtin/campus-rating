@@ -1,4 +1,4 @@
-import { Anchor, Button, Group, Modal, Stack, Text, Title } from '@mantine/core';
+import { Button, Group, Modal, Stack, Text, Title } from '@mantine/core';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import type { components } from '../../api/schema';
@@ -44,12 +44,6 @@ export function PendingMembersPage() {
   return allowed ? <Requests /> : <TaskFailure forbidden />;
 }
 
-export function TeacherRequestsLink() {
-  const query = usePendingMemberships();
-  if (!query.data) return null;
-  return <Anchor component={Link} to="/memberships" c="var(--cr-link)">Заявки: {query.data.items.length}</Anchor>;
-}
-
 function students(count: number) {
   const last = count % 10, tens = count % 100;
   if (last === 1 && tens !== 11) return `${count} студент ждёт`;
@@ -57,13 +51,29 @@ function students(count: number) {
   return `${count} студентов ждут`;
 }
 
+function RequestsCard({ title, text }: { title: string; text: string }) {
+  return <section className="membership-notice" aria-label={title}><Stack gap="xs">
+    <Title order={2}>{title}</Title>
+    <Text>{text}</Text>
+    <div><Button component={Link} to="/memberships">Проверить заявки</Button></div>
+  </Stack></section>;
+}
+
 export function HeadRequestsNotice({ groupName }: { groupName: string }) {
   const query = usePendingMemberships();
   const count = query.data?.items.length ?? 0;
   if (count === 0) return null;
-  return <section className="membership-notice" aria-label={`Заявки в группу ${groupName}`}><Stack gap="xs">
-    <Title order={2}>Заявки в группу {groupName}</Title>
-    <Text>{students(count)} подтверждения членства. Вы староста группы: проверьте, что это ваши одногруппники, и подтвердите или отклоните заявки.</Text>
-    <div><Button component={Link} to="/memberships">Проверить заявки</Button></div>
-  </Stack></section>;
+  return <RequestsCard title={`Заявки в группу ${groupName}`}
+    text={`${students(count)} подтверждения членства. Вы староста группы: проверьте, что это ваши одногруппники, и подтвердите или отклоните заявки.`} />;
+}
+
+export function TeacherRequestsNotice() {
+  const query = usePendingMemberships();
+  const items = query.data?.items ?? [];
+  if (items.length === 0) return null;
+  const byGroup = new Map<string, number>();
+  for (const item of items) byGroup.set(item.group.name, (byGroup.get(item.group.name) ?? 0) + 1);
+  const groups = [...byGroup].map(([name, count]) => `${name} — ${count}`).join(', ');
+  return <RequestsCard title="Заявки в ваши группы"
+    text={`${students(items.length)} подтверждения членства: ${groups}. Проверьте, что студенты учатся в этих группах, и подтвердите или отклоните заявки.`} />;
 }
