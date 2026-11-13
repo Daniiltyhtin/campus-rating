@@ -42,8 +42,8 @@ test('KTD9 export normalizes both daily formats and invokes pinned ccusage with 
   ]);
   const result = await exported('Алиса');
   assert.equal(result.participant, 'Алиса');
-  assert.deepEqual(result.period, { since: '20261029', through: '2026-10-31' });
-  assert.equal(result.sources.claude.coverage, 'проект campus');
+  assert.deepEqual(result.period, { since: '2026-10-29', through: '2026-10-31' });
+  assert.equal(result.sources.claude.coverage, 'один проект Claude');
   assert.equal(result.sources.codex.coverage, 'вся машина');
   assert.equal(result.sources.claude.status, 'ok');
   assert.deepEqual(result.sources.claude.daily, [
@@ -74,7 +74,7 @@ test('KTD9 merge sums two participants, counts journal entries and review rounds
   await main(['--export', 'Боб'], options);
   assert.equal(await main(['--merge'], options), 0);
   const text = await report();
-  assert.match(text, /\| Алиса \| claude \| 14 \| 33 \| 63 \| 110 \| 1\.750000 \| проект campus \|/);
+  assert.match(text, /\| Алиса \| claude \| 14 \| 33 \| 63 \| 110 \| 1\.750000 \| один проект Claude \|/);
   assert.match(text, /\| Боб \| codex \| 20 \| 10 \| 170 \| 200 \| 2\.500000 \| вся машина \|/);
   assert.match(text, /\| \*\*Итого\*\* \| — \| 68 \| 86 \| 466 \| 620 \| 8\.500000 \|/);
   assert.match(text, /Записей журнала: 5/);
