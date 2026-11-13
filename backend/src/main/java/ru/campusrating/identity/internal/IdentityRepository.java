@@ -83,6 +83,10 @@ class IdentityRepository {
         return jdbc.sql("update app_user set password_hash=:hash,must_change_password=false where id=:id and password_hash=:before")
                 .param("hash", hash).param("id", id).param("before", before).update() == 1;
     }
+    int replacePasswords(Collection<Long> ids, Role role, String hash) {
+        return jdbc.sql("update app_user set password_hash=:hash where id in (:ids) and role=:role")
+                .param("hash", hash).param("ids", ids).param("role", role.name()).update();
+    }
     boolean hasAdmin() {
         return jdbc.sql("select exists(select 1 from app_user where role='ADMIN')").query(Boolean.class).single();
     }

@@ -1,4 +1,5 @@
 import { SegmentedControl, Stack, Tabs, Text, Title } from '@mantine/core';
+import { CurrencyLegend } from '../../app/CurrencyMark';
 import { useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { GroupAnalytics } from '../analytics/GroupAnalytics';
@@ -18,6 +19,7 @@ function Rating({ viewerId, groupId }: { viewerId: number; groupId: number }) {
     {query.data && <Text>{query.data.group.faculty.name}</Text>}
     <div><Title order={2} mb="sm">Сортировка</Title><SegmentedControl aria-label="Сортировка рейтинга" className="feed-currency" value={sort} onChange={(value) => setSort(parseCurrency(value))}
       data={(['AR', 'BUA', 'BOA'] as const).map((value) => ({ value, label: currencyNames[value] }))} /></div>
+    <CurrencyLegend />
     <TeacherTableLayout caption="Рейтинг студентов" rows={query.data?.items ?? []} keyForRow={(row) => row.student.id}
       state={feedState(query, query.data?.items.length === 0, 'Студентов пока нет. Рейтинг появится после подтверждения членства в группе.')}
       columns={[{ key: 'student', title: 'Студент', render: (row) => <FeedLink to={`/users/${row.student.id}`}>{row.student.fullName}</FeedLink> },

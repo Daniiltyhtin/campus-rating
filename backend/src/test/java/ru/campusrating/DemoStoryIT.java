@@ -38,7 +38,11 @@ class DemoStoryIT {
                         .isEqualTo(6);
                 assertThat(app.getBean(LedgerApi.class).reconcile().mismatches()).isEmpty();
                 assertThat(jdbc.queryForList("select email from app_user where email_verified order by email", String.class))
-                        .containsExactly("admin@campus.test", "petrov@campus.test", "smirnova@student.campus.test");
+                        .containsExactly("admin@campus.test", "fedorov@student.campus.test", "ivanova@student.campus.test",
+                                "kuznetsov@student.campus.test", "lebedeva@student.campus.test", "morozov@student.campus.test",
+                                "novikov@student.campus.test", "orlov@student.campus.test", "petrov@campus.test",
+                                "smirnova@student.campus.test", "sokolov@student.campus.test", "vasileva@student.campus.test",
+                                "volkov@campus.test");
                 assertAccounting(jdbc);
                 assertHttp(app);
             }
