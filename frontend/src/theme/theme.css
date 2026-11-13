@@ -59,10 +59,6 @@ html[data-theme='high-contrast'] a { text-decoration: underline; }
 .cr-menu-item { min-height: var(--cr-touch-target); font-size: var(--cr-body-size); }
 .mantine-SegmentedControl-root .mantine-SegmentedControl-control:not(:first-of-type)::before,
 .mantine-SegmentedControl-root .mantine-SegmentedControl-control[data-active]:not(:first-of-type)::before { --separator-color: var(--cr-rule); }
-.cr-theme-switch { position: relative; display: inline-flex; align-items: center; }
-.cr-theme-switch-options { position: absolute; inset-inline-end: 100%; top: 50%; display: inline-flex; align-items: center; gap: var(--mantine-spacing-xs); padding-inline-end: var(--mantine-spacing-xs); background-color: var(--cr-bg); opacity: 0; visibility: hidden; transform: translate(var(--mantine-spacing-md), -50%); transition: opacity 200ms ease, transform 200ms ease, visibility 0s linear 200ms; }
-.cr-theme-switch[data-open] .cr-theme-switch-options { opacity: 1; visibility: visible; transform: translate(0, -50%); transition: opacity 200ms ease, transform 200ms ease, visibility 0s; }
-.cr-theme-switch-option[aria-pressed='true'] { background-color: var(--cr-primary-soft); }
 .cr-bottom-link { justify-content: center; text-align: center; }
 .cr-bottom-label { display: flex; flex-direction: column; align-items: center; gap: calc(var(--mantine-spacing-xs) / 2); }
 .cr-nav-icon { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }
