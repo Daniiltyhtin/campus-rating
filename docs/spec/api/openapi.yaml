@@ -6293,6 +6293,7 @@ components:
         | `ENROLLMENT_CLOSED` | 422 | запись или отмена после времени начала активности |
         | `ALREADY_VOTED` | 409 | студент уже голосовал в опросе |
         | `POLL_CLOSED` | 422 | голос после окончания опроса |
+        | `RATE_LIMITED` | 429 | только nginx хоста на сервере: превышен лимит частоты входа, регистрации, писем или смены пароля; приложение этот код не отдаёт |
         | `INTERNAL_ERROR` | 500 | непредвиденная ошибка сервера; подробности только в логе backend |
       enum:
         - UNAUTHENTICATED
@@ -6321,6 +6322,7 @@ components:
         - ENROLLMENT_CLOSED
         - ALREADY_VOTED
         - POLL_CLOSED
+        - RATE_LIMITED
         - INTERNAL_ERROR
 
     Problem:

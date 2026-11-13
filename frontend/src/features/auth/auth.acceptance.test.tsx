@@ -75,6 +75,16 @@ describe('U5 frontend: сессия и вход — R3, KTD8', () => {
     expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
   });
 
+  it('при 429 от nginx хоста показывает «Слишком много попыток»', async () => {
+    createAuthScenario();
+    server.use(http.post('*/api/v1/auth/login', () => new HttpResponse('<html>429</html>', { status: 429, headers: { 'Content-Type': 'text/html' } })));
+    const { user } = mountAuth();
+    await user.type(await screen.findByLabelText('Email'), 'unknown@campus.test');
+    await user.type(screen.getByLabelText('Пароль', { exact: true }), 'some-password');
+    await user.click(screen.getByRole('button', { name: 'Войти' }));
+    expect(await screen.findByText('Слишком много попыток. Подождите минуту и попробуйте снова.')).toBeInTheDocument();
+  });
+
   it('блокирует повторную отправку пока login выполняется', async () => {
     createAuthScenario();
     let posts = 0;

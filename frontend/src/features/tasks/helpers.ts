@@ -25,6 +25,7 @@ const messages: Partial<Record<ApiError['code'], string>> = {
   VALIDATION_FAILED: 'Проверьте заполнение полей',
   INVALID_STATE: 'Состояние работы изменилось. Обновите данные.',
   SUBMISSION_LIMIT_REACHED: 'Достигнут предел сдач по этой задаче. Обратитесь к преподавателю.',
+  RATE_LIMITED: 'Слишком много попыток. Подождите минуту и попробуйте снова.',
   FORBIDDEN: 'Нет доступа',
   NOT_FOUND: 'Данные не найдены',
 };

@@ -2095,10 +2095,11 @@ export interface components {
          *     | `ENROLLMENT_CLOSED` | 422 | запись или отмена после времени начала активности |
          *     | `ALREADY_VOTED` | 409 | студент уже голосовал в опросе |
          *     | `POLL_CLOSED` | 422 | голос после окончания опроса |
+         *     | `RATE_LIMITED` | 429 | только nginx хоста на сервере: превышен лимит частоты входа, регистрации, писем или смены пароля; приложение этот код не отдаёт |
          *     | `INTERNAL_ERROR` | 500 | непредвиденная ошибка сервера; подробности только в логе backend |
          * @enum {string}
          */
-        ProblemCode: "UNAUTHENTICATED" | "INVALID_CREDENTIALS" | "FORBIDDEN" | "GROUP_NOT_ACCESSIBLE" | "PASSWORD_CHANGE_REQUIRED" | "EMAIL_NOT_VERIFIED" | "CSRF_INVALID" | "NOT_FOUND" | "INVALID_STATE" | "DIRECTORY_CODE_TAKEN" | "DIRECTORY_IN_USE" | "EMAIL_TAKEN" | "EMAIL_RESERVED_FOR_TEACHER" | "ALREADY_CONFIRMED" | "SUBMISSION_LIMIT_REACHED" | "VALIDATION_FAILED" | "PASSWORD_REUSED" | "FILE_TOO_LARGE" | "FILE_TYPE_NOT_ALLOWED" | "BUDGET_EXCEEDED" | "NOT_ENROLLED" | "STUDENT_NOT_ELIGIBLE" | "MEMBERSHIP_NOT_ACTIVE" | "ENROLLMENT_CLOSED" | "ALREADY_VOTED" | "POLL_CLOSED" | "INTERNAL_ERROR";
+        ProblemCode: "UNAUTHENTICATED" | "INVALID_CREDENTIALS" | "FORBIDDEN" | "GROUP_NOT_ACCESSIBLE" | "PASSWORD_CHANGE_REQUIRED" | "EMAIL_NOT_VERIFIED" | "CSRF_INVALID" | "NOT_FOUND" | "INVALID_STATE" | "DIRECTORY_CODE_TAKEN" | "DIRECTORY_IN_USE" | "EMAIL_TAKEN" | "EMAIL_RESERVED_FOR_TEACHER" | "ALREADY_CONFIRMED" | "SUBMISSION_LIMIT_REACHED" | "VALIDATION_FAILED" | "PASSWORD_REUSED" | "FILE_TOO_LARGE" | "FILE_TYPE_NOT_ALLOWED" | "BUDGET_EXCEEDED" | "NOT_ENROLLED" | "STUDENT_NOT_ELIGIBLE" | "MEMBERSHIP_NOT_ACTIVE" | "ENROLLMENT_CLOSED" | "ALREADY_VOTED" | "POLL_CLOSED" | "RATE_LIMITED" | "INTERNAL_ERROR";
         /** @description Ошибка по RFC 9457 (`ProblemDetail` Spring) с доменным `code`. */
         Problem: {
             /**

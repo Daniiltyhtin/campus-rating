@@ -74,25 +74,35 @@ function proxyLines(block) {
   return block.split('\n').map((line) => line.trim()).filter((line) => /^proxy_/.test(line));
 }
 
-test('U22: host nginx limits POST auth requests per client and answers 429', async () => {
+test('U22: host nginx limits POST auth requests per client and answers 429 RATE_LIMITED', async () => {
   const host = await read('deploy/nginx/campus.conf.example');
   const zone = host.indexOf('limit_req_zone');
-  assert.ok(zone !== -1 && zone < host.indexOf('server {'), 'zone must be declared outside server blocks');
+  assert.ok(zone !== -1 && zone < host.indexOf('server {'), 'zones must be declared outside server blocks');
   assert.match(host, /map \$request_method \$campus_auth_client \{\s+POST\s+\$binary_remote_addr;\s+default\s+"";\s+\}/);
+  assert.match(host, /limit_req_zone \$campus_auth_client zone=campus_login:10m rate=60r\/m;/);
   assert.match(host, /limit_req_zone \$campus_auth_client zone=campus_auth:10m rate=10r\/m;/);
   assert.match(host, /limit_req_status 429;/);
-  const auth = locationBlock(host, '~ ^/api/v1/auth/(login|register/|email/|password)');
+  const login = locationBlock(host, '= /api/v1/auth/login');
+  assert.match(login, /limit_req zone=campus_login burst=60 nodelay;/);
+  const auth = locationBlock(host, '~ ^/api/v1/auth/(register/|email/|password)');
   assert.match(auth, /limit_req zone=campus_auth burst=10 nodelay;/);
-  const pattern = new RegExp('^/api/v1/auth/(login|register/|email/|password)');
-  for (const path of ['/api/v1/auth/login', '/api/v1/auth/register/student', '/api/v1/auth/register/teacher',
-    '/api/v1/auth/email/verification', '/api/v1/auth/email/confirmation', '/api/v1/auth/password']) {
+  const pattern = new RegExp('^/api/v1/auth/(register/|email/|password)');
+  for (const path of ['/api/v1/auth/register/student', '/api/v1/auth/register/teacher', '/api/v1/auth/email/verification',
+    '/api/v1/auth/email/confirmation', '/api/v1/auth/password', '/api/v1/auth/password/set']) {
     assert.match(path, pattern, `${path} must be limited`);
   }
-  for (const path of ['/api/v1/auth/csrf', '/api/v1/auth/config', '/api/v1/auth/me', '/api/v1/auth/logout', '/login']) {
-    assert.doesNotMatch(path, pattern, `${path} must not be limited`);
+  for (const path of ['/api/v1/auth/login', '/api/v1/auth/csrf', '/api/v1/auth/config', '/api/v1/auth/me', '/api/v1/auth/logout', '/login']) {
+    assert.doesNotMatch(path, pattern, `${path} must not be in the strict zone`);
   }
+  assert.deepEqual(proxyLines(login), proxyLines(locationBlock(host, '/')));
   assert.deepEqual(proxyLines(auth), proxyLines(locationBlock(host, '/')));
-  assert.equal((host.match(/limit_req zone=/g) ?? []).length, 1);
+  assert.equal((host.match(/limit_req zone=/g) ?? []).length, 2);
+  assert.match(host, /error_page 429 = @rate_limited;/);
+  const limited = host.slice(host.indexOf('location @rate_limited {'));
+  assert.match(limited, /^location @rate_limited \{\s+default_type application\/problem\+json;/);
+  const body = JSON.parse(limited.match(/return 429 '([^']+)';/)[1]);
+  assert.equal(body.status, 429);
+  assert.equal(body.code, 'RATE_LIMITED');
 });
 
 test('U22: inner nginx has no rate limit for e2e registrations', async () => {

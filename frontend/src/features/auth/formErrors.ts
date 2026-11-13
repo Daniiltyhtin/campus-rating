@@ -27,6 +27,7 @@ export function errorMessage(error: unknown): string {
       case 'CSRF_INVALID': return 'Защита формы устарела. Обновите её и повторите действие.';
       case 'FORBIDDEN': return 'Недостаточно прав для этого действия';
       case 'VALIDATION_FAILED': return 'Проверьте поля формы';
+      case 'RATE_LIMITED': return 'Слишком много попыток. Подождите минуту и попробуйте снова.';
     }
   }
   return 'Не удалось выполнить действие. Проверьте соединение и попробуйте снова.';
