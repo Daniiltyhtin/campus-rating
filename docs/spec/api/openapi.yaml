@@ -44,6 +44,8 @@ tags:
     description: Аналитика учебных групп.
   - name: feed
     description: Лента наград и рейтинги групп (мастер-U11).
+  - name: poll
+    description: Опросы с анонимностью и статистикой (мастер-U16).
 
 paths:
   /api/v1/auth/email/verification:
@@ -4524,6 +4526,332 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  /api/v1/polls:
+    get:
+      tags: [poll]
+      operationId: listPolls
+      summary: Опросы
+      description: |
+        Преподавателю — свои опросы, студенту — опросы его группы (в любом состоянии членства).
+        Порядок: открытые по окончанию по возрастанию, затем завершённые по окончанию по убыванию, затем id.
+        Администратору — `403 FORBIDDEN`.
+      x-roles: [STUDENT, TEACHER]
+      x-status: implemented
+      security:
+        - session: []
+      responses:
+        '200':
+          description: Опросы.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PollList'
+              example:
+                items:
+                  - id: 801
+                    title: Формат зачёта
+                    endsAt: '2026-11-20T15:00:00Z'
+                    open: true
+                    anonymous: true
+                    voted: false
+                    groups:
+                      - id: 11
+                        name: ИВТ-21
+                        faculty:
+                          id: 1
+                          code: ФИТ
+                          name: Факультет информационных технологий
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [poll]
+      operationId: createPoll
+      summary: Создать опрос
+      description: |
+        Название 1–200, описание 0–2000, окончание строго в будущем, 1+ целевых групп без повторов,
+        1–20 вопросов; у вопроса текст 1–500, тип `SINGLE` или `MULTIPLE`, 2–10 вариантов по 1–200 символов
+        без повторов после обрезки пробелов. После создания опрос не меняется и не удаляется.
+
+        Доступ: допущенный преподаватель; каждая группа — из доступных (`403 GROUP_NOT_ACCESSIBLE`),
+        иначе опрос и события не создаются.
+      x-roles: [TEACHER]
+      x-status: implemented
+      security:
+        - session: []
+          csrf: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PollCreate'
+            example:
+              title: Формат зачёта
+              description: Выберите удобное время.
+              endsAt: '2026-11-20T15:00:00Z'
+              groupIds: [11]
+              anonymous: true
+              questions:
+                - text: Когда удобнее?
+                  type: SINGLE
+                  options: [Утро, Вечер]
+      responses:
+        '201':
+          description: Опрос создан.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Poll'
+              example:
+                id: 801
+                title: Формат зачёта
+                description: Выберите удобное время.
+                endsAt: '2026-11-20T15:00:00Z'
+                open: true
+                anonymous: true
+                groups:
+                  - id: 11
+                    name: ИВТ-21
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+                author:
+                  id: 2001
+                  fullName: Петров Павел Петрович
+                questions:
+                  - id: 811
+                    text: Когда удобнее?
+                    type: SINGLE
+                    options:
+                      - id: 821
+                        text: Утро
+                      - id: 822
+                        text: Вечер
+                voted: null
+                eligible: 6
+                results:
+                  voted: 0
+                  questions:
+                    - questionId: 811
+                      options:
+                        - optionId: 821
+                          votes: 0
+                          share: 0
+                        - optionId: 822
+                          votes: 0
+                          share: 0
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/GroupForbidden'
+
+  /api/v1/polls/{pollId}:
+    get:
+      tags: [poll]
+      operationId: getPoll
+      summary: Опрос
+      description: |
+        Доступ: автор и студенты целевых групп (в любом состоянии членства); остальным — `403 FORBIDDEN`.
+        `results` студенту — только после его голоса (в том числе после окончания), иначе `null`;
+        автору — всегда. `voted` — голосовал ли смотрящий студент, у автора `null`.
+        `eligible` — студенты целевых групп с `ACTIVE`-членством сейчас, только автору, иначе `null`.
+      x-roles: [STUDENT, TEACHER]
+      x-status: implemented
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/PollId'
+      responses:
+        '200':
+          description: Опрос.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Poll'
+              example:
+                id: 801
+                title: Формат зачёта
+                description: Выберите удобное время.
+                endsAt: '2026-11-20T15:00:00Z'
+                open: true
+                anonymous: true
+                groups:
+                  - id: 11
+                    name: ИВТ-21
+                    faculty:
+                      id: 1
+                      code: ФИТ
+                      name: Факультет информационных технологий
+                author:
+                  id: 2001
+                  fullName: Петров Павел Петрович
+                questions:
+                  - id: 811
+                    text: Когда удобнее?
+                    type: SINGLE
+                    options:
+                      - id: 821
+                        text: Утро
+                      - id: 822
+                        text: Вечер
+                voted: null
+                eligible: 6
+                results:
+                  voted: 1
+                  questions:
+                    - questionId: 811
+                      options:
+                        - optionId: 821
+                          votes: 0
+                          share: 0
+                        - optionId: 822
+                          votes: 1
+                          share: 100
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/polls/{pollId}/vote:
+    post:
+      tags: [poll]
+      operationId: votePoll
+      summary: Проголосовать
+      description: |
+        Студент с `ACTIVE`-членством в одной из целевых групп, до окончания, один раз. Ответ на каждый вопрос:
+        `SINGLE` — ровно один вариант, `MULTIPLE` — один или больше; варианты только этого вопроса
+        (иначе `400` по полю `answers[i].optionIds`). Повтор — `409 ALREADY_VOTED`; после окончания —
+        `422 POLL_CLOSED`; `PENDING` или `REJECTED` — `422 MEMBERSHIP_NOT_ACTIVE`; не та группа или
+        не студент — `403 FORBIDDEN`. В анонимном опросе связь «студент — выбор» не сохраняется.
+      x-roles: [STUDENT]
+      x-status: implemented
+      security:
+        - session: []
+          csrf: []
+      parameters:
+        - $ref: '#/components/parameters/PollId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PollVote'
+            example:
+              answers:
+                - questionId: 811
+                  optionIds: [822]
+      responses:
+        '200':
+          description: Голос учтён; статистика опроса.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PollResults'
+              example:
+                voted: 1
+                questions:
+                  - questionId: 811
+                    options:
+                      - optionId: 821
+                        votes: 0
+                        share: 0
+                      - optionId: 822
+                        votes: 1
+                        share: 100
+        '400':
+          $ref: '#/components/responses/ValidationFailed'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Студент уже голосовал.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              example:
+                type: about:blank
+                title: Conflict
+                status: 409
+                code: ALREADY_VOTED
+                detail: Вы уже проголосовали в этом опросе.
+        '422':
+          description: Опрос завершён или членство не подтверждено.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+              examples:
+                closed:
+                  value:
+                    type: about:blank
+                    title: Unprocessable Content
+                    status: 422
+                    code: POLL_CLOSED
+                    detail: Опрос завершён.
+                membership:
+                  value:
+                    type: about:blank
+                    title: Unprocessable Content
+                    status: 422
+                    code: MEMBERSHIP_NOT_ACTIVE
+                    detail: Голосовать можно после подтверждения членства.
+
+  /api/v1/polls/{pollId}/responses:
+    get:
+      tags: [poll]
+      operationId: listPollResponses
+      summary: Ответы по студентам
+      description: |
+        Только автор неанонимного опроса; по ФИО, затем id студента. Анонимный опрос — `409 INVALID_STATE`:
+        ответы по студентам не сохраняются. Не автор — `403 FORBIDDEN`.
+      x-roles: [TEACHER]
+      x-status: implemented
+      security:
+        - session: []
+      parameters:
+        - $ref: '#/components/parameters/PollId'
+      responses:
+        '200':
+          description: Ответы студентов.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PollResponseList'
+              example:
+                items:
+                  - student:
+                      id: 1001
+                      fullName: Смирнова Анна Олеговна
+                    group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    answers:
+                      - questionId: 811
+                        optionIds: [822]
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/InvalidState'
+
 components:
   securitySchemes:
     session:
@@ -5011,6 +5339,12 @@ components:
         $ref: '#/components/schemas/Id'
     GroupId:
       name: groupId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    PollId:
+      name: pollId
       in: path
       required: true
       schema:
@@ -5655,6 +5989,8 @@ components:
         | `STUDENT_NOT_ELIGIBLE` | 422 | студент вне целевых групп или с `PENDING`-членством |
         | `MEMBERSHIP_NOT_ACTIVE` | 422 | действие студента требует `ACTIVE`-членства |
         | `ENROLLMENT_CLOSED` | 422 | запись или отмена после времени начала активности |
+        | `ALREADY_VOTED` | 409 | студент уже голосовал в опросе |
+        | `POLL_CLOSED` | 422 | голос после окончания опроса |
         | `INTERNAL_ERROR` | 500 | непредвиденная ошибка сервера; подробности только в логе backend |
       enum:
         - UNAUTHENTICATED
@@ -5680,6 +6016,8 @@ components:
         - STUDENT_NOT_ELIGIBLE
         - MEMBERSHIP_NOT_ACTIVE
         - ENROLLMENT_CLOSED
+        - ALREADY_VOTED
+        - POLL_CLOSED
         - INTERNAL_ERROR
 
     Problem:
@@ -7171,6 +7509,266 @@ components:
           type: string
         studentFullName:
           type: string
+    PollCreatedEvent:
+      type: object
+      description: «Новый опрос «<название>» · до <дата и время>», ссылка `/polls/{pollId}`.
+      required: [id, kind, createdAt, pollId, pollTitle, endsAt]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        kind:
+          const: POLL_CREATED
+        createdAt:
+          $ref: '#/components/schemas/Instant'
+        pollId:
+          $ref: '#/components/schemas/Id'
+        pollTitle:
+          type: string
+        endsAt:
+          $ref: '#/components/schemas/Instant'
+    PollClosedEvent:
+      type: object
+      description: «Опрос «<название>» завершён · проголосовали N из M», только автору, ссылка `/polls/{pollId}`.
+      required: [id, kind, createdAt, pollId, pollTitle, voted, eligible]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        kind:
+          const: POLL_CLOSED
+        createdAt:
+          $ref: '#/components/schemas/Instant'
+        pollId:
+          $ref: '#/components/schemas/Id'
+        pollTitle:
+          type: string
+        voted:
+          type: integer
+          format: int32
+          minimum: 0
+        eligible:
+          type: integer
+          format: int32
+          minimum: 0
+    PollQuestionType:
+      type: string
+      description: '`SINGLE` — ровно один вариант, `MULTIPLE` — один или больше.'
+      enum: [SINGLE, MULTIPLE]
+    PollQuestionCreate:
+      type: object
+      required: [text, type, options]
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 500
+        type:
+          $ref: '#/components/schemas/PollQuestionType'
+        options:
+          type: array
+          minItems: 2
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+    PollCreate:
+      type: object
+      required: [title, description, endsAt, groupIds, anonymous, questions]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+        endsAt:
+          $ref: '#/components/schemas/Instant'
+        groupIds:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Id'
+        anonymous:
+          type: boolean
+        questions:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/PollQuestionCreate'
+    PollOption:
+      type: object
+      required: [id, text]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        text:
+          type: string
+    PollQuestion:
+      type: object
+      required: [id, text, type, options]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        text:
+          type: string
+        type:
+          $ref: '#/components/schemas/PollQuestionType'
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/PollOption'
+    PollOptionResult:
+      type: object
+      required: [optionId, votes, share]
+      properties:
+        optionId:
+          $ref: '#/components/schemas/Id'
+        votes:
+          type: integer
+          format: int32
+          minimum: 0
+        share:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 100
+          description: Доля от проголосовавших, целые проценты; при 0 проголосовавших — 0.
+    PollQuestionResult:
+      type: object
+      required: [questionId, options]
+      properties:
+        questionId:
+          $ref: '#/components/schemas/Id'
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/PollOptionResult'
+    PollResults:
+      type: object
+      required: [voted, questions]
+      properties:
+        voted:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Число проголосовавших студентов.
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PollQuestionResult'
+    Poll:
+      type: object
+      required: [id, title, description, endsAt, open, anonymous, groups, author, questions, voted, eligible, results]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+        description:
+          type: string
+        endsAt:
+          $ref: '#/components/schemas/Instant'
+        open:
+          type: boolean
+          description: '`false` с момента окончания: окончание ровно сейчас — опрос завершён.'
+        anonymous:
+          type: boolean
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudyGroupRef'
+        author:
+          $ref: '#/components/schemas/UserRef'
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PollQuestion'
+        voted:
+          type: [boolean, 'null']
+          description: Голосовал ли смотрящий студент; у автора `null`.
+        eligible:
+          type: [integer, 'null']
+          format: int32
+          minimum: 0
+          description: Студенты целевых групп с `ACTIVE`-членством сейчас; только автору, иначе `null`.
+        results:
+          description: Статистика; студенту — только после его голоса, автору — всегда; иначе `null`.
+          anyOf:
+            - $ref: '#/components/schemas/PollResults'
+            - type: 'null'
+    PollSummary:
+      type: object
+      required: [id, title, endsAt, open, anonymous, voted, groups]
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+        endsAt:
+          $ref: '#/components/schemas/Instant'
+        open:
+          type: boolean
+        anonymous:
+          type: boolean
+        voted:
+          type: [boolean, 'null']
+          description: Голосовал ли смотрящий студент; у преподавателя `null`.
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudyGroupRef'
+    PollList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PollSummary'
+    PollAnswer:
+      type: object
+      required: [questionId, optionIds]
+      properties:
+        questionId:
+          $ref: '#/components/schemas/Id'
+        optionIds:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Id'
+    PollVote:
+      type: object
+      required: [answers]
+      properties:
+        answers:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PollAnswer'
+    PollResponse:
+      type: object
+      required: [student, group, answers]
+      properties:
+        student:
+          $ref: '#/components/schemas/UserRef'
+        group:
+          $ref: '#/components/schemas/StudyGroupRef'
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PollAnswer'
+    PollResponseList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PollResponse'
     PersonalFeedItem:
       description: Событие персональной ленты; набор полей зависит от `kind`.
       oneOf:
@@ -7181,6 +7779,8 @@ components:
         - $ref: '#/components/schemas/PointsAwardedEvent'
         - $ref: '#/components/schemas/ActivityCreatedEvent'
         - $ref: '#/components/schemas/WorkSubmittedEvent'
+        - $ref: '#/components/schemas/PollCreatedEvent'
+        - $ref: '#/components/schemas/PollClosedEvent'
       discriminator:
         propertyName: kind
         mapping:
@@ -7191,6 +7791,8 @@ components:
           POINTS_AWARDED: '#/components/schemas/PointsAwardedEvent'
           ACTIVITY_CREATED: '#/components/schemas/ActivityCreatedEvent'
           WORK_SUBMITTED: '#/components/schemas/WorkSubmittedEvent'
+          POLL_CREATED: '#/components/schemas/PollCreatedEvent'
+          POLL_CLOSED: '#/components/schemas/PollClosedEvent'
     PersonalFeedPage:
       type: object
       required: [items, nextCursor]

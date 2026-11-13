@@ -1,4 +1,4 @@
-import { ActionIcon, Button, Checkbox, createTheme, Input, NavLink, SegmentedControl, Select, Tabs, Textarea, TextInput } from '@mantine/core';
+import { ActionIcon, Button, Checkbox, createTheme, Input, NavLink, Radio, SegmentedControl, Select, Tabs, Textarea, TextInput } from '@mantine/core';
 import type { CSSVariablesResolver, MantineColorsTuple } from '@mantine/core';
 
 const blue: MantineColorsTuple = ['#e8eefc', '#d6e2fc', '#bfd1fb', '#9bbcff', '#6b94ee', '#4977db', '#2450c4', '#1d43a8', '#18378a', '#152d6e'];
@@ -48,6 +48,8 @@ export const theme = createTheme({
     SegmentedControl: SegmentedControl.extend({ styles: { root: { background: 'transparent', borderBottom: 'var(--cr-rule-width) solid var(--cr-rule)' },
       indicator: { background: 'transparent', boxShadow: 'none', borderBottom: '0.1875rem solid var(--cr-link)', borderRadius: 0 },
       label: { minHeight: 'var(--cr-touch-target)', display: 'flex', alignItems: 'center', justifyContent: 'center' } } }),
+    Radio: Radio.extend({ styles: { body: { minHeight: 'var(--cr-touch-target)', alignItems: 'center' },
+      label: { minHeight: 'var(--cr-touch-target)', display: 'flex', alignItems: 'center' } } }),
     Checkbox: Checkbox.extend({ vars: () => ({ root: { '--checkbox-size': 'var(--cr-checkbox-size)' } }),
       styles: { body: { minHeight: 'var(--cr-touch-target)', alignItems: 'center' },
       label: { minHeight: 'var(--cr-touch-target)', display: 'flex', alignItems: 'center' } } }),

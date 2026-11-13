@@ -84,12 +84,13 @@ describe('U14 персональная лента — R1/R2/R4/R6', { timeout: 1
     expect(await screen.findByText('Событий пока нет')).toBeInTheDocument();
   });
 
-  it('неизвестный kind — состояние ошибки, а не пустая лента', async () => {
+  it('неизвестный kind пропускается, известное событие остаётся в ленте', async () => {
     createFeedScenario(authUsers.student);
-    personal({ '': () => feedJson({ items: [{ id: 1, kind: 'POLL_OPENED', createdAt: '2026-11-18T09:00:00Z' }], nextCursor: null }) });
+    personal({ '': () => feedJson({ items: [{ id: 1, kind: 'POLL_OPENED', createdAt: '2026-11-18T09:00:00Z' }, everyKind[2]], nextCursor: null }) });
     mountFeed('/');
-    expect(await screen.findByRole('button', { name: 'Повторить' })).toBeInTheDocument();
-    expect(screen.queryByText('Событий пока нет')).not.toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: 'Работа «Эссе» принята' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Повторить' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('article')).toHaveLength(1);
   });
 
   it('администратор на / видит прежний экран без запроса ленты', async () => {

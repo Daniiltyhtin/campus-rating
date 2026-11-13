@@ -60,3 +60,12 @@ it('36-5 accepts zero balances in a nonempty rating', () => {
   value.items = [{ ...value.items[0]!, balances: { AR: 0, BUA: 0, BOA: 0 } }];
   expect(parseGroupRating(value).items).toEqual(value.items);
 });
+
+
+it('skips future event kinds while preserving known events and the cursor', () => {
+  const known = { id: 7, createdAt: '2026-11-03T14:05:00Z', kind: 'WORK_ACCEPTED', assignmentId: 2, checkpointTitle: 'Работа' };
+  const page = { items: [{ id: 8, createdAt: '2026-11-03T14:05:00Z', kind: 'FUTURE_EVENT', payload: 'new format' }, known], nextCursor: 'next' };
+  expect(parsePersonalPage(page)).toEqual({ items: [known], nextCursor: 'next' });
+  expect(parsePersonalPage({ ...page, items: [{ kind: 'FUTURE_EVENT' }, known] }).items).toEqual([known]);
+  expect(() => parsePersonalPage({ ...page, items: [page.items[0], { ...known, assignmentId: 0 }] })).toThrow();
+});

@@ -179,7 +179,7 @@ public record Membership(long groupId, GroupMembershipState state, @Nullable Ins
 ## 3. `TeacherScope` — доступные группы
 
 - **Владелец:** `identity`, мастер-U5, дорожка B. Правило — мастер-KTD23, ADR007.
-- **Потребители:** `checkpoint` (U7), `activity` (U9), `feed` (U11); позже `poll`, `analytics`.
+- **Потребители:** `checkpoint` (U7), `activity` (U9), `feed` (U11); `poll` (U16); позже `analytics`.
 
 ```java
 package ru.campusrating.identity;
@@ -209,7 +209,7 @@ public interface TeacherScope {
 ## 4. `GroupMembers` — состав групп и подписи
 
 - **Владелец:** `identity`, мастер-U5, дорожка B.
-- **Потребители:** `checkpoint` (U7 — назначения и встречная сверка), `activity` (U9 — участники, допуск к подтверждению, группировка бюджета), `profile` (U10 — владелец профиля через `card`), `feed` (U11 — рейтинг и подписи ленты).
+- **Потребители:** `checkpoint` (U7 — назначения и встречная сверка), `activity` (U9 — участники, допуск к подтверждению, группировка бюджета), `profile` (U10 — владелец профиля через `card`), `feed` (U11 — рейтинг и подписи ленты), `poll` (U16 — право голоса, получатели `PollCreated`, «проголосовали N из M», подписи ответов).
 
 ```java
 package ru.campusrating.identity;
@@ -296,11 +296,17 @@ public record MembershipActivated(long studentId, long groupId, Instant activate
 
 package ru.campusrating.checkpoint;
 public record CheckpointCreated(long checkpointId) {}   // внутри дорожки A
+
+package ru.campusrating.poll;
+public record PollCreated(long pollId, String title, Instant endsAt, List<Long> studentIds, Instant occurredAt) {}
+public record PollClosed(long pollId, String title, long authorId, int voted, int eligible, Instant occurredAt) {}
 ```
 
 | Событие | Публикует | Слушает | Что делает слушатель |
 |---|---|---|---|
 | `MembershipActivated` | `identity`: при регистрации студента, пока нет мастер-U15, членство сразу `ACTIVE`; потом — при подтверждении членства | `checkpoint` (U7) | создаёт назначения по точкам группы, подходящим под правило ниже |
+| `PollCreated` | `poll` при создании опроса; получатели — студенты целевых групп с `ACTIVE` на момент создания (мастер-U16) | `feed` | событие ленты `POLL_CREATED` каждому получателю, ключ `poll:{pollId}` |
+| `PollClosed` | `poll`: задание завершения раз в минуту, в транзакции с `closed_at` | `feed` | событие ленты `POLL_CLOSED` автору, ключ `pollClosed:{pollId}` |
 | `CheckpointCreated` | `checkpoint` при создании точки | `checkpoint` (U7) | читает `GroupMembers.activeStudents(groups)` и создаёт недостающие назначения по тому же правилу |
 
 **Правило обеих сверок:** назначение (точка, студент) создаётся, только если `activatedAt` студента раньше дедлайна точки (мастер-R16, AE11). Время обработки события не участвует. Поэтому отложенная или повторная доставка `CheckpointCreated` не даст просроченного назначения новичку, активированному после дедлайна. Проверка — сценарий в `CheckpointIT`: слушатель `CheckpointCreated` задержан до активации студента после дедлайна, назначения нет.
