@@ -37,14 +37,15 @@ class MembershipRepository {
         jdbc.sql("update group_membership set state='PENDING',activated_at=null,group_id=:group,requested_at=:time where student_id=:id")
                 .param("id", studentId).param("group", groupId).param("time", Timestamp.from(time)).update();
     }
-    List<Pending> pending(Collection<Long> groupIds) {
+    List<Pending> pending(Collection<Long> groupIds, boolean verifiedEmailOnly) {
         if (groupIds.isEmpty()) return List.of();
         return jdbc.sql("""
                 select m.student_id,u.full_name,u.email,m.group_id,m.requested_at from group_membership m
                 join app_user u on u.id=m.student_id
                 where m.state='PENDING' and u.role='STUDENT' and m.group_id in (:groups)
+                and (not :verifiedOnly or u.email_verified)
                 order by m.requested_at,m.student_id
-                """).param("groups", groupIds)
+                """).param("groups", groupIds).param("verifiedOnly", verifiedEmailOnly)
                 .query((rs, row) -> new Pending(rs.getLong("student_id"), rs.getString("full_name"), rs.getString("email"),
                         rs.getLong("group_id"), rs.getTimestamp("requested_at").toInstant())).list();
     }

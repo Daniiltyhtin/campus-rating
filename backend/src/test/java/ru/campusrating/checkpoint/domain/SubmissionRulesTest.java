@@ -79,6 +79,20 @@ class SubmissionRulesTest {
                 SubmissionRules.Reason.FILE_TOO_LARGE);
     }
 
+    @Test
+    void versionLimitBoundary() {
+        assertThat(SubmissionRules.VERSION_LIMIT).isEqualTo(20);
+        assertThatCode(() -> SubmissionRules.requireVersionRoom(0)).doesNotThrowAnyException();
+        assertThatCode(() -> SubmissionRules.requireVersionRoom(19)).doesNotThrowAnyException();
+        assertReason(() -> SubmissionRules.requireVersionRoom(20), SubmissionRules.Reason.VERSION_LIMIT_REACHED);
+        assertReason(() -> SubmissionRules.requireVersionRoom(21), SubmissionRules.Reason.VERSION_LIMIT_REACHED);
+    }
+
+    @Test
+    void negativeVersionCountIsRejected() {
+        assertThatIllegalArgumentException().isThrownBy(() -> SubmissionRules.requireVersionRoom(-1));
+    }
+
     private void assertReason(org.assertj.core.api.ThrowableAssert.ThrowingCallable call,
                               SubmissionRules.Reason reason) {
         assertThatThrownBy(call).isInstanceOfSatisfying(SubmissionRules.Rejected.class,

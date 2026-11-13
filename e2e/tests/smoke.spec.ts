@@ -39,3 +39,21 @@ test('U2: nginx сохраняет API и закрывает actuator (R6, KTD11
   expect(asset.status()).toBe(404);
   expect(asset.headers()['content-type']).toMatch(/^text\/html/);
 });
+
+test('U22: nginx отдаёт заголовки безопасности один раз', async ({ request }) => {
+  const expected = {
+    'x-content-type-options': 'nosniff',
+    'referrer-policy': 'no-referrer',
+    'content-security-policy': "frame-ancestors 'none'",
+  };
+  for (const path of ['/', '/login', '/api/v1/auth/config']) {
+    const response = await request.get(path);
+    expect(response.status(), path).toBe(200);
+    const headers = response.headersArray();
+    for (const [name, value] of Object.entries(expected)) {
+      const values = headers.filter((header) => header.name.toLowerCase() === name).map((header) => header.value);
+      expect(values, `${path} ${name}`).toEqual([value]);
+    }
+    expect(response.headers()['server'] ?? '', path).not.toMatch(/\d/);
+  }
+});

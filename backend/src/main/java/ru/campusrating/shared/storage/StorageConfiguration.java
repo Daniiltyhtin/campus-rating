@@ -12,7 +12,8 @@ import org.springframework.core.env.Profiles;
 public class StorageConfiguration {
     @Bean FileStorage fileStorage(@Value("${campus.storage.dir}") Path directory, Environment environment) throws IOException {
         var storage = new VolumeFileStorage(directory);
-        if (environment.acceptsProfiles(Profiles.of("demo"))) storage.clear();
+        if (environment.acceptsProfiles(Profiles.of("demo"))
+                && environment.getProperty("campus.demo.reset", Boolean.class, true)) storage.clear();
         return storage;
     }
 }

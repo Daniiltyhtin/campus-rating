@@ -27,12 +27,12 @@ execution: code
 
 ### Requirements
 
-- R1. Override `docker-compose.server.yml` поверх `docker-compose.yml`: `web` — только `127.0.0.1:${WEB_PORT}` (по умолчанию 8080); у `backend` и `postgres` портов на хосте нет; профиль `demo` (R47). Переменные `EMAIL_VERIFICATION`, `CAMPUS_PUBLIC_URL`, `POSTGRES_PASSWORD` обязательны: без них `docker compose config` завершается ошибкой (синтаксис `${VAR:?…}`).
+- R1. Override `docker-compose.server.yml` поверх `docker-compose.yml`: `web` — только `127.0.0.1:${WEB_PORT}` (по умолчанию 8080); у `backend` и `postgres` портов на хосте нет; профиль `demo` (R47). Переменные `EMAIL_VERIFICATION`, `CAMPUS_PUBLIC_URL`, `POSTGRES_PASSWORD` обязательны: без них `docker compose config` завершается ошибкой (синтаксис `${VAR:?…}`). Дополнение 13.11 (проверка безопасности): `CAMPUS_DEMO_RESET=false` по умолчанию в override — данные переживают перезапуск, сброс к сиду только по флагу; у всех сервисов `restart: unless-stopped`.
 - R2. За nginx хоста приложение видит исходную схему `https` и IP клиента: внутренний nginx `web` передаёт `X-Forwarded-Proto` от хоста (если заголовка нет — `$scheme`), Spring в серверной конфигурации включает `server.forward-headers-strategy=native`; локальный `docker compose up` без override ведёт себя как сейчас.
 - R3. Почта Яндекса через окружение: `SPRING_MAIL_HOST=smtp.yandex.ru`, `SPRING_MAIL_PORT=465`, SSL, `SPRING_MAIL_USERNAME` — адрес ящика, `SPRING_MAIL_PASSWORD` — пароль приложения, отправитель равен адресу ящика (`CAMPUS_MAIL_FROM`). Без SMTP стенд работает с `EMAIL_VERIFICATION=off`; `required` без SMTP не стартует (как сейчас, мастер-R48).
 - R4. `deploy/server.env.example` — все переменные R1–R3 с комментариями и без значений секретов; имя не попадает под шаблон `.env*`.
-- R5. `deploy/nginx/campus.conf.example` — сервер 80 с редиректом на 443; 443 с сертификатом certbot (`/etc/letsencrypt/live/<домен>/`); `proxy_pass http://127.0.0.1:${WEB_PORT}`; заголовки `Host`, `X-Real-IP`, `X-Forwarded-For`, `X-Forwarded-Proto https`; `client_max_body_size 12m` (как во внутреннем nginx).
-- R6. `deploy/README.md`: требования к серверу (Docker, Compose, nginx, certbot), первый запуск, проверка (`/actuator/health` через внутренний адрес, вход демо-аккаунтом по домену), перезапуск с возвратом к сиду (R47: в `demo` каждый перезапуск стирает данные), обновление версии, проверка отправки письма, необязательная переадресация входящей почты через Cloudflare Email Routing, список DNS-записей (A, SPF, DKIM, DMARC Яндекса) — без конкретных значений.
+- R5. `deploy/nginx/campus.conf.example` — сервер 80 с редиректом на 443; 443 с сертификатом certbot (`/etc/letsencrypt/live/<домен>/`); `proxy_pass http://127.0.0.1:${WEB_PORT}`; заголовки `Host`, `X-Real-IP`, `X-Forwarded-For`, `X-Forwarded-Proto https`; `client_max_body_size 12m` (как во внутреннем nginx). Дополнение 13.11: `server_tokens off`, HSTS и лимит `POST` входа, регистрации, подтверждения email и смены пароля — 10 в минуту с IP, всплеск 10, сверх — `429`.
+- R6. `deploy/README.md`: требования к серверу (Docker, Compose, nginx, certbot), первый запуск, проверка (`/actuator/health` через внутренний адрес, вход демо-аккаунтом по домену), перезапуск без потери данных и сброс к сиду по флагу (R1), обновление версии, проверка отправки письма, необязательная переадресация входящей почты через Cloudflare Email Routing, список DNS-записей (A, SPF, DKIM, DMARC Яндекса) — без конкретных значений.
 - R7. README в корне — ссылка на `deploy/README.md`.
 
 ### Scope Boundaries
@@ -77,7 +77,7 @@ execution: code
 - **Files:** `backend/src/test/java/ru/campusrating/RunModeConfigTest.java`.
 - **Test scenarios:**
   - Профиль `prod`: `spring.liquibase.drop-first=false`, контексты без `demo`.
-  - Профиль `demo`: `drop-first=true`, контексты включают `demo`.
+  - Профиль `demo`: `drop-first=true`, контексты включают `demo`; с `campus.demo.reset=false` — `drop-first=false`.
 - **Verification:** `RunModeConfigTest` зелёный.
 
 ### U3. Шаблоны и инструкция

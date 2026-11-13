@@ -212,7 +212,7 @@ describe('U5 frontend: регистрация — R1, R2, R47, R48', { timeout: 
   it('показывает обе честные пометки demo/OFF', async () => {
     createAuthScenario();
     mountAuth('/register');
-    expect(await screen.findByText(/демо-стенд, данные удаляются/i)).toBeInTheDocument();
+    expect(await screen.findByText(/демо-стенд: данные могут быть сброшены/i)).toBeInTheDocument();
     expect(screen.getByText(/подтверждение email на этом стенде выключено/i)).toBeInTheDocument();
   });
 
@@ -222,7 +222,7 @@ describe('U5 frontend: регистрация — R1, R2, R47, R48', { timeout: 
     state.nextStep = 'CONFIRM_EMAIL';
     const { user } = mountAuth('/register');
     await fillRegistration(user);
-    expect(screen.queryByText(/демо-стенд, данные удаляются/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/демо-стенд: данные могут быть сброшены/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/подтверждение email на этом стенде выключено/i)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /зарегистрироваться/i }));
     expect(await screen.findByText(/письм/i)).toBeInTheDocument();

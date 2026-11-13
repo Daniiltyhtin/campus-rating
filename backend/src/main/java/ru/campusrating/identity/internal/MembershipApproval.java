@@ -18,6 +18,7 @@ import ru.campusrating.identity.TeacherScope;
 import ru.campusrating.identity.domain.MembershipTransition;
 import ru.campusrating.shared.error.ApiException;
 import ru.campusrating.shared.error.ProblemCode;
+import ru.campusrating.shared.mail.MailModeProperties;
 
 @Service
 public class MembershipApproval {
@@ -29,15 +30,17 @@ public class MembershipApproval {
     private final DirectoryApi directory;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    private final MailModeProperties mail;
     MembershipApproval(MembershipRepository repository, CurrentUser current, TeacherScope scope, DirectoryApi directory,
-                       ApplicationEventPublisher events, Clock clock) {
+                       ApplicationEventPublisher events, Clock clock, MailModeProperties mail) {
         this.repository = repository; this.current = current; this.scope = scope; this.directory = directory;
-        this.events = events; this.clock = clock;
+        this.events = events; this.clock = clock; this.mail = mail;
     }
 
     @Transactional(readOnly = true)
     public List<PendingRequest> pending() {
-        var rows = repository.pending(decidableGroups(current.require()));
+        var rows = repository.pending(decidableGroups(current.require()),
+                mail.emailVerification() == MailModeProperties.EmailVerification.REQUIRED);
         var groups = directory.groups(rows.stream().map(MembershipRepository.Pending::groupId).toList());
         return rows.stream().map(row -> new PendingRequest(row.studentId(), row.fullName(), row.email(),
                 groups.get(row.groupId()), row.requestedAt())).toList();

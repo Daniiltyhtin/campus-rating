@@ -49,12 +49,13 @@ public class RegistrationService {
         return id;
     }
     private long student(String email,String fullName,String password,long facultyId,long groupId,boolean imported) {
+        String hash = passwords.hashIfValid(password);
         AdminImportService.lock(jdbc);
         if (repository.allowlisted(email)) throw new ApiException(ProblemCode.EMAIL_RESERVED_FOR_TEACHER, "Email зарезервирован для преподавателя");
         requireFreeEmail(email);
         var group = directory.group(groupId).orElseThrow(() -> Passwords.invalid("groupId", "INVALID", "Группа не найдена"));
         if (group.faculty().id() != facultyId) throw Passwords.invalid("groupId", "MISMATCH", "Группа не принадлежит факультету");
-        long id = create(email, fullName, password, Role.STUDENT, null, false);
+        long id = create(email, fullName, password, hash, Role.STUDENT, null, false);
         var time = clock.instant().truncatedTo(ChronoUnit.MICROS);
         if (imported) {
             repository.addMembership(id, groupId, GroupMembershipState.ACTIVE, time, time);
@@ -69,26 +70,27 @@ public class RegistrationService {
 
     @Transactional
     public long teacher(String email, String fullName, String password, long departmentId) {
+        String hash = passwords.hashIfValid(password);
         AdminImportService.lock(jdbc);
         requireFreeEmail(email);
         if (directory.department(departmentId).isEmpty()) throw Passwords.invalid("departmentId", "INVALID", "Кафедра не найдена");
-        long id=create(email, fullName, password, Role.TEACHER, departmentId, false);
+        long id=create(email, fullName, password, hash, Role.TEACHER, departmentId, false);
         setup.sendVerification(id,email);return id;
     }
 
     @Transactional
     public void bootstrap(String email, String password) {
         if (!repository.hasAdmin()) {
-            long id=create(email, "Администратор", password, Role.ADMIN, null, true);
+            long id=create(email, "Администратор", password, passwords.hashIfValid(password), Role.ADMIN, null, true);
             jdbc.sql("update app_user set email_verified=true where id=:id").param("id",id).update();
         }
     }
 
-    private long create(String email, String fullName, String password, Role role, Long department, boolean change) {
+    private long create(String email, String fullName, String password, String hash, Role role, Long department, boolean change) {
         if (fullName.strip().isEmpty()) throw Passwords.invalid("fullName", "REQUIRED", "Укажите ФИО");
         if (email.strip().isEmpty()) throw Passwords.invalid("email", "REQUIRED", "Укажите email");
         requireFreeEmail(email);
-        String hash = passwords.hash(password, "password");
+        passwords.requireValid(password, "password");
         try {
             return repository.insert(email.strip().toLowerCase(Locale.ROOT), fullName.strip(), hash, role, department, change);
         } catch (DuplicateKeyException exception) {

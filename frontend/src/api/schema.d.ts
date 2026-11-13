@@ -369,7 +369,7 @@ export interface paths {
         };
         /**
          * Настройки стенда для формы регистрации
-         * @description Режим запуска и режим подтверждения email — для пометок «Демо-стенд, данные удаляются» и
+         * @description Режим запуска и режим подтверждения email — для пометок «Демо-стенд: данные могут быть сброшены» и
          *     «Подтверждение email на этом стенде выключено» (мастер-R47, R48).
          *
          *     Доступ: все, включая гостя.
@@ -557,7 +557,8 @@ export interface paths {
          * Заявки в группы
          * @description Членства `PENDING` в группах, где текущий пользователь может подтверждать (мастер-R32): у
          *     преподавателя — группы `TeacherScope` (KTD23), у старосты — его группа. Список целиком, по времени
-         *     заявки, затем id. Недопущенный преподаватель и студент-не-староста получают пустой список.
+         *     заявки, затем id. Недопущенный преподаватель и студент-не-староста получают пустой список. При
+         *     `emailVerification: required` в списке только студенты с подтверждённым email; при `off` — все.
          *
          *     Доступ: преподаватель и студент.
          */
@@ -988,6 +989,9 @@ export interface paths {
          *     `link` (http или https) или `file` (до 10 МБ; pdf, docx, zip, png, jpg — мастер-KTD12). Ни одной или
          *     обе — `400`. Каждая сдача — новая версия; прежние версии и их файлы сохраняются. Ответ — назначение
          *     в `SUBMITTED` с `phase: STOPPED` и `returnComment: null`.
+         *
+         *     Не больше 20 версий на назначение, отозванные тоже считаются: 21-я сдача — `409 SUBMISSION_LIMIT_REACHED`,
+         *     файл не сохраняется.
          *
          *     Доступ: только студент-владелец.
          */
@@ -2079,6 +2083,7 @@ export interface components {
          *     | `EMAIL_TAKEN` | 409 | email уже зарегистрирован |
          *     | `EMAIL_RESERVED_FOR_TEACHER` | 409 | email из списка преподавателей регистрируется студентом |
          *     | `ALREADY_CONFIRMED` | 409 | участие уже подтверждено с другим уровнем |
+         *     | `SUBMISSION_LIMIT_REACHED` | 409 | у назначения уже 20 версий сдачи, включая отозванные |
          *     | `VALIDATION_FAILED` | 400 | тело или параметры не прошли проверку |
          *     | `PASSWORD_REUSED` | 400 | новый пароль совпадает с текущим |
          *     | `FILE_TOO_LARGE` | 413 | файл сдачи больше 10 МБ |
@@ -2093,7 +2098,7 @@ export interface components {
          *     | `INTERNAL_ERROR` | 500 | непредвиденная ошибка сервера; подробности только в логе backend |
          * @enum {string}
          */
-        ProblemCode: "UNAUTHENTICATED" | "INVALID_CREDENTIALS" | "FORBIDDEN" | "GROUP_NOT_ACCESSIBLE" | "PASSWORD_CHANGE_REQUIRED" | "EMAIL_NOT_VERIFIED" | "CSRF_INVALID" | "NOT_FOUND" | "INVALID_STATE" | "DIRECTORY_CODE_TAKEN" | "DIRECTORY_IN_USE" | "EMAIL_TAKEN" | "EMAIL_RESERVED_FOR_TEACHER" | "ALREADY_CONFIRMED" | "VALIDATION_FAILED" | "PASSWORD_REUSED" | "FILE_TOO_LARGE" | "FILE_TYPE_NOT_ALLOWED" | "BUDGET_EXCEEDED" | "NOT_ENROLLED" | "STUDENT_NOT_ELIGIBLE" | "MEMBERSHIP_NOT_ACTIVE" | "ENROLLMENT_CLOSED" | "ALREADY_VOTED" | "POLL_CLOSED" | "INTERNAL_ERROR";
+        ProblemCode: "UNAUTHENTICATED" | "INVALID_CREDENTIALS" | "FORBIDDEN" | "GROUP_NOT_ACCESSIBLE" | "PASSWORD_CHANGE_REQUIRED" | "EMAIL_NOT_VERIFIED" | "CSRF_INVALID" | "NOT_FOUND" | "INVALID_STATE" | "DIRECTORY_CODE_TAKEN" | "DIRECTORY_IN_USE" | "EMAIL_TAKEN" | "EMAIL_RESERVED_FOR_TEACHER" | "ALREADY_CONFIRMED" | "SUBMISSION_LIMIT_REACHED" | "VALIDATION_FAILED" | "PASSWORD_REUSED" | "FILE_TOO_LARGE" | "FILE_TYPE_NOT_ALLOWED" | "BUDGET_EXCEEDED" | "NOT_ENROLLED" | "STUDENT_NOT_ELIGIBLE" | "MEMBERSHIP_NOT_ACTIVE" | "ENROLLMENT_CLOSED" | "ALREADY_VOTED" | "POLL_CLOSED" | "INTERNAL_ERROR";
         /** @description Ошибка по RFC 9457 (`ProblemDetail` Spring) с доменным `code`. */
         Problem: {
             /**
@@ -2256,7 +2261,7 @@ export interface components {
          */
         EmailVerificationMode: "REQUIRED" | "OFF";
         AuthConfig: {
-            /** @description Профиль `demo` — данные пересоздаются при каждом запуске (мастер-R47). */
+            /** @description Профиль `demo` — синтетический сид; данные пересоздаются при запуске, если сброс не выключен (`CAMPUS_DEMO_RESET=false` на серверном стенде, мастер-R47). */
             demo: boolean;
             emailVerification: components["schemas"]["EmailVerificationMode"];
         };
@@ -5422,7 +5427,15 @@ export interface operations {
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
-            409: components["responses"]["InvalidState"];
+            /** @description Работа уже сдана или принята, либо достигнут предел версий сдачи. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
             /** @description Файл больше 10 МБ. */
             413: {
                 headers: {

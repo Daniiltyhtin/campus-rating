@@ -65,6 +65,7 @@ public class SubmissionService {
         var assignment = require(id, true);
         requireStudent(assignment);
         var target = AssignmentTransitions.submit(assignment.state());
+        SubmissionRules.requireVersionRoom(repository.count(id));
         var now = clock.instant();
         long submission;
         if (file == null) {

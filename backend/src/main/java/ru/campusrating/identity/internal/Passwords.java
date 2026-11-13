@@ -18,8 +18,19 @@ class Passwords {
         }
     }
     String hash(String password, String field) {
+        requireValid(password, field);
+        return encoder.encode(password);
+    }
+    void requireValid(String password, String field) {
         requireByteLimit(password, field);
         if (password.codePointCount(0, password.length()) < 8) throw invalid(field, "TOO_SHORT", "Не меньше 8 символов");
+    }
+    String hashIfValid(String password) {
+        try {
+            requireValid(password, "password");
+        } catch (ValidationFailedException invalid) {
+            return null;
+        }
         return encoder.encode(password);
     }
     boolean matches(String password, String hash) { return hash != null && encoder.matches(password, hash); }

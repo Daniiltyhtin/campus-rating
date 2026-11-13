@@ -4580,7 +4580,18 @@ export const examples: ExampleOperation[] = [
           "title": "Conflict",
           "status": 409,
           "code": "INVALID_STATE",
-          "detail": "Действие недоступно в текущем состоянии."
+          "detail": "Работа уже сдана"
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Conflict",
+          "status": 409,
+          "code": "SUBMISSION_LIMIT_REACHED",
+          "detail": "Достигнут предел: 20 сдач по одной задаче. Обратитесь к преподавателю."
         }
       },
       {

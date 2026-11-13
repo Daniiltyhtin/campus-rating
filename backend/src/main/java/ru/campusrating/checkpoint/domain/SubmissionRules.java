@@ -6,7 +6,9 @@ import java.util.HexFormat;
 import java.util.Locale;
 
 public final class SubmissionRules {
-    public enum Reason { LINK_INVALID, FILE_TOO_LARGE, FILE_TYPE_NOT_ALLOWED }
+    public enum Reason { LINK_INVALID, FILE_TOO_LARGE, FILE_TYPE_NOT_ALLOWED, VERSION_LIMIT_REACHED }
+
+    public static final int VERSION_LIMIT = 20;
 
     public static final class Rejected extends RuntimeException {
         private final Reason reason;
@@ -68,6 +70,15 @@ public final class SubmissionRules {
     private static boolean validHttpUri(URI uri) {
         return ("http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme()))
                 && uri.getHost() != null;
+    }
+
+    public static void requireVersionRoom(int existingVersions) {
+        if (existingVersions < 0) {
+            throw new IllegalArgumentException("Version count must be nonnegative");
+        }
+        if (existingVersions >= VERSION_LIMIT) {
+            throw new Rejected(Reason.VERSION_LIMIT_REACHED);
+        }
     }
 
     public static void validateFileSize(long sizeBytes) {

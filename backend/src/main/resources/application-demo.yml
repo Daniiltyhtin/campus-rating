@@ -1,4 +1,8 @@
+campus:
+  demo:
+    reset: ${CAMPUS_DEMO_RESET:true}
+
 spring:
   liquibase:
     contexts: default,demo
-    drop-first: true
+    drop-first: ${campus.demo.reset:true}
