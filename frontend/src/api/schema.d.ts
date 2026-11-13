@@ -1816,6 +1816,105 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/polls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Опросы
+         * @description Преподавателю — свои опросы, студенту — опросы его группы (в любом состоянии членства).
+         *     Порядок: открытые по окончанию по возрастанию, затем завершённые по окончанию по убыванию, затем id.
+         *     Администратору — `403 FORBIDDEN`.
+         */
+        get: operations["listPolls"];
+        put?: never;
+        /**
+         * Создать опрос
+         * @description Название 1–200, описание 0–2000, окончание строго в будущем, 1+ целевых групп без повторов,
+         *     1–20 вопросов; у вопроса текст 1–500, тип `SINGLE` или `MULTIPLE`, 2–10 вариантов по 1–200 символов
+         *     без повторов после обрезки пробелов. После создания опрос не меняется и не удаляется.
+         *
+         *     Доступ: допущенный преподаватель; каждая группа — из доступных (`403 GROUP_NOT_ACCESSIBLE`),
+         *     иначе опрос и события не создаются.
+         */
+        post: operations["createPoll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/polls/{pollId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Опрос
+         * @description Доступ: автор и студенты целевых групп (в любом состоянии членства); остальным — `403 FORBIDDEN`.
+         *     `results` студенту — только после его голоса (в том числе после окончания), иначе `null`;
+         *     автору — всегда. `voted` — голосовал ли смотрящий студент, у автора `null`.
+         *     `eligible` — студенты целевых групп с `ACTIVE`-членством сейчас, только автору, иначе `null`.
+         */
+        get: operations["getPoll"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/polls/{pollId}/vote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Проголосовать
+         * @description Студент с `ACTIVE`-членством в одной из целевых групп, до окончания, один раз. Ответ на каждый вопрос:
+         *     `SINGLE` — ровно один вариант, `MULTIPLE` — один или больше; варианты только этого вопроса
+         *     (иначе `400` по полю `answers[i].optionIds`). Повтор — `409 ALREADY_VOTED`; после окончания —
+         *     `422 POLL_CLOSED`; `PENDING` или `REJECTED` — `422 MEMBERSHIP_NOT_ACTIVE`; не та группа или
+         *     не студент — `403 FORBIDDEN`. В анонимном опросе связь «студент — выбор» не сохраняется.
+         */
+        post: operations["votePoll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/polls/{pollId}/responses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ответы по студентам
+         * @description Только автор неанонимного опроса; по ФИО, затем id студента. Анонимный опрос — `409 INVALID_STATE`:
+         *     ответы по студентам не сохраняются. Не автор — `403 FORBIDDEN`.
+         */
+        get: operations["listPollResponses"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1989,10 +2088,12 @@ export interface components {
          *     | `STUDENT_NOT_ELIGIBLE` | 422 | студент вне целевых групп или с `PENDING`-членством |
          *     | `MEMBERSHIP_NOT_ACTIVE` | 422 | действие студента требует `ACTIVE`-членства |
          *     | `ENROLLMENT_CLOSED` | 422 | запись или отмена после времени начала активности |
+         *     | `ALREADY_VOTED` | 409 | студент уже голосовал в опросе |
+         *     | `POLL_CLOSED` | 422 | голос после окончания опроса |
          *     | `INTERNAL_ERROR` | 500 | непредвиденная ошибка сервера; подробности только в логе backend |
          * @enum {string}
          */
-        ProblemCode: "UNAUTHENTICATED" | "INVALID_CREDENTIALS" | "FORBIDDEN" | "GROUP_NOT_ACCESSIBLE" | "PASSWORD_CHANGE_REQUIRED" | "EMAIL_NOT_VERIFIED" | "CSRF_INVALID" | "NOT_FOUND" | "INVALID_STATE" | "DIRECTORY_CODE_TAKEN" | "DIRECTORY_IN_USE" | "EMAIL_TAKEN" | "EMAIL_RESERVED_FOR_TEACHER" | "ALREADY_CONFIRMED" | "VALIDATION_FAILED" | "PASSWORD_REUSED" | "FILE_TOO_LARGE" | "FILE_TYPE_NOT_ALLOWED" | "BUDGET_EXCEEDED" | "NOT_ENROLLED" | "STUDENT_NOT_ELIGIBLE" | "MEMBERSHIP_NOT_ACTIVE" | "ENROLLMENT_CLOSED" | "INTERNAL_ERROR";
+        ProblemCode: "UNAUTHENTICATED" | "INVALID_CREDENTIALS" | "FORBIDDEN" | "GROUP_NOT_ACCESSIBLE" | "PASSWORD_CHANGE_REQUIRED" | "EMAIL_NOT_VERIFIED" | "CSRF_INVALID" | "NOT_FOUND" | "INVALID_STATE" | "DIRECTORY_CODE_TAKEN" | "DIRECTORY_IN_USE" | "EMAIL_TAKEN" | "EMAIL_RESERVED_FOR_TEACHER" | "ALREADY_CONFIRMED" | "VALIDATION_FAILED" | "PASSWORD_REUSED" | "FILE_TOO_LARGE" | "FILE_TYPE_NOT_ALLOWED" | "BUDGET_EXCEEDED" | "NOT_ENROLLED" | "STUDENT_NOT_ELIGIBLE" | "MEMBERSHIP_NOT_ACTIVE" | "ENROLLMENT_CLOSED" | "ALREADY_VOTED" | "POLL_CLOSED" | "INTERNAL_ERROR";
         /** @description Ошибка по RFC 9457 (`ProblemDetail` Spring) с доменным `code`. */
         Problem: {
             /**
@@ -2900,8 +3001,136 @@ export interface components {
             checkpointTitle: string;
             studentFullName: string;
         };
+        /** @description «Новый опрос «<название>» · до <дата и время>», ссылка `/polls/{pollId}`. */
+        PollCreatedEvent: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "POLL_CREATED";
+            createdAt: components["schemas"]["Instant"];
+            pollId: components["schemas"]["Id"];
+            pollTitle: string;
+            endsAt: components["schemas"]["Instant"];
+        };
+        /** @description «Опрос «<название>» завершён · проголосовали N из M», только автору, ссылка `/polls/{pollId}`. */
+        PollClosedEvent: {
+            id: components["schemas"]["Id"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "POLL_CLOSED";
+            createdAt: components["schemas"]["Instant"];
+            pollId: components["schemas"]["Id"];
+            pollTitle: string;
+            /** Format: int32 */
+            voted: number;
+            /** Format: int32 */
+            eligible: number;
+        };
+        /**
+         * @description `SINGLE` — ровно один вариант, `MULTIPLE` — один или больше.
+         * @enum {string}
+         */
+        PollQuestionType: "SINGLE" | "MULTIPLE";
+        PollQuestionCreate: {
+            text: string;
+            type: components["schemas"]["PollQuestionType"];
+            options: string[];
+        };
+        PollCreate: {
+            title: string;
+            description: string;
+            endsAt: components["schemas"]["Instant"];
+            groupIds: components["schemas"]["Id"][];
+            anonymous: boolean;
+            questions: components["schemas"]["PollQuestionCreate"][];
+        };
+        PollOption: {
+            id: components["schemas"]["Id"];
+            text: string;
+        };
+        PollQuestion: {
+            id: components["schemas"]["Id"];
+            text: string;
+            type: components["schemas"]["PollQuestionType"];
+            options: components["schemas"]["PollOption"][];
+        };
+        PollOptionResult: {
+            optionId: components["schemas"]["Id"];
+            /** Format: int32 */
+            votes: number;
+            /**
+             * Format: int32
+             * @description Доля от проголосовавших, целые проценты; при 0 проголосовавших — 0.
+             */
+            share: number;
+        };
+        PollQuestionResult: {
+            questionId: components["schemas"]["Id"];
+            options: components["schemas"]["PollOptionResult"][];
+        };
+        PollResults: {
+            /**
+             * Format: int32
+             * @description Число проголосовавших студентов.
+             */
+            voted: number;
+            questions: components["schemas"]["PollQuestionResult"][];
+        };
+        Poll: {
+            id: components["schemas"]["Id"];
+            title: string;
+            description: string;
+            endsAt: components["schemas"]["Instant"];
+            /** @description `false` с момента окончания: окончание ровно сейчас — опрос завершён. */
+            open: boolean;
+            anonymous: boolean;
+            groups: components["schemas"]["StudyGroupRef"][];
+            author: components["schemas"]["UserRef"];
+            questions: components["schemas"]["PollQuestion"][];
+            /** @description Голосовал ли смотрящий студент; у автора `null`. */
+            voted: boolean | null;
+            /**
+             * Format: int32
+             * @description Студенты целевых групп с `ACTIVE`-членством сейчас; только автору, иначе `null`.
+             */
+            eligible: number | null;
+            /** @description Статистика; студенту — только после его голоса, автору — всегда; иначе `null`. */
+            results: components["schemas"]["PollResults"] | null;
+        };
+        PollSummary: {
+            id: components["schemas"]["Id"];
+            title: string;
+            endsAt: components["schemas"]["Instant"];
+            open: boolean;
+            anonymous: boolean;
+            /** @description Голосовал ли смотрящий студент; у преподавателя `null`. */
+            voted: boolean | null;
+            groups: components["schemas"]["StudyGroupRef"][];
+        };
+        PollList: {
+            items: components["schemas"]["PollSummary"][];
+        };
+        PollAnswer: {
+            questionId: components["schemas"]["Id"];
+            optionIds: components["schemas"]["Id"][];
+        };
+        PollVote: {
+            answers: components["schemas"]["PollAnswer"][];
+        };
+        PollResponse: {
+            student: components["schemas"]["UserRef"];
+            group: components["schemas"]["StudyGroupRef"];
+            answers: components["schemas"]["PollAnswer"][];
+        };
+        PollResponseList: {
+            items: components["schemas"]["PollResponse"][];
+        };
         /** @description Событие персональной ленты; набор полей зависит от `kind`. */
-        PersonalFeedItem: components["schemas"]["AssignmentCreatedEvent"] | components["schemas"]["DeadlineReminderEvent"] | components["schemas"]["WorkAcceptedEvent"] | components["schemas"]["WorkReturnedEvent"] | components["schemas"]["PointsAwardedEvent"] | components["schemas"]["ActivityCreatedEvent"] | components["schemas"]["WorkSubmittedEvent"];
+        PersonalFeedItem: components["schemas"]["AssignmentCreatedEvent"] | components["schemas"]["DeadlineReminderEvent"] | components["schemas"]["WorkAcceptedEvent"] | components["schemas"]["WorkReturnedEvent"] | components["schemas"]["PointsAwardedEvent"] | components["schemas"]["ActivityCreatedEvent"] | components["schemas"]["WorkSubmittedEvent"] | components["schemas"]["PollCreatedEvent"] | components["schemas"]["PollClosedEvent"];
         PersonalFeedPage: {
             items: components["schemas"]["PersonalFeedItem"][];
             nextCursor: components["schemas"]["NextCursor"];
@@ -3284,6 +3513,7 @@ export interface components {
     parameters: {
         UserId: components["schemas"]["Id"];
         GroupId: components["schemas"]["Id"];
+        PollId: components["schemas"]["Id"];
         ActivityId: components["schemas"]["Id"];
         /** @description Месяц по Europe/Moscow; по умолчанию текущий. */
         Month: components["schemas"]["YearMonth"];
@@ -7516,6 +7746,400 @@ export interface operations {
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    listPolls: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Опросы. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": 801,
+                     *           "title": "Формат зачёта",
+                     *           "endsAt": "2026-11-20T15:00:00Z",
+                     *           "open": true,
+                     *           "anonymous": true,
+                     *           "voted": false,
+                     *           "groups": [
+                     *             {
+                     *               "id": 11,
+                     *               "name": "ИВТ-21",
+                     *               "faculty": {
+                     *                 "id": 1,
+                     *                 "code": "ФИТ",
+                     *                 "name": "Факультет информационных технологий"
+                     *               }
+                     *             }
+                     *           ]
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PollList"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    createPoll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "title": "Формат зачёта",
+                 *       "description": "Выберите удобное время.",
+                 *       "endsAt": "2026-11-20T15:00:00Z",
+                 *       "groupIds": [
+                 *         11
+                 *       ],
+                 *       "anonymous": true,
+                 *       "questions": [
+                 *         {
+                 *           "text": "Когда удобнее?",
+                 *           "type": "SINGLE",
+                 *           "options": [
+                 *             "Утро",
+                 *             "Вечер"
+                 *           ]
+                 *         }
+                 *       ]
+                 *     }
+                 */
+                "application/json": components["schemas"]["PollCreate"];
+            };
+        };
+        responses: {
+            /** @description Опрос создан. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 801,
+                     *       "title": "Формат зачёта",
+                     *       "description": "Выберите удобное время.",
+                     *       "endsAt": "2026-11-20T15:00:00Z",
+                     *       "open": true,
+                     *       "anonymous": true,
+                     *       "groups": [
+                     *         {
+                     *           "id": 11,
+                     *           "name": "ИВТ-21",
+                     *           "faculty": {
+                     *             "id": 1,
+                     *             "code": "ФИТ",
+                     *             "name": "Факультет информационных технологий"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "author": {
+                     *         "id": 2001,
+                     *         "fullName": "Петров Павел Петрович"
+                     *       },
+                     *       "questions": [
+                     *         {
+                     *           "id": 811,
+                     *           "text": "Когда удобнее?",
+                     *           "type": "SINGLE",
+                     *           "options": [
+                     *             {
+                     *               "id": 821,
+                     *               "text": "Утро"
+                     *             },
+                     *             {
+                     *               "id": 822,
+                     *               "text": "Вечер"
+                     *             }
+                     *           ]
+                     *         }
+                     *       ],
+                     *       "voted": null,
+                     *       "eligible": 6,
+                     *       "results": {
+                     *         "voted": 0,
+                     *         "questions": [
+                     *           {
+                     *             "questionId": 811,
+                     *             "options": [
+                     *               {
+                     *                 "optionId": 821,
+                     *                 "votes": 0,
+                     *                 "share": 0
+                     *               },
+                     *               {
+                     *                 "optionId": 822,
+                     *                 "votes": 0,
+                     *                 "share": 0
+                     *               }
+                     *             ]
+                     *           }
+                     *         ]
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Poll"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["GroupForbidden"];
+        };
+    };
+    getPoll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pollId: components["parameters"]["PollId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Опрос. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": 801,
+                     *       "title": "Формат зачёта",
+                     *       "description": "Выберите удобное время.",
+                     *       "endsAt": "2026-11-20T15:00:00Z",
+                     *       "open": true,
+                     *       "anonymous": true,
+                     *       "groups": [
+                     *         {
+                     *           "id": 11,
+                     *           "name": "ИВТ-21",
+                     *           "faculty": {
+                     *             "id": 1,
+                     *             "code": "ФИТ",
+                     *             "name": "Факультет информационных технологий"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "author": {
+                     *         "id": 2001,
+                     *         "fullName": "Петров Павел Петрович"
+                     *       },
+                     *       "questions": [
+                     *         {
+                     *           "id": 811,
+                     *           "text": "Когда удобнее?",
+                     *           "type": "SINGLE",
+                     *           "options": [
+                     *             {
+                     *               "id": 821,
+                     *               "text": "Утро"
+                     *             },
+                     *             {
+                     *               "id": 822,
+                     *               "text": "Вечер"
+                     *             }
+                     *           ]
+                     *         }
+                     *       ],
+                     *       "voted": null,
+                     *       "eligible": 6,
+                     *       "results": {
+                     *         "voted": 1,
+                     *         "questions": [
+                     *           {
+                     *             "questionId": 811,
+                     *             "options": [
+                     *               {
+                     *                 "optionId": 821,
+                     *                 "votes": 0,
+                     *                 "share": 0
+                     *               },
+                     *               {
+                     *                 "optionId": 822,
+                     *                 "votes": 1,
+                     *                 "share": 100
+                     *               }
+                     *             ]
+                     *           }
+                     *         ]
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Poll"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    votePoll: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pollId: components["parameters"]["PollId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "answers": [
+                 *         {
+                 *           "questionId": 811,
+                 *           "optionIds": [
+                 *             822
+                 *           ]
+                 *         }
+                 *       ]
+                 *     }
+                 */
+                "application/json": components["schemas"]["PollVote"];
+            };
+        };
+        responses: {
+            /** @description Голос учтён; статистика опроса. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "voted": 1,
+                     *       "questions": [
+                     *         {
+                     *           "questionId": 811,
+                     *           "options": [
+                     *             {
+                     *               "optionId": 821,
+                     *               "votes": 0,
+                     *               "share": 0
+                     *             },
+                     *             {
+                     *               "optionId": 822,
+                     *               "votes": 1,
+                     *               "share": 100
+                     *             }
+                     *           ]
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PollResults"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            /** @description Студент уже голосовал. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "type": "about:blank",
+                     *       "title": "Conflict",
+                     *       "status": 409,
+                     *       "code": "ALREADY_VOTED",
+                     *       "detail": "Вы уже проголосовали в этом опросе."
+                     *     }
+                     */
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Опрос завершён или членство не подтверждено. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    listPollResponses: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pollId: components["parameters"]["PollId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ответы студентов. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "student": {
+                     *             "id": 1001,
+                     *             "fullName": "Смирнова Анна Олеговна"
+                     *           },
+                     *           "group": {
+                     *             "id": 11,
+                     *             "name": "ИВТ-21",
+                     *             "faculty": {
+                     *               "id": 1,
+                     *               "code": "ФИТ",
+                     *               "name": "Факультет информационных технологий"
+                     *             }
+                     *           },
+                     *           "answers": [
+                     *             {
+                     *               "questionId": 811,
+                     *               "optionIds": [
+                     *                 822
+                     *               ]
+                     *             }
+                     *           ]
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PollResponseList"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["InvalidState"];
         };
     };
 }

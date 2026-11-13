@@ -18,10 +18,16 @@ import ru.campusrating.ledger.Currency;
 class UserEventRepository {
     record NewEvent(long recipientId, UserEventKind kind, String dedupKey, Instant createdAt, long targetId, String title,
                     @Nullable Instant deadline, @Nullable Integer amount, @Nullable Currency currency,
-                    @Nullable String studentFullName) {}
+                    @Nullable String studentFullName, @Nullable Integer voted, @Nullable Integer eligible) {
+        NewEvent(long recipientId, UserEventKind kind, String dedupKey, Instant createdAt, long targetId, String title,
+                 @Nullable Instant deadline, @Nullable Integer amount, @Nullable Currency currency, @Nullable String studentFullName) {
+            this(recipientId, kind, dedupKey, createdAt, targetId, title, deadline, amount, currency, studentFullName, null, null);
+        }
+    }
 
     record EventRow(long id, UserEventKind kind, Instant createdAt, long targetId, String title, @Nullable Instant deadline,
-                    @Nullable Integer amount, @Nullable Currency currency, @Nullable String studentFullName) {}
+                    @Nullable Integer amount, @Nullable Currency currency, @Nullable String studentFullName,
+                    @Nullable Integer voted, @Nullable Integer eligible) {}
 
     private final JdbcClient jdbc;
 
@@ -31,8 +37,8 @@ class UserEventRepository {
 
     void insert(NewEvent event) {
         jdbc.sql("""
-                insert into user_event(recipient_id,kind,dedup_key,created_at,target_id,title,deadline,amount,currency,student_full_name)
-                values (:recipient,:kind,:key,:createdAt,:target,:title,:deadline,:amount,:currency,:student)
+                insert into user_event(recipient_id,kind,dedup_key,created_at,target_id,title,deadline,amount,currency,student_full_name,voted,eligible)
+                values (:recipient,:kind,:key,:createdAt,:target,:title,:deadline,:amount,:currency,:student,:voted,:eligible)
                 on conflict (recipient_id,dedup_key) do nothing
                 """)
                 .param("recipient", event.recipientId())
@@ -45,6 +51,8 @@ class UserEventRepository {
                 .param("amount", event.amount(), Types.INTEGER)
                 .param("currency", event.currency() == null ? null : event.currency().name(), Types.VARCHAR)
                 .param("student", event.studentFullName(), Types.VARCHAR)
+                .param("voted", event.voted(), Types.INTEGER)
+                .param("eligible", event.eligible(), Types.INTEGER)
                 .update();
     }
 
@@ -68,6 +76,7 @@ class UserEventRepository {
         return new EventRow(rs.getLong("id"), UserEventKind.valueOf(rs.getString("kind")),
                 rs.getTimestamp("created_at").toInstant(), rs.getLong("target_id"), rs.getString("title"),
                 deadline == null ? null : deadline.toInstant(), rs.getObject("amount", Integer.class),
-                currency == null ? null : Currency.valueOf(currency), rs.getString("student_full_name"));
+                currency == null ? null : Currency.valueOf(currency), rs.getString("student_full_name"),
+                rs.getObject("voted", Integer.class), rs.getObject("eligible", Integer.class));
     }
 }

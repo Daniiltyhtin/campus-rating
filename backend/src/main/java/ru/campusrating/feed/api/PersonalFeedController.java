@@ -33,10 +33,12 @@ public class PersonalFeedController {
                 @DiscriminatorMapping(value = "WORK_RETURNED", schema = WorkReturnedEvent.class),
                 @DiscriminatorMapping(value = "POINTS_AWARDED", schema = PointsAwardedEvent.class),
                 @DiscriminatorMapping(value = "ACTIVITY_CREATED", schema = ActivityCreatedEvent.class),
-                @DiscriminatorMapping(value = "WORK_SUBMITTED", schema = WorkSubmittedEvent.class)
+                @DiscriminatorMapping(value = "WORK_SUBMITTED", schema = WorkSubmittedEvent.class),
+                @DiscriminatorMapping(value = "POLL_CREATED", schema = PollCreatedEvent.class),
+                @DiscriminatorMapping(value = "POLL_CLOSED", schema = PollClosedEvent.class)
             })
     public sealed interface PersonalFeedItem permits AssignmentCreatedEvent, DeadlineReminderEvent, WorkAcceptedEvent,
-            WorkReturnedEvent, PointsAwardedEvent, ActivityCreatedEvent, WorkSubmittedEvent {}
+            WorkReturnedEvent, PointsAwardedEvent, ActivityCreatedEvent, WorkSubmittedEvent, PollCreatedEvent, PollClosedEvent {}
 
     @Schema(requiredProperties = {"id", "kind", "createdAt", "assignmentId", "checkpointTitle", "deadline"})
     public record AssignmentCreatedEvent(@Min(1) long id, @Schema(_const = "ASSIGNMENT_CREATED") String kind, Instant createdAt,
@@ -65,6 +67,14 @@ public class PersonalFeedController {
     @Schema(requiredProperties = {"id", "kind", "createdAt", "checkpointId", "checkpointTitle", "studentFullName"})
     public record WorkSubmittedEvent(@Min(1) long id, @Schema(_const = "WORK_SUBMITTED") String kind, Instant createdAt,
             @Min(1) long checkpointId, String checkpointTitle, String studentFullName) implements PersonalFeedItem {}
+
+    @Schema(requiredProperties = {"id", "kind", "createdAt", "pollId", "pollTitle", "endsAt"})
+    public record PollCreatedEvent(@Min(1) long id, @Schema(_const = "POLL_CREATED") String kind, Instant createdAt,
+            @Min(1) long pollId, String pollTitle, Instant endsAt) implements PersonalFeedItem {}
+
+    @Schema(requiredProperties = {"id", "kind", "createdAt", "pollId", "pollTitle", "voted", "eligible"})
+    public record PollClosedEvent(@Min(1) long id, @Schema(_const = "POLL_CLOSED") String kind, Instant createdAt,
+            @Min(1) long pollId, String pollTitle, @Min(0) int voted, @Min(0) int eligible) implements PersonalFeedItem {}
 
     @Schema(requiredProperties = {"items", "nextCursor"})
     public record PersonalFeedPage(List<PersonalFeedItem> items,

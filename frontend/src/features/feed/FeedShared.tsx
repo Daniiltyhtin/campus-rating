@@ -18,6 +18,8 @@ const iconPaths = {
   POINTS_AWARDED: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z',
   ACTIVITY_CREATED: 'M4 6h16v14H4z M4 10h16 M8 3v5 M16 3v5',
   WORK_SUBMITTED: 'M12 16V4 M7 9l5-5 5 5 M5 20h14',
+  POLL_CREATED: 'M5 20V10 M12 20V4 M19 20v-7',
+  POLL_CLOSED: 'M5 20V10 M12 20V4 M19 20v-7 M3 20h18',
 } as const;
 export function FeedIcon({ kind }: { kind: keyof typeof iconPaths }) {
   return <svg className="feed-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor"
