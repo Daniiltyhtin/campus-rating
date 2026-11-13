@@ -13,20 +13,37 @@ class RegistrationIT extends IdentityAcceptanceSupport {
     @Autowired private MembershipEventProbe.Listener membershipEvents;
 
     @Test
-    void studentGetsActiveMembershipAndExactlyOneInitialPostingWithoutSession() {
+    void studentGetsPendingMembershipAndExactlyOneInitialPostingWithoutSessionOrEvent() {
         var browser = browser();
         long id = registerStudent(browser, "student");
         assertThat(ledger.balances(id).ar()).isEqualTo(1000);
         assertThat(jdbc.queryForObject("select count(*) from ledger_entry where student_id=? and kind='INITIAL' and amount=1000",
                 Integer.class, id)).isEqualTo(1);
-        assertThat(jdbc.queryForObject("select state from group_membership where student_id=?", String.class, id)).isEqualTo("ACTIVE");
-        assertThat(jdbc.queryForObject("select activated_at from group_membership where student_id=?", java.sql.Timestamp.class, id)
-                .toInstant()).isEqualTo(clock.instant());
+        assertThat(jdbc.queryForObject("select state from group_membership where student_id=?", String.class, id)).isEqualTo("PENDING");
+        assertThat(jdbc.queryForObject("select activated_at from group_membership where student_id=?", java.sql.Timestamp.class, id)).isNull();
         var hash = jdbc.queryForObject("select password_hash from app_user where id=?", String.class, id);
         assertThat(hash).startsWith("$2").isNotEqualTo(PASSWORD);
         assertProblem(browser.get("/api/v1/auth/me"), 401, "UNAUTHENTICATED");
+        await().during(java.time.Duration.ofSeconds(1)).atMost(java.time.Duration.ofSeconds(3)).untilAsserted(() ->
+                assertThat(membershipEvents.committed()).noneMatch(event -> event.studentId() == id));
+    }
+
+    @Test
+    void approvalOfRegisteredStudentActivatesMembershipAndPublishesEventOnce() {
+        long id = registerStudent(browser(), "student");
+        registerTeacher(browser(), "teacher");
+        jdbc.update("insert into teacher_approval(teacher_id, approved_at) select id, now() from app_user where email=?", email("teacher"));
+        var teacher = browser();
+        login(teacher, email("teacher"));
+        clock.advance(java.time.Duration.ofMinutes(5));
+        assertThat(teacher.post("/api/v1/memberships/" + id + "/approval", Map.of()).status()).isEqualTo(204);
+        assertThat(jdbc.queryForObject("select state from group_membership where student_id=?", String.class, id)).isEqualTo("ACTIVE");
+        assertThat(jdbc.queryForObject("select activated_at from group_membership where student_id=?", java.sql.Timestamp.class, id)
+                .toInstant()).isEqualTo(clock.instant());
         await().atMost(java.time.Duration.ofSeconds(10)).untilAsserted(() ->
-                assertThat(membershipEvents.committed()).contains(new MembershipActivated(id, group, clock.instant())));
+                assertThat(membershipEvents.committed()).filteredOn(event -> event.studentId() == id)
+                        .containsExactly(new MembershipActivated(id, group, clock.instant())));
+        assertThat(jdbc.queryForObject("select count(*) from ledger_entry where student_id=?", Integer.class, id)).isEqualTo(1);
     }
 
     @Test

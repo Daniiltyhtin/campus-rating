@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { test as base, expect, request, type APIRequestContext, type Page, type Locator } from '@playwright/test';
 import type { components } from '../../../frontend/src/api/schema.js';
+import { mailToken } from '../../fixtures/greenmail.js';
 
 export type Schemas = components['schemas'];
 export type User = { id: number; email: string; password: string; fullName: string; api: Api };
@@ -61,6 +62,7 @@ class Scenario {
   group!: Schemas['AdminStudyGroup'];
   department!: Schemas['AdminDepartment'];
   admin!: Api;
+  private approver?: User;
   constructor(private baseURL: string) {}
   async api() {
     const context = await request.newContext({ baseURL: this.baseURL });
@@ -84,8 +86,19 @@ class Scenario {
     const suffix = randomUUID().slice(0, 8);
     return { email: `${this.prefix}-${suffix}@campus.test`, password: 'e2e-password-1', fullName: `${label} ${suffix}` };
   }
-  async registerStudent(group = this.group) {
-    return this.register('student', { facultyId: group.faculty.id, groupId: group.id });
+  async registerStudent(group = this.group, active = true) {
+    const student = await this.register('student', { facultyId: group.faculty.id, groupId: group.id });
+    if (active) await this.approveMembership(student.id);
+    return student;
+  }
+  async approveMembership(studentId: number) {
+    this.approver ??= await this.registerTeacher();
+    await this.approver.api.send(`/api/v1/memberships/${studentId}/approval`, undefined, 'POST', 204);
+  }
+  async confirmEmail(email: string) {
+    const guest = await this.api();
+    if ((await guest.get<Schemas['AuthConfig']>('/api/v1/auth/config')).emailVerification !== 'REQUIRED') return;
+    await guest.send('/api/v1/auth/email/confirmation', { token: await mailToken(email, 'email/confirm') }, 'POST', 204);
   }
   async registerTeacher(approved = true) {
     const user = await this.register('teacher', { departmentId: this.department.id });
@@ -96,6 +109,7 @@ class Scenario {
     const api = await this.api();
     const identity = this.identity(role === 'student' ? 'Студент' : 'Преподаватель');
     const result = await api.post<Schemas['RegistrationResult']>(`/api/v1/auth/register/${role}`, { ...identity, ...target }, 201);
+    await this.confirmEmail(identity.email);
     await api.signIn(identity.email, identity.password);
     return { ...identity, id: result.userId, api };
   }

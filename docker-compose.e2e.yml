@@ -3,11 +3,25 @@ name: campus-e2e
 services:
   postgres:
     ports: !reset []
+  greenmail:
+    image: greenmail/standalone:2.1.3
+    environment:
+      GREENMAIL_OPTS: "-Dgreenmail.setup.test.all -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.auth.disabled"
+    ports:
+      - "127.0.0.1:8091:8080"
   backend:
     ports: !reset []
     environment:
       CAMPUS_PENALTY_DEFAULT_INTERVAL: 4s
       CAMPUS_PENALTY_POLL_PERIOD: 1s
+      EMAIL_VERIFICATION: required
+      SPRING_MAIL_HOST: greenmail
+      SPRING_MAIL_PORT: "3025"
+      CAMPUS_MAIL_FROM: noreply@campus.test
+      CAMPUS_PUBLIC_URL: http://127.0.0.1:8090
+    depends_on:
+      greenmail:
+        condition: service_started
   web:
     ports: !override
       - "127.0.0.1:8090:8080"

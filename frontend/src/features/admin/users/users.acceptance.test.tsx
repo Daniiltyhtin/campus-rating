@@ -12,7 +12,7 @@ const group = teacherFixtures.groups().items[0]!;
 type UserRow = {
   id: number; fullName: string; email: string; role: 'STUDENT' | 'TEACHER' | 'ADMIN';
   group: typeof group | null; department: typeof department | null;
-  status: 'PENDING' | 'APPROVED' | 'MEMBERSHIP_PENDING' | 'MEMBERSHIP_ACTIVE' | null;
+  status: 'PENDING' | 'APPROVED' | 'MEMBERSHIP_PENDING' | 'MEMBERSHIP_ACTIVE' | 'MEMBERSHIP_REJECTED' | null;
   createdAt: string; lastLoginAt: string | null; passwordSetAt: string | null;
 };
 const fixtures = (): UserRow[] => [
@@ -298,4 +298,21 @@ describe('users-node AE1–AE10', { timeout: 20000 }, () => {
       await waitFor(() => expect(state.requests.at(-1)?.get('sort')).toBe(key));
     }
   });
+});
+
+
+it('показывает отклонённую заявку и фильтрует по MEMBERSHIP_REJECTED из формы и адреса', async () => {
+  const rejected: UserRow = { ...fixtures()[1]!, status: 'MEMBERSHIP_REJECTED' };
+  const state = scenario([...fixtures().filter((item) => item.id !== rejected.id), rejected]);
+  const view = mountTeachers('/admin/users');
+  expect(within(await row('Орлов')).getByText('Заявка отклонена')).toBeInTheDocument();
+  await choose(view.user, 'Статус', 'Заявка отклонена');
+  await waitFor(() => expect(state.requests.at(-1)?.get('status')).toBe('MEMBERSHIP_REJECTED'));
+  await waitFor(() => expect(screen.queryByRole('link', { name: /Смирнова/ })).not.toBeInTheDocument());
+  expect(within(await row('Орлов')).getByText('Заявка отклонена')).toBeInTheDocument();
+  expect(view.router.state.location.search).toContain('status=MEMBERSHIP_REJECTED');
+  await act(async () => { await view.router.navigate('/admin/users?status=MEMBERSHIP_REJECTED&sort=status&direction=desc'); });
+  expect(await screen.findByRole('combobox', { name: 'Статус' })).toHaveDisplayValue('Заявка отклонена');
+  await waitFor(() => expect(state.requests.at(-1)?.get('direction')).toBe('desc'));
+  expect(state.requests.at(-1)?.get('status')).toBe('MEMBERSHIP_REJECTED');
 });

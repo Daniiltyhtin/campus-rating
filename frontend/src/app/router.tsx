@@ -25,6 +25,7 @@ export const routes: RouteObject[] = [
         { path: 'admin/import', lazy: async () => ({ Component: (await import('../features/admin/import/AdminImportPage')).AdminImportPage }) },
         { path: 'admin/submissions/:assignmentId', lazy: async () => ({ Component: (await import('../features/admin/submissions/AdminSubmissionPage')).AdminSubmissionPage }) },
         { path: 'admin/users', lazy: async () => ({ Component: (await import('../features/admin/users/AdminUsersPage')).AdminUsersPage }) },
+        { path: 'memberships', lazy: async () => ({ Component: (await import('../features/groups/PendingMembers')).PendingMembersPage }) },
         { path: 'groups/:id/students', lazy: async () => ({ Component: (await import('../features/groups/GroupStudentsPage')).GroupStudentsPage }) },
         { path: 'admin/semesters', lazy: async () => ({ Component: (await import('../features/admin/semesters/AdminSemestersPage')).AdminSemestersPage }) },
         { path: 'admin/settings', lazy: async () => ({ Component: (await import('../features/admin/settings/AdminSettingsPage')).AdminSettingsPage }) },

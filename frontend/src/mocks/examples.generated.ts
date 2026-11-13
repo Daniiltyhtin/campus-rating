@@ -1979,7 +1979,8 @@ export const examples: ExampleOperation[] = [
               "name": "Факультет информационных технологий"
             }
           },
-          "membershipState": "ACTIVE"
+          "membershipState": "ACTIVE",
+          "groupHead": false
         }
       },
       {
@@ -2103,7 +2104,8 @@ export const examples: ExampleOperation[] = [
               "name": "Факультет информационных технологий"
             }
           },
-          "membershipState": "ACTIVE"
+          "membershipState": "ACTIVE",
+          "groupHead": false
         }
       },
       {
@@ -2124,7 +2126,8 @@ export const examples: ExampleOperation[] = [
               "name": "Факультет информационных технологий"
             }
           },
-          "membershipState": "PENDING"
+          "membershipState": "PENDING",
+          "groupHead": false
         }
       },
       {
@@ -2434,6 +2437,562 @@ export const examples: ExampleOperation[] = [
           "status": 403,
           "code": "CSRF_INVALID",
           "detail": "Обновите страницу и повторите действие."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/memberships/pending",
+    "method": "get",
+    "operationId": "listPendingMemberships",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "items": [
+            {
+              "studentId": 1004,
+              "fullName": "Орлов Никита Сергеевич",
+              "email": "orlov@student.campus.test",
+              "group": {
+                "id": 11,
+                "name": "ИВТ-21",
+                "faculty": {
+                  "id": 1,
+                  "code": "ФИТ",
+                  "name": "Факультет информационных технологий"
+                }
+              },
+              "requestedAt": "2026-11-12T09:00:00Z"
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/memberships/{studentId}/approval",
+    "method": "post",
+    "operationId": "approveMembership",
+    "responses": [
+      {
+        "status": 204,
+        "contentType": "",
+        "body": null
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Conflict",
+          "status": 409,
+          "code": "INVALID_STATE",
+          "detail": "Действие недоступно в текущем состоянии."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/memberships/{studentId}/rejection",
+    "method": "post",
+    "operationId": "rejectMembership",
+    "responses": [
+      {
+        "status": 204,
+        "contentType": "",
+        "body": null
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Conflict",
+          "status": 409,
+          "code": "INVALID_STATE",
+          "detail": "Действие недоступно в текущем состоянии."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/me/membership",
+    "method": "put",
+    "operationId": "requestMembership",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "role": "STUDENT",
+          "id": 1004,
+          "fullName": "Орлов Никита Сергеевич",
+          "email": "orlov@student.campus.test",
+          "mustChangePassword": false,
+          "group": {
+            "id": 12,
+            "name": "ИВТ-22",
+            "faculty": {
+              "id": 1,
+              "code": "ФИТ",
+              "name": "Факультет информационных технологий"
+            }
+          },
+          "membershipState": "PENDING",
+          "groupHead": false
+        }
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 409,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Conflict",
+          "status": 409,
+          "code": "INVALID_STATE",
+          "detail": "Действие недоступно в текущем состоянии."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/group-heads",
+    "method": "get",
+    "operationId": "listGroupHeads",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "items": [
+            {
+              "groupId": 11,
+              "student": {
+                "id": 1001,
+                "fullName": "Смирнова Анна Олеговна"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/group-heads/{groupId}",
+    "method": "put",
+    "operationId": "assignGroupHead",
+    "responses": [
+      {
+        "status": 200,
+        "contentType": "application/json",
+        "body": {
+          "groupId": 11,
+          "student": {
+            "id": 1001,
+            "fullName": "Смирнова Анна Олеговна"
+          }
+        }
+      },
+      {
+        "status": 400,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Bad Request",
+          "status": 400,
+          "code": "VALIDATION_FAILED",
+          "detail": "Проверьте поля формы.",
+          "fieldErrors": [
+            {
+              "field": "cursor",
+              "code": "INVALID",
+              "message": "Курсор не подходит к этому списку."
+            }
+          ]
+        }
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
+        }
+      }
+    ]
+  },
+  {
+    "path": "/api/v1/admin/group-heads/{groupId}",
+    "method": "delete",
+    "operationId": "removeGroupHead",
+    "responses": [
+      {
+        "status": 204,
+        "contentType": "",
+        "body": null
+      },
+      {
+        "status": 401,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Unauthorized",
+          "status": 401,
+          "code": "UNAUTHENTICATED",
+          "detail": "Войдите в систему."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "FORBIDDEN",
+          "detail": "Недостаточно прав."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "PASSWORD_CHANGE_REQUIRED",
+          "detail": "Смените временный пароль."
+        }
+      },
+      {
+        "status": 403,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Forbidden",
+          "status": 403,
+          "code": "CSRF_INVALID",
+          "detail": "Обновите страницу и повторите действие."
+        }
+      },
+      {
+        "status": 404,
+        "contentType": "application/problem+json",
+        "body": {
+          "type": "about:blank",
+          "title": "Not Found",
+          "status": 404,
+          "code": "NOT_FOUND",
+          "detail": "Не найдено."
         }
       }
     ]

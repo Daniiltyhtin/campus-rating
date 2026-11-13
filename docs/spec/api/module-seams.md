@@ -165,7 +165,7 @@ public interface CurrentUser {
 }
 
 public enum Role { STUDENT, TEACHER, ADMIN }
-public enum GroupMembershipState { PENDING, ACTIVE }
+public enum GroupMembershipState { PENDING, ACTIVE, REJECTED }
 
 public record AuthenticatedUser(long id, Role role, String fullName, boolean mustChangePassword,
                                 boolean teacherApproved,            // false у не-преподавателя
@@ -174,6 +174,7 @@ public record Membership(long groupId, GroupMembershipState state, @Nullable Ins
 ```
 
 - **Гарантии.** Значения берутся из сессии и базы на момент запроса. Блокировку по `mustChangePassword` (`403 PASSWORD_CHANGE_REQUIRED`) делает фильтр безопасности `identity`, а не модули: при работающем фильтре `require()` пользователя с этим флагом в чужой модуль не вернёт. Роль операции проверяет `SecurityConfig` по `x-roles` контракта. Принадлежность ресурса проверяет модуль-владелец сам: автор точки, автор активности, владелец назначения.
+- Баллы за активности и назначения получает только `ACTIVE`; `INITIAL` и начисление семестра доступны также `PENDING` и `REJECTED`.
 - **Тестовый двойник:** мок `require()` с демо-пользователями из примеров контракта (1001 — студент, 2001 — допущенный преподаватель, 2002 — без допуска, 3001 — администратор).
 
 ## 3. `TeacherScope` — доступные группы
@@ -304,7 +305,7 @@ public record PollClosed(long pollId, String title, long authorId, int voted, in
 
 | Событие | Публикует | Слушает | Что делает слушатель |
 |---|---|---|---|
-| `MembershipActivated` | `identity`: при регистрации студента, пока нет мастер-U15, членство сразу `ACTIVE`; потом — при подтверждении членства | `checkpoint` (U7) | создаёт назначения по точкам группы, подходящим под правило ниже |
+| `MembershipActivated` | `identity`: при подтверждении членства преподавателем или старостой (мастер-U15) и при импорте студента администратором; регистрация создаёт `PENDING` без события | `checkpoint` (U7) | создаёт назначения по точкам группы, подходящим под правило ниже |
 | `PollCreated` | `poll` при создании опроса; получатели — студенты целевых групп с `ACTIVE` на момент создания (мастер-U16) | `feed` | событие ленты `POLL_CREATED` каждому получателю, ключ `poll:{pollId}` |
 | `PollClosed` | `poll`: задание завершения раз в минуту, в транзакции с `closed_at` | `feed` | событие ленты `POLL_CLOSED` автору, ключ `pollClosed:{pollId}` |
 | `CheckpointCreated` | `checkpoint` при создании точки | `checkpoint` (U7) | читает `GroupMembers.activeStudents(groups)` и создаёт недостающие назначения по тому же правилу |
