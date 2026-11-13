@@ -1,5 +1,6 @@
 package ru.campusrating.ledger;
 
+import ru.campusrating.support.UserNameFixture;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -144,7 +145,11 @@ class LedgerEntriesIT extends PostgresIntegrationTest {
         var before = entries(student, "", 200);
 
         jdbc.update("update checkpoint set title='Лабораторная 3 (новое название)' where id=?", point);
-        jdbc.update("update app_user set full_name='Петров-Сидоров Павел Петрович' where id=?", teacher);
+        jdbc.update("update app_user set last_name=?,first_name=?,middle_name=? where id=?",
+                UserNameFixture.last("Петров-Сидоров Павел Петрович"),
+                UserNameFixture.first("Петров-Сидоров Павел Петрович"),
+                UserNameFixture.middle("Петров-Сидоров Павел Петрович"),
+                teacher);
         var after = entries(student, "", 200);
 
         assertThat(after).isEqualTo(before);
@@ -401,8 +406,12 @@ class LedgerEntriesIT extends PostgresIntegrationTest {
     }
 
     long person(Role personRole, String name) {
-        long id = id("insert into app_user(email,role,full_name) values (?,?,?) returning id",
-                UUID.randomUUID() + "@test.invalid", personRole.name(), name);
+        long id = id("insert into app_user(email,role,last_name,first_name,middle_name) values (?,?,?,?,?) returning id",
+                UUID.randomUUID() + "@test.invalid",
+                personRole.name(),
+                UserNameFixture.last(name),
+                UserNameFixture.first(name),
+                UserNameFixture.middle(name));
         people.add(id);
         return id;
     }

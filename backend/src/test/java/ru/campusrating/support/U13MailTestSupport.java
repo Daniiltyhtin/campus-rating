@@ -39,7 +39,7 @@ public abstract class U13MailTestSupport extends U13HttpTestSupport {
         return match.group(1);
     }
     protected long imported(String suffix) {
-        String data="email,full_name,faculty_code,group_code\n"+email(suffix)+",Импортированный,"+prefix+"f1,"+prefix+"g1\n";
+        String data="email,last_name,first_name,middle_name,faculty_code,group_code\n"+email(suffix)+",Импортированный,Тест,,"+prefix+"f1,"+prefix+"g1\n";
         var result=adminWire().upload("/api/v1/admin/import/STUDENTS","students.csv",data.getBytes(java.nio.charset.StandardCharsets.UTF_8),200);
         assertThat(result.path("created").asInt()).isEqualTo(1);
         return items(get("/api/v1/admin/users?search="+prefix+suffix)).getFirst().path("id").asLong();

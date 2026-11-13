@@ -1,5 +1,6 @@
 package ru.campusrating.support;
 
+import ru.campusrating.support.UserNameFixture;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -42,8 +43,14 @@ public abstract class AnalyticsTestSupport extends AdminHttpTestSupport {
 
     protected long member(String suffix, String name, String activation) {
         long id = jdbc.queryForObject("""
-                insert into app_user(email,role,full_name,password_hash) values (?,'STUDENT',?,?) returning id
-                """, Long.class, email(suffix), name, passwords.encode(PASSWORD));
+                insert into app_user(email,role,last_name,first_name,middle_name,password_hash) values (?,'STUDENT',?,?,?,?) returning id
+                """,
+                Long.class,
+                email(suffix),
+                UserNameFixture.last(name),
+                UserNameFixture.first(name),
+                UserNameFixture.middle(name),
+                passwords.encode(PASSWORD));
         jdbc.update("insert into group_membership(student_id,group_id,state,activated_at) values (?,?,?,?)",
                 id, group, activation == null ? "PENDING" : "ACTIVE", activation == null ? null : Timestamp.from(moscow(activation)));
         return id;

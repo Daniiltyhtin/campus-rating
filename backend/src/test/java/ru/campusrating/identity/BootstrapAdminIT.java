@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class BootstrapAdminIT {
     @Test
+    @org.junit.jupiter.api.DisplayName("Covers AE11: bootstrap name and restart")
     void cleanProdCreatesOneAdminAndRestartIgnoresNewBootstrapCredentials() {
         try (var database = new PostgreSQLContainer("postgres:18.6-alpine")) {
             database.start();
@@ -19,6 +20,9 @@ class BootstrapAdminIT {
                     "CAMPUS_BOOTSTRAP_ADMIN_PASSWORD", "Synthetic-bootstrap-42"))) {
                 var jdbc = first.getBean(JdbcTemplate.class);
                 assertThat(jdbc.queryForObject("select count(*) from app_user where role='ADMIN'", Integer.class)).isEqualTo(1);
+                assertThat(jdbc.queryForObject("select last_name from app_user where role='ADMIN'", String.class)).isEqualTo("Администратор");
+                assertThat(jdbc.queryForObject("select first_name from app_user where role='ADMIN'", String.class)).isEqualTo("Системы");
+                assertThat(jdbc.queryForObject("select middle_name from app_user where role='ADMIN'", String.class)).isNull();
                 firstId = jdbc.queryForObject("select id from app_user where role='ADMIN'", Long.class);
                 firstHash = jdbc.queryForObject("select password_hash from app_user where id=?", String.class, firstId);
                 assertThat(firstHash).startsWith("$2").isNotEqualTo("Synthetic-bootstrap-42");
@@ -26,6 +30,7 @@ class BootstrapAdminIT {
                 assertThat(admin.post("/api/v1/auth/login", Map.of("email", "bootstrap-admin@example.test",
                         "password", "Synthetic-bootstrap-42")).status()).isEqualTo(200);
                 assertThat(admin.get("/api/v1/auth/me").body().path("mustChangePassword").asBoolean()).isTrue();
+                assertThat(admin.get("/api/v1/auth/me").body().path("fullName").asText()).isEqualTo("Администратор Системы");
                 var forbidden = admin.get("/api/v1/admin/ledger/reconciliation");
                 assertThat(forbidden.status()).isEqualTo(403);
                 assertThat(forbidden.body().path("code").asText()).isEqualTo("PASSWORD_CHANGE_REQUIRED");

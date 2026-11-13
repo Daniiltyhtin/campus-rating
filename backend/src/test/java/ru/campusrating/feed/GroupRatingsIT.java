@@ -1,5 +1,6 @@
 package ru.campusrating.feed;
 
+import ru.campusrating.support.UserNameFixture;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -16,8 +17,16 @@ class GroupRatingsIT extends FeedTestSupport {
     @ValueSource(strings = {"AR", "BUA", "BOA"})
     void sortsBySelectedCurrencyThenCurrentNameThenIdAndExcludesPending(String sort) {
         seedBalances();
-        update("update app_user set full_name=? where id=?", "Антонов Антон Антонович", student);
-        update("update app_user set full_name=? where id=?", "Яковлев Яков Яковлевич", classmate);
+        update("update app_user set last_name=?,first_name=?,middle_name=? where id=?",
+                UserNameFixture.last("Антонов Антон Антонович"),
+                UserNameFixture.first("Антонов Антон Антонович"),
+                UserNameFixture.middle("Антонов Антон Антонович"),
+                student);
+        update("update app_user set last_name=?,first_name=?,middle_name=? where id=?",
+                UserNameFixture.last("Яковлев Яков Яковлевич"),
+                UserNameFixture.first("Яковлев Яков Яковлевич"),
+                UserNameFixture.middle("Яковлев Яков Яковлевич"),
+                classmate);
         var rating = request(get(path(group) + "?sort=" + sort), login("teacher"), 200);
         assertGroup(rating.path("group"), group, "Основная", faculty, prefix, "Факультет ленты");
         assertThat(rating.path("sort").asText()).isEqualTo(sort);

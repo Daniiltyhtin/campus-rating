@@ -1,5 +1,6 @@
 package ru.campusrating.checkpoint;
 
+import ru.campusrating.support.UserNameFixture;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -390,11 +391,13 @@ class SubmissionIT extends PostgresIntegrationTest {
     Role activeRole;
 
     long person(String role) {
-        return jdbc.queryForObject(
-                "insert into app_user(email,role,full_name) values (?,?,'Тест') returning id",
+        return jdbc.queryForObject("insert into app_user(email,role,last_name,first_name,middle_name) values (?,?,?,?,?) returning id",
                 Long.class,
                 UUID.randomUUID() + "@test.invalid",
-                role);
+                role,
+                UserNameFixture.last("Тест"),
+                UserNameFixture.first("Тест"),
+                UserNameFixture.middle("Тест"));
     }
 
     long point() {

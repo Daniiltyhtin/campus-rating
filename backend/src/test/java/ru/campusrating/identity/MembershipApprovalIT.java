@@ -319,7 +319,7 @@ class MembershipApprovalIT extends U13MailTestSupport {
         var rows = items(get(teacher, PENDING)).stream().filter(n -> List.of(late, earlyA, earlyB, rejected, active, foreign).contains(n.path("studentId").asLong())).toList();
         assertThat(rows.stream().map(n -> n.path("studentId").asLong()).toList()).containsExactly(earlyA, earlyB, late);
         var first = rows.getFirst();
-        assertThat(first.path("fullName").asText()).isEqualTo("earlya");
+        assertThat(first.path("fullName").asText()).isEqualTo("earlya earlya");
         assertThat(first.path("email").asText()).isEqualTo(email("earlya"));
         assertThat(first.at("/group/id").asLong()).isEqualTo(sameNameGroup);
         assertThat(first.at("/group/faculty/id").asLong()).isEqualTo(faculty);

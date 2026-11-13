@@ -2,6 +2,7 @@ package ru.campusrating.admin;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ class UserTimesIT extends U13MailTestSupport {
         clock.set(Instant.parse("2026-11-13T08:20:00Z"));
         request(browser(), "POST", "/api/v1/auth/login", Map.of("email", email("ivanov"), "password", temporary), 200);
         time(row(ivanov), "lastLoginAt", "2026-11-13T08:20:00Z");
-        String csv = "email,full_name,faculty_code,group_code\n" + email("ivanov") + ",Импортированный," + prefix + "f1," + prefix + "g1\n";
+        String csv = "email,last_name,first_name,middle_name,faculty_code,group_code\n" + email("ivanov") + ",Импортированный,Тест,," + prefix + "f1," + prefix + "g1\n";
         assertThat(adminWire().upload("/api/v1/admin/import/STUDENTS", "students.csv", csv.getBytes(java.nio.charset.StandardCharsets.UTF_8), 200).path("skipped").asInt()).isEqualTo(1);
         time(row(ivanov), "createdAt", "2026-11-13T08:00:00Z");
         time(row(ivanov), "lastLoginAt", "2026-11-13T08:20:00Z");
@@ -129,23 +130,28 @@ class UserTimesIT extends U13MailTestSupport {
     @Test void ae9DemoSeedGivesOneCreationTimeAndRerunPreservesIt() throws Exception {
         try (var database = new org.testcontainers.postgresql.PostgreSQLContainer("postgres:18.6-alpine")) {
             database.start();
-            try (var app = new org.springframework.boot.builder.SpringApplicationBuilder(ru.campusrating.CampusRatingApplication.class)
-                    .profiles("demo").run("--server.port=0", "--campus.mail.email-verification=off",
-                            "--campus.penalty.scheduler.enabled=false", "--campus.semester.scheduler.enabled=false",
-                            "--campus.storage.dir=" + java.nio.file.Files.createTempDirectory("user-times-"),
-                            "--spring.datasource.url=" + database.getJdbcUrl(), "--spring.datasource.username=" + database.getUsername(),
-                            "--spring.datasource.password=" + database.getPassword())) {
-                var demo = app.getBean(org.springframework.jdbc.core.JdbcTemplate.class);
-                var before = demo.queryForList("select id,created_at,last_login_at from app_user where id in (1001,1002,1003,1004,2001,2002,3001) order by id");
-                assertThat(before).isNotEmpty();
-                assertThat(before.stream().map(item -> item.get("created_at")).distinct().toList()).hasSize(1).doesNotContainNull();
-                assertThat(before).allSatisfy(item -> assertThat(item.get("last_login_at")).isNull());
-                try (var connection = demo.getDataSource().getConnection()) {
-                    org.springframework.jdbc.datasource.init.ScriptUtils.executeSqlScript(connection,
-                            new org.springframework.core.io.ClassPathResource("db/changelog/demo/202611091600-demo-users.sql"));
-                }
-                assertThat(demo.queryForList("select id,created_at,last_login_at from app_user where id in (1001,1002,1003,1004,2001,2002,3001) order by id")).isEqualTo(before);
+            String sql = "select id,created_at,last_login_at from app_user where id in (1001,1002,1003,1004,2001,2002,3001) order by id";
+            List<Map<String, Object>> before;
+            try (var app = demoApp(database, true)) {
+                before = app.getBean(org.springframework.jdbc.core.JdbcTemplate.class).queryForList(sql);
+            }
+            assertThat(before).isNotEmpty();
+            assertThat(before.stream().map(item -> item.get("created_at")).distinct().toList()).hasSize(1).doesNotContainNull();
+            assertThat(before).allSatisfy(item -> assertThat(item.get("last_login_at")).isNull());
+            try (var app = demoApp(database, false)) {
+                assertThat(app.getBean(org.springframework.jdbc.core.JdbcTemplate.class).queryForList(sql)).isEqualTo(before);
             }
         }
+    }
+
+    private static org.springframework.context.ConfigurableApplicationContext demoApp(
+            org.testcontainers.postgresql.PostgreSQLContainer database, boolean reset) throws Exception {
+        return new org.springframework.boot.builder.SpringApplicationBuilder(ru.campusrating.CampusRatingApplication.class)
+                .profiles("demo").run("--server.port=0", "--campus.mail.email-verification=off",
+                        "--campus.penalty.scheduler.enabled=false", "--campus.semester.scheduler.enabled=false",
+                        "--campus.demo.reset=" + reset,
+                        "--campus.storage.dir=" + java.nio.file.Files.createTempDirectory("user-times-"),
+                        "--spring.datasource.url=" + database.getJdbcUrl(), "--spring.datasource.username=" + database.getUsername(),
+                        "--spring.datasource.password=" + database.getPassword());
     }
 }

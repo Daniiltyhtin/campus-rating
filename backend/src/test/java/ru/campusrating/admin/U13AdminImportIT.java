@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class U13AdminImportIT extends U13HttpTestSupport {
     private static final String IMPORT="/api/v1/admin/import/";
     private static final String ALLOWLIST="/api/v1/admin/teacher-allowlist";
-    private static final String STUDENTS="email,full_name,faculty_code,group_code\r\n";
+    private static final String STUDENTS="email,last_name,first_name,middle_name,faculty_code,group_code\r\n";
     private String facultyCode() { return prefix+"f1"; }
     private String groupCode() { return prefix+"g1"; }
     private JsonNode csv(String kind,String data) { return adminWire().upload(IMPORT+kind,"data.csv",data.getBytes(StandardCharsets.UTF_8),200); }
@@ -35,7 +35,7 @@ class U13AdminImportIT extends U13HttpTestSupport {
     }
     @Test void r2r4r6r10Windows1251SemicolonCreatesEightRejectsTwoAndRetryIsIdempotent() {
         StringBuilder data=new StringBuilder(STUDENTS.replace(',', ';'));
-        for(int i=1;i<=10;i++) data.append(email("import"+i)).append(";Иванов Иван ").append(i).append(';').append(i==3||i==7?"XXX":facultyCode()).append(';').append(groupCode()).append("\r\n");
+        for(int i=1;i<=10;i++) data.append(email("import"+i)).append(";Иванов;Иван;").append(i).append(';').append(i==3||i==7?"XXX":facultyCode()).append(';').append(groupCode()).append("\r\n");
         byte[] bytes=data.toString().getBytes(Charset.forName("windows-1251"));
         var wire=adminWire();
         var result=wire.upload(IMPORT+"STUDENTS","students.csv",bytes,200);
@@ -55,8 +55,8 @@ class U13AdminImportIT extends U13HttpTestSupport {
         assertThat(jdbc.queryForObject("select count(*) from ledger_entry where kind='INITIAL' and student_id in (select id from app_user where email like ?)",Long.class,prefix+"%")).isEqualTo(before);
     }
     @Test void r2r4QuotedCommaEscapedQuoteNewlineBomAndEmptyRecords() {
-        String row="\""+email("quoted")+"\",\"Петрова, Мария \"\"М\"\"\nИвановна\","+facultyCode()+","+groupCode()+"\r\n";
-        var result=csv("STUDENTS","\uFEFF"+STUDENTS+"\r\n"+row+row+email("extra")+",Имя,"+facultyCode()+","+groupCode()+",лишнее\r\n");
+        String row="\""+email("quoted")+"\",\"Петрова,\",\"Мария \"\"М\"\"\nИвановна\",,"+facultyCode()+","+groupCode()+"\r\n";
+        var result=csv("STUDENTS","\uFEFF"+STUDENTS+"\r\n"+row+row+email("extra")+",Имя,Тест,,"+facultyCode()+","+groupCode()+",лишнее\r\n");
         report(result,1,1,1);
         assertThat(result.at("/rejected/0/reason").asText()).isEqualTo("неверное число колонок");
         assertThat(items(get("/api/v1/admin/users?search="+prefix+"quoted"))).singleElement().satisfies(u -> assertThat(u.path("fullName").asText()).isEqualTo("Петрова, Мария \"М\"\nИвановна"));
@@ -78,17 +78,17 @@ class U13AdminImportIT extends U13HttpTestSupport {
     @Test void r4r6StudentConflictsAndFirstColumnErrorAreReportedInOrder() {
         student("existing",faculty,group);
         jdbc.update("insert into teacher_allowlist(email,department_id) values (?,?)",email("reserved"),department);
-        String data=STUDENTS+email("existing")+",Другое имя,"+facultyCode()+","+groupCode()+"\n"
-                +email("reserved")+",Учитель,"+facultyCode()+","+groupCode()+"\n"
-                +"invalid-email,Имя,"+facultyCode()+","+groupCode()+"\n"
-                +email("otherfaculty")+",Имя,"+facultyCode()+","+prefix+"g3\n"
-                +email("missinggroup")+",Имя,"+facultyCode()+",absent\n"
-                +",,absent,absent\n";
+        String data=STUDENTS+email("existing")+",Другое,имя,,"+facultyCode()+","+groupCode()+"\n"
+                +email("reserved")+",Учитель,Тест,,"+facultyCode()+","+groupCode()+"\n"
+                +"invalid-email,Имя,Тест,,"+facultyCode()+","+groupCode()+"\n"
+                +email("otherfaculty")+",Имя,Тест,,"+facultyCode()+","+prefix+"g3\n"
+                +email("missinggroup")+",Имя,Тест,,"+facultyCode()+",absent\n"
+                +",,,,absent,absent\n";
         var result=csv("STUDENTS",data); report(result,0,0,6);
         assertThat(result.path("rejected").valueStream().map(n -> n.path("reason").asText()).toList()).containsExactly("email занят","email из списка преподавателей","неверный email","группа другого факультета","группа не найдена","пустое значение email");
     }
     @Test void r7WithoutSmtpImportedStudentNeedsTemporaryPassword() {
-        report(csv("STUDENTS",STUDENTS+email("imported")+",Импортированный,"+facultyCode()+","+groupCode()+"\n"),1,0,0);
+        report(csv("STUDENTS",STUDENTS+email("imported")+",Импортированный,Тест,,"+facultyCode()+","+groupCode()+"\n"),1,0,0);
         request(browser(),"POST","/api/v1/auth/login",Map.of("email",email("imported"),"password",PASSWORD),401);
         long id=items(get("/api/v1/admin/users?search="+prefix+"imported")).getFirst().path("id").asLong();
         String temporary=request(admin,"POST","/api/v1/users/"+id+"/temporary-password",null,200).path("password").asText();
@@ -116,18 +116,23 @@ class U13AdminImportIT extends U13HttpTestSupport {
         if(kind.equals("oversize")) bytes=new byte[5*1024*1024+1];
         else if(kind.equals("too-many")) {
             var data=new StringBuilder(STUDENTS);
-            for(int i=0;i<5001;i++) data.append(email("many"+i)).append(",Имя,").append(facultyCode()).append(',').append(groupCode()).append('\n');
+            for(int i=0;i<5001;i++) data.append(email("many"+i)).append(",Имя,Тест,,").append(facultyCode()).append(',').append(groupCode()).append('\n');
             bytes=data.toString().getBytes(StandardCharsets.UTF_8);
         } else bytes="mail,name,faculty_code,group_code\n".getBytes(StandardCharsets.UTF_8);
         var result=adminWire().upload(IMPORT+"STUDENTS","students.csv",bytes,400);
         assertThat(result.path("detail").asText()).isEqualTo(kind.equals("bad-header")?"Не удалось прочитать файл: проверьте формат и заголовок":"Файл слишком большой: до 5 МБ и 5000 строк");
         assertThat(jdbc.queryForObject("select count(*) from app_user where email like ?",Integer.class,prefix+"many%")).isZero();
     }
-    @Test void r2XlsxUsesFirstSheetAndSameRowReport() throws Exception {
-        byte[] bytes=xlsx(List.of(List.of("email","full_name","faculty_code","group_code"),List.of(email("xlsx"),"Иванов Иван",facultyCode(),groupCode()),List.of(email("badxlsx"),"Не создан","XXX",groupCode())));
+    @Test @org.junit.jupiter.api.DisplayName("Covers AE12: XLSX accepts the new header and empty middle name")
+    void r2XlsxUsesFirstSheetAndSameRowReport() throws Exception {
+        byte[] bytes=xlsx(List.of(List.of("email","last_name","first_name","middle_name","faculty_code","group_code"),List.of(email("xlsx"),"Иванов","Иван","",facultyCode(),groupCode()),List.of(email("badxlsx"),"Не","создан","","XXX",groupCode())));
         var result=adminWire().upload(IMPORT+"STUDENTS","students.xlsx",bytes,200);
         report(result,1,0,1); rejected(result,0,3,email("badxlsx"),"факультет не найден");
-        assertThat(items(get("/api/v1/admin/users?search="+prefix+"xlsx"))).singleElement().satisfies(u->assertThat(u.path("fullName").asText()).isEqualTo("Иванов Иван"));
+        assertThat(items(get("/api/v1/admin/users?search="+prefix+"xlsx"))).singleElement().satisfies(u -> {
+            assertThat(u.path("fullName").asText()).isEqualTo("Иванов Иван");
+            assertThat(u.path("middleName").isNull()).isTrue();
+            assertThat(u.at("/group/id").asLong()).isEqualTo(group);
+        });
     }
     @Test void r12TeacherCannotImportOrDeleteAllowlist() {
         teacher("teacher","Teacher");
@@ -151,7 +156,7 @@ class U13AdminImportIT extends U13HttpTestSupport {
         jdbc.execute("create function u13_reject_import() returns trigger language plpgsql as $$ begin if NEW.email='"+email("reject")+"' then raise exception 'synthetic storage failure'; end if; return NEW; end $$");
         jdbc.execute("create trigger u13_reject_import before insert on app_user for each row execute function u13_reject_import()");
         try {
-            String data=STUDENTS+email("rollback")+",Первый,"+facultyCode()+","+groupCode()+"\n"+email("reject")+",Второй,"+facultyCode()+","+groupCode()+"\n";
+            String data=STUDENTS+email("rollback")+",Первый,Тест,,"+facultyCode()+","+groupCode()+"\n"+email("reject")+",Второй,Тест,,"+facultyCode()+","+groupCode()+"\n";
             var result=adminWire().uploadFailure(IMPORT+"STUDENTS","rollback.csv",data.getBytes(StandardCharsets.UTF_8));
             assertThat(result.path("detail").asText()).isEqualTo("Импорт не выполнен, попробуйте ещё раз");
             assertThat(jdbc.queryForObject("select count(*) from app_user where email in (?,?)",Integer.class,email("rollback"),email("reject"))).isZero();
@@ -160,6 +165,20 @@ class U13AdminImportIT extends U13HttpTestSupport {
             jdbc.execute("drop function if exists u13_reject_import()");
         }
     }
+    @ParameterizedTest(name = "Covers AE13, AE14: XLSX rejects {0} header")
+    @ValueSource(strings = {"missing-middle", "legacy"})
+    void xlsxRejectsWrongNameHeader(String kind) throws Exception {
+        var rows = kind.equals("legacy")
+                ? List.of(List.of("email", "full_name", "faculty_code", "group_code"),
+                    List.of(email("wrong-xlsx"), "Орлова Вера", facultyCode(), groupCode()))
+                : List.of(List.of("email", "last_name", "first_name", "faculty_code", "group_code"),
+                    List.of(email("wrong-xlsx"), "Орлова", "Вера", facultyCode(), groupCode()));
+        var before = jdbc.queryForObject("select count(*) from app_user", Integer.class);
+        var result = adminWire().upload(IMPORT + "STUDENTS", "students.xlsx", xlsx(rows), 400);
+        assertThat(result.path("detail").asText()).isEqualTo("Не удалось прочитать файл: проверьте формат и заголовок");
+        assertThat(jdbc.queryForObject("select count(*) from app_user", Integer.class)).isEqualTo(before);
+    }
+
     private byte[] xlsx(List<List<String>> rows) throws Exception {
         var output=new ByteArrayOutputStream();
         try(var zip=new ZipOutputStream(output)) {

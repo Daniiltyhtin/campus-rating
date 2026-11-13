@@ -1,5 +1,6 @@
 package ru.campusrating.identity;
 
+import ru.campusrating.support.UserNameFixture;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -130,12 +131,10 @@ class VerificationIT extends U13MailTestSupport {
                 var data = new Fixture(off);
                 var browser = IdentityLifecycleSupport.browser(off);
                 assertThat(browser.get("/api/v1/auth/config").body().path("emailVerification").asText()).isEqualTo("OFF");
-                var student = browser.post("/api/v1/auth/register/student", Map.of("fullName", "Студент Офф", "email", data.email("student"),
-                        "password", PASSWORD, "facultyId", data.faculty, "groupId", data.group));
+                var student = browser.post("/api/v1/auth/register/student", Map.of("lastName", UserNameFixture.last("Студент Офф"), "firstName", UserNameFixture.first("Студент Офф"), "middleName", UserNameFixture.middleOrEmpty("Студент Офф"), "email", data.email("student"), "password", PASSWORD, "facultyId", data.faculty, "groupId", data.group));
                 assertThat(student.status()).isEqualTo(201);
                 assertThat(student.body().path("nextStep").asText()).isEqualTo("LOGIN");
-                var teacher = browser.post("/api/v1/auth/register/teacher", Map.of("fullName", "Преподаватель Офф", "email", data.email("teacher"),
-                        "password", PASSWORD, "departmentId", data.department));
+                var teacher = browser.post("/api/v1/auth/register/teacher", Map.of("lastName", UserNameFixture.last("Преподаватель Офф"), "firstName", UserNameFixture.first("Преподаватель Офф"), "middleName", UserNameFixture.middleOrEmpty("Преподаватель Офф"), "email", data.email("teacher"), "password", PASSWORD, "departmentId", data.department));
                 assertThat(teacher.status()).isEqualTo(201);
                 assertThat(teacher.body().path("nextStep").asText()).isEqualTo("LOGIN");
                 for (String who : List.of("student", "teacher")) {
@@ -159,8 +158,7 @@ class VerificationIT extends U13MailTestSupport {
             try (var off = start(database, "off", new CapturingSender())) {
                 data = new Fixture(off);
                 var browser = IdentityLifecycleSupport.browser(off);
-                assertThat(browser.post("/api/v1/auth/register/student", Map.of("fullName", "Студент До Переключения", "email", data.email("legacy"),
-                        "password", PASSWORD, "facultyId", data.faculty, "groupId", data.group)).status()).isEqualTo(201);
+                assertThat(browser.post("/api/v1/auth/register/student", Map.of("lastName", UserNameFixture.last("Студент До Переключения"), "firstName", UserNameFixture.first("Студент До Переключения"), "middleName", UserNameFixture.middleOrEmpty("Студент До Переключения"), "email", data.email("legacy"), "password", PASSWORD, "facultyId", data.faculty, "groupId", data.group)).status()).isEqualTo(201);
                 var session = IdentityLifecycleSupport.browser(off);
                 assertThat(session.post("/api/v1/auth/login", Map.of("email", data.email("legacy"), "password", PASSWORD)).status()).isEqualTo(200);
             }

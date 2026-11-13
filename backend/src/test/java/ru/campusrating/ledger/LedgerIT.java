@@ -1,5 +1,6 @@
 package ru.campusrating.ledger;
 
+import ru.campusrating.support.UserNameFixture;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -302,7 +303,11 @@ class LedgerIT extends PostgresIntegrationTest {
         for (int i = 0; i < 25; i++) {
             post(award(student, i % 2 == 0 ? Currency.BUA : Currency.BOA, 10, "history-" + i));
         }
-        jdbc.update("update app_user set full_name = 'Новое имя' where id = ?", author);
+        jdbc.update("update app_user set last_name=?,first_name=?,middle_name=? where id = ?",
+                UserNameFixture.last("Новое имя"),
+                UserNameFixture.first("Новое имя"),
+                UserNameFixture.middle("Новое имя"),
+                author);
         var first = ledger.history(student, Optional.empty(), Optional.empty(), 20);
         assertThat(first.items()).hasSize(20);
         assertThat(first.nextCursor()).isNotNull();
@@ -482,8 +487,13 @@ class LedgerIT extends PostgresIntegrationTest {
     }
 
     private long user(String role) {
-        long id = jdbc.queryForObject("insert into app_user (email, role, full_name) values (?, ?, ?) returning id",
-                Long.class, UUID.randomUUID() + "@example.test", role, "Пользователь");
+        long id = jdbc.queryForObject("insert into app_user(email,role,last_name,first_name,middle_name) values (?,?,?,?,?) returning id",
+                Long.class,
+                UUID.randomUUID() + "@example.test",
+                role,
+                UserNameFixture.last("Пользователь"),
+                UserNameFixture.first("Пользователь"),
+                UserNameFixture.middle("Пользователь"));
         users.add(id);
         return id;
     }

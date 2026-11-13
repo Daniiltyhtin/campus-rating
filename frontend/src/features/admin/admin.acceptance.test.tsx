@@ -2,6 +2,7 @@ import { cleanup, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { server } from '../../mocks/server';
+import { setViewportWidth } from '../../test/setup';
 import { renderApp } from '../../test/render';
 
 beforeAll(() => server.listen());
@@ -66,7 +67,7 @@ it('не отправляет дробные или выходящие за гр
 });
 it('показывает временный пароль только после подтверждения и удаляет при закрытии', async () => {
   let writes = 0;
-  server.use(http.get('*/api/v1/admin/users', () => HttpResponse.json({ items: [{ id: 1001, fullName: 'Студент Тест', email: 'student@campus.test', role: 'STUDENT', group: null, department: null, passwordSetAt: null }], nextCursor: null })),
+  server.use(http.get('*/api/v1/admin/users', () => HttpResponse.json({ items: [{ id: 1001, lastName: 'Студент', firstName: 'Тест', middleName: null, fullName: 'Студент Тест', email: 'student@campus.test', role: 'STUDENT', group: null, department: null, passwordSetAt: null }], nextCursor: null })),
     http.post('*/api/v1/users/1001/temporary-password', () => { writes++; return HttpResponse.json({ password: 'Synthetic234' }); }));
   const user = userEvent.setup(); renderApp('/admin/users', { userId: '9001', role: 'ADMIN' });
   const trigger = await screen.findByRole('button', { name: 'Выставить временный пароль' });
@@ -86,4 +87,67 @@ it('показывает отчёт импорта с номером и прич
   await user.click(screen.getByRole('button', { name: 'Импортировать' }));
   expect(await screen.findByText('Создано: 1 · Пропущено (уже есть): 1 · Отклонено: 1')).toBeInTheDocument();
   expect(screen.getByText('код группы занят')).toBeInTheDocument();
+});
+
+const nameUser = { id: 1001, lastName: 'Иванова', firstName: 'Мария', middleName: null, fullName: 'Иванова Мария',
+  email: 'u24@campus.test', role: 'STUDENT', group: null, department: null, status: 'MEMBERSHIP_PENDING',
+  createdAt: '2026-11-13T09:00:00Z', lastLoginAt: null, passwordSetAt: null };
+function nameScenario() {
+  const requests: URLSearchParams[] = [];
+  server.use(http.get('*/api/v1/admin/users', ({ request }) => {
+    requests.push(new URL(request.url).searchParams);
+    return HttpResponse.json({ items: [nameUser], nextCursor: null });
+  }), http.get('*/api/v1/admin/teachers', () => HttpResponse.json({ items: [] })));
+  return requests;
+}
+
+it('Covers AE21: 1280 px name columns sort and surname links to profile; empty middle is dash', async () => {
+  setViewportWidth(1280);
+  const requests = nameScenario();
+  const user = userEvent.setup();
+  renderApp('/admin/users', { userId: '9001', role: 'ADMIN' });
+  const table = within(await screen.findByRole('table', { name: 'Пользователи' }));
+  const headers = table.getAllByRole('columnheader');
+  expect(headers.map((cell) => cell.textContent).filter((text) => text !== 'ФИО')).toEqual(['Фамилия', 'Имя', 'Отчество', 'Email', 'Роль', 'Группа / кафедра', 'Статус', 'Создан', 'Последний вход', 'Действия']);
+  expect(table.getByRole('link', { name: 'Иванова' })).toHaveAttribute('href', '/users/1001');
+  const row = within(table.getByRole('row', { name: /Иванова/ }));
+  expect(row.getAllByRole('cell')[2]).toHaveTextContent(/^—$/);
+  for (const [label, key] of [['Фамилия', 'lastName'], ['Имя', 'firstName'], ['Отчество', 'middleName']] as const) {
+    const header = within(await screen.findByRole('table', { name: 'Пользователи' })).getByRole('columnheader', { name: label });
+    const previous = requests.length;
+    await user.click(within(header).getByRole('button', { name: label }));
+    await waitFor(() => expect(requests.length).toBeGreaterThan(previous));
+    expect(requests.at(-1)?.get('sort')).toBe(key);
+    await waitFor(() => expect(screen.getByRole('columnheader', { name: label })).toHaveAttribute('aria-sort', key === 'lastName' ? 'descending' : 'ascending'));
+  }
+});
+
+it('Covers AE22: 360 px card keeps full name and sorting offers three name parts', async () => {
+  setViewportWidth(360);
+  const requests = nameScenario();
+  const user = userEvent.setup();
+  renderApp('/admin/users', { userId: '9001', role: 'ADMIN' });
+  const link = await screen.findByRole('link', { name: 'Иванова Мария' });
+  expect(link).toHaveAttribute('href', '/users/1001');
+  const sort = screen.getByRole('combobox', { name: 'Сортировка' });
+  const options = within(sort);
+  for (const label of ['Фамилия', 'Имя', 'Отчество']) expect(options.getByRole('option', { name: label })).toBeInTheDocument();
+  expect(options.queryByRole('option', { name: 'ФИО' })).not.toBeInTheDocument();
+  await user.selectOptions(sort, 'firstName');
+  await waitFor(() => expect(requests.at(-1)?.get('sort')).toBe('firstName'));
+});
+
+it('Covers AE23: legacy URL sort=name opens surname sorting', async () => {
+  const requests = nameScenario();
+  renderApp('/admin/users?sort=name', { userId: '9001', role: 'ADMIN' });
+  await screen.findByRole('table', { name: 'Пользователи' });
+  expect(screen.getByRole('combobox', { name: 'Сортировка' })).toHaveDisplayValue('Фамилия');
+  expect(requests.at(-1)?.get('sort')).toBe('lastName');
+});
+
+it('Covers AE12, AE13: import help shows exact six-column header', async () => {
+  const user = userEvent.setup();
+  renderApp('/admin/import', { userId: '9001', role: 'ADMIN' });
+  await user.selectOptions(await screen.findByRole('combobox', { name: 'Вид импорта' }), 'STUDENTS');
+  expect(screen.getByText('Заголовок: email,last_name,first_name,middle_name,faculty_code,group_code', { exact: true })).toBeInTheDocument();
 });

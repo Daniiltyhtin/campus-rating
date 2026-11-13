@@ -139,7 +139,7 @@ describe('U5 frontend: регистрация — R1, R2, R47, R48', { timeout: 
     expect(await screen.findByText(/регистрация завершена/i)).toBeInTheDocument();
     expect(state.events.filter((event) => event.path.includes('/register/'))).toEqual([
       expect.objectContaining({ path: '/api/v1/auth/register/student', csrf: 'acceptance-csrf-1', body: {
-        fullName: 'Тестов Алексей Иванович', email: 'acceptance@student.campus.test', password: 'valid-password-1', facultyId: 1, groupId: 11,
+        lastName: 'Тестов', firstName: 'Алексей', middleName: 'Иванович', email: 'acceptance@student.campus.test', password: 'valid-password-1', facultyId: 1, groupId: 11,
       } }),
     ]);
     expect(state.events.some((event) => event.path.endsWith('/login'))).toBe(false);
@@ -162,7 +162,9 @@ describe('U5 frontend: регистрация — R1, R2, R47, R48', { timeout: 
     const state = createAuthScenario();
     const { user } = mountAuth('/register');
     await user.click(await screen.findByText('Преподаватель', { exact: true }));
-    await user.type(screen.getByLabelText('ФИО'), 'Тестов Алексей Иванович');
+    await user.type(screen.getByLabelText('Фамилия', { exact: true }), 'Тестов');
+    await user.type(screen.getByLabelText('Имя', { exact: true }), 'Алексей');
+    await user.type(screen.getByLabelText('Отчество', { exact: true }), 'Иванович');
     await user.type(screen.getByLabelText('Email'), 'teacher@campus.test');
     await user.type(screen.getByLabelText('Пароль', { exact: true }), 'teacher-password');
     await choose(user, 'Факультет', 'Факультет информационных технологий');
@@ -170,7 +172,7 @@ describe('U5 frontend: регистрация — R1, R2, R47, R48', { timeout: 
     await user.click(screen.getByRole('button', { name: /зарегистрироваться/i }));
     expect(await screen.findByText(/регистрация завершена/i)).toBeInTheDocument();
     expect(state.events.find((event) => event.path.endsWith('/register/teacher'))?.body).toEqual({
-      fullName: 'Тестов Алексей Иванович', email: 'teacher@campus.test', password: 'teacher-password', departmentId: 101,
+      lastName: 'Тестов', firstName: 'Алексей', middleName: 'Иванович', email: 'teacher@campus.test', password: 'teacher-password', departmentId: 101,
     });
   });
 
@@ -357,5 +359,95 @@ describe('U5 frontend: временный пароль, выход и допус
     expect(await screen.findByRole('button', { name: 'Войти' })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/login');
     expect(queryClient.getQueryData(['acceptance-private-profile'])).toBeUndefined();
+  });
+});
+
+
+describe('U24 name fields', { timeout: 15000 }, () => {
+  it('Covers AE1: sends lastName and firstName without empty middleName or fullName', async () => {
+    const state = createAuthScenario();
+    const { user } = mountAuth('/register');
+    await fillRegistration(user);
+    await user.clear(screen.getByLabelText('Фамилия', { exact: true }));
+    await user.type(screen.getByLabelText('Фамилия', { exact: true }), 'Иванова');
+    await user.clear(screen.getByLabelText('Имя', { exact: true }));
+    await user.type(screen.getByLabelText('Имя', { exact: true }), 'Мария');
+    await user.clear(screen.getByLabelText('Отчество', { exact: true }));
+    expect(screen.getByText('Если есть', { exact: true })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /зарегистрироваться/i }));
+    expect(await screen.findByText(/регистрация завершена/i)).toBeInTheDocument();
+    expect(state.events.find((event) => event.path.endsWith('/register/student'))?.body).toEqual({
+      lastName: 'Иванова', firstName: 'Мария', email: 'acceptance@student.campus.test', password: 'valid-password-1', facultyId: 1, groupId: 11,
+    });
+  });
+
+  it('Covers AE3: empty lastName and 101 character firstName show exact errors and send nothing', async () => {
+    const state = createAuthScenario();
+    const { user } = mountAuth('/register');
+    await fillRegistration(user);
+    await user.clear(screen.getByLabelText('Фамилия', { exact: true }));
+    const first = screen.getByLabelText('Имя', { exact: true });
+    await user.clear(first);
+    await user.type(first, 'Я'.repeat(101));
+    expect(first).toHaveValue('Я'.repeat(101));
+    await user.click(screen.getByRole('button', { name: /зарегистрироваться/i }));
+    expect(screen.getByText('Укажите фамилию, не больше 100 символов', { exact: true })).toBeInTheDocument();
+    expect(screen.getByText('Укажите имя, не больше 100 символов', { exact: true })).toBeInTheDocument();
+    expect(state.events.filter((event) => event.path.includes('/register/'))).toHaveLength(0);
+    await user.type(screen.getByLabelText('Фамилия', { exact: true }), 'И');
+    expect(screen.queryByText('Укажите фамилию, не больше 100 символов', { exact: true })).not.toBeInTheDocument();
+    expect(screen.getByText('Укажите имя, не больше 100 символов', { exact: true })).toBeInTheDocument();
+    await user.type(first, 'а');
+    expect(screen.queryByText('Укажите имя, не больше 100 символов', { exact: true })).not.toBeInTheDocument();
+  });
+
+  it('Covers AE43: long middleName error clears on edit, de Gaulle registers without middle name', async () => {
+    const state = createAuthScenario();
+    const { user } = mountAuth('/register');
+    await fillRegistration(user);
+    for (const [label, value] of [['Фамилия', 'де Голль'], ['Имя', 'Шарль'], ['Отчество', 'Я'.repeat(101)]]) {
+      const field = screen.getByLabelText(label!, { exact: true });
+      await user.clear(field); await user.type(field, value!);
+      expect(field).toHaveValue(value);
+    }
+    await user.click(screen.getByRole('button', { name: /зарегистрироваться/i }));
+    expect(screen.getByText('Не больше 100 символов', { exact: true })).toBeInTheDocument();
+    expect(state.events.filter((event) => event.path.includes('/register/'))).toHaveLength(0);
+    await user.clear(screen.getByLabelText('Отчество', { exact: true }));
+    expect(screen.queryByText('Не больше 100 символов', { exact: true })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /зарегистрироваться/i }));
+    expect(await screen.findByText(/регистрация завершена/i)).toBeInTheDocument();
+    expect(state.events.find((event) => event.path.endsWith('/register/student'))?.body).toEqual({
+      lastName: 'де Голль', firstName: 'Шарль', email: 'acceptance@student.campus.test', password: 'valid-password-1', facultyId: 1, groupId: 11,
+    });
+  });
+
+  it('Covers AE5: server lastName error belongs to surname and clears when it changes', async () => {
+    createAuthScenario();
+    server.use(http.post('*/api/v1/auth/register/student', () => problem('VALIDATION_FAILED', 400, {
+      fieldErrors: [{ field: 'lastName', code: 'INVALID', message: 'Сервер отклонил фамилию' }],
+    })));
+    const { user } = mountAuth('/register');
+    await fillRegistration(user);
+    await user.click(screen.getByRole('button', { name: /зарегистрироваться/i }));
+    expect(await screen.findByText('Сервер отклонил фамилию')).toBeInTheDocument();
+    const last = screen.getByLabelText('Фамилия', { exact: true });
+    expect(last).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText('Имя', { exact: true })).not.toHaveAttribute('aria-invalid', 'true');
+    await user.type(last, 'а');
+    expect(screen.queryByText('Сервер отклонил фамилию')).not.toBeInTheDocument();
+  });
+
+  it('Covers AE1: fields precede email in surname, first name, middle name order', async () => {
+    createAuthScenario(); mountAuth('/register');
+    const last = await screen.findByRole('textbox', { name: 'Фамилия' });
+    const first = screen.getByRole('textbox', { name: 'Имя' });
+    const middle = screen.getByRole('textbox', { name: 'Отчество' });
+    const email = screen.getByRole('textbox', { name: 'Email' });
+    for (const [before, after] of [[last, first], [first, middle], [middle, email]]) {
+      expect(before!.compareDocumentPosition(after!) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+    }
+    expect(middle).toHaveAccessibleDescription('Если есть');
+    expect(screen.queryByRole('textbox', { name: 'ФИО' })).not.toBeInTheDocument();
   });
 });

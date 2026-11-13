@@ -1,5 +1,6 @@
 package ru.campusrating.ledger;
 
+import ru.campusrating.support.UserNameFixture;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -201,8 +202,12 @@ class SemesterAccrualIT extends PostgresIntegrationTest {
     }
 
     private long student(int balance) {
-        long id = jdbc.queryForObject("insert into app_user (email, role, full_name) values (?, 'STUDENT', ?) returning id",
-                Long.class, UUID.randomUUID() + "@example.test", "Студент");
+        long id = jdbc.queryForObject("insert into app_user(email,role,last_name,first_name,middle_name) values (?,'STUDENT',?,?,?) returning id",
+                Long.class,
+                UUID.randomUUID() + "@example.test",
+                UserNameFixture.last("Студент"),
+                UserNameFixture.first("Студент"),
+                UserNameFixture.middle("Студент"));
         students.add(id);
         post(id, EntryKind.INITIAL, 1000, "initial:" + id);
         if (balance < 1000) {

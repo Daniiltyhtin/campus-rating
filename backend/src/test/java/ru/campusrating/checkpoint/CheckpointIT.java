@@ -1,5 +1,6 @@
 package ru.campusrating.checkpoint;
 
+import ru.campusrating.support.UserNameFixture;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -131,6 +132,19 @@ class CheckpointIT extends PostgresIntegrationTest {
                 "delete from app_user where id in (?,?,?,?)", teacher, student, second, pending);
         jdbc.update("delete from study_group where id in (?,?)", group, otherGroup);
         jdbc.update("delete from faculty where id=?", faculty);
+    }
+
+    @Test
+    @org.junit.jupiter.api.DisplayName("Covers AE4, AE10: new assignment snapshot uses two parts without trailing space")
+    void newSnapshotWithoutMiddleName() throws Exception {
+        doReturn(List.of(new StudentMember(student, "Римский-Корсаков Николай", group, GroupMembershipState.ACTIVE, now),
+                        member(second, otherGroup, now)))
+                .when(members)
+                .activeStudents(anyCollection());
+        var point = create(now.plusSeconds(600));
+        assertThat(jdbc.queryForObject("select student_full_name from assignment where checkpoint_id=? and student_id=?",
+                String.class, point.path("id").asLong(), student)).isEqualTo("Римский-Корсаков Николай");
+        awaitCheckpointPublications();
     }
 
     @Test
@@ -549,12 +563,13 @@ class CheckpointIT extends PostgresIntegrationTest {
     }
 
     long person(String role, String name) {
-        return jdbc.queryForObject(
-                "insert into app_user(email,role,full_name) values (?,?,?) returning id",
+        return jdbc.queryForObject("insert into app_user(email,role,last_name,first_name,middle_name) values (?,?,?,?,?) returning id",
                 Long.class,
                 UUID.randomUUID() + "@test.invalid",
                 role,
-                name);
+                UserNameFixture.last(name),
+                UserNameFixture.first(name),
+                UserNameFixture.middle(name));
     }
 
     Map<String, Object> body(Instant deadline) {

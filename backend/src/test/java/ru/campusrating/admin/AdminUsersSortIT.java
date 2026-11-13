@@ -87,4 +87,86 @@ class AdminUsersSortIT extends U13HttpTestSupport {
         problem(admin, "GET", "/api/v1/admin/users?search=" + prefix + "p&sort=email&direction=asc&cursor=" + first.path("nextCursor").asText(),
                 null, 400, "VALIDATION_FAILED");
     }
+
+    private long named(String suffix, String last, String first, String middle) {
+        return jdbc.queryForObject("insert into app_user(email,role,last_name,first_name,middle_name) values (?,'STUDENT',?,?,?) returning id",
+                Long.class, email("names-" + suffix), last, first, middle);
+    }
+    private List<Long> nameIds(String query) {
+        return ids(get("/api/v1/admin/users?search=" + prefix + "names-" + query));
+    }
+
+    @Test @org.junit.jupiter.api.DisplayName("Covers AE19: last name ties use first name ascending")
+    void lastNameUsesFirstName() {
+        long maria = named("m", "Иванова", "Мария", null);
+        long anna = named("a", "Иванова", "Анна", "Олеговна");
+        assertThat(nameIds("&sort=lastName&direction=asc")).containsExactly(anna, maria);
+    }
+
+    @Test @org.junit.jupiter.api.DisplayName("Covers AE19a: empty middle comes first as secondary key")
+    void secondaryMiddleNullsFirst() {
+        long full = named("full", "Иванов", "Иван", "Иванович");
+        long shortName = named("short", "Иванов", "Иван", null);
+        for (String sort : List.of("lastName", "firstName")) for (String direction : List.of("asc", "desc")) {
+            assertThat(nameIds("&sort=" + sort + "&direction=" + direction)).containsExactly(shortName, full);
+        }
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest(name = "Covers AE20: null primary middle stays last {0}")
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"asc", "desc"})
+    void primaryMiddleNullsLast(String direction) {
+        long empty = named("empty", "Иванова", "Мария", null);
+        long a = named("a", "Сидоров", "Антон", "Антонович");
+        long p = named("p", "Петров", "Павел", "Петрович");
+        assertThat(nameIds("&sort=middleName&direction=" + direction)).containsExactlyElementsOf(
+                direction.equals("asc") ? List.of(a, p, empty) : List.of(p, a, empty));
+    }
+
+    @Test @org.junit.jupiter.api.DisplayName("Covers AE19: descending first name retains ascending secondary keys and id")
+    void firstNameDescending() {
+        long ivan = named("ivan", "Андреев", "Иван", null);
+        long second = named("second", "Борисов", "Яков", null);
+        long first = named("first", "Андреев", "Яков", null);
+        long tie = named("tie", "Андреев", "Яков", null);
+        long middle = named("middle", "Андреев", "Яков", "Яковлевич");
+        assertThat(nameIds("&sort=firstName&direction=desc")).containsExactly(first, tie, middle, second, ivan);
+    }
+
+    @Test @org.junit.jupiter.api.DisplayName("Covers AE23: omitted sort and direction default to last name ascending")
+    void defaultNameOrder() {
+        long z = named("z", "Яковлев", "Антон", null);
+        long a = named("a", "Антонов", "Яков", null);
+        assertThat(nameIds("")).containsExactly(a, z);
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest(name = "Covers AE19, AE20: keyset pages {0} {1}")
+    @org.junit.jupiter.params.provider.CsvSource({"lastName,asc", "lastName,desc", "firstName,asc", "firstName,desc", "middleName,asc", "middleName,desc"})
+    void nameKeysetPages(String sort, String direction) {
+        record Person(long id, String last, String first, String middle) {}
+        var expected = new ArrayList<Person>();
+        for (int i = 0; i < 120; i++) {
+            String last = "Фамилия" + (i % 4), first = "Имя" + (i % 7), middle = i % 3 == 0 ? null : "Отчество" + (i % 5);
+            expected.add(new Person(named("p" + i, last, first, middle), last, first, middle));
+        }
+        Comparator<String> text = Comparator.naturalOrder();
+        Comparator<String> primary = direction.equals("desc") ? text.reversed() : text;
+        Comparator<Person> order = switch (sort) {
+            case "firstName" -> Comparator.comparing(Person::first, primary).thenComparing(Person::last).thenComparing(Person::middle, Comparator.nullsFirst(text));
+            case "middleName" -> Comparator.comparing(Person::middle, Comparator.nullsLast(primary)).thenComparing(Person::last).thenComparing(Person::first);
+            default -> Comparator.comparing(Person::last, primary).thenComparing(Person::first).thenComparing(Person::middle, Comparator.nullsFirst(text));
+        };
+        expected.sort(order.thenComparingLong(Person::id));
+        var actual = new ArrayList<Long>();
+        String cursor = null;
+        for (int size : List.of(50, 50, 20)) {
+            var page = get("/api/v1/admin/users?search=" + prefix + "names-&sort=" + sort + "&direction=" + direction
+                    + (cursor == null ? "" : "&cursor=" + cursor));
+            assertThat(items(page)).hasSize(size);
+            actual.addAll(ids(page));
+            cursor = page.path("nextCursor").isNull() ? null : page.path("nextCursor").asText();
+            if (size == 50) assertThat(cursor).isNotBlank();
+        }
+        assertThat(cursor).isNull();
+        assertThat(actual).containsExactlyElementsOf(expected.stream().map(Person::id).toList()).doesNotHaveDuplicates();
+    }
 }

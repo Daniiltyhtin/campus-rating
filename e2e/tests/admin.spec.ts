@@ -108,7 +108,7 @@ test('ADM-05: заявки → карточка Волкова → допуск 
     await page.getByRole('button', { name: 'Показать заявки', exact: true }).click();
     await expect(page.getByLabel('Роль', { exact: true })).toHaveValue('TEACHER');
     await expect(page.getByLabel('Статус', { exact: true })).toHaveValue('PENDING');
-    await page.getByRole('link', { name: 'Волков Максим Игоревич', exact: true }).click();
+    await page.getByRole('link', { name: width === 360 ? 'Волков Максим Игоревич' : 'Волков', exact: true }).click();
     await expect(page).toHaveURL(/\/admin\/users\/teachers\/2002$/);
     await expect(page.getByRole('link', { name: 'Профиль', exact: true })).toHaveAttribute('href', '/users/2002');
     await expect(page.getByRole('button', { name: 'Допустить', exact: true })).toBeVisible();
@@ -123,11 +123,44 @@ test('ADM-05: заявки → карточка Волкова → допуск 
     // Параллельные сценарии регистрируют своих преподавателей, поэтому проверяется заявка Волкова, а не общий счётчик.
     await page.goto('/admin/users?role=TEACHER&status=PENDING');
     await expect(page.getByRole('table', { name: 'Пользователи' }).or(page.getByText('Никого не нашли', { exact: true }))).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Волков Максим Игоревич', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: width === 360 ? 'Волков Максим Игоревич' : 'Волков', exact: true })).toHaveCount(0);
     await page.goto('/admin/users');
     await expect(page.getByRole('table', { name: 'Пользователи' })).toBeVisible();
-    const volkov = page.getByRole('row').filter({ has: page.getByRole('link', { name: 'Волков Максим Игоревич', exact: true }) });
+    const volkov = page.getByRole('row').filter({ has: page.getByRole('link', { name: width === 360 ? 'Волков Максим Игоревич' : 'Волков', exact: true }) });
     await expect(volkov.getByText('Допущен', { exact: true })).toBeVisible();
     await evidence(page, `ADM-05-approved-${width}`);
+  }
+});
+
+test('U24 Covers AE21, AE22: name columns and mobile full name', async ({ page, scenario }) => {
+  const student = await scenario.registerStudent();
+  await login(page, administrator);
+  await page.goto('/admin/users?sort=name');
+  await page.getByLabel('Поиск по ФИО или email').fill(student.email);
+  const row = page.getByRole('row').filter({ has: page.getByText(student.email, { exact: true }) });
+  if (page.viewportSize()!.width >= 768) {
+    for (const label of ['Фамилия', 'Имя', 'Отчество']) {
+      await expect(page.getByRole('columnheader', { name: label, exact: true })).toBeVisible();
+    }
+    await expect(page.getByRole('columnheader', { name: 'ФИО', exact: true })).not.toBeVisible();
+    const link = row.getByRole('link', { name: student.lastName, exact: true });
+    await expect(link).toHaveAttribute('href', `/users/${student.id}`);
+    await expect(row.getByRole('cell').nth(2)).toBeVisible();
+    await evidence(page, 'U24-AE21-users-desktop');
+    await link.click();
+    await expect(page).toHaveURL(new RegExp(`/users/${student.id}$`));
+  } else {
+    const link = row.getByRole('link', { name: student.fullName, exact: true });
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute('href', `/users/${student.id}`);
+    const sort = page.getByRole('combobox', { name: 'Сортировка', exact: true });
+    await expect(sort).toHaveValue('lastName');
+    for (const label of ['Фамилия', 'Имя', 'Отчество']) await expect(sort.getByRole('option', { name: label, exact: true })).toHaveCount(1);
+    await expect(sort.getByRole('option', { name: 'ФИО', exact: true })).toHaveCount(0);
+    const response = page.waitForResponse((reply) => new URL(reply.url()).pathname === '/api/v1/admin/users'
+      && new URL(reply.url()).searchParams.get('sort') === 'firstName');
+    await sort.selectOption('firstName');
+    expect((await response).status()).toBe(200);
+    await evidence(page, 'U24-AE22-users-mobile');
   }
 });

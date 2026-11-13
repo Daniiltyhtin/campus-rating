@@ -123,7 +123,9 @@ export async function choose(user: ReturnType<typeof userEvent.setup>, label: st
 }
 
 export async function fillRegistration(user: ReturnType<typeof userEvent.setup>, password = 'valid-password-1') {
-  await user.type(await screen.findByLabelText('ФИО'), 'Тестов Алексей Иванович');
+  await user.type(await screen.findByLabelText('Фамилия', { exact: true }), 'Тестов');
+  await user.type(screen.getByLabelText('Имя', { exact: true }), 'Алексей');
+  await user.type(screen.getByLabelText('Отчество', { exact: true }), 'Иванович');
   await user.type(screen.getByLabelText('Email'), 'acceptance@student.campus.test');
   await user.type(screen.getByLabelText('Пароль', { exact: true }), password);
   await choose(user, 'Факультет', 'Факультет информационных технологий');

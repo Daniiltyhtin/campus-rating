@@ -1,5 +1,6 @@
 package ru.campusrating.directory;
 
+import ru.campusrating.support.UserNameFixture;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -223,8 +224,7 @@ class AdminDirectoryIT extends AdminHttpTestSupport {
         var before = get(DIRECTORY + "departments");
         problem(admin, "DELETE", DIRECTORY + "departments/" + department, null, 409, "DIRECTORY_IN_USE");
         assertThat(get(DIRECTORY + "departments")).isEqualTo(before);
-        problem(browser(), "POST", "/api/v1/auth/register/student", Map.of("email", email("reserved"),
-                "password", PASSWORD, "fullName", "Reserved", "facultyId", faculty, "groupId", group), 409, "EMAIL_RESERVED_FOR_TEACHER");
+        problem(browser(), "POST", "/api/v1/auth/register/student", Map.of("email", email("reserved"), "password", PASSWORD, "lastName", UserNameFixture.last("Reserved"), "firstName", UserNameFixture.first("Reserved"), "middleName", UserNameFixture.middleOrEmpty("Reserved"), "facultyId", faculty, "groupId", group), 409, "EMAIL_RESERVED_FOR_TEACHER");
     }
 
     @ParameterizedTest

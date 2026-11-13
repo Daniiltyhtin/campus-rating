@@ -1,5 +1,6 @@
 package ru.campusrating.directory;
 
+import ru.campusrating.support.UserNameFixture;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -120,13 +121,19 @@ class DirectoryApiIT extends PostgresIntegrationTest {
     @Test
     void minimalIdentityTablesSupportActiveAndPendingMemberships() {
         var activeId = jdbc.queryForObject("""
-                insert into app_user (email, role, full_name)
-                values ('active-u4@example.test', 'STUDENT', 'Активный студент') returning id
-                """, Long.class);
+                insert into app_user(email,role,last_name,first_name,middle_name) values ('active-u4@example.test','STUDENT',?,?,?) returning id
+                """,
+                Long.class,
+                UserNameFixture.last("Активный студент"),
+                UserNameFixture.first("Активный студент"),
+                UserNameFixture.middle("Активный студент"));
         var pendingId = jdbc.queryForObject("""
-                insert into app_user (email, role, full_name)
-                values ('pending-u4@example.test', 'STUDENT', 'Ожидающий студент') returning id
-                """, Long.class);
+                insert into app_user(email,role,last_name,first_name,middle_name) values ('pending-u4@example.test','STUDENT',?,?,?) returning id
+                """,
+                Long.class,
+                UserNameFixture.last("Ожидающий студент"),
+                UserNameFixture.first("Ожидающий студент"),
+                UserNameFixture.middle("Ожидающий студент"));
         try {
             jdbc.update("""
                     insert into group_membership (student_id, group_id, state, activated_at)

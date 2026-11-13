@@ -1,5 +1,6 @@
 package ru.campusrating.identity;
 
+import ru.campusrating.support.UserNameFixture;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -121,8 +122,7 @@ class AdminTeachersIT extends AdminHttpTestSupport {
         problem(admin, "GET", teacherPath(id), null, 404, "NOT_FOUND");
         problem(admin, "DELETE", teacherPath(id) + "/application", null, 404, "NOT_FOUND");
         assertThat(ids(get(TEACHERS))).doesNotContain(id);
-        problem(browser(), "POST", "/api/v1/auth/register/student", Map.of("email", email("teacher"),
-                "password", PASSWORD, "fullName", "Reserved", "facultyId", faculty, "groupId", group), 409, "EMAIL_RESERVED_FOR_TEACHER");
+        problem(browser(), "POST", "/api/v1/auth/register/student", Map.of("email", email("teacher"), "password", PASSWORD, "lastName", UserNameFixture.last("Reserved"), "firstName", UserNameFixture.first("Reserved"), "middleName", UserNameFixture.middleOrEmpty("Reserved"), "facultyId", faculty, "groupId", group), 409, "EMAIL_RESERVED_FOR_TEACHER");
         long replacement = teacher("teacher", "Replacement");
         assertThat(replacement).isNotEqualTo(id);
         assertThat(ids(get(teacherPath(replacement) + "/grants"))).isEmpty();

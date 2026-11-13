@@ -1,5 +1,6 @@
 package ru.campusrating.identity;
 
+import ru.campusrating.support.UserNameFixture;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +30,14 @@ class IdentitySeamsIT extends IdentityAcceptanceSupport {
         });
         assertThat(members.membership(teacher)).isEmpty();
         assertThat(members.memberships(List.of(active, pending, teacher))).containsOnlyKeys(active, pending);
-        jdbc.update("update app_user set full_name='Новое имя' where id=?", active);
+        jdbc.update("update app_user set last_name=?,first_name=?,middle_name=? where id=?",
+                UserNameFixture.last("Новое имя"),
+                UserNameFixture.first("Новое имя"),
+                UserNameFixture.middle("Новое имя"),
+                active);
         assertThat(members.users(List.of(active, teacher))).containsOnlyKeys(active, teacher);
         assertThat(members.users(List.of(active)).get(active).fullName()).isEqualTo("Новое имя");
+        assertThat(members.activeStudents(List.of(group))).extracting(StudentMember::fullName).containsExactly("Новое имя");
         assertThat(members.groups(List.of(group)).get(group).facultyId()).isEqualTo(faculty);
         assertThat(members.card(active)).hasValueSatisfying(card -> {
             assertThat(card.role().name()).isEqualTo("STUDENT");
