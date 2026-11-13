@@ -165,3 +165,10 @@ it('Radio labels and bodies use the 44px touch target', () => {
   expect(styles).toMatch(/\.mantine-Radio-label[^{}]*\{[^}]*position:\s*relative/);
   expect(styles).toMatch(/\.mantine-Radio-label::before[^{}]*\{[^}]*inset:\s*0[^}]*inset-inline-start:/);
 });
+
+it('segmented control keeps every separator, including the one after the active item', () => {
+  expect(styles).toMatch(/\.mantine-SegmentedControl-control\[data-active\]\s*\+\s*\.mantine-SegmentedControl-control::before\s*\{\s*--separator-color:\s*var\(--cr-rule\)/);
+  expect(styles).toMatch(/\.mantine-SegmentedControl-control:not\(\[data-orientation='vertical'\]\)::before\s*\{\s*top:\s*0\.375rem;\s*bottom:\s*0\.375rem/);
+  expect(styles).toMatch(/\.cr-amount\s*\{[^}]*display:\s*inline-flex/);
+  expect(styles).not.toMatch(/\.cr-amount::before/);
+});
