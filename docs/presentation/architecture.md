@@ -30,16 +30,18 @@ flowchart TB
 
 | Модуль | Ответственность | Состояние |
 |---|---|---|
-| `identity` | Регистрация, вход, роли, членство в группе, допуск преподавателя и его доступные группы | реализован |
+| `identity` | Регистрация, вход, подтверждение email, роли, членство в группе с подтверждением и старостами, допуск преподавателя и его доступные группы, пользователи администратора | реализован |
 | `directory` | Факультеты, кафедры, группы | реализован |
 | `settings` | Настройки с значениями по умолчанию из окружения | реализован |
 | `ledger` | Журнал проводок АР, БУА, БОА и снимок балансов | реализован |
 | `checkpoint` | Контрольные точки, назначения, сдача, приём, возврат, планировщик штрафов, начисление семестра | реализован |
 | `activity` | Активности, запись, подтверждение участия, месячный бюджет преподавателя | реализован |
 | `profile` | Сборка профиля и истории для чтения | реализован |
-| `feed` | Лента наград и рейтинги групп | реализован |
+| `feed` | Лента наград, персональная лента событий, рейтинги групп | реализован |
+| `poll` | Опросы: анонимные и именные, однократный голос, итоги, закрытие по сроку | реализован |
+| `analytics` | Аналитика группы: начисления по датам и видам баллов, бюджет | реализован |
 | `shared` | Технические порты: хранилище файлов, ошибки RFC 7807, `Clock`, режим почты | реализован |
-| `admin`, `poll`, `analytics`, `notification`, `ai` | Дополнительные модули P1–P4 | заготовки пакетов |
+| `admin`, `notification`, `ai` | Дополнительные модули P2–P4 | заготовки пакетов |
 
 ```mermaid
 flowchart LR
@@ -50,6 +52,7 @@ flowchart LR
   checkpoint --> ledger
   checkpoint --> settings
   activity --> identity
+  activity --> directory
   activity --> ledger
   activity --> settings
   profile --> identity
@@ -58,10 +61,18 @@ flowchart LR
   profile --> directory
   feed --> identity
   feed --> ledger
-  checkpoint -.MembershipActivated.-> identity
+  poll --> identity
+  analytics --> identity
+  analytics --> activity
+  analytics --> ledger
+  analytics --> settings
+  identity -.MembershipActivated.-> checkpoint
+  checkpoint -.события назначений.-> feed
+  activity -.ActivityCreated, PointsAwarded.-> feed
+  poll -.PollCreated, PollClosed.-> feed
 ```
 
-Сплошная стрелка — вызов API модуля, пунктир — подписка на доменное событие через реестр публикаций Modulith в той же базе ([ADR005](../spec/architecture-decisions/adr005-module-events-outbox.md)). Так студент, чьё членство в группе подтвердили позже, получает назначения по уже созданным точкам, а `identity` о точках не знает. Схема собрана по импортам модулей в коде.
+Сплошная стрелка — вызов API модуля, пунктир — доменное событие от издателя к подписчику через реестр публикаций Modulith в той же базе ([ADR005](../spec/architecture-decisions/adr005-module-events-outbox.md)). Так студент, чьё членство в группе подтвердили позже, получает назначения по уже созданным точкам, а `identity` о точках не знает. Схема собрана по импортам модулей в коде.
 
 ## Ключевые решения
 
@@ -88,7 +99,7 @@ stateDiagram-v2
 
 ## Frontend
 
-SPA на Mantine с темой «Редакция» ([ADR009](../spec/architecture-decisions/adr009-visual-style.md)): цвета, отступы и радиусы — только токены темы. Экраны собраны по [карте экранов](../spec/ux/) и сгруппированы по фичам в `frontend/src/features/` (`auth`, `tasks`, `activities`, `profile`, `feed`, `admin`). Клиент API типизирован из контракта, поэтому расхождение фронта с контрактом ловит компилятор.
+SPA на Mantine с темой «Редакция» ([ADR009](../spec/architecture-decisions/adr009-visual-style.md)): цвета, отступы и радиусы — только токены темы. Экраны собраны по [карте экранов](../spec/ux/) и сгруппированы по фичам в `frontend/src/features/` (`auth`, `tasks`, `activities`, `groups`, `polls`, `analytics`, `profile`, `feed`, `admin`). Клиент API типизирован из контракта, поэтому расхождение фронта с контрактом ловит компилятор.
 
 ## Качество
 
@@ -96,7 +107,7 @@ SPA на Mantine с темой «Редакция» ([ADR009](../spec/architectu
 |---|---|
 | Модульные тесты чистых доменных функций, интеграционные — на Testcontainers PostgreSQL | `mvnw verify` |
 | JaCoCo ≥ 80 % строк и CRAP ≤ 10 для `*.domain`; PMD CPD | `mvnw verify`, `tools/crap.mjs` |
-| PIT ≥ 70 % для `ledger.domain`, `checkpoint.domain`, `activity.domain` | `mvnw -Pquality verify` |
+| PIT ≥ 70 % для `ledger.domain`, `checkpoint.domain`, `activity.domain`, `poll.domain` | `mvnw -Pquality verify` |
 | Линт контракта и свежесть сгенерированных типов | CI |
 | Lint, typecheck и Vitest фронта | `npm --prefix frontend run check` |
 | e2e Playwright против compose-стека: регистрация, штраф по точке, бюджет активности, лента | CI, `e2e/tests/base/` |
