@@ -1,4 +1,5 @@
 import { Group, AppShell as MantineAppShell, NavLink, useMantineTheme } from '@mantine/core';
+import { ThemeMenu } from '../theme/ThemeMenu';
 import { useMediaQuery } from '@mantine/hooks';
 import { Link, Outlet, useLocation } from 'react-router';
 import { isActive, navigationFor } from './navigation';
@@ -30,7 +31,7 @@ export function AppShell({ session, user }: { session: Session; user: CurrentUse
       <MantineAppShell.Header>
         <Group h="100%" px="md" className="auth-shell-header">
           <Link className="cr-brand" to={items[0]?.to ?? '/'} aria-label="Campus Rating"><BrandMark /><span>Campus Rating</span></Link>
-          <UserMenu fullName={user.fullName} userId={session.userId} />
+          <Group gap="xs" wrap="nowrap"><ThemeMenu /><UserMenu fullName={user.fullName} userId={session.userId} /></Group>
         </Group>
       </MantineAppShell.Header>
 
@@ -42,6 +43,7 @@ export function AppShell({ session, user }: { session: Session; user: CurrentUse
               component={Link}
               to={item.to}
               label={item.label}
+              leftSection={<NavIcon name={item.icon} />}
               aria-label={item.label}
               rightSection={session.role === 'ADMIN' && item.to === '/admin/users' ? <TeacherBadge viewerId={Number(session.userId)} /> : undefined}
               active={isActive(pathname, item.to)}

@@ -24,12 +24,14 @@ export function createFeedMockHandlers() {
       return HttpResponse.json(viewer.role === 'ADMIN' ? { items: [], nextCursor: null } : personal);
     }),
     http.get('*/api/v1/feed/awards', ({ request }) => {
-      if (!readUser()) return problem('UNAUTHENTICATED', 401);
+      const viewer = readUser();
+      if (!viewer) return problem('UNAUTHENTICATED', 401);
       const query = new URL(request.url).searchParams;
       const cursor = query.get('cursor');
       if (cursor && cursor !== 'awards-page-2') return problem('VALIDATION_FAILED', 400);
-      const split = Math.ceil(awards.items.length / 2);
-      return HttpResponse.json({ items: cursor ? awards.items.slice(split) : awards.items.slice(0, split), nextCursor: cursor ? null : 'awards-page-2' });
+      const items = query.get('mine') === 'true' ? awards.items.filter((item) => item.student.id === viewer.id || item.teacher.id === viewer.id) : awards.items;
+      const split = Math.ceil(items.length / 2);
+      return HttpResponse.json({ items: cursor ? items.slice(split) : items.slice(0, split), nextCursor: cursor || split >= items.length ? null : 'awards-page-2' });
     }),
     http.get('*/api/v1/groups/:groupId/ratings', ({ request, params }) => {
       const viewer = readUser();

@@ -45,7 +45,7 @@ class FeedServicesTest {
         when(ledger.awards(Optional.of("page"), 1)).thenReturn(new LedgerPage<>(List.of(entry), "next"));
         when(members.users(List.of(4L))).thenReturn(Map.of(4L, new UserRef(4, "Текущее имя")));
 
-        var page = new AwardsFeedService(ledger, members).list("page", 1);
+        var page = new AwardsFeedService(ledger, members, current).list("page", 1, false);
 
         assertThat(page.nextCursor()).isEqualTo("next");
         var item = page.items().getFirst();

@@ -3180,6 +3180,9 @@ paths:
         id desc)`. Штрафы, начисления семестра и стартовые баллы в ленту не попадают. Новые записи фронт
         находит опросом первой страницы и показывает плашкой «Новые награды: N».
 
+        `mine=true` — только свои: студенту — награды, начисленные ему, преподавателю — выданные им,
+        администратору — пустая лента. Курсор привязан к фильтру: курсор другого фильтра — `400` по полю `cursor`.
+
         Доступ: любой вошедший.
       x-roles: [AUTHENTICATED]
       x-status: implemented
@@ -3188,6 +3191,13 @@ paths:
       parameters:
         - $ref: '#/components/parameters/Cursor'
         - $ref: '#/components/parameters/Limit'
+        - name: mine
+          in: query
+          required: false
+          description: Только свои награды.
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: Страница ленты.

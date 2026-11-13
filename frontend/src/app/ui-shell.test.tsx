@@ -55,45 +55,37 @@ it('R28, R29: user menu preserves links and selected theme after remount', async
   expect(screen.getByRole('menuitem', { name: 'Мой профиль' })).toHaveAttribute('href', `/users/${authUsers.teacher.id}`);
   expect(screen.getByRole('menuitem', { name: 'Сменить пароль' })).toHaveAttribute('href', '/password/change');
   expect(screen.getByRole('menuitem', { name: 'Выйти' })).toBeEnabled();
-  await view.user.click(screen.getByRole('menuitem', { name: 'Тема' }));
-  await view.user.click(await screen.findByRole('menuitemradio', { name: 'Тёмная' }));
+  expect(screen.queryByRole('menuitem', { name: 'Тема' })).not.toBeInTheDocument();
+  await view.user.keyboard('{Escape}');
+  await view.user.click(screen.getByRole('button', { name: 'Тема: Светлая тема' }));
   await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'));
   expect(JSON.parse(localStorage.getItem('campus-appearance')!)).toBe('dark');
   view.unmount(); view.router.dispose(); view.queryClient.clear();
   view = mountAuth('/');
-  await view.user.click(await screen.findByRole('button', { name: /Меню пользователя:/ }));
-  await view.user.click(screen.getByRole('menuitem', { name: 'Тема' }));
-  expect(await screen.findByRole('menuitemradio', { name: 'Тёмная' })).toHaveAttribute('aria-checked', 'true');
-  await view.user.click(screen.getByRole('menuitemradio', { name: 'Светлая' }));
+  const toggle = await screen.findByRole('button', { name: 'Тема: Тёмная тема' });
+  await view.user.click(toggle);
+  expect(JSON.parse(localStorage.getItem('campus-appearance')!)).toBe('system');
+  await view.user.click(screen.getByRole('button', { name: 'Тема: Системная тема' }));
   await waitFor(() => expect(document.documentElement.dataset.theme).toBe('light'));
+  expect(screen.getByRole('button', { name: 'Тема: Светлая тема' })).toBeInTheDocument();
   expect(screen.queryByLabelText('Тема интерфейса')).not.toBeInTheDocument();
 });
 
 it.each(['/login', '/register'])('R30, R29: guest theme switch on %s carries the theme into login', async (path) => {
   const state = createAuthScenario(); state.loginUser = authUsers.teacher;
   const view = mountAuth(path);
-  const toggle = await screen.findByRole('button', { name: 'Тема' });
-  expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  const toggle = await screen.findByRole('button', { name: 'Тема: Светлая тема' });
+  await view.user.hover(toggle);
+  expect(await screen.findByRole('tooltip')).toHaveTextContent('Светлая тема');
   await view.user.click(toggle);
-  expect(toggle).toHaveAttribute('aria-expanded', 'true');
-  const options = within(screen.getByRole('group', { name: 'Выбор темы' })).getAllByRole('button');
-  expect(options.map((option) => option.getAttribute('aria-label'))).toEqual(['Светлая', 'Тёмная', 'Системная']);
-  await view.user.click(screen.getByRole('button', { name: 'Тёмная' }));
   await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'));
-  expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  expect(toggle).toHaveFocus();
-  await view.user.click(toggle);
-  expect(screen.getByRole('button', { name: 'Тёмная' })).toHaveAttribute('aria-pressed', 'true');
-  await view.user.keyboard('{Escape}');
-  expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  expect(screen.getByRole('button', { name: 'Тема: Тёмная тема' })).toHaveFocus();
   if (path === '/register') await view.user.click(screen.getByRole('link', { name: 'Войти' }));
   await view.user.type(await screen.findByLabelText('Email'), 'teacher@campus.test');
   await view.user.type(screen.getByLabelText('Пароль', { exact: true }), 'password');
   await view.user.click(screen.getByRole('button', { name: 'Войти' }));
-  await view.user.click(await screen.findByRole('button', { name: /Меню пользователя:/ }));
-  await view.user.click(screen.getByRole('menuitem', { name: 'Тема' }));
-  expect(await screen.findByRole('menuitemradio', { name: 'Тёмная' })).toHaveAttribute('aria-checked', 'true');
-  expect(screen.queryByRole('menuitemradio', { name: 'Высокий контраст' })).not.toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: 'Тема: Тёмная тема' })).toBeInTheDocument();
+  expect(document.documentElement.dataset.theme).toBe('dark');
 });
 
 it('R29: system theme follows the operating system color scheme', async () => {
@@ -102,10 +94,9 @@ it('R29: system theme follows the operating system color scheme', async () => {
   try {
     localStorage.setItem('campus-appearance', JSON.stringify('system'));
     createAuthScenario();
-    const view = mountAuth('/login');
+    mountAuth('/login');
     await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'));
-    await view.user.click(await screen.findByRole('button', { name: 'Тема' }));
-    expect(screen.getByRole('button', { name: 'Системная' })).toHaveAttribute('aria-pressed', 'true');
+    expect(await screen.findByRole('button', { name: 'Тема: Системная тема' })).toBeInTheDocument();
   } finally {
     window.matchMedia = original;
   }
