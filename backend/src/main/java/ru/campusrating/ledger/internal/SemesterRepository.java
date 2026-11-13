@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 class SemesterRepository {
-    record Semester(long id, String title, Instant startsAt) {}
+    record Semester(long id, String title, Instant startsAt, int accrual) {}
 
     private final JdbcClient jdbc;
 
@@ -16,10 +16,14 @@ class SemesterRepository {
         this.jdbc = jdbc;
     }
 
-    List<Semester> started(Instant now) {
-        return jdbc.sql("select id, title, starts_at from semester where starts_at <= :now order by starts_at, id")
+    @org.springframework.transaction.annotation.Transactional
+    List<Semester> started(Instant now, int nominal) {
+        AdminSemesterService.lock(jdbc);
+        jdbc.sql("update semester set accrual=:nominal where starts_at<=:now and accrual is null")
+                .param("nominal",nominal).param("now",Timestamp.from(now)).update();
+        return jdbc.sql("select id, title, starts_at, accrual from semester where starts_at <= :now order by starts_at, id")
                 .param("now", Timestamp.from(now))
-                .query((rs, row) -> new Semester(rs.getLong("id"), rs.getString("title"), rs.getTimestamp("starts_at").toInstant())).list();
+                .query((rs, row) -> new Semester(rs.getLong("id"), rs.getString("title"), rs.getTimestamp("starts_at").toInstant(),rs.getInt("accrual"))).list();
     }
 
     List<Long> candidates(Semester semester, long afterStudentId) {
@@ -46,4 +50,10 @@ class SemesterRepository {
                 """).param("semester", semesterId).param("student", studentId).param("accrued", accrued)
                 .param("processedAt", Timestamp.from(processedAt)).update() == 1;
     }
+
+    java.util.Optional<Instant> latestStart(Instant at) {
+        return jdbc.sql("select starts_at from semester where starts_at <= :at order by starts_at desc, id desc limit 1")
+                .param("at", Timestamp.from(at)).query((rs, row) -> rs.getTimestamp("starts_at").toInstant()).optional();
+    }
+
 }

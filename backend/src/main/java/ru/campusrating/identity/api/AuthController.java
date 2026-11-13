@@ -47,11 +47,11 @@ class AuthController {
     }
     @PostMapping("/auth/register/student") @ResponseStatus(HttpStatus.CREATED)
     RegistrationResult registerStudent(@Valid @RequestBody StudentRegistration body) {
-        return new RegistrationResult(registration.student(body.email(), body.fullName(), body.password(), body.facultyId(), body.groupId()), NextStep.LOGIN);
+        return new RegistrationResult(registration.student(body.email(), body.fullName(), body.password(), body.facultyId(), body.groupId()), nextStep());
     }
     @PostMapping("/auth/register/teacher") @ResponseStatus(HttpStatus.CREATED)
     RegistrationResult registerTeacher(@Valid @RequestBody TeacherRegistration body) {
-        return new RegistrationResult(registration.teacher(body.email(), body.fullName(), body.password(), body.departmentId()), NextStep.LOGIN);
+        return new RegistrationResult(registration.teacher(body.email(), body.fullName(), body.password(), body.departmentId()), nextStep());
     }
     @PostMapping("/auth/login") SessionView login(@Valid @RequestBody LoginRequest body, HttpServletRequest request, HttpServletResponse response) {
         sessions.login(body.email(), body.password(), request, response);
@@ -72,6 +72,7 @@ class AuthController {
                 .map(group -> new StudyGroupRef(group.id(), group.name(), group.faculty())).toList();
         return new StudyGroupList(groups);
     }
+    private NextStep nextStep() {return mail.emailVerification()==MailModeProperties.EmailVerification.REQUIRED?NextStep.CONFIRM_EMAIL:NextStep.LOGIN;}
     private SessionView view(UserAccount user) {
         return switch (user.role()) {
             case ADMIN -> new CurrentAdmin(user.id(), user.fullName(), user.email(), user.mustChangePassword());

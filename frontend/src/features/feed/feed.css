@@ -10,3 +10,6 @@
   .feed-page h1 { font-size: var(--mantine-h2-font-size); }
   .feed-page .cr-table td { min-width: 0; }
 }
+.feed-icon { flex: none; color: var(--cr-link); }
+.personal-event { display: flex; gap: var(--mantine-spacing-sm); align-items: flex-start; min-width: 0; }
+.personal-event > div { min-width: 0; }

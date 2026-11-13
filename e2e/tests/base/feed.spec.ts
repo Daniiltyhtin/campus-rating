@@ -1,4 +1,5 @@
 import { test, expect, login, logout, evidence, choose, type Schemas } from './support.js';
+import type { Locator, Page } from '@playwright/test';
 
 test('PRF-01 свой профиль: балансы, история R6, активные и завершённые задачи; чужой без сдачи', async ({ page, scenario }) => {
   const teacher = await scenario.registerTeacher(), student = await scenario.registerStudent();
@@ -18,6 +19,11 @@ test('PRF-01 свой профиль: балансы, история R6, акт�
   await expect(balances.getByText('1000', { exact: true })).toBeVisible();
   await expect(balances.getByText('38', { exact: true })).toBeVisible();
   await expect(balances.getByText('0', { exact: true })).toBeVisible();
+  const hitArea = await balances.locator('.cr-currency-mark').first().evaluate((mark) => {
+    const area = getComputedStyle(mark, '::before');
+    return [parseFloat(area.width), parseFloat(area.height)];
+  });
+  for (const size of hitArea) expect(size).toBeGreaterThanOrEqual(44);
   const entry = page.getByRole('article').filter({ hasText: activity.title });
   await expect(entry).toContainText('+38 БУА');
   await expect(entry.getByRole('link', { name: teacher.fullName, exact: true })).toBeVisible();
@@ -91,4 +97,28 @@ test('RAT-01 преподаватель сортирует рейтинг по �
   await page.goto(`/groups/${scenario.group.id}`);
   await expect(page.getByRole('heading', { name: 'Нет доступа', exact: true })).toBeVisible();
   expect((await first.api.context.get(`/api/v1/groups/${scenario.group.id}/ratings`)).status()).toBe(403);
+});
+
+async function homeCount(page: Page, link: Locator) {
+  await page.goto('/');
+  await page.getByRole('article').or(page.getByText('Событий пока нет', { exact: true })).first().waitFor();
+  return link.count();
+}
+
+test('FEED-02 сдача работы появляется на главной у автора точки, новая задача — у студента', async ({ page, scenario }) => {
+  const teacher = await scenario.registerTeacher(), student = await scenario.registerStudent();
+  const checkpoint = await scenario.checkpoint(teacher, 600);
+  const assignment = await scenario.assignment(student, checkpoint);
+  await login(page, student);
+  const task = page.getByRole('link', { name: new RegExp(`^Новая задача «${checkpoint.title}» · до \\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}$`) });
+  await expect.poll(() => homeCount(page, task), { timeout: 15_000, intervals: [500, 1000] }).toBe(1);
+  await expect(task).toHaveAttribute('href', `/tasks/${assignment.id}`);
+  await student.api.submit(assignment.id);
+  await logout(page);
+  await login(page, teacher);
+  const submitted = page.getByRole('link', { name: `Сдана работа «${checkpoint.title}» · ${student.fullName}`, exact: true });
+  await expect.poll(() => homeCount(page, submitted), { timeout: 15_000, intervals: [500, 1000] }).toBe(1);
+  await expect(submitted).toHaveAttribute('href', `/checkpoints/${checkpoint.id}`);
+  await expect(page.getByRole('heading', { name: 'Главная', exact: true })).toBeVisible();
+  await evidence(page, 'FEED-02-teacher-home');
 });

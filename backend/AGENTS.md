@@ -66,5 +66,6 @@ Java 25, Spring Boot 4.1, Spring Modulith 2.1, PostgreSQL 18, Liquibase, Maven (
 
 - Поле AOP-прокси = null → упал IT → метод (`MembershipEventProbe`).
 
-- Сборка образа падала «Failed to validate Maven distribution SHA-256»: в `eclipse-temurin:25-jdk` нет `unzip`, Wrapper берёт `.tar.gz`, а `distributionSha256Sum` посчитан для `.zip`; на хосте Maven уже в кэше, ошибка не видна → поймал ревьюер первой сборкой в Docker → в `backend/Dockerfile` `unzip` ставится в стадии сборки; сборку образа и стек проверять с нуля, а не по зелёному `./mvnw` на хосте.
+- Образ падал «Failed to validate Maven distribution SHA-256»: в `eclipse-temurin:25-jdk` нет `unzip`, а хост это прячет кэшем → `unzip` ставится в `backend/Dockerfile`; образ и стек проверять сборкой с нуля.
+- Повтор публикаций Modulith в IT молчал: реестр берёт время из `Clock` приложения, тестовые часы стоят → в тестах повтора сдвигать `MutableClock` за порог (`feed/PersonalFeedEventsIT`).
 - Модель данных считала только стоимость записи → человек спросил про 1000+ проводок на студента → сразу оценивать самое частое чтение (списки, рейтинги), а не только запись (мастер-план, KTD3: журнал проводок и снимок баланса).

@@ -7,6 +7,7 @@ import { kinds, labels } from './contracts';
 import type { DirectoryEntry, DirectoryKind } from './contracts';
 import { directoryError, useDirectory } from './queries';
 import './directory.css';
+import { TeacherLink } from '../teachers/TeacherShared';
 
 type Editor = { action: 'add'; kind: DirectoryKind } | { action: 'edit' | 'delete'; kind: DirectoryKind; entry: DirectoryEntry };
 function Directory({ viewerId }: { viewerId: number }) {
@@ -30,7 +31,7 @@ function Directory({ viewerId }: { viewerId: number }) {
           columns={[{ key: 'code', title: 'Код', render: (row) => row.code }, { key: 'name', title: 'Название', render: (row) => row.name },
             ...(kind !== 'faculties' ? [{ key: 'faculty', title: 'Факультет', render: (row: DirectoryEntry) => row.kind !== 'faculties' ? row.faculty.name : '' }] : []),
             ...(kind === 'groups' ? [{ key: 'year', title: 'Год набора', render: (row: DirectoryEntry) => row.kind === 'groups' ? row.admissionYear : '' }] : []),
-            { key: 'actions', title: 'Действия', render: (row) => <Group gap="xs"><Button variant="default" aria-label={`Редактировать ${row.name}`} disabled={busy} onClick={(event) => open({ action: 'edit', kind, entry: row }, event.currentTarget)}>Редактировать</Button>
+            { key: 'actions', title: 'Действия', render: (row) => <Group gap="xs">{kind === 'groups' && <TeacherLink to={`/groups/${row.id}?tab=analytics`}>Аналитика</TeacherLink>}<Button variant="default" aria-label={`Редактировать ${row.name}`} disabled={busy} onClick={(event) => open({ action: 'edit', kind, entry: row }, event.currentTarget)}>Редактировать</Button>
               <Button variant="default" aria-label={`Удалить ${row.name}`} disabled={busy} onClick={(event) => open({ action: 'delete', kind, entry: row }, event.currentTarget)}>Удалить</Button></Group> }]} />
       </>}</Stack></Tabs.Panel>)}
     </Tabs>

@@ -31,6 +31,7 @@ class AdminTeacherRepository {
     }
 
     void reject(long id) {
+        jdbc.sql("delete from password_setup_token where user_id=:id").param("id",id).update();
         jdbc.sql("delete from teacher_grant where teacher_id=:id").param("id", id).update();
         jdbc.sql("delete from teacher_approval where teacher_id=:id").param("id", id).update();
         jdbc.sql("delete from app_user where id=:id").param("id", id).update();

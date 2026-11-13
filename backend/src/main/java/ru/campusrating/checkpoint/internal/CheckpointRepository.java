@@ -60,15 +60,16 @@ class CheckpointRepository {
                 """).params(groupId, Timestamp.from(activatedAt)).query(this::row).list();
     }
 
-    void assign(CheckpointData checkpoint, StudentMember member, Instant activatedAt, Instant now) {
-        jdbc.sql("""
+    Optional<Long> assign(CheckpointData checkpoint, StudentMember member, Instant activatedAt, Instant now) {
+        return jdbc.sql("""
                 insert into assignment(checkpoint_id,student_id,group_id,student_full_name,state,created_at)
                 select :checkpoint,:student,:group,:name,'OPEN',:now
                 where :activated < :deadline
                 on conflict (checkpoint_id,student_id) do nothing
+                returning id
                 """).param("checkpoint", checkpoint.id()).param("student", member.studentId()).param("group", member.groupId())
                 .param("name", member.fullName()).param("now", Timestamp.from(now)).param("activated", Timestamp.from(activatedAt))
-                .param("deadline", Timestamp.from(checkpoint.deadline())).update();
+                .param("deadline", Timestamp.from(checkpoint.deadline())).query(Long.class).optional();
     }
 
     void update(long id, String title, String description, Instant now) {

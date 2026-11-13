@@ -1,0 +1,23 @@
+services:
+  postgres:
+    ports: !reset []
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required, see deploy/server.env.example}
+
+  backend:
+    ports: !reset []
+    env_file:
+      - path: deploy/server.env
+        required: true
+    environment:
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required, see deploy/server.env.example}
+      SPRING_PROFILES_ACTIVE: demo
+      EMAIL_VERIFICATION: ${EMAIL_VERIFICATION:?EMAIL_VERIFICATION is required (off or required), see deploy/server.env.example}
+      CAMPUS_PUBLIC_URL: ${CAMPUS_PUBLIC_URL:?CAMPUS_PUBLIC_URL is required, see deploy/server.env.example}
+      DEMO_PASSWORD_PREFIX: ${DEMO_PASSWORD_PREFIX:?DEMO_PASSWORD_PREFIX is required on the server, see deploy/server.env.example}
+      SERVER_FORWARD_HEADERS_STRATEGY: native
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
+
+  web:
+    ports: !override
+      - "127.0.0.1:${WEB_PORT:-8080}:8080"

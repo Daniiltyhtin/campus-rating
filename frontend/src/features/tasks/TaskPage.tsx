@@ -42,7 +42,7 @@ export function Penalty({ penalty }: { penalty: Schemas['Penalty'] }) {
   return <Text>{text}</Text>;
 }
 
-export function AssignmentDetails({ assignmentId }: { assignmentId: number }) {
+export function AssignmentDetails({ assignmentId, readOnly = false }: { assignmentId: number; readOnly?: boolean }) {
   const query = useQuery({
     queryKey: ['assignment', assignmentId],
     queryFn: () => readAssignment(assignmentId),
@@ -60,12 +60,12 @@ export function AssignmentDetails({ assignmentId }: { assignmentId: number }) {
           <Text className="cr-ar">
             Списано {assignment.penalty.charged} из {assignment.penalty.cap} АР
           </Text>
-          <Penalty penalty={assignment.penalty} />
-          {currentReturn && <TeacherComment author={assignment.checkpoint.author.fullName} submission={currentReturn} />}
-          <Withdrawal assignment={assignment} />
+          {!readOnly && <Penalty penalty={assignment.penalty} />}
+          {!readOnly && currentReturn && <TeacherComment author={assignment.checkpoint.author.fullName} submission={currentReturn} />}
+          {!readOnly && <Withdrawal assignment={assignment} />}
           <section aria-label="История сдач">
             <Text component="h2">История сдач</Text>
-            {!assignment.submissions.length && <Text>Сдач пока нет. Отправьте ссылку или файл работы.</Text>}
+            {!assignment.submissions.length && <Text>{readOnly ? 'Сдач нет' : 'Сдач пока нет. Отправьте ссылку или файл работы.'}</Text>}
             {assignment.submissions.map((submission) => (
               <article className="cr-article" key={submission.id}>
                 <Stack gap="xs">
@@ -83,14 +83,14 @@ export function AssignmentDetails({ assignmentId }: { assignmentId: number }) {
                     </Anchor>
                   )}
                   {submission.withdrawnAt && <Text>Отозвана студентом · {dateTime(submission.withdrawnAt)} (МСК)</Text>}
-                  {submission.returnComment && (currentReturn?.id === submission.id ?
+                  {submission.returnComment && (!readOnly && currentReturn?.id === submission.id ?
                     <details><summary>Возвращена с замечанием</summary><TeacherComment author={assignment.checkpoint.author.fullName} submission={submission} /></details> :
                     <TeacherComment author={assignment.checkpoint.author.fullName} submission={submission} />)}
                 </Stack>
               </article>
             ))}
           </section>
-          {assignment.state === 'OPEN' && <SubmissionForm assignment={assignment} />}
+          {!readOnly && assignment.state === 'OPEN' && <SubmissionForm assignment={assignment} />}
         </Stack>
       )}
     </AsyncContent>

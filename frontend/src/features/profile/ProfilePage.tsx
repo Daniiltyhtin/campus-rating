@@ -1,8 +1,10 @@
 import { Anchor, Button, Group, SegmentedControl, Stack, Tabs, Text, Title } from '@mantine/core';
+import { CurrencyLegend, CurrencyMark } from '../../app/CurrencyMark';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
+import { PasswordAudit } from '../groups/PasswordAudit';
 import { AsyncContent, PageLayout } from '../../app/layouts/PageLayouts';
 import { useAuthSession } from '../auth/authQueries';
 import type { CurrentUser } from '../auth/contracts';
@@ -66,8 +68,9 @@ function ProfileContent({ profile, viewer }: { profile: UserProfile; viewer: Cur
   if (profile.role === 'ADMIN') return <Text>Администратор</Text>;
   if (profile.role === 'TEACHER') return <Stack gap="md"><Text>Преподаватель</Text><Text>{profile.department.name}</Text><Text>{profile.department.faculty.name}</Text><ProfileLink to="/awards">Лента наград</ProfileLink></Stack>;
   return <Stack gap="xl"><Stack gap="xs"><Text>{profile.group.faculty.name}</Text><Text className="cr-caption">{profile.group.faculty.code} · {profile.group.name}</Text></Stack>
-    <div className="profile-balances" aria-label="Балансы">{(['AR', 'BUA', 'BOA'] as const).map((currency) => <div className="cr-balances" key={currency}><Text className="cr-caption">{currencyNames[currency]}</Text>
+    <div className="profile-balances" aria-label="Балансы">{(['AR', 'BUA', 'BOA'] as const).map((currency) => <div className="cr-balances" key={currency}><Text className="cr-caption"><CurrencyMark currency={currency} /></Text>
       <strong className={`cr-number profile-balance cr-${currency.toLowerCase()}`}>{profile.balances[currency]}</strong>{currency === 'AR' && <Text className="cr-caption">из 1000</Text>}</div>)}</div>
+    <CurrencyLegend />
     <Tabs defaultValue="history" keepMounted={false}><Tabs.List mb="lg"><Tabs.Tab value="history">История</Tabs.Tab><Tabs.Tab value="tasks">Задачи</Tabs.Tab></Tabs.List>
       <Tabs.Panel value="history"><History viewerId={viewer.id} userId={profile.id} /></Tabs.Panel>
       <Tabs.Panel value="tasks"><Stack gap="xl"><TaskList title="Активные задачи" tasks={profile.activeTasks} viewer={viewer} ownerId={profile.id} empty="Активных задач пока нет." />
@@ -83,7 +86,7 @@ function LoadedProfile({ viewer, userId }: { viewer: CurrentUser; userId: number
       <Button variant="default" onClick={() => { void query.refetch(); }}>Повторить</Button></ProfileLayout>;
   }
   return <ProfileLayout title={query.data?.fullName ?? 'Профиль'}><AsyncContent state={query.isPending ? { status: 'loading' } : { status: 'ready' }}>
-    {query.data && <ProfileContent key={`${viewer.id}-${query.data.id}`} profile={query.data} viewer={viewer} />}
+    {query.data && <>{viewer.id === query.data.id && <PasswordAudit />}<ProfileContent key={`${viewer.id}-${query.data.id}`} profile={query.data} viewer={viewer} /></>}
   </AsyncContent></ProfileLayout>;
 }
 export function ProfilePage() {

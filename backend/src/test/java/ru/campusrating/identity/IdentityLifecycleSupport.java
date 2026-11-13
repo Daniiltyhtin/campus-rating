@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import ru.campusrating.CampusRatingApplication;
@@ -14,6 +15,11 @@ final class IdentityLifecycleSupport {
     private IdentityLifecycleSupport() {}
 
     static ConfigurableApplicationContext start(PostgreSQLContainer database, String profile, Map<String, Object> overrides) {
+        return start(database, profile, overrides, new ApplicationListener<?>[0]);
+    }
+
+    static ConfigurableApplicationContext start(PostgreSQLContainer database, String profile, Map<String, Object> overrides,
+            ApplicationListener<?>... listeners) {
         var properties = new HashMap<String, Object>();
         properties.put("server.port", 0);
         properties.put("spring.datasource.url", database.getJdbcUrl());
@@ -30,7 +36,7 @@ final class IdentityLifecycleSupport {
         // Defaults не перекрывают application.yml; тестовый datasource и явный режим почты должны иметь приоритет.
         var arguments = properties.entrySet().stream()
                 .map(entry -> "--" + entry.getKey() + "=" + entry.getValue()).toArray(String[]::new);
-        return new SpringApplicationBuilder(CampusRatingApplication.class).profiles(profile).run(arguments);
+        return new SpringApplicationBuilder(CampusRatingApplication.class).profiles(profile).listeners(listeners).run(arguments);
     }
 
     static IdentityAcceptanceSupport.Browser browser(ConfigurableApplicationContext context) {

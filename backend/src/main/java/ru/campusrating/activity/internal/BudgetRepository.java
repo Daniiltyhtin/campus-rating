@@ -66,4 +66,33 @@ class BudgetRepository {
         }
         return result;
     }
+
+    java.util.List<ru.campusrating.activity.BudgetStatistics.Month> summarize(long groupId, java.time.YearMonth from,
+            java.time.YearMonth to, java.util.Optional<Long> teacherId) {
+        String filter = teacherId.isPresent() ? " and author_id=:teacher" : "";
+        var query = jdbc.sql("""
+                with totals as (
+                    select (confirmed_at at time zone 'Europe/Moscow')::date -
+                               (extract(day from confirmed_at at time zone 'Europe/Moscow')::int - 1) as award_month,
+                           author_id teacher_id, count(*) awards,
+                           coalesce(sum(amount) filter (where currency='BUA'),0) bua,
+                           coalesce(sum(amount) filter (where currency='BOA'),0) boa
+                    from activity_award where group_id=:group
+                    and confirmed_at >= :from and confirmed_at < :until
+                """ + filter + """
+                    group by award_month, author_id
+                )
+                select t.*, coalesce(b.spent,0) spent from totals t
+                left join activity_budget b on b.teacher_id=t.teacher_id and b.group_id=:group and b.month=t.award_month
+                order by t.award_month desc, t.teacher_id
+                """)
+                .param("group", groupId)
+                .param("from", java.sql.Timestamp.from(from.atDay(1).atStartOfDay(java.time.ZoneId.of("Europe/Moscow")).toInstant()))
+                .param("until", java.sql.Timestamp.from(to.plusMonths(1).atDay(1).atStartOfDay(java.time.ZoneId.of("Europe/Moscow")).toInstant()));
+        teacherId.ifPresent(id -> query.param("teacher", id));
+        return query.query((rs, row) -> new ru.campusrating.activity.BudgetStatistics.Month(
+                java.time.YearMonth.from(rs.getDate("award_month").toLocalDate()), rs.getLong("teacher_id"),
+                rs.getInt("spent"), rs.getInt("awards"), rs.getInt("bua"), rs.getInt("boa"))).list();
+    }
+
 }

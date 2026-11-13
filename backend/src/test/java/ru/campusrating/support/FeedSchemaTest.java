@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import ru.campusrating.feed.api.AwardsFeedController.AwardFeedPage;
 import ru.campusrating.feed.api.GroupRatingsController.GroupRating;
+import ru.campusrating.feed.api.PersonalFeedController.PersonalFeedPage;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.dataformat.yaml.YAMLMapper;
@@ -26,7 +27,8 @@ class FeedSchemaTest {
             throws Exception {
         var converters = new ModelConverters(true);
         var actualSchemas = json.createObjectNode();
-        var types = Map.of("AwardFeedPage", AwardFeedPage.class, "GroupRating", GroupRating.class);
+        var types = Map.of("AwardFeedPage", AwardFeedPage.class, "GroupRating", GroupRating.class,
+                "PersonalFeedPage", PersonalFeedPage.class);
         var actual = document();
         var expected = document();
         var contract =

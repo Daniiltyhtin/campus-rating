@@ -55,37 +55,54 @@ it('R28, R29: user menu preserves links and selected theme after remount', async
   expect(screen.getByRole('menuitem', { name: 'Мой профиль' })).toHaveAttribute('href', `/users/${authUsers.teacher.id}`);
   expect(screen.getByRole('menuitem', { name: 'Сменить пароль' })).toHaveAttribute('href', '/password/change');
   expect(screen.getByRole('menuitem', { name: 'Выйти' })).toBeEnabled();
-  await view.user.click(screen.getByRole('menuitem', { name: 'Тема' }));
-  await view.user.click(await screen.findByRole('menuitemradio', { name: 'Тёмная' }));
+  expect(screen.queryByRole('menuitem', { name: 'Тема' })).not.toBeInTheDocument();
+  await view.user.keyboard('{Escape}');
+  await view.user.click(screen.getByRole('button', { name: 'Тема: Светлая тема' }));
   await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'));
   expect(JSON.parse(localStorage.getItem('campus-appearance')!)).toBe('dark');
   view.unmount(); view.router.dispose(); view.queryClient.clear();
   view = mountAuth('/');
-  await view.user.click(await screen.findByRole('button', { name: /Меню пользователя:/ }));
-  await view.user.click(screen.getByRole('menuitem', { name: 'Тема' }));
-  expect(await screen.findByRole('menuitemradio', { name: 'Тёмная' })).toHaveAttribute('aria-checked', 'true');
-  await view.user.click(screen.getByRole('menuitemradio', { name: 'Светлая' }));
+  const toggle = await screen.findByRole('button', { name: 'Тема: Тёмная тема' });
+  await view.user.click(toggle);
+  expect(JSON.parse(localStorage.getItem('campus-appearance')!)).toBe('system');
+  await view.user.click(screen.getByRole('button', { name: 'Тема: Системная тема' }));
   await waitFor(() => expect(document.documentElement.dataset.theme).toBe('light'));
+  expect(screen.getByRole('button', { name: 'Тема: Светлая тема' })).toBeInTheDocument();
   expect(screen.queryByLabelText('Тема интерфейса')).not.toBeInTheDocument();
 });
 
-it.each(['/login', '/register'])('R30, R29: guest theme menu on %s carries contrast into login', async (path) => {
+it.each(['/login', '/register'])('R30, R29: guest theme switch on %s carries the theme into login', async (path) => {
   const state = createAuthScenario(); state.loginUser = authUsers.teacher;
   const view = mountAuth(path);
-  await view.user.click(await screen.findByRole('button', { name: 'Тема' }));
-  expect(screen.getAllByRole('menuitemradio')).toHaveLength(3);
-  await view.user.click(screen.getByRole('menuitemradio', { name: 'Высокий контраст' }));
-  await waitFor(() => expect(document.documentElement.dataset.theme).toBe('high-contrast'));
+  const toggle = await screen.findByRole('button', { name: 'Тема: Светлая тема' });
+  await view.user.hover(toggle);
+  expect(await screen.findByRole('tooltip')).toHaveTextContent('Светлая тема');
+  await view.user.click(toggle);
+  await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'));
+  expect(screen.getByRole('button', { name: 'Тема: Тёмная тема' })).toHaveFocus();
   if (path === '/register') await view.user.click(screen.getByRole('link', { name: 'Войти' }));
   await view.user.type(await screen.findByLabelText('Email'), 'teacher@campus.test');
   await view.user.type(screen.getByLabelText('Пароль', { exact: true }), 'password');
   await view.user.click(screen.getByRole('button', { name: 'Войти' }));
-  await view.user.click(await screen.findByRole('button', { name: /Меню пользователя:/ }));
-  await view.user.click(screen.getByRole('menuitem', { name: 'Тема' }));
-  expect(await screen.findByRole('menuitemradio', { name: 'Высокий контраст' })).toHaveAttribute('aria-checked', 'true');
+  expect(await screen.findByRole('button', { name: 'Тема: Тёмная тема' })).toBeInTheDocument();
+  expect(document.documentElement.dataset.theme).toBe('dark');
 });
 
-it.each(['light', 'dark', 'contrast'])('R40: mobile active item uses primary tokens without icon slots in %s', async (appearance) => {
+it('R29: system theme follows the operating system color scheme', async () => {
+  const original = window.matchMedia;
+  window.matchMedia = (query: string) => ({ ...original(query), matches: query.includes('prefers-color-scheme: dark') || original(query).matches });
+  try {
+    localStorage.setItem('campus-appearance', JSON.stringify('system'));
+    createAuthScenario();
+    mountAuth('/login');
+    await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'));
+    expect(await screen.findByRole('button', { name: 'Тема: Системная тема' })).toBeInTheDocument();
+  } finally {
+    window.matchMedia = original;
+  }
+});
+
+it.each(['light', 'dark', 'system'])('R40: mobile active item uses primary tokens and every item has a decorative icon in %s', async (appearance) => {
   localStorage.setItem('campus-appearance', JSON.stringify(appearance));
   setViewportWidth(360);
   renderApp('/tasks', { userId: '1001', role: 'STUDENT' });
@@ -93,7 +110,8 @@ it.each(['light', 'dark', 'contrast'])('R40: mobile active item uses primary tok
   const active = within(nav).getByRole('link', { name: 'Задачи' });
   expect(active).toHaveAttribute('aria-current', 'page');
   expect(active).toHaveClass('cr-bottom-link');
-  expect(active.querySelector('[data-position], svg')).toBeNull();
+  expect(active.querySelector('[data-position]')).toBeNull();
+  for (const link of within(nav).getAllByRole('link')) expect(link.querySelector('svg.cr-nav-icon[aria-hidden="true"]')).not.toBeNull();
   expect(styles).toMatch(/\.cr-bottom-link\s*\{[^}]*justify-content:\s*center[^}]*text-align:\s*center/);
   expect(styles).toMatch(/\.cr-bottom-link\[data-active\]\s*\{[^}]*background(?:-color)?:\s*var\(--cr-primary-soft\)[^}]*color:\s*var\(--cr-primary\)/);
 });
@@ -136,4 +154,14 @@ it('R41: reduced-motion session loader is static', () => {
   render(<CampusThemeProvider><RouteLoading /></CampusThemeProvider>);
   expect(screen.getByRole('status', { name: 'Загрузка' }).querySelector('animate, animateTransform')).toBeNull();
   expect(screen.getByRole('status', { name: 'Загрузка' }).querySelector('svg path')).not.toBeNull();
+});
+
+
+it('Radio labels and bodies use the 44px touch target', () => {
+  expect(theme.components?.Radio?.styles).toMatchObject({
+    body: { minHeight: 'var(--cr-touch-target)', alignItems: 'center' },
+    label: { minHeight: 'var(--cr-touch-target)', display: 'flex', alignItems: 'center' },
+  });
+  expect(styles).toMatch(/\.mantine-Radio-label[^{}]*\{[^}]*position:\s*relative/);
+  expect(styles).toMatch(/\.mantine-Radio-label::before[^{}]*\{[^}]*inset:\s*0[^}]*inset-inline-start:/);
 });

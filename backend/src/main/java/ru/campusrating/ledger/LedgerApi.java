@@ -22,5 +22,15 @@ public interface LedgerApi {
     /** Только ACTIVITY_AWARD. */
     LedgerPage<AwardEntryView> awards(Optional<String> cursor, int limit);
 
+    LedgerPage<AwardEntryView> awardsToStudent(long studentId, Optional<String> cursor, int limit);
+
+    LedgerPage<AwardEntryView> awardsByAuthor(long authorId, Optional<String> cursor, int limit);
+
     ReconciliationResult reconcile();
+
+    Map<Long, Integer> arBalancesAt(Collection<Long> studentIds, java.time.Instant at);
+    List<ArDayChange> arChangesByDay(Collection<Long> studentIds, java.time.LocalDate from, java.time.LocalDate to);
+    List<ActivityAwardTotal> activityAwardTotals(Collection<Long> studentIds, java.time.LocalDate from, java.time.LocalDate to);
+    Optional<java.time.Instant> latestSemesterStart(java.time.Instant at);
+
 }

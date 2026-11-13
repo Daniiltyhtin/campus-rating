@@ -1,4 +1,5 @@
 import { Group, AppShell as MantineAppShell, NavLink, useMantineTheme } from '@mantine/core';
+import { ThemeMenu } from '../theme/ThemeMenu';
 import { useMediaQuery } from '@mantine/hooks';
 import { Link, Outlet, useLocation } from 'react-router';
 import { isActive, navigationFor } from './navigation';
@@ -6,6 +7,8 @@ import type { Session } from './session';
 import type { CurrentUser } from '../features/auth/contracts';
 import { BrandMark } from '../theme/Brand';
 import { UserMenu } from '../features/auth/UserMenu';
+import { TeacherBadge } from '../features/admin/teachers/TeacherBadge';
+import { NavIcon } from './NavIcon';
 
 const HEADER_HEIGHT = '3.5rem';
 const FOOTER_HEIGHT = '4rem';
@@ -28,7 +31,7 @@ export function AppShell({ session, user }: { session: Session; user: CurrentUse
       <MantineAppShell.Header>
         <Group h="100%" px="md" className="auth-shell-header">
           <Link className="cr-brand" to={items[0]?.to ?? '/'} aria-label="Campus Rating"><BrandMark /><span>Campus Rating</span></Link>
-          <UserMenu fullName={user.fullName} userId={session.userId} />
+          <Group gap="xs" wrap="nowrap"><ThemeMenu /><UserMenu fullName={user.fullName} userId={session.userId} /></Group>
         </Group>
       </MantineAppShell.Header>
 
@@ -40,6 +43,9 @@ export function AppShell({ session, user }: { session: Session; user: CurrentUse
               component={Link}
               to={item.to}
               label={item.label}
+              leftSection={<NavIcon name={item.icon} />}
+              aria-label={item.label}
+              rightSection={session.role === 'ADMIN' && item.to === '/admin/users' ? <TeacherBadge viewerId={Number(session.userId)} /> : undefined}
               active={isActive(pathname, item.to)}
               aria-current={isActive(pathname, item.to) ? 'page' : undefined}
             />
@@ -53,7 +59,9 @@ export function AppShell({ session, user }: { session: Session; user: CurrentUse
                 key={item.to}
                 component={Link}
                 to={item.to}
-                label={item.label}
+                label={<span className="cr-bottom-label"><NavIcon name={item.icon} />{item.label}</span>}
+                aria-label={item.label}
+                rightSection={session.role === 'ADMIN' && item.to === '/admin/users' ? <TeacherBadge viewerId={Number(session.userId)} /> : undefined}
                 active={isActive(pathname, item.to)}
                 aria-current={isActive(pathname, item.to) ? 'page' : undefined}
                 h="100%"

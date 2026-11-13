@@ -7,6 +7,7 @@ import { AppShell } from './AppShell';
 import { authKeys, useAuthSession } from '../features/auth/authQueries';
 import { AuthLayout, RetryNotice } from '../features/auth/AuthLayout';
 import type { CurrentUser } from '../features/auth/contracts';
+import { EmailGate } from '../features/auth/EmailVerification';
 
 export function AuthBoundary() {
   const client = useQueryClient();
@@ -47,7 +48,7 @@ export function SessionGate() {
   const user = session.data;
   if (!user) return <Navigate to="/login" replace />;
   if (user.mustChangePassword) return <Navigate to="/password/change" replace />;
-  return <AppShell session={{ userId: String(user.id), role: user.role }} user={user} />;
+  return <EmailGate><AppShell session={{ userId: String(user.id), role: user.role }} user={user} /></EmailGate>;
 }
 
 export function SectionPlaceholder() {

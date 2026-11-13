@@ -45,10 +45,9 @@ class MailModeConfigTest {
     }
 
     @Test
-    void requiredWithSmtpStopsStartupUntilMasterU15() {
+    void requiredWithSmtpStarts() {
         runner.withPropertyValues(MODE + "=required", "spring.mail.host=smtp.example.org")
-                .run(context -> assertThat(context.getStartupFailure()).isNotNull()
-                        .hasStackTraceContaining(MODE).hasStackTraceContaining("U15"));
+                .run(context -> assertThat(context).hasNotFailed().hasSingleBean(MailModeProperties.class));
     }
 
     @Test

@@ -33,6 +33,15 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
+      <groupId>org.apache.commons</groupId><artifactId>commons-csv</artifactId><version>1.14.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.poi</groupId><artifactId>poi-ooxml</artifactId><version>6.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-mail</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
@@ -269,6 +278,17 @@
                   <targetClasses><param>ru.campusrating.activity.domain.*</param></targetClasses>
                   <failWhenNoMutations>false</failWhenNoMutations>
                   <reportsDirectory>${project.build.directory}/pit-reports/activity</reportsDirectory>
+                </configuration>
+              </execution>
+              <execution>
+                <id>pit-poll</id>
+                <phase>verify</phase>
+                <goals><goal>mutationCoverage</goal></goals>
+                <configuration>
+                  <targetClasses><param>ru.campusrating.poll.domain.*</param></targetClasses>
+                  <targetTests><param>ru.campusrating.poll.*Test</param></targetTests>
+                  <failWhenNoMutations>false</failWhenNoMutations>
+                  <reportsDirectory>${project.build.directory}/pit-reports/poll</reportsDirectory>
                 </configuration>
               </execution>
               <execution>
