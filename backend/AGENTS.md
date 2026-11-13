@@ -28,8 +28,9 @@ Java 25, Spring Boot 4.1, Spring Modulith 2.1, PostgreSQL 18, Liquibase, Maven (
 - Технические таблицы (реестр событий Modulith `event_publication`) — в `db/changelog/shared/`; папка подключается первой.
 - Применённый changeset не редактируется — исправление новым changeset'ом.
 - Демо-данные — `context: demo`, идемпотентны (`ON CONFLICT DO NOTHING`).
-- Контексты Liquibase задаются всегда: `application.yml` — `default`, `application-demo.yml` — `default,demo` и `drop-first`. Тесты и `prod` идут с `default`. Без контекста Liquibase выполнил бы и `context: demo`.
-- Папок модулей в `db/changelog/` заранее нет и `.gitkeep` в них не кладётся: `includeAll` разбирает любой файл папки как changelog. Папку создаёт первый changeset модуля.
+- Контексты Liquibase задаются всегда, иначе выполнится и `context: demo`: `application.yml` — `default`, `application-demo.yml` — `default,demo` и `drop-first`; тесты и `prod` — `default`.
+- `late/` идёт после `demo`: туда changeset'ы поверх демо-сидов и новые сиды пользователей (U24).
+- Папок модулей заранее нет, `.gitkeep` не класть: `includeAll` разберёт любой файл как changelog. Папку создаёт первый changeset модуля.
 - Время хранится в `timestamptz` (UTC), показывается в Europe/Moscow.
 
 ## Код
@@ -65,7 +66,6 @@ Java 25, Spring Boot 4.1, Spring Modulith 2.1, PostgreSQL 18, Liquibase, Maven (
 ## Уроки
 
 - Поле AOP-прокси = null → упал IT → метод (`MembershipEventProbe`).
-
 - Образ падал «Failed to validate Maven distribution SHA-256»: в `eclipse-temurin:25-jdk` нет `unzip`, а хост это прячет кэшем → `unzip` ставится в `backend/Dockerfile`; образ и стек проверять сборкой с нуля.
 - Повтор публикаций Modulith в IT молчал: реестр берёт время из `Clock` приложения, тестовые часы стоят → в тестах повтора сдвигать `MutableClock` за порог (`feed/PersonalFeedEventsIT`).
-- Модель данных считала только стоимость записи → человек спросил про 1000+ проводок на студента → сразу оценивать самое частое чтение (списки, рейтинги), а не только запись (мастер-план, KTD3: журнал проводок и снимок баланса).
+- Модель данных считала только стоимость записи → человек спросил про 1000+ проводок на студента → сразу оценивать самое частое чтение (списки, рейтинги), а не только запись (мастер-план, KTD3).

@@ -26,3 +26,10 @@
   .admin-users-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .admin-users-filters > :first-child { grid-column: 1 / -1; }
 }
+
+@media (min-width: 48em) {
+  .admin-users-table .admin-users-full-name { display: none; }
+}
+@media (width < 48em) {
+  .admin-users-table .admin-users-name-part { display: none; }
+}

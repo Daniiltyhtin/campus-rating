@@ -40,21 +40,21 @@ class MembershipRepository {
     List<Pending> pending(Collection<Long> groupIds, boolean verifiedEmailOnly) {
         if (groupIds.isEmpty()) return List.of();
         return jdbc.sql("""
-                select m.student_id,u.full_name,u.email,m.group_id,m.requested_at from group_membership m
+                select m.student_id,u.last_name,u.first_name,u.middle_name,u.email,m.group_id,m.requested_at from group_membership m
                 join app_user u on u.id=m.student_id
                 where m.state='PENDING' and u.role='STUDENT' and m.group_id in (:groups)
                 and (not :verifiedOnly or u.email_verified)
                 order by m.requested_at,m.student_id
                 """).param("groups", groupIds).param("verifiedOnly", verifiedEmailOnly)
-                .query((rs, row) -> new Pending(rs.getLong("student_id"), rs.getString("full_name"), rs.getString("email"),
+                .query((rs, row) -> new Pending(rs.getLong("student_id"), UserAccount.fullName(rs), rs.getString("email"),
                         rs.getLong("group_id"), rs.getTimestamp("requested_at").toInstant())).list();
     }
     Optional<Long> headedGroup(long studentId) {
         return jdbc.sql("select group_id from group_head where student_id=:id").param("id", studentId).query(Long.class).optional();
     }
     List<Head> heads() {
-        return jdbc.sql("select h.group_id,h.student_id,u.full_name from group_head h join app_user u on u.id=h.student_id order by h.group_id")
-                .query((rs, row) -> new Head(rs.getLong("group_id"), rs.getLong("student_id"), rs.getString("full_name"))).list();
+        return jdbc.sql("select h.group_id,h.student_id,u.last_name,u.first_name,u.middle_name from group_head h join app_user u on u.id=h.student_id order by h.group_id")
+                .query((rs, row) -> new Head(rs.getLong("group_id"), rs.getLong("student_id"), UserAccount.fullName(rs))).list();
     }
     void assign(long groupId, long studentId, Instant time) {
         jdbc.sql("""

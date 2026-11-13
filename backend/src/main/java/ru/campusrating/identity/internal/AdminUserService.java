@@ -49,12 +49,12 @@ public class AdminUserService {
         int offset=offset(cursor,filter);
         String sql="select u.*,m.group_id,"+AUDIT+" password_set_at,"+STATUS+" user_status from app_user u "+
                 "left join group_membership m on m.student_id=u.id where "+
-                "(:search='' or strpos(lower(u.full_name),:search)>0 or strpos(lower(u.email),:search)>0) "+
+                "(:search='' or strpos(lower(concat_ws(' ',u.last_name,u.first_name,u.middle_name)),:search)>0 or strpos(lower(u.email),:search)>0) "+
                 "and (:role='' or u.role=:role) and (:status='' or ("+STATUS+")=:status) "+
                 "order by "+order(sort,order)+" limit 51 offset :offset";
         var rows=jdbc.sql(sql).param("search",search).param("role",role==null?"":role.name())
                 .param("status",status==null?"":status.name()).param("offset",offset)
-                .query((rs,n)->new AdminUser(rs.getLong("id"),rs.getString("full_name"),rs.getString("email"),Role.valueOf(rs.getString("role")),
+                .query((rs,n)->new AdminUser(rs.getLong("id"),UserAccount.fullName(rs),rs.getString("last_name"),rs.getString("first_name"),rs.getString("middle_name"),rs.getString("email"),Role.valueOf(rs.getString("role")),
                 group(rs.getObject("group_id",Long.class)),department(rs.getObject("department_id",Long.class)),
                 instant(rs.getTimestamp("password_set_at")),rs.getString("user_status")==null?null:UserStatus.valueOf(rs.getString("user_status")),
                 instant(rs.getTimestamp("created_at")),instant(rs.getTimestamp("last_login_at")))).list();
@@ -76,7 +76,9 @@ public class AdminUserService {
     }
     private static String order(UserSort sort,SortDirection direction) {
         String key=switch(sort) {
-            case name -> "u.full_name";
+            case lastName -> "u.last_name";
+            case firstName -> "u.first_name";
+            case middleName -> "u.middle_name";
             case email -> "lower(u.email)";
             case role -> ROLE_RANK;
             case unit -> UNIT;
@@ -86,14 +88,20 @@ public class AdminUserService {
         };
         boolean asc=direction==SortDirection.asc;
         String nulls=sort==UserSort.lastLogin&&asc?" nulls first":" nulls last";
-        return key+(asc?" asc":" desc")+nulls+",u.full_name,u.id";
+        String ties = switch (sort) {
+            case lastName -> "u.first_name,u.middle_name nulls first,u.id";
+            case firstName -> "u.last_name,u.middle_name nulls first,u.id";
+            case middleName -> "u.last_name,u.first_name,u.id";
+            default -> "u.last_name,u.first_name,u.middle_name nulls first,u.id";
+        };
+        return key+(asc?" asc":" desc")+nulls+","+ties;
     }
     private StudyGroupRef group(Long id) { return id==null?null:directory.group(id).map(g->new StudyGroupRef(g.id(),g.name(),g.faculty())).orElse(null); }
     private ru.campusrating.directory.DepartmentInfo department(Long id) { return id==null?null:directory.department(id).orElse(null); }
     public List<GroupStudent> students(long groupId) {
         var actor=current.require();if(actor.role()!=Role.ADMIN&&(actor.role()!=Role.TEACHER||!scope.accessibleGroupIds(actor.id()).contains(groupId))) throw forbidden();
-        return jdbc.sql("select u.id,u.full_name,u.email,m.state,"+AUDIT+" password_set_at from app_user u join group_membership m on m.student_id=u.id where m.group_id=:group and m.state in ('ACTIVE','PENDING') order by u.full_name,u.id")
-                .param("group",groupId).query((rs,n)->new GroupStudent(rs.getLong("id"),rs.getString("full_name"),rs.getString("email"),GroupMembershipState.valueOf(rs.getString("state")),rs.getTimestamp("password_set_at")==null?null:rs.getTimestamp("password_set_at").toInstant())).list();
+        return jdbc.sql("select u.id,u.last_name,u.first_name,u.middle_name,u.email,m.state,"+AUDIT+" password_set_at from app_user u join group_membership m on m.student_id=u.id where m.group_id=:group and m.state in ('ACTIVE','PENDING') order by u.last_name,u.first_name,u.middle_name nulls first,u.id")
+                .param("group",groupId).query((rs,n)->new GroupStudent(rs.getLong("id"),UserAccount.fullName(rs),rs.getString("email"),GroupMembershipState.valueOf(rs.getString("state")),rs.getTimestamp("password_set_at")==null?null:rs.getTimestamp("password_set_at").toInstant())).list();
     }
     @Transactional
     public String reset(long id) {

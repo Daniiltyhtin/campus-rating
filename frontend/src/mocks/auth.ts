@@ -79,7 +79,17 @@ export function createAuthMockHandlers() {
     http.post('*/api/v1/auth/register/:role', async ({ request, params }) => {
       if (!validCsrf(request)) return problem('CSRF_INVALID', 403);
       const body: unknown = await request.json();
-      if (!credentials(body) || !('fullName' in body) || typeof body.fullName !== 'string') return problem('INTERNAL_ERROR', 500);
+      if (!credentials(body)) return problem('INTERNAL_ERROR', 500);
+      const input = body as Record<string, unknown>;
+      const parts = ['lastName', 'firstName', 'middleName'] as const;
+      const fieldErrors = parts.flatMap((field) => {
+        const value = input[field];
+        const optional = field === 'middleName';
+        return (optional && value == null) || (typeof value === 'string' && value.trim().length <= 100 && (optional || value.trim().length > 0))
+          ? [] : [{ field, code: 'INVALID', message: 'Проверьте длину поля ФИО' }];
+      });
+      if (fieldErrors.length) return HttpResponse.json({ type: 'about:blank', title: 'Ошибка', status: 400, code: 'VALIDATION_FAILED', fieldErrors }, { status: 400 });
+      const fullName = parts.map((field) => typeof input[field] === 'string' ? input[field].trim() : '').filter(Boolean).join(' ');
       const teacherEmail = users.some((user) => user.role === 'TEACHER' && user.email.toLowerCase() === body.email.toLowerCase());
       if (params.role === 'student' && teacherEmail) return problem('EMAIL_RESERVED_FOR_TEACHER', 409);
       if (accounts.has(body.email.toLowerCase())) return problem('EMAIL_TAKEN', 409);
@@ -88,7 +98,7 @@ export function createAuthMockHandlers() {
         ? facultyItems('listFacultyGroups', 'facultyId' in body ? body.facultyId : undefined).find((item) => 'groupId' in body && item.id === body.groupId)
         : directoryItems('listFacultyDepartments').find((item) => 'departmentId' in body && item.id === body.departmentId);
       if (!target) return HttpResponse.json({ type: 'about:blank', title: 'Ошибка', status: 400, code: 'VALIDATION_FAILED', fieldErrors: [{ field: template.role === 'STUDENT' ? 'groupId' : 'departmentId', code: 'MISMATCH', message: 'Выбор не соответствует факультету.' }] }, { status: 400, headers: { 'Content-Type': 'application/problem+json' } });
-      const user = currentUser({ ...template, id: 10_000 + accounts.size, fullName: body.fullName, email: body.email, mustChangePassword: false,
+      const user = currentUser({ ...template, id: 10_000 + accounts.size, fullName, email: body.email, mustChangePassword: false,
         ...(template.role === 'TEACHER' ? { teacherApproved: false, department: target } : { group: target, membershipState: 'PENDING', groupHead: false }) });
       accounts.set(user.email.toLowerCase(), { user, password: body.password });
       return HttpResponse.json({ userId: user.id, nextStep: 'LOGIN' }, { status: 201 });

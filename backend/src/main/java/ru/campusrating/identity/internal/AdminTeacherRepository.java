@@ -15,7 +15,7 @@ class AdminTeacherRepository {
     AdminTeacherRepository(JdbcClient jdbc) { this.jdbc = jdbc; }
 
     List<Long> teachers() {
-        return jdbc.sql("select id from app_user where role='TEACHER' order by full_name,id").query(Long.class).list();
+        return jdbc.sql("select id from app_user where role='TEACHER' order by last_name,first_name,middle_name nulls first,id").query(Long.class).list();
     }
 
     boolean lockTeacher(long id) {

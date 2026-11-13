@@ -7,7 +7,7 @@ import { dataOf, loadState } from '../../tasks/helpers';
 import { AdminError, AdminOnly } from '../shared';
 
 type Kind = 'GROUPS' | 'STUDENTS' | 'TEACHER_ALLOWLIST';
-const headers = { GROUPS: 'faculty_code,group_code,group_name,admission_year', STUDENTS: 'email,full_name,faculty_code,group_code', TEACHER_ALLOWLIST: 'email,department_code' };
+const headers = { GROUPS: 'faculty_code,group_code,group_name,admission_year', STUDENTS: 'email,last_name,first_name,middle_name,faculty_code,group_code', TEACHER_ALLOWLIST: 'email,department_code' };
 function Import() {
   const client = useQueryClient(), [kind, setKind] = useState<Kind>('GROUPS'), [file, setFile] = useState<File | null>(null), [localError, setLocalError] = useState('');
   const [remove, setRemove] = useState<string>();

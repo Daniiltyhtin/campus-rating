@@ -20,7 +20,7 @@ public class AdminUsersController {
     private final AdminUserService service;
     public AdminUsersController(AdminUserService service) { this.service=service; }
     @GetMapping("/api/v1/admin/users")
-    public AdminUserPage listAdminUsers(@RequestParam(required=false) String search,@RequestParam(required=false) Role role,@RequestParam(required=false) UserStatus status,@RequestParam(defaultValue="name") UserSort sort,@RequestParam(required=false) SortDirection direction,@RequestParam(required=false) String cursor) { return service.list(search,role,status,sort,direction,cursor); }
+    public AdminUserPage listAdminUsers(@RequestParam(required=false) String search,@RequestParam(required=false) Role role,@RequestParam(required=false) UserStatus status,@RequestParam(defaultValue="lastName") UserSort sort,@RequestParam(required=false) SortDirection direction,@RequestParam(required=false) String cursor) { return service.list(search,role,status,sort,direction,cursor); }
     @GetMapping("/api/v1/groups/{groupId}/students")
     public GroupStudentList listGroupStudents(@PathVariable long groupId) { return new GroupStudentList(service.students(groupId)); }
     @PostMapping("/api/v1/users/{userId}/temporary-password")
@@ -35,10 +35,14 @@ public class AdminUsersController {
                 .orElseGet(()->ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build());
     }
     public enum UserStatus { PENDING, APPROVED, MEMBERSHIP_PENDING, MEMBERSHIP_REJECTED, MEMBERSHIP_ACTIVE }
-    public enum UserSort { name, email, role, unit, status, created, lastLogin }
+    public enum UserSort { lastName, firstName, middleName, email, role, unit, status, created, lastLogin }
     public enum SortDirection { asc, desc }
-    @Schema(requiredProperties={"id","fullName","email","role","group","department","passwordSetAt","status","createdAt","lastLoginAt"})
-    public record AdminUser(@Min(1) long id,String fullName,@Schema(format="email") String email,Role role,StudyGroupRef group,DepartmentInfo department,
+    @Schema(requiredProperties={"id","fullName","lastName","firstName","middleName","email","role","group","department","passwordSetAt","status","createdAt","lastLoginAt"})
+    public record AdminUser(@Min(1) long id,String fullName,
+            @Schema(minLength=1,maxLength=100) String lastName,
+            @Schema(minLength=1,maxLength=100) String firstName,
+            @Schema(types={"string","null"},minLength=1,maxLength=100) String middleName,
+            @Schema(format="email") String email,Role role,StudyGroupRef group,DepartmentInfo department,
             @Schema(types={"string","null"},format="date-time") Instant passwordSetAt,
             @Schema(types={"string","null"},allowableValues={"PENDING","APPROVED","MEMBERSHIP_PENDING","MEMBERSHIP_REJECTED","MEMBERSHIP_ACTIVE"}) UserStatus status,
             Instant createdAt,@Schema(types={"string","null"},format="date-time") Instant lastLoginAt) {}

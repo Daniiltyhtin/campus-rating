@@ -11,7 +11,9 @@ import { useFormErrors } from './useAuthAction';
 
 export function RegisterPage() {
   const [role, setRole] = useState<'STUDENT' | 'TEACHER'>('STUDENT');
-  const [fullName, setFullName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [middleName, setMiddleName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [facultyId, setFacultyId] = useState('');
@@ -23,7 +25,7 @@ export function RegisterPage() {
   const student = role === 'STUDENT';
   const targetField = student ? 'groupId' : 'departmentId';
   const mutation = useMutation({ retry: false, mutationFn: async () => {
-    const common = { fullName: fullName.trim(), email: email.trim(), password };
+    const common = { lastName: lastName.trim(), firstName: firstName.trim(), ...(middleName.trim() ? { middleName: middleName.trim() } : {}), email: email.trim(), password };
     const result = student
       ? await api.POST('/api/v1/auth/register/student', { body: { ...common, facultyId: Number(facultyId), groupId: Number(targetId) } })
       : await api.POST('/api/v1/auth/register/teacher', { body: { ...common, departmentId: Number(targetId) } });
@@ -44,12 +46,16 @@ export function RegisterPage() {
       }} data={[{ value: 'STUDENT', label: 'Студент' }, { value: 'TEACHER', label: 'Преподаватель' }]} disabled={mutation.isPending} />
         <FormLayout title="Ваши данные" onSubmit={(event) => {
           event.preventDefault();
-          const errors = { fullName: fullName.trim().length < 1 || fullName.trim().length > 200 ? 'Укажите ФИО, не больше 200 символов' : undefined,
+          const errors = { lastName: lastName.trim().length < 1 || lastName.trim().length > 100 ? 'Укажите фамилию, не больше 100 символов' : undefined,
+            firstName: firstName.trim().length < 1 || firstName.trim().length > 100 ? 'Укажите имя, не больше 100 символов' : undefined,
+            middleName: middleName.trim().length > 100 ? 'Не больше 100 символов' : undefined,
             email: emailError(email.trim()), password: passwordError(password) };
           form.setErrors(Object.fromEntries(Object.entries(errors).filter((entry): entry is [string, string] => typeof entry[1] === 'string')));
           if (!ready || Object.values(errors).some(Boolean) || mutation.isPending) return;
           mutation.mutate();
-        }}><TextInput label="ФИО" autoComplete="name" value={fullName} onChange={(event) => { setFullName(event.currentTarget.value); form.clear('fullName'); }} error={form.errors.fullName} />
+        }}><TextInput label="Фамилия" autoComplete="family-name" value={lastName} onChange={(event) => { setLastName(event.currentTarget.value); form.clear('lastName'); }} error={form.errors.lastName} />
+          <TextInput label="Имя" autoComplete="given-name" value={firstName} onChange={(event) => { setFirstName(event.currentTarget.value); form.clear('firstName'); }} error={form.errors.firstName} />
+          <TextInput label="Отчество" description="Если есть" autoComplete="additional-name" value={middleName} onChange={(event) => { setMiddleName(event.currentTarget.value); form.clear('middleName'); }} error={form.errors.middleName} />
           <TextInput label="Email" type="email" autoComplete="email" value={email} onChange={(event) => { setEmail(event.currentTarget.value); form.clear('email'); }} error={form.errors.email} />
           <PasswordField label="Пароль" autoComplete="new-password" description="От 8 символов, не больше 72 байт UTF-8" value={password} onChange={(event) => { setPassword(event.currentTarget.value); form.clear('password'); }} error={form.errors.password} />
           <NativeSelect label="Факультет" value={facultyId} styles={{ error: { color: 'var(--cr-status-overdue)' } }} onChange={(event) => changeFaculty(event.currentTarget.value)} disabled={!faculties.isSuccess || mutation.isPending} error={form.errors.facultyId}

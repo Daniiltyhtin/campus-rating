@@ -18,14 +18,30 @@ public final class AuthDtos {
     @Schema(requiredProperties = {"email", "password"})
     public record LoginRequest(@NotNull @Email @Size(max = 254) String email,
                                @NotNull @Size(min = 1, max = 1024) String password) {}
-    @Schema(requiredProperties = {"fullName", "email", "password", "facultyId", "groupId"})
-    public record StudentRegistration(@NotNull @Size(min = 1, max = 200) String fullName,
+    @Schema(requiredProperties = {"lastName", "firstName", "email", "password", "facultyId", "groupId"})
+    public record StudentRegistration(@NotNull @Size(min = 1, max = 100) String lastName,
+            @NotNull @Size(min = 1, max = 100) String firstName,
+            @Size(max = 100) @Schema(types = {"string", "null"}) String middleName,
             @NotNull @Email @Size(max = 254) String email, @NotNull @Size(min = 8, max = 72) String password,
-            @NotNull @Min(1) Long facultyId, @NotNull @Min(1) Long groupId) {}
-    @Schema(requiredProperties = {"fullName", "email", "password", "departmentId"})
-    public record TeacherRegistration(@NotNull @Size(min = 1, max = 200) String fullName,
+            @NotNull @Min(1) Long facultyId, @NotNull @Min(1) Long groupId) {
+        public StudentRegistration {
+            lastName = lastName == null ? null : lastName.strip();
+            firstName = firstName == null ? null : firstName.strip();
+            middleName = middleName == null || middleName.isBlank() ? null : middleName.strip();
+        }
+    }
+    @Schema(requiredProperties = {"lastName", "firstName", "email", "password", "departmentId"})
+    public record TeacherRegistration(@NotNull @Size(min = 1, max = 100) String lastName,
+            @NotNull @Size(min = 1, max = 100) String firstName,
+            @Size(max = 100) @Schema(types = {"string", "null"}) String middleName,
             @NotNull @Email @Size(max = 254) String email, @NotNull @Size(min = 8, max = 72) String password,
-            @NotNull @Min(1) Long departmentId) {}
+            @NotNull @Min(1) Long departmentId) {
+        public TeacherRegistration {
+            lastName = lastName == null ? null : lastName.strip();
+            firstName = firstName == null ? null : firstName.strip();
+            middleName = middleName == null || middleName.isBlank() ? null : middleName.strip();
+        }
+    }
     @Schema(requiredProperties = {"currentPassword", "newPassword"})
     public record PasswordChange(@NotNull @Size(min = 1, max = 1024) String currentPassword,
                                   @NotNull @Size(min = 8, max = 72) String newPassword) {}

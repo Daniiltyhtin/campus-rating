@@ -13,11 +13,11 @@ export function createUsersMockHandlers(teachers: () => Teacher[], group: () => 
     .filter((item) => item.status === 200).map((item) => currentUser(structuredClone(item.body)));
   function rows(): UserRow[] {
     const others: UserRow[] = accounts.filter((user) => user.role !== 'TEACHER').map((user) => ({
-      id: user.id, fullName: user.fullName, email: user.email, role: user.role,
+      ...nameParts(user.fullName), id: user.id, fullName: user.fullName, email: user.email, role: user.role,
       group: user.role === 'STUDENT' ? group() : null, department: null,
       status: user.role === 'STUDENT' ? 'MEMBERSHIP_ACTIVE' : null, createdAt, lastLoginAt: null, passwordSetAt: audit.get(user.id) ?? null,
     }));
-    return [...others, ...teachers().map((teacher): UserRow => ({ ...teacher, role: 'TEACHER', group: null,
+    return [...others, ...teachers().map((teacher): UserRow => ({ ...teacher, ...nameParts(teacher.fullName), role: 'TEACHER', group: null,
       status: teacher.teacherApproved ? 'APPROVED' : 'PENDING', createdAt, lastLoginAt: null, passwordSetAt: audit.get(teacher.id) ?? null }))];
   }
   function access() { const user = readUser(); return !user ? problem('UNAUTHENTICATED', 401) : user.role !== 'ADMIN' ? problem('FORBIDDEN', 403) : null; }
@@ -37,10 +37,34 @@ export function createUsersMockHandlers(teachers: () => Teacher[], group: () => 
       const items = rows().filter((row) => (!filters.role || row.role === filters.role) && (!filters.status || row.status === filters.status)
         && (search.length < 2 || row.fullName.toLocaleLowerCase('ru').includes(search) || row.email.toLocaleLowerCase('ru').includes(search)));
       items.sort((a, b) => {
-        const byName = a.fullName.localeCompare(b.fullName, 'ru') || a.id - b.id;
-        if (filters.sort === 'created') return Date.parse(b.createdAt) - Date.parse(a.createdAt) || byName;
-        if (filters.sort === 'lastLogin') return (a.lastLoginAt === null ? b.lastLoginAt === null ? 0 : -1 : b.lastLoginAt === null ? 1 : Date.parse(a.lastLoginAt) - Date.parse(b.lastLoginAt)) || byName;
-        return byName;
+        const compare = (left: string | number | null, right: string | number | null, nullsLast = false) => {
+          if (left === null || right === null) return left === right ? 0 : (left === null ? 1 : -1) * (nullsLast ? 1 : -1);
+          return typeof left === 'number' && typeof right === 'number' ? left - right : String(left).localeCompare(String(right), 'ru');
+        };
+        const key = filters.sort ?? 'lastName';
+        const direction = filters.direction ?? (key === 'created' ? 'desc' : 'asc');
+        const roleRank = { ADMIN: 1, TEACHER: 2, STUDENT: 3 };
+        const statusRank = { PENDING: 1, MEMBERSHIP_PENDING: 2, MEMBERSHIP_REJECTED: 3, APPROVED: 4, MEMBERSHIP_ACTIVE: 5 };
+        const value = (row: UserRow) => {
+          switch (key) {
+            case 'created': return Date.parse(row.createdAt);
+            case 'lastLogin': return row.lastLoginAt === null ? null : Date.parse(row.lastLoginAt);
+            case 'role': return roleRank[row.role];
+            case 'status': return row.status === null ? null : statusRank[row.status];
+            case 'unit': return row.group?.name ?? row.department?.name ?? null;
+            case 'email': return row.email.toLocaleLowerCase('ru');
+            default: return row[key];
+          }
+        };
+        const left = value(a), right = value(b);
+        const primary = left === null || right === null
+          ? compare(left, right, key !== 'lastLogin' || direction !== 'asc')
+          : compare(left, right) * (direction === 'asc' ? 1 : -1);
+        const ties = key === 'firstName' ? ['lastName', 'middleName'] as const
+          : key === 'middleName' ? ['lastName', 'firstName'] as const
+          : key === 'lastName' ? ['firstName', 'middleName'] as const
+          : ['lastName', 'firstName', 'middleName'] as const;
+        return primary || ties.reduce((result, field) => result || compare(a[field], b[field]), 0) || a.id - b.id;
       });
       return HttpResponse.json({ items: items.slice(offset, offset + 50), nextCursor: offset + 50 < items.length ? btoa(JSON.stringify([offset + 50, signature])) : null });
     }),
@@ -56,3 +80,8 @@ export function createUsersMockHandlers(teachers: () => Teacher[], group: () => 
   ];
 }
 function problem(code: string, status: number) { return HttpResponse.json({ type: 'about:blank', title: 'Ошибка', code, status }, { status }); }
+
+function nameParts(fullName: string) {
+  const [lastName = '', firstName, ...middle] = fullName.trim().split(/\s+/);
+  return { lastName, firstName: firstName ?? lastName, middleName: middle.length ? middle.join(' ') : null };
+}

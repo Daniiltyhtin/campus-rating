@@ -54,11 +54,11 @@ class AuthController {
     }
     @PostMapping("/auth/register/student") @ResponseStatus(HttpStatus.CREATED)
     RegistrationResult registerStudent(@Valid @RequestBody StudentRegistration body) {
-        return new RegistrationResult(registration.student(body.email(), body.fullName(), body.password(), body.facultyId(), body.groupId()), nextStep());
+        return new RegistrationResult(registration.student(body.email(), body.lastName(), body.firstName(), body.middleName(), body.password(), body.facultyId(), body.groupId()), nextStep());
     }
     @PostMapping("/auth/register/teacher") @ResponseStatus(HttpStatus.CREATED)
     RegistrationResult registerTeacher(@Valid @RequestBody TeacherRegistration body) {
-        return new RegistrationResult(registration.teacher(body.email(), body.fullName(), body.password(), body.departmentId()), nextStep());
+        return new RegistrationResult(registration.teacher(body.email(), body.lastName(), body.firstName(), body.middleName(), body.password(), body.departmentId()), nextStep());
     }
     @PostMapping("/auth/login") SessionView login(@Valid @RequestBody LoginRequest body, HttpServletRequest request, HttpServletResponse response) {
         sessions.login(body.email(), body.password(), request, response);
