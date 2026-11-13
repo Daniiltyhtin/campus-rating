@@ -1,4 +1,4 @@
-import { Button, Stack, Text } from '@mantine/core';
+import { Button, Stack, Text, Title } from '@mantine/core';
 import type { ReactNode } from 'react';
 import { AsyncContent } from '../../app/layouts/PageLayouts';
 import { SectionPlaceholder } from '../../app/routeElements';
@@ -23,6 +23,7 @@ function Events({ viewerId, notice, polls }: { viewerId: number; notice?: string
   return <FeedPage title="Главная" description="Ваши события: задачи, проверки и начисления. Время — по Москве."><Stack gap="lg">
     {notice && <Text>{notice}</Text>}
     {polls}
+    <Title order={2}>События</Title>
     <AsyncContent state={query.data && (!query.isError || isFetchNextPageError) ? (items.length ? { status: 'ready' } : { status: 'empty', message: 'Событий пока нет' })
       : feedState(query, false, '')}>
       <div>{items.map((event) => <EventEntry key={event.id} event={event} viewerId={viewerId} />)}</div>

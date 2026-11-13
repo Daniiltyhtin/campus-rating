@@ -5,4 +5,4 @@
 .poll-question { border: var(--cr-rule-width) solid var(--cr-rule); padding: 12px; margin: 0; min-width: 0; }
 .poll-question legend { font-weight: 700; padding: 0 4px; }
 .poll-list { display: grid; gap: 8px; }
-.poll-home { display: grid; gap: 8px; }
+.poll-home { display: grid; gap: 8px; border: var(--cr-rule-width) solid var(--cr-rule); padding: var(--mantine-spacing-md); }
