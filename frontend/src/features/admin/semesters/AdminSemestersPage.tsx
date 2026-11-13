@@ -1,4 +1,4 @@
-import { Button, Group, Modal, Stack, Text, TextInput } from '@mantine/core';
+import { Button, Menu, Modal, Stack, Text, TextInput } from '@mantine/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../../../api/client';
@@ -33,8 +33,11 @@ function Semesters() {
     <TeacherTableLayout caption="Семестры" rows={items} keyForRow={(s) => s.id} state={loadState(query, items.length === 0, 'Семестров пока нет')}
       columns={[{ key: 'title', title: 'Название', render: (s) => s.title }, { key: 'start', title: 'Начало (МСК)', render: (s) => dateTime(s.startsAt) },
         { key: 'state', title: 'Состояние', render: (s) => s.started ? 'Начат' : 'Запланирован' }, { key: 'n', title: 'N', render: (s) => s.started ? s.accrual ?? '—' : '—' },
-        { key: 'actions', title: 'Действия', render: (s) => !s.started && <Group><Button variant="default" onClick={() => open('save', s)}>Изменить {s.title}</Button>
-          <Button variant="default" onClick={() => open('delete', s)}>Удалить {s.title}</Button>{s.id === nearest?.id && <Button onClick={() => open('start', s)}>Начать сейчас</Button>}</Group> }]} />
+        { key: 'actions', title: 'Действия', render: (s) => !s.started && <Menu position="bottom-end">
+          <Menu.Target><Button variant="subtle" aria-label={`Действия: ${s.title}`}>⋯</Button></Menu.Target>
+          <Menu.Dropdown><Menu.Item onClick={() => open('save', s)}>Изменить</Menu.Item><Menu.Item onClick={() => open('delete', s)}>Удалить</Menu.Item>
+            {s.id === nearest?.id && <Menu.Item onClick={() => open('start', s)}>Начать сейчас</Menu.Item>}</Menu.Dropdown>
+        </Menu> }]} />
     <Modal opened={!!editor} onClose={() => { if (!action.isPending) setEditor(undefined); }} title={editor?.kind === 'start' ? 'Начать семестр' : editor?.kind === 'delete' ? 'Удалить семестр' : 'Семестр'}>
       <Stack>{editor?.kind === 'save' ? <form onSubmit={(event) => { event.preventDefault(); action.mutate({ kind: 'save', id: editor.semester?.id, title, startsAt }); }}>
         <Stack><TextInput required label="Название" maxLength={100} value={title} onChange={(e) => setTitle(e.currentTarget.value)} error={fieldError(action.error, 'title')} />

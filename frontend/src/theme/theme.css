@@ -34,6 +34,7 @@ html[data-theme='high-contrast'] a { text-decoration: underline; }
 .cr-currency-mark { position: relative; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; cursor: help; }
 .cr-currency-mark::before { content: ''; position: absolute; inset-block-start: 50%; inset-inline-start: 50%; width: max(100%, var(--cr-touch-target)); height: max(100%, var(--cr-touch-target)); transform: translate(-50%, -50%); }
 .cr-currency-icon { flex: none; vertical-align: -3px; }
+.cr-amount { display: inline-flex; align-items: center; gap: 4px; }
 .cr-currency-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 .cr-currency-legend span { display: inline-flex; align-items: center; gap: 4px; }
 .mantine-Checkbox-label, .mantine-Radio-label { position: relative; }
@@ -59,7 +60,9 @@ html[data-theme='high-contrast'] a { text-decoration: underline; }
 .cr-user-avatar { width: 2.125rem; height: 2.125rem; background: var(--cr-primary-soft); color: var(--cr-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.8125rem; font-weight: 700; }
 .cr-menu-item { min-height: var(--cr-touch-target); font-size: var(--cr-body-size); }
 .mantine-SegmentedControl-root .mantine-SegmentedControl-control:not(:first-of-type)::before,
-.mantine-SegmentedControl-root .mantine-SegmentedControl-control[data-active]:not(:first-of-type)::before { --separator-color: var(--cr-rule); }
+.mantine-SegmentedControl-root .mantine-SegmentedControl-control[data-active]:not(:first-of-type)::before,
+.mantine-SegmentedControl-root .mantine-SegmentedControl-control[data-active] + .mantine-SegmentedControl-control::before { --separator-color: var(--cr-rule); }
+.mantine-SegmentedControl-root .mantine-SegmentedControl-control:not([data-orientation='vertical'])::before { top: 0.375rem; bottom: 0.375rem; }
 .cr-bottom-link { justify-content: center; text-align: center; }
 .cr-bottom-label { display: flex; flex-direction: column; align-items: center; gap: calc(var(--mantine-spacing-xs) / 2); }
 .cr-nav-icon { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }

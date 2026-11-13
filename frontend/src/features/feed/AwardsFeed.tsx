@@ -15,7 +15,7 @@ import { awardsKey, feedError, feedState, useAwards, useAwardsPoll } from './que
 function AwardEntry({ item }: { item: Award }) {
   return <article className="cr-article"><Stack gap="xs"><Group justify="space-between" align="start">
     <FeedLink to={`/users/${item.student.id}`}>{item.student.fullName}</FeedLink>
-    <strong className={`cr-number cr-currency-mark cr-${item.currency.toLowerCase()}`}><CurrencyIcon currency={item.currency} />{signedAmount(item.amount, item.currency)}</strong>
+    <strong className={`cr-number cr-amount cr-${item.currency.toLowerCase()}`}><CurrencyIcon currency={item.currency} />{signedAmount(item.amount, item.currency)}</strong>
   </Group><Text>«<span>{item.activity.title}</span>»</Text><Group gap="xs"><Text className="cr-caption">от</Text>
     <FeedLink to={`/users/${item.teacher.id}`}>{item.teacher.fullName}</FeedLink>
     <time className="cr-caption" dateTime={item.createdAt}>{formatMoscowTime(item.createdAt)}</time>

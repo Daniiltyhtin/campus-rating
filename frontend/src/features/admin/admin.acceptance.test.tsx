@@ -20,6 +20,25 @@ it('показывает фиксированное N начатого семе�
   expect(screen.getByText('200', { exact: true })).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Начать сейчас' })).not.toBeInTheDocument();
 });
+it('действия семестра собраны в меню без названия в подписях', async () => {
+  server.use(http.get('*/api/v1/admin/semesters', () => HttpResponse.json({ items: [
+    { id: 1, title: 'Осень 2026', startsAt: '2026-08-31T21:00:00Z', started: true, accrual: 200 },
+    { id: 2, title: 'Весна 2027', startsAt: '2027-02-01T21:00:00Z', started: false, accrual: null },
+    { id: 3, title: 'Осень 2027', startsAt: '2027-08-31T21:00:00Z', started: false, accrual: null },
+  ] })));
+  const user = userEvent.setup();
+  renderApp('/admin/semesters', { userId: '9001', role: 'ADMIN' });
+  expect(await screen.findByText('Весна 2027')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Действия: Осень 2026' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /^Изменить|^Удалить/ })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Действия: Весна 2027' }));
+  expect((await screen.findAllByRole('menuitem')).map((item) => item.textContent)).toEqual(['Изменить', 'Удалить', 'Начать сейчас']);
+  await user.keyboard('{Escape}');
+  await user.click(screen.getByRole('button', { name: 'Действия: Осень 2027' }));
+  await waitFor(() => expect(screen.getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Изменить', 'Удалить']));
+  await user.click(screen.getByRole('menuitem', { name: 'Удалить' }));
+  expect(await screen.findByText('Удалить семестр «Осень 2027»?')).toBeInTheDocument();
+});
 const settings = { penaltyStep: 4, penaltyIntervalSeconds: 60, minPenaltyIntervalSeconds: 2, semesterAccrual: 200, monthlyBudgetLimit: 1000 };
 it('отмена снижения лимита сохраняет введённые поля и не пишет настройки', async () => {
   let writes = 0;

@@ -127,6 +127,7 @@ describe('U10 история — R6/R41/KTD18', { timeout: 15_000 }, () => {
     mountProfile();
     expect(await screen.findByText(/\+50\s*БОА/)).toBeInTheDocument();
     expect(screen.getByText(/[−-]20\s*АР/)).toBeInTheDocument();
+    for (const amount of [/\+50\s*БОА/, /[−-]20\s*АР/]) expect(screen.getByText(amount).closest('strong')?.querySelector('svg.cr-currency-icon')).not.toBeNull();
     expect(screen.getByText(/\+1000\s*АР/)).toBeInTheDocument();
     expect(screen.getByText('Стартовые баллы')).toBeInTheDocument();
     expect(screen.getByText(/Просрочка/)).toBeInTheDocument();

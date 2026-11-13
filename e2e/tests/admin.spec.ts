@@ -17,7 +17,8 @@ test('ADM-01: семестры администратора — 004/AE1–4', as
   await expect(dialog).not.toBeVisible();
   await expect(page.getByText(name, { exact: true })).toBeVisible();
   await evidence(page, 'ADM-01-semesters');
-  await page.getByRole('button', { name: `Удалить ${name}`, exact: true }).click();
+  await page.getByRole('button', { name: `Действия: ${name}`, exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Удалить', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Удалить', exact: true }).click();
   await expect(page.getByText(name, { exact: true })).not.toBeVisible();
 });
