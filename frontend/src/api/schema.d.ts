@@ -1899,7 +1899,7 @@ export interface components {
             group: components["schemas"]["StudyGroupRef"] | null;
             department: components["schemas"]["DepartmentRef"] | null;
             /** @enum {string|null} */
-            status: "PENDING" | "APPROVED" | "MEMBERSHIP_PENDING" | "MEMBERSHIP_ACTIVE" | null;
+            status: "PENDING" | "APPROVED" | "MEMBERSHIP_PENDING" | "MEMBERSHIP_REJECTED" | "MEMBERSHIP_ACTIVE" | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -3697,7 +3697,7 @@ export interface operations {
             query?: {
                 search?: string;
                 role?: "STUDENT" | "TEACHER" | "ADMIN";
-                status?: "PENDING" | "APPROVED" | "MEMBERSHIP_PENDING" | "MEMBERSHIP_ACTIVE";
+                status?: "PENDING" | "APPROVED" | "MEMBERSHIP_PENDING" | "MEMBERSHIP_REJECTED" | "MEMBERSHIP_ACTIVE";
                 /** @description Колонка сортировки; при равенстве — ФИО, затем id. */
                 sort?: "name" | "email" | "role" | "unit" | "status" | "created" | "lastLogin";
                 /** @description Направление; по умолчанию desc для created, asc для остальных. lastLogin asc — сначала без входа. */

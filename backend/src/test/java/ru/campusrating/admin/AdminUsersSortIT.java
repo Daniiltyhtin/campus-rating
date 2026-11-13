@@ -25,6 +25,23 @@ class AdminUsersSortIT extends U13HttpTestSupport {
         clock.set(Instant.parse("2026-11-12T13:00:00Z")); teacher("d-teacher", "Dteacher");
     }
 
+    @Test void rejectedMembershipIsListedFilteredAndSortedBothWays() {
+        people();
+        student("pending-student", faculty, group);
+        long rejected = student("rejected-student", faculty, group);
+        request(login("b-teacher"), "POST", "/api/v1/memberships/" + rejected + "/rejection", null, 204);
+
+        var unfiltered = items(get("/api/v1/admin/users?search=" + prefix));
+        assertThat(unfiltered.stream().filter(row -> row.path("id").asLong() == rejected)
+                .map(row -> row.path("status").asText()).toList()).containsExactly("MEMBERSHIP_REJECTED");
+        var filtered = items(get("/api/v1/admin/users?search=" + prefix + "&status=MEMBERSHIP_REJECTED"));
+        assertThat(filtered.stream().map(row -> row.path("id").asLong()).toList()).containsExactly(rejected);
+        assertThat(field(list("status", "asc"), "status")).containsExactly(
+                "PENDING", "MEMBERSHIP_PENDING", "MEMBERSHIP_REJECTED", "APPROVED", "MEMBERSHIP_ACTIVE", "MEMBERSHIP_ACTIVE", "");
+        assertThat(field(list("status", "desc"), "status")).containsExactly(
+                "MEMBERSHIP_ACTIVE", "MEMBERSHIP_ACTIVE", "APPROVED", "MEMBERSHIP_REJECTED", "MEMBERSHIP_PENDING", "PENDING", "");
+    }
+
     @Test void emailSortsBothWays() {
         people();
         var asc = field(list("email", "asc"), "email");

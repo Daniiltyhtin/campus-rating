@@ -37,7 +37,7 @@ public class AdminUserService {
             """;
     private static final String UNIT="coalesce((select g.name from study_group g where g.id=m.group_id),(select d.name from department d where d.id=u.department_id))";
     private static final String ROLE_RANK="case u.role when 'ADMIN' then 1 when 'TEACHER' then 2 else 3 end";
-    private static final String STATUS_RANK="case "+STATUS+" when 'PENDING' then 1 when 'MEMBERSHIP_PENDING' then 2 when 'APPROVED' then 3 when 'MEMBERSHIP_ACTIVE' then 4 end";
+    private static final String STATUS_RANK="case "+STATUS+" when 'PENDING' then 1 when 'MEMBERSHIP_PENDING' then 2 when 'MEMBERSHIP_REJECTED' then 3 when 'APPROVED' then 4 when 'MEMBERSHIP_ACTIVE' then 5 end";
 
     @Transactional(readOnly=true)
     public AdminUserPage list(String query,Role role,UserStatus status,UserSort sort,SortDirection direction,String cursor) {

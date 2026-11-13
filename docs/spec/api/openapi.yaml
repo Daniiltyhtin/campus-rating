@@ -529,7 +529,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [PENDING, APPROVED, MEMBERSHIP_PENDING, MEMBERSHIP_ACTIVE]
+            enum: [PENDING, APPROVED, MEMBERSHIP_PENDING, MEMBERSHIP_REJECTED, MEMBERSHIP_ACTIVE]
         - name: sort
           in: query
           description: Колонка сортировки; при равенстве — ФИО, затем id.
@@ -5748,7 +5748,7 @@ components:
             - type: "null"
         status:
           type: [string, "null"]
-          enum: [PENDING, APPROVED, MEMBERSHIP_PENDING, MEMBERSHIP_ACTIVE, null]
+          enum: [PENDING, APPROVED, MEMBERSHIP_PENDING, MEMBERSHIP_REJECTED, MEMBERSHIP_ACTIVE, null]
         createdAt:
           type: string
           format: date-time

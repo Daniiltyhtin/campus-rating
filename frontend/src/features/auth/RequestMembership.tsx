@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { api } from '../../api/client';
 import { errorText, fieldError } from '../tasks/helpers';
 import { authKeys, useFaculties, useFacultyOptions } from './authQueries';
+import { RetryNotice } from './AuthLayout';
 import { currentUser } from './contracts';
 
 export function RequestMembership({ groupName }: { groupName: string }) {
@@ -22,9 +23,13 @@ export function RequestMembership({ groupName }: { groupName: string }) {
       <NativeSelect label="Факультет" value={facultyId} disabled={!faculties.isSuccess || mutation.isPending}
         onChange={(event) => { setFacultyId(event.currentTarget.value); setGroupId(''); }}
         data={[{ value: '', label: 'Выберите факультет' }, ...(faculties.data ?? []).map((item) => ({ value: String(item.id), label: item.name }))]} />
+      {faculties.isPending && <Text role="status">Загрузка факультетов…</Text>}
+      {faculties.isError && <RetryNotice message="Не удалось загрузить факультеты" retry={() => { void faculties.refetch(); }} />}
       <NativeSelect label="Группа" value={groupId} disabled={!groups.isSuccess || mutation.isPending} error={groupError}
         onChange={(event) => setGroupId(event.currentTarget.value)}
         data={[{ value: '', label: 'Выберите группу' }, ...(groups.data ?? []).map((item) => ({ value: String(item.id), label: item.name }))]} />
+      {facultyId && groups.isPending && <Text role="status">Загрузка справочника…</Text>}
+      {groups.isError && <RetryNotice message="Не удалось загрузить справочник" retry={() => { void groups.refetch(); }} />}
       {mutation.error && !groupError && <Text role="alert">{errorText(mutation.error)}</Text>}
       <div><Button type="submit" loading={mutation.isPending} disabled={!facultyId || !groupId}>Подать заявку</Button></div>
     </Stack></form>

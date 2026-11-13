@@ -165,7 +165,7 @@ public interface CurrentUser {
 }
 
 public enum Role { STUDENT, TEACHER, ADMIN }
-public enum GroupMembershipState { PENDING, ACTIVE }
+public enum GroupMembershipState { PENDING, ACTIVE, REJECTED }
 
 public record AuthenticatedUser(long id, Role role, String fullName, boolean mustChangePassword,
                                 boolean teacherApproved,            // false у не-преподавателя
@@ -174,6 +174,7 @@ public record Membership(long groupId, GroupMembershipState state, @Nullable Ins
 ```
 
 - **Гарантии.** Значения берутся из сессии и базы на момент запроса. Блокировку по `mustChangePassword` (`403 PASSWORD_CHANGE_REQUIRED`) делает фильтр безопасности `identity`, а не модули: при работающем фильтре `require()` пользователя с этим флагом в чужой модуль не вернёт. Роль операции проверяет `SecurityConfig` по `x-roles` контракта. Принадлежность ресурса проверяет модуль-владелец сам: автор точки, автор активности, владелец назначения.
+- Баллы за активности и назначения получает только `ACTIVE`; `INITIAL` и начисление семестра доступны также `PENDING` и `REJECTED`.
 - **Тестовый двойник:** мок `require()` с демо-пользователями из примеров контракта (1001 — студент, 2001 — допущенный преподаватель, 2002 — без допуска, 3001 — администратор).
 
 ## 3. `TeacherScope` — доступные группы

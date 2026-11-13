@@ -34,13 +34,13 @@ public class AdminUsersController {
         return service.audit().map(a->ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(a))
                 .orElseGet(()->ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build());
     }
-    public enum UserStatus { PENDING, APPROVED, MEMBERSHIP_PENDING, MEMBERSHIP_ACTIVE }
+    public enum UserStatus { PENDING, APPROVED, MEMBERSHIP_PENDING, MEMBERSHIP_REJECTED, MEMBERSHIP_ACTIVE }
     public enum UserSort { name, email, role, unit, status, created, lastLogin }
     public enum SortDirection { asc, desc }
     @Schema(requiredProperties={"id","fullName","email","role","group","department","passwordSetAt","status","createdAt","lastLoginAt"})
     public record AdminUser(@Min(1) long id,String fullName,@Schema(format="email") String email,Role role,StudyGroupRef group,DepartmentInfo department,
             @Schema(types={"string","null"},format="date-time") Instant passwordSetAt,
-            @Schema(types={"string","null"},allowableValues={"PENDING","APPROVED","MEMBERSHIP_PENDING","MEMBERSHIP_ACTIVE"}) UserStatus status,
+            @Schema(types={"string","null"},allowableValues={"PENDING","APPROVED","MEMBERSHIP_PENDING","MEMBERSHIP_REJECTED","MEMBERSHIP_ACTIVE"}) UserStatus status,
             Instant createdAt,@Schema(types={"string","null"},format="date-time") Instant lastLoginAt) {}
     @Schema(requiredProperties={"items","nextCursor"})
     public record AdminUserPage(List<AdminUser> items,@Schema(types={"string","null"}) String nextCursor) {}

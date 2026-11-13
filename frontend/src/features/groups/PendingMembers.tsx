@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import type { components } from '../../api/schema';
 import { PageLayout, TeacherTableLayout } from '../../app/layouts/PageLayouts';
+import { RetryNotice } from '../auth/AuthLayout';
 import { useAuthSession } from '../auth/authQueries';
 import { dateTime, errorText, loadState } from '../tasks/helpers';
 import { TaskFailure } from '../tasks/shared';
@@ -51,10 +52,11 @@ function students(count: number) {
   return `${count} студентов ждут`;
 }
 
-function RequestsCard({ title, text }: { title: string; text: string }) {
+function RequestsCard({ title, text, retry }: { title: string; text?: string; retry?: () => void }) {
   return <section className="membership-notice" aria-label={title}><Stack gap="xs">
     <Title order={2}>{title}</Title>
-    <Text>{text}</Text>
+    {text && <Text>{text}</Text>}
+    {retry && <RetryNotice message="Не удалось загрузить заявки" retry={retry} />}
     <div><Button component={Link} to="/memberships">Проверить заявки</Button></div>
   </Stack></section>;
 }
@@ -62,6 +64,7 @@ function RequestsCard({ title, text }: { title: string; text: string }) {
 export function HeadRequestsNotice({ groupName }: { groupName: string }) {
   const query = usePendingMemberships();
   const count = query.data?.items.length ?? 0;
+  if (query.isError) return <RequestsCard title={`Заявки в группу ${groupName}`} retry={() => { void query.refetch(); }} />;
   if (count === 0) return null;
   return <RequestsCard title={`Заявки в группу ${groupName}`}
     text={`${students(count)} подтверждения членства. Вы староста группы: проверьте, что это ваши одногруппники, и подтвердите или отклоните заявки.`} />;
@@ -70,6 +73,7 @@ export function HeadRequestsNotice({ groupName }: { groupName: string }) {
 export function TeacherRequestsNotice() {
   const query = usePendingMemberships();
   const items = query.data?.items ?? [];
+  if (query.isError) return <RequestsCard title="Заявки в ваши группы" retry={() => { void query.refetch(); }} />;
   if (items.length === 0) return null;
   const byGroup = new Map<string, number>();
   for (const item of items) byGroup.set(item.group.name, (byGroup.get(item.group.name) ?? 0) + 1);

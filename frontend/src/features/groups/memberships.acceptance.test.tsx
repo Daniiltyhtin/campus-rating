@@ -256,3 +256,54 @@ describe('U15 старосты в справочнике — администр�
     expect(within(table).getByRole('button', { name: /Снять старосту/ })).toBeInTheDocument();
   });
 });
+
+
+describe('U15 восстановление после ошибок загрузки', { timeout: 15_000 }, () => {
+  it.each([
+    { user: head, path: '/', title: 'Заявки в группу ИВТ-21' },
+    { user: authUsers.teacher, path: '/groups', title: 'Заявки в ваши группы' },
+  ])('сохраняет вход в заявки при 500 на $path', async ({ user, path, title }) => {
+    createAuthScenario(user);
+    document.cookie = `campus-mock-user=${encodeURIComponent(JSON.stringify(user))}; Path=/`;
+    const state = memberships([request(1004, 'Орлов Никита Сергеевич', 'orlov@student.campus.test')]);
+    state.fail = true;
+    const view = mount(path);
+    const notice = within(await screen.findByRole('region', { name: title }));
+    expect(await notice.findByRole('alert')).toHaveTextContent('Не удалось загрузить заявки');
+    expect(notice.getByRole('link', { name: 'Проверить заявки' })).toHaveAttribute('href', '/memberships');
+    const reads = state.reads;
+    state.fail = false;
+    await view.user.click(notice.getByRole('button', { name: 'Повторить' }));
+    await waitFor(() => expect(state.reads).toBeGreaterThan(reads));
+    await waitFor(() => expect(notice.queryByRole('alert')).not.toBeInTheDocument());
+    expect(await screen.findByText(/1 студент ждёт/)).toBeInTheDocument();
+    const restored = within(screen.getByRole('region', { name: title }));
+    await view.user.click(restored.getByRole('link', { name: 'Проверить заявки' }));
+    await waitFor(() => expect(view.router.state.location.pathname).toBe('/memberships'));
+    expect(await screen.findByText('Орлов Никита Сергеевич')).toBeInTheDocument();
+  });
+
+  it.each(['faculties', 'groups'] as const)('показывает ошибку %s и включает поле после повтора', async (directory) => {
+    createAuthScenario(rejected);
+    let fail = true, reads = 0;
+    const path = directory === 'faculties' ? '*/api/v1/directory/faculties' : '*/api/v1/directory/faculties/1/groups';
+    server.use(http.get(path, () => {
+      reads++;
+      return fail ? problem('INTERNAL', 500) : HttpResponse.json({ items: directory === 'faculties' ? [faculty] : [ivt21, ivt22] });
+    }));
+    const view = mount('/');
+    await screen.findByText(/Заявка в ИВТ-21 отклонена/);
+    if (directory === 'groups') await choose(view.user, 'Факультет', faculty.name);
+    const label = directory === 'faculties' ? 'Факультет' : 'Группа';
+    expect(await screen.findByRole('alert')).toHaveTextContent(directory === 'faculties' ? 'Не удалось загрузить факультеты' : 'Не удалось загрузить справочник');
+    expect(screen.getByRole('combobox', { name: label })).toBeDisabled();
+    const before = reads;
+    fail = false;
+    await view.user.click(screen.getByRole('button', { name: 'Повторить' }));
+    await waitFor(() => expect(reads).toBeGreaterThan(before));
+    await waitFor(() => expect(screen.getByRole('combobox', { name: label })).toBeEnabled());
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    await choose(view.user, label, directory === 'faculties' ? faculty.name : ivt22.name);
+    expect(screen.getByRole('combobox', { name: label })).toHaveDisplayValue(directory === 'faculties' ? faculty.name : ivt22.name);
+  });
+});
