@@ -102,7 +102,7 @@ test('ADM-05: заявки → карточка Волкова → допуск 
     await page.setViewportSize({ width, height: 800 });
     await page.goto('/admin/users');
     const navigation = page.getByRole('navigation', { name: width === 360 ? 'Нижнее меню' : 'Боковое меню' });
-    await expect(navigation.getByRole('link', { name: /Пользователи/ }).getByLabel('Заявки преподавателей: 1')).toBeVisible();
+    await expect(navigation.getByRole('link', { name: /Пользователи/ }).getByLabel(/^Заявки преподавателей: \d+$/)).toBeVisible();
     await expect(navigation.getByRole('link', { name: 'Справочники', exact: true }).getByLabel(/Заявки преподавателей/)).toHaveCount(0);
     await page.getByRole('button', { name: 'Показать заявки', exact: true }).click();
     await expect(page.getByLabel('Роль', { exact: true })).toHaveValue('TEACHER');
@@ -119,11 +119,12 @@ test('ADM-05: заявки → карточка Волкова → допуск 
   await expect(page.getByText('Преподаватель допущен', { exact: true })).toBeVisible();
   for (const width of [360, 1280]) {
     await page.setViewportSize({ width, height: 800 });
-    await expect(page.getByLabel('Заявки преподавателей: 1')).toHaveCount(0);
+    // Параллельные сценарии регистрируют своих преподавателей, поэтому проверяется заявка Волкова, а не общий счётчик.
+    await page.goto('/admin/users?role=TEACHER&status=PENDING');
+    await expect(page.getByRole('table', { name: 'Пользователи' }).or(page.getByText('Никого не нашли', { exact: true }))).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Волков Максим Игоревич', exact: true })).toHaveCount(0);
     await page.goto('/admin/users');
     await expect(page.getByRole('table', { name: 'Пользователи' })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Заявки преподавателей/ })).toHaveCount(0);
-    await expect(page.getByLabel(/Заявки преподавателей:/)).toHaveCount(0);
     const volkov = page.getByRole('row').filter({ has: page.getByRole('link', { name: 'Волков Максим Игоревич', exact: true }) });
     await expect(volkov.getByText('Допущен', { exact: true })).toBeVisible();
     await evidence(page, `ADM-05-approved-${width}`);
