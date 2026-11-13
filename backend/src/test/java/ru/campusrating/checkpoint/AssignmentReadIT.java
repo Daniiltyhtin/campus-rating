@@ -1,5 +1,6 @@
 package ru.campusrating.checkpoint;
 
+import ru.campusrating.support.UserNameFixture;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -525,12 +526,13 @@ class AssignmentReadIT extends PostgresIntegrationTest {
 
     long person(Role personRole, String name) {
         long id =
-                jdbc.queryForObject(
-                        "insert into app_user(email,role,full_name) values (?,?,?) returning id",
-                        Long.class,
-                        UUID.randomUUID() + "@test.invalid",
-                        personRole.name(),
-                        name);
+                jdbc.queryForObject("insert into app_user(email,role,last_name,first_name,middle_name) values (?,?,?,?,?) returning id",
+                Long.class,
+                UUID.randomUUID() + "@test.invalid",
+                personRole.name(),
+                UserNameFixture.last(name),
+                UserNameFixture.first(name),
+                UserNameFixture.middle(name));
         people.add(id);
         return id;
     }

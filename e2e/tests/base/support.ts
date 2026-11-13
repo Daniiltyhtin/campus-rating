@@ -4,7 +4,7 @@ import type { components } from '../../../frontend/src/api/schema.js';
 import { mailToken } from '../../fixtures/greenmail.js';
 
 export type Schemas = components['schemas'];
-export type User = { id: number; email: string; password: string; fullName: string; api: Api };
+export type User = { id: number; email: string; password: string; fullName: string; lastName: string; firstName: string; middleName: string; api: Api };
 export class Api {
   constructor(readonly context: APIRequestContext) {}
   async get<T>(path: string): Promise<T> {
@@ -84,7 +84,7 @@ class Scenario {
   }
   identity(label = 'Студент') {
     const suffix = randomUUID().slice(0, 8);
-    return { email: `${this.prefix}-${suffix}@campus.test`, password: 'e2e-password-1', fullName: `${label} ${suffix}` };
+    return { email: `${this.prefix}-${suffix}@campus.test`, password: 'e2e-password-1', lastName: label, firstName: suffix, middleName: '', fullName: `${label} ${suffix}` };
   }
   async registerStudent(group = this.group, active = true) {
     const student = await this.register('student', { facultyId: group.faculty.id, groupId: group.id });
@@ -108,10 +108,11 @@ class Scenario {
   private async register(role: 'student' | 'teacher', target: object): Promise<User> {
     const api = await this.api();
     const identity = this.identity(role === 'student' ? 'Студент' : 'Преподаватель');
-    const result = await api.post<Schemas['RegistrationResult']>(`/api/v1/auth/register/${role}`, { ...identity, ...target }, 201);
+    const { fullName, ...registration } = identity;
+    const result = await api.post<Schemas['RegistrationResult']>(`/api/v1/auth/register/${role}`, { ...registration, ...target }, 201);
     await this.confirmEmail(identity.email);
     await api.signIn(identity.email, identity.password);
-    return { ...identity, id: result.userId, api };
+    return { ...registration, fullName, id: result.userId, api };
   }
   async approveTeacher(id: number) {
     await this.admin.send(`/api/v1/admin/teachers/${id}/approval`, { departmentId: this.department.id });

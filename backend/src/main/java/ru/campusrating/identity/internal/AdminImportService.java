@@ -56,19 +56,23 @@ public class AdminImportService {
         if(users.allowlisted(email)) return "email из списка преподавателей";
         var existing=users.byEmail(email);
         if(existing.isPresent()&&existing.get().role()!=ru.campusrating.identity.Role.STUDENT) return "email занят";
-        if(v.get(1).isEmpty()) return "пустое значение full_name";
-        if(v.get(1).length()>200) return "неверное ФИО";
-        if(existing.isPresent()&&!existing.get().fullName().equalsIgnoreCase(v.get(1))) return "email занят";
-        if(v.get(2).isEmpty()) return "пустое значение faculty_code";
-        var faculty=directory.facultyByCode(v.get(2));if(faculty.isEmpty()) return "факультет не найден";
-        if(v.get(3).isEmpty()) return "пустое значение group_code";
-        var group=directory.groupByCode(v.get(3));if(group.isEmpty()) return "группа не найдена";
+        if(v.get(1).isEmpty()) return "пустое значение last_name";
+        if(v.get(2).isEmpty()) return "пустое значение first_name";
+        if(v.get(1).length()>100) return "неверная фамилия";
+        if(v.get(2).length()>100) return "неверное имя";
+        if(v.get(3).length()>100) return "неверное отчество";
+        boolean sameName=existing.map(u -> users.sameName(u.id(),v.get(1),v.get(2),v.get(3))).orElse(false);
+        if(existing.isPresent()&&!sameName) return "email занят";
+        if(v.get(4).isEmpty()) return "пустое значение faculty_code";
+        var faculty=directory.facultyByCode(v.get(4));if(faculty.isEmpty()) return "факультет не найден";
+        if(v.get(5).isEmpty()) return "пустое значение group_code";
+        var group=directory.groupByCode(v.get(5));if(group.isEmpty()) return "группа не найдена";
         if(group.get().facultyId()!=faculty.get().id()) return "группа другого факультета";
         if(existing.isPresent()) {
-            var u=existing.get();var membership=users.memberships(List.of(u.id()));
-            return u.role()==ru.campusrating.identity.Role.STUDENT&&u.fullName().equalsIgnoreCase(v.get(1))&&!membership.isEmpty()&&membership.getFirst().groupId()==group.get().id()?"уже есть":"email занят";
+            var membership=users.memberships(List.of(existing.get().id()));
+            return sameName&&!membership.isEmpty()&&membership.getFirst().groupId()==group.get().id()?"уже есть":"email занят";
         }
-        long id=registration.importStudent(email,v.get(1),faculty.get().id(),group.get().id());setup.sendSetup(id,email);return null;
+        long id=registration.importStudent(email,v.get(1),v.get(2),v.get(3),faculty.get().id(),group.get().id());setup.sendSetup(id,email);return null;
     }
     private String teacher(List<String> v) {
         if(v.get(0).isEmpty()) return "пустое значение email";

@@ -1,5 +1,6 @@
 package ru.campusrating.admin;
 
+import ru.campusrating.support.UserNameFixture;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,12 @@ class U13AdminUsersIT extends U13HttpTestSupport {
     }
     @Test void r3CursorReturnsFiftyFiftyTwentyWithoutDuplicatesAndBreaksNameTiesById() {
         var expected = new ArrayList<Long>();
-        for (int i=0;i<120;i++) expected.add(jdbc.queryForObject("insert into app_user(email,role,full_name) values (?,'STUDENT',?) returning id",Long.class,email("page" + i),prefix + " Page " + String.format("%03d",i/2)));
+        for (int i=0;i<120;i++) expected.add(jdbc.queryForObject("insert into app_user(email,role,last_name,first_name,middle_name) values (?,'STUDENT',?,?,?) returning id",
+                Long.class,
+                email("page" + i),
+                UserNameFixture.last(prefix + " Page " + String.format("%03d",i/2)),
+                UserNameFixture.first(prefix + " Page " + String.format("%03d",i/2)),
+                UserNameFixture.middle(prefix + " Page " + String.format("%03d",i/2))));
         var all = new ArrayList<Long>();
         String cursor = null;
         for (int size : List.of(50,50,20)) {
@@ -72,7 +78,7 @@ class U13AdminUsersIT extends U13HttpTestSupport {
         request(restored,"POST","/api/v1/auth/password",Map.of("currentPassword",temporary,"newPassword",temporary),400);
         request(restored,"POST","/api/v1/auth/password",Map.of("currentPassword",temporary,"newPassword","New-synthetic-password-57"),204);
         var audit=get(restored,"/api/v1/me/password-audit");
-        assertThat(audit.at("/actor/fullName").asText()).isEqualTo("admin");
+        assertThat(audit.at("/actor/fullName").asText()).isEqualTo("admin admin");
         assertThat(java.time.Instant.parse(audit.path("createdAt").asText())).isEqualTo(clock.instant());
         assertThat(row(target).path("passwordSetAt").asText()).isEqualTo(clock.instant().toString());
         assertThat(get(USERS+"?search="+prefix).toString()).doesNotContain(temporary);

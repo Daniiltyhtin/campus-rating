@@ -22,11 +22,11 @@ class IdentityRepository {
             select u.*, exists(select 1 from teacher_approval a where a.teacher_id=u.id) approved from app_user u
             """;
     private static final String MEMBERS = """
-            select u.id,u.full_name,m.group_id,m.state,m.activated_at
+            select u.id,u.last_name,u.first_name,u.middle_name,m.group_id,m.state,m.activated_at
             from group_membership m join app_user u on u.id=m.student_id where u.role='STUDENT'
             """;
     private static final RowMapper<StudentMember> MEMBER = (rs, row) -> new StudentMember(rs.getLong("id"),
-            rs.getString("full_name"), rs.getLong("group_id"), GroupMembershipState.valueOf(rs.getString("state")),
+            UserAccount.fullName(rs), rs.getLong("group_id"), GroupMembershipState.valueOf(rs.getString("state")),
             rs.getTimestamp("activated_at") == null ? null : rs.getTimestamp("activated_at").toInstant());
     private final JdbcClient jdbc;
     private final Clock clock;
@@ -46,12 +46,19 @@ class IdentityRepository {
         return jdbc.sql("select exists(select 1 from teacher_allowlist where lower(email)=lower(:email))")
                 .param("email", email).query(Boolean.class).single();
     }
-    long insert(String email, String name, String hash, Role role, Long department, boolean mustChange) {
+    long insert(String email, String lastName, String firstName, String middleName, String hash, Role role, Long department, boolean mustChange) {
         return jdbc.sql("""
-                insert into app_user(email,full_name,password_hash,role,department_id,must_change_password,created_at)
-                values (:email,:name,:hash,:role,:department,:change,:created) returning id
-                """).param("email", email).param("name", name).param("hash", hash).param("role", role.name())
+                insert into app_user(email,last_name,first_name,middle_name,password_hash,role,department_id,must_change_password,created_at)
+                values (:email,:lastName,:firstName,:middleName,:hash,:role,:department,:change,:created) returning id
+                """).param("email", email).param("lastName", lastName).param("firstName", firstName).param("middleName", middleName).param("hash", hash).param("role", role.name())
                 .param("department", department).param("change", mustChange).param("created", Timestamp.from(clock.instant())).query(Long.class).single();
+    }
+    boolean sameName(long id, String lastName, String firstName, String middleName) {
+        return jdbc.sql("""
+                select lower(last_name)=lower(:last) and lower(first_name)=lower(:first)
+                    and lower(coalesce(middle_name,''))=lower(:middle) from app_user where id=:id
+                """).param("id", id).param("last", lastName).param("first", firstName)
+                .param("middle", middleName).query(Boolean.class).single();
     }
     void recordLogin(long id) {
         jdbc.sql("update app_user set last_login_at=:time where id=:id")
@@ -68,7 +75,7 @@ class IdentityRepository {
     }
     List<StudentMember> activeMembers(Collection<Long> groupIds) {
         if (groupIds.isEmpty()) return List.of();
-        return jdbc.sql(MEMBERS + " and m.state='ACTIVE' and m.group_id in (:ids) order by m.group_id,u.full_name,u.id")
+        return jdbc.sql(MEMBERS + " and m.state='ACTIVE' and m.group_id in (:ids) order by m.group_id,u.last_name,u.first_name,u.middle_name nulls first,u.id")
                 .param("ids", groupIds).query(MEMBER).list();
     }
     List<StudentMember> memberships(Collection<Long> ids) {
@@ -92,7 +99,7 @@ class IdentityRepository {
     }
     private static UserAccount user(ResultSet rs) throws SQLException {
         return new UserAccount(rs.getLong("id"), rs.getString("email"), Role.valueOf(rs.getString("role")),
-                rs.getString("full_name"), rs.getString("password_hash"), rs.getBoolean("must_change_password"),
+                UserAccount.fullName(rs), rs.getString("password_hash"), rs.getBoolean("must_change_password"),
                 rs.getObject("department_id", Long.class), rs.getBoolean("approved"));
     }
     private static TeacherGrant grant(ResultSet rs) throws SQLException {

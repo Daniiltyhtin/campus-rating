@@ -2,19 +2,22 @@ import { test, expect, login, logout, evidence, choose, type Schemas, type User 
 import { mailToken } from '../../fixtures/greenmail.js';
 import type { Page } from '@playwright/test';
 
-async function fill(page: Page, user: Pick<User, 'fullName' | 'email' | 'password'>, faculty: number, target: number, teacher = false) {
+async function fill(page: Page, user: Pick<User, 'lastName' | 'firstName' | 'middleName' | 'email' | 'password'>, faculty: number, target: number, teacher = false) {
   await page.goto('/register');
   if (teacher) await choose(page.getByText('Преподаватель', { exact: true }));
-  await page.getByLabel('ФИО', { exact: true }).fill(user.fullName);
+  await page.getByLabel('Фамилия', { exact: true }).fill(user.lastName);
+  await page.getByLabel('Имя', { exact: true }).fill(user.firstName);
+  await page.getByLabel('Отчество', { exact: true }).fill(user.middleName);
   await page.getByLabel('Email', { exact: true }).fill(user.email);
   await page.getByLabel('Пароль', { exact: true }).fill(user.password);
   await page.getByLabel('Факультет', { exact: true }).selectOption(String(faculty));
   await page.getByLabel(teacher ? 'Кафедра' : 'Группа', { exact: true }).selectOption(String(target));
 }
 
-test('REG-01 студент регистрируется и получает начальные балансы', async ({ page, scenario }) => {
+test('REG-01 Covers AE1, AE40 студент регистрируется и получает начальные балансы', async ({ page, scenario }) => {
   const user = scenario.identity();
   await fill(page, user, scenario.faculty.id, scenario.group.id);
+  await evidence(page, 'U24-registration-name-fields');
   await page.getByRole('button', { name: 'Зарегистрироваться' }).click();
   await expect(page.getByRole('status')).toContainText('Регистрация завершена. Подтвердите email по ссылке из письма.');
   await scenario.confirmEmail(user.email);
@@ -44,7 +47,7 @@ test('REG-01 ошибки полей: короткий пароль, занят�
   await expect(page.getByRole('option', { name: scenario.group.name, exact: true })).toHaveCount(0);
   const guest = await scenario.api();
   const response = await guest.send('/api/v1/auth/register/student', {
-    ...scenario.identity(), facultyId: 1, groupId: scenario.group.id,
+    lastName: 'Тест', firstName: 'Студент', email: scenario.identity().email, password: 'e2e-password-1', facultyId: 1, groupId: scenario.group.id,
   }, 'POST', 400);
   expect(await response.json()).toMatchObject({ code: 'VALIDATION_FAILED', fieldErrors: [{ field: 'groupId' }] });
   await page.getByLabel('Email', { exact: true }).fill(scenario.identity().email);

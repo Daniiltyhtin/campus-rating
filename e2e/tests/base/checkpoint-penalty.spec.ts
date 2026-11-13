@@ -118,7 +118,7 @@ test('PEN-03 возврат с комментарием возобновляет
   await evidence(page, 'PEN-03-return');
 });
 
-test('CP-03 приём пачкой: сданная принята, несданная пропущена с причиной', async ({ page, scenario }) => {
+test('CP-03 Covers AE40 приём пачкой: сданная принята, несданная пропущена с причиной', async ({ page, scenario }) => {
   const teacher = await scenario.registerTeacher();
   const submitted = await scenario.registerStudent(), open = await scenario.registerStudent();
   const fresh = await scenario.registerStudent();

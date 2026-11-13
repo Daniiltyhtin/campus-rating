@@ -27,14 +27,14 @@ it('rejects a mock mutation without CSRF and an incorrect login password', async
 
 it('keeps the selected group when a registered mock user signs in', async () => {
   await api.GET('/api/v1/auth/csrf');
-  await api.POST('/api/v1/auth/register/student', { body: { fullName: 'Тестов Алексей', email: 'selected-group@campus.test', password: 'new-password-1', facultyId: 1, groupId: 12 } });
+  await api.POST('/api/v1/auth/register/student', { body: { lastName: 'Тестов', firstName: 'Алексей', email: 'selected-group@campus.test', password: 'new-password-1', facultyId: 1, groupId: 12 } });
   const result = await api.POST('/api/v1/auth/login', { body: { email: 'selected-group@campus.test', password: 'new-password-1' } });
   expect(result.data).toMatchObject({ role: 'STUDENT', group: { id: 12 } });
 });
 
 it('33-5 rejects a group from another faculty as a field mismatch', async () => {
   await api.GET('/api/v1/auth/csrf');
-  await expect(api.POST('/api/v1/auth/register/student', { body: { fullName: 'Тест', email: 'mismatch@campus.test', password: 'new-password-1', facultyId: 2, groupId: 11 } })).rejects.toMatchObject({ code: 'VALIDATION_FAILED', problem: { status: 400, fieldErrors: [{ field: 'groupId', code: 'MISMATCH' }] } });
+  await expect(api.POST('/api/v1/auth/register/student', { body: { lastName: 'Тест', firstName: 'Тест', email: 'mismatch@campus.test', password: 'new-password-1', facultyId: 2, groupId: 11 } })).rejects.toMatchObject({ code: 'VALIDATION_FAILED', problem: { status: 400, fieldErrors: [{ field: 'groupId', code: 'MISMATCH' }] } });
 });
 it('33-3 invalidates the previous token after every successful auth mutation', async () => {
   const post = (path: string, token: string, body?: unknown) => fetch(`http://localhost/api/v1/auth/${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-XSRF-TOKEN': token }, body: body === undefined ? undefined : JSON.stringify(body) });
@@ -50,4 +50,26 @@ it('33-3 invalidates the previous token after every successful auth mutation', a
   expect((await post('logout', old)).status).toBe(204);
   expect(await (await post('login', old, { ...login, password: 'rotated-password-1' })).json()).toMatchObject({ code: 'CSRF_INVALID', status: 403 });
   expect((await post('login', await token(), { ...login, password: 'rotated-password-1' })).status).toBe(200);
+});
+
+
+it.each([undefined, '', '   '])('Covers AE1, AE41: mock student optional middleName %s composes fullName', async (middleName) => {
+  const email = `u24-${String(middleName)}@campus.test`;
+  await api.GET('/api/v1/auth/csrf');
+  await api.POST('/api/v1/auth/register/student', { body: {
+    lastName: 'Иванова', firstName: 'Мария', ...(middleName === undefined ? {} : { middleName }), email, password: 'new-password-1', facultyId: 1, groupId: 11,
+  } });
+  await api.POST('/api/v1/auth/login', { body: { email, password: 'new-password-1' } });
+  const me = (await api.GET('/api/v1/auth/me')).data;
+  expect(me).toMatchObject({ fullName: 'Иванова Мария' });
+  for (const field of ['lastName', 'firstName', 'middleName']) expect(me).not.toHaveProperty(field);
+});
+
+it('Covers AE2: mock teacher composes three name parts', async () => {
+  await api.GET('/api/v1/auth/csrf');
+  await api.POST('/api/v1/auth/register/teacher', { body: {
+    lastName: 'Петров', firstName: 'Павел', middleName: 'Петрович', email: 'u24-teacher@campus.test', password: 'new-password-1', departmentId: 101,
+  } });
+  const login = await api.POST('/api/v1/auth/login', { body: { email: 'u24-teacher@campus.test', password: 'new-password-1' } });
+  expect(login.data).toMatchObject({ fullName: 'Петров Павел Петрович' });
 });

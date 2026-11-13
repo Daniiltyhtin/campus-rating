@@ -26,7 +26,7 @@ public class ImportFileReader {
     }
     public enum Kind {
         GROUPS(List.of("faculty_code","group_code","group_name","admission_year")),
-        STUDENTS(List.of("email","full_name","faculty_code","group_code")),
+        STUDENTS(List.of("email","last_name","first_name","middle_name","faculty_code","group_code")),
         TEACHER_ALLOWLIST(List.of("email","department_code"));
         final List<String> header;Kind(List<String> header) {this.header=header;}
     }

@@ -1,5 +1,6 @@
 package ru.campusrating.feed;
 
+import ru.campusrating.support.UserNameFixture;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.URLDecoder;
@@ -272,8 +273,7 @@ abstract class PersonalFeedSupport extends PostgresIntegrationTest {
     }
 
     long register(String name, String fullName, long targetGroup) {
-        var body = Map.of("fullName", fullName, "email", prefix + name + "@example.test", "password", "Password-42",
-                "facultyId", faculty, "groupId", targetGroup);
+        var body = Map.of("lastName", UserNameFixture.last(fullName), "firstName", UserNameFixture.first(fullName), "middleName", UserNameFixture.middleOrEmpty(fullName), "email", prefix + name + "@example.test", "password", "Password-42", "facultyId", faculty, "groupId", targetGroup);
         long id = request(post("/api/v1/auth/register/student").content(JSON.writeValueAsString(body)), null, 201)
                 .path("userId").asLong();
         users.add(id);
@@ -281,8 +281,14 @@ abstract class PersonalFeedSupport extends PostgresIntegrationTest {
     }
 
     long user(String name, String role, String fullName, Long departmentId) {
-        long result = id("insert into app_user(email,role,full_name,password_hash,department_id) values (?,?,?,?,?) returning id",
-                prefix + name + "@example.test", role, fullName, passwordHash, departmentId);
+        long result = id("insert into app_user(email,role,last_name,first_name,middle_name,password_hash,department_id) values (?,?,?,?,?,?,?) returning id",
+                prefix + name + "@example.test",
+                role,
+                UserNameFixture.last(fullName),
+                UserNameFixture.first(fullName),
+                UserNameFixture.middle(fullName),
+                passwordHash,
+                departmentId);
         users.add(result);
         return result;
     }

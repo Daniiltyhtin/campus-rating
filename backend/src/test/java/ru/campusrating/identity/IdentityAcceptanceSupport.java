@@ -1,5 +1,6 @@
 package ru.campusrating.identity;
 
+import ru.campusrating.support.UserNameFixture;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.HttpCookie;
@@ -92,8 +93,7 @@ abstract class IdentityAcceptanceSupport extends PostgresIntegrationTest {
     protected String email(String suffix) { return prefix + "-" + suffix + "@example.test"; }
 
     protected Map<String, Object> studentBody(String email, long facultyId, long groupId) {
-        return Map.of("fullName", "Студент Приёмочный", "email", email, "password", PASSWORD,
-                "facultyId", facultyId, "groupId", groupId);
+        return Map.of("lastName", UserNameFixture.last("Студент Приёмочный"), "firstName", UserNameFixture.first("Студент Приёмочный"), "middleName", UserNameFixture.middleOrEmpty("Студент Приёмочный"), "email", email, "password", PASSWORD, "facultyId", facultyId, "groupId", groupId);
     }
 
     protected long registerStudent(Browser browser, String suffix) {
@@ -104,8 +104,7 @@ abstract class IdentityAcceptanceSupport extends PostgresIntegrationTest {
     }
 
     protected long registerTeacher(Browser browser, String suffix) {
-        var response = browser.post("/api/v1/auth/register/teacher", Map.of("fullName", "Преподаватель Приёмочный",
-                "email", email(suffix), "password", PASSWORD, "departmentId", department));
+        var response = browser.post("/api/v1/auth/register/teacher", Map.of("lastName", UserNameFixture.last("Преподаватель Приёмочный"), "firstName", UserNameFixture.first("Преподаватель Приёмочный"), "middleName", UserNameFixture.middleOrEmpty("Преподаватель Приёмочный"), "email", email(suffix), "password", PASSWORD, "departmentId", department));
         assertThat(response.status()).isEqualTo(201);
         return response.body().path("userId").asLong();
     }

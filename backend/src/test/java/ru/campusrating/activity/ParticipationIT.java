@@ -46,7 +46,7 @@ class ParticipationIT extends ActivityTestSupport {
         assertThat(list.path("maxPoints").asInt()).isEqualTo(100);
         assertThat(studentIds(list.path("items"))).containsExactly(student, neighbour);
         var first = list.path("items").get(0);
-        assertThat(first.path("student").path("fullName").asText()).isEqualTo("student");
+        assertThat(first.path("student").path("fullName").asText()).isEqualTo("student student");
         assertThat(first.path("group").path("id").asLong()).isEqualTo(group);
         assertThat(first.path("group").path("faculty").path("name").asText()).isEqualTo("Факультет");
         assertThat(first.path("enrolled").asBoolean()).isTrue();
@@ -143,7 +143,7 @@ class ParticipationIT extends ActivityTestSupport {
         assertThat(entry.amount()).isEqualTo(38);
         assertThat(entry.kind()).isEqualTo(EntryKind.ACTIVITY_AWARD);
         assertThat(entry.source()).isEqualTo(new Source(SourceType.ACTIVITY, academic, "Activity"));
-        assertThat(entry.author()).isEqualTo(new Author(teacher, "teacher"));
+        assertThat(entry.author()).isEqualTo(new Author(teacher, "teacher teacher"));
         assertThat(ledger.balances(neighbour).bua()).isEqualTo(75);
         assertThat(ledger.reconcile().mismatches()).noneMatch(mismatch -> students().contains(mismatch.studentId()));
         assertThat(request(get(path(academic)), teacherSession, 200).path("confirmedCount").asInt()).isEqualTo(2);

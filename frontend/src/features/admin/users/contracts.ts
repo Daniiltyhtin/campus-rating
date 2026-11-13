@@ -10,11 +10,11 @@ export function userFilters(params: URLSearchParams): Filters {
     search: params.get('search') ?? '',
     role: (['STUDENT', 'TEACHER', 'ADMIN'] as const).find((value) => value === params.get('role')),
     status: (['PENDING', 'APPROVED', 'MEMBERSHIP_PENDING', 'MEMBERSHIP_REJECTED', 'MEMBERSHIP_ACTIVE'] as const).find((value) => value === params.get('status')),
-    sort: sortKeys.find((value) => value === params.get('sort')) ?? 'name',
+    sort: sortKeys.find((value) => value === params.get('sort')) ?? 'lastName',
     direction: (['asc', 'desc'] as const).find((value) => value === params.get('direction')),
   };
 }
-export const sortKeys = ['name', 'email', 'role', 'unit', 'status', 'created', 'lastLogin'] as const;
+export const sortKeys = ['lastName', 'firstName', 'middleName', 'email', 'role', 'unit', 'status', 'created', 'lastLogin'] as const;
 export type SortKey = typeof sortKeys[number];
 export function defaultDirection(key: SortKey): 'asc' | 'desc' { return key === 'created' ? 'desc' : 'asc'; }
 export function userTime(value: string | null | undefined): string {

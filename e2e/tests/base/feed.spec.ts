@@ -1,7 +1,7 @@
 import { test, expect, login, logout, evidence, choose, type Schemas } from './support.js';
 import type { Locator, Page } from '@playwright/test';
 
-test('PRF-01 свой профиль: балансы, история R6, активные и завершённые задачи; чужой без сдачи', async ({ page, scenario }) => {
+test('PRF-01 Covers AE40 свой профиль: балансы, история R6, активные и завершённые задачи; чужой без сдачи', async ({ page, scenario }) => {
   const teacher = await scenario.registerTeacher(), student = await scenario.registerStudent();
   const viewer = await scenario.registerStudent();
   const active = await scenario.checkpoint(teacher), completed = await scenario.checkpoint(teacher);
@@ -43,7 +43,7 @@ test('PRF-01 свой профиль: балансы, история R6, акт�
   expect((await viewer.api.context.get(`/api/v1/assignments/${assignment.id}`)).status()).toBe(403);
 });
 
-test('FEED-01 новое начисление первым в ленте другого пользователя', async ({ page, scenario }) => {
+test('FEED-01 Covers AE40 новое начисление первым в ленте другого пользователя', async ({ page, scenario }) => {
   const teacher = await scenario.registerTeacher(), student = await scenario.registerStudent();
   const viewer = await scenario.registerStudent();
   const older = await scenario.activity(teacher, 'ACADEMIC', 3);
@@ -69,7 +69,7 @@ test('FEED-01 новое начисление первым в ленте дру�
   await evidence(page, 'FEED-01-newest');
 });
 
-test('RAT-01 преподаватель сортирует рейтинг по АР, БУА и БОА; студенту нет доступа', async ({ page, scenario }) => {
+test('RAT-01 Covers AE40 преподаватель сортирует рейтинг по АР, БУА и БОА; студенту нет доступа', async ({ page, scenario }) => {
   const teacher = await scenario.registerTeacher();
   const first = await scenario.registerStudent(), second = await scenario.registerStudent();
   const academic = await scenario.activity(teacher, 'ACADEMIC', 3, 100);

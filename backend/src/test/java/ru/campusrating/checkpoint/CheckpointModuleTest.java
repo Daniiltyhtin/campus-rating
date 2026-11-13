@@ -1,5 +1,6 @@
 package ru.campusrating.checkpoint;
 
+import ru.campusrating.support.UserNameFixture;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.Timestamp;
@@ -111,10 +112,12 @@ class CheckpointModuleTest {
     }
 
     long user(String role) {
-        return jdbc.queryForObject(
-                "insert into app_user(email,role,full_name) values (?,?, 'Имя') returning id",
+        return jdbc.queryForObject("insert into app_user(email,role,last_name,first_name,middle_name) values (?,?,?,?,?) returning id",
                 Long.class,
                 UUID.randomUUID() + "@test.invalid",
-                role);
+                role,
+                UserNameFixture.last("Имя"),
+                UserNameFixture.first("Имя"),
+                UserNameFixture.middle("Имя"));
     }
 }

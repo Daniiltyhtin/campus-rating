@@ -48,7 +48,7 @@ function scenario(rows = fixtures()) {
         return nameOrder(a, b);
       });
       const offset = Number(params.get('cursor') ?? 0);
-      return HttpResponse.json({ items: filtered.slice(offset, offset + 50), nextCursor: offset + 50 < filtered.length ? String(offset + 50) : null });
+      return HttpResponse.json({ items: filtered.slice(offset, offset + 50).map((row) => { const [lastName, firstName, ...middle] = row.fullName.split(' '); return { ...row, lastName, firstName, middleName: middle.join(' ') || null }; }), nextCursor: offset + 50 < filtered.length ? String(offset + 50) : null });
     }),
     http.post('*/api/v1/users/:id/temporary-password', ({ params }) => {
       const id = Number(params.id); writes.push(id);
@@ -64,7 +64,7 @@ afterEach(() => { cleanup(); disposeTeacherTests(); server.resetHandlers(); loca
 afterAll(() => { server.close(); configure({ asyncUtilTimeout: originalTimeout }); });
 async function table() { return within(await screen.findByRole('table', { name: 'Пользователи' })); }
 async function row(name: string) { return (await table()).getByRole('row', { name: new RegExp(name) }); }
-async function names() { return (await table()).getAllByRole('link').map((link) => link.textContent); }
+async function names() { return (await table()).getAllByRole('row').slice(1).map((row) => within(row).getAllByRole('cell').filter((cell) => ['Фамилия', 'Имя', 'Отчество'].includes(cell.getAttribute('data-label') ?? '')).map((cell) => cell.textContent).filter((text) => text !== '—').join(' ')); }
 async function search(view: ReturnType<typeof mountTeachers>, text: string) {
   const input = await screen.findByRole('textbox', { name: 'Поиск по ФИО или email' });
   await view.user.clear(input);
@@ -73,10 +73,10 @@ async function search(view: ReturnType<typeof mountTeachers>, text: string) {
 async function select(view: ReturnType<typeof mountTeachers>, label: string, value: string) { await choose(view.user, label, value); }
 
 describe('users-node AE1–AE10', { timeout: 20000 }, () => {
-  it('AE2: eight columns, statuses, affiliations and Moscow times; password time under the action', async () => {
+  it('Covers AE21; AE2: name columns, statuses, affiliations and Moscow times; password time under the action', async () => {
     scenario(); mountTeachers('/admin/users');
     const users = await table();
-    expect(users.getAllByRole('columnheader').map((cell) => cell.textContent)).toEqual(['ФИО', 'Email', 'Роль', 'Группа / кафедра', 'Статус', 'Создан', 'Последний вход', 'Действия']);
+    expect(users.getAllByRole('columnheader').map((cell) => cell.textContent).filter((text) => text !== 'ФИО')).toEqual(['Фамилия', 'Имя', 'Отчество', 'Email', 'Роль', 'Группа / кафедра', 'Статус', 'Создан', 'Последний вход', 'Действия']);
     for (const [name, status] of [['Смирнова', 'Членство подтверждено'], ['Орлов', 'Ждёт подтверждения'], ['Петров', 'Допущен'], ['Волков', 'Заявка']]) {
       const item = within(await row(name!));
       expect(item.getByText(status!, { exact: true })).toBeInTheDocument();
@@ -89,7 +89,7 @@ describe('users-node AE1–AE10', { timeout: 20000 }, () => {
     expect(within(await row('Петров')).getByText('Кафедра программной инженерии', { exact: true })).toBeInTheDocument();
     expect(within(await row('Петров')).getByText('Факультет информационных технологий', { exact: true })).toBeInTheDocument();
     const admin = within(await row('Администратор Демо'));
-    expect(admin.getAllByText('—', { exact: true })).toHaveLength(3);
+    expect(admin.getAllByText('—', { exact: true })).toHaveLength(4);
     expect(admin.queryByRole('button')).not.toBeInTheDocument();
   });
 
@@ -177,10 +177,10 @@ describe('users-node AE1–AE10', { timeout: 20000 }, () => {
   it('AE7: teacher name links to admission card, other roles to profile', async () => {
     scenario(); mountTeachers('/admin/users');
     const users = await table();
-    expect(users.getByRole('link', { name: 'Волков Максим Игоревич' })).toHaveAttribute('href', '/admin/users/teachers/2002');
-    expect(users.getByRole('link', { name: 'Петров Павел Петрович' })).toHaveAttribute('href', '/admin/users/teachers/2001');
-    expect(users.getByRole('link', { name: 'Смирнова Анна Олеговна' })).toHaveAttribute('href', '/users/1001');
-    expect(users.getByRole('link', { name: 'Администратор Демо' })).toHaveAttribute('href', '/users/3001');
+    expect(users.getByRole('link', { name: 'Волков' })).toHaveAttribute('href', '/admin/users/teachers/2002');
+    expect(users.getByRole('link', { name: 'Петров' })).toHaveAttribute('href', '/admin/users/teachers/2001');
+    expect(users.getByRole('link', { name: 'Смирнова' })).toHaveAttribute('href', '/users/1001');
+    expect(users.getByRole('link', { name: 'Администратор' })).toHaveAttribute('href', '/users/3001');
   });
 
   it('AE8: direct URL restores filters, search and sort and sends all to API', async () => {
@@ -279,13 +279,13 @@ describe('users-node AE1–AE10', { timeout: 20000 }, () => {
   it('column headers sort on the server both ways with aria-sort and created starts newest first', async () => {
     const state = scenario(), view = mountTeachers('/admin/users');
     const header = async (name: string) => (await table()).getByRole('columnheader', { name: new RegExp(name) });
-    expect(await header('ФИО')).toHaveAttribute('aria-sort', 'ascending');
+    expect(await header('Фамилия')).toHaveAttribute('aria-sort', 'ascending');
     expect(await header('Email')).toHaveAttribute('aria-sort', 'none');
     await view.user.click(within(await header('Email')).getByRole('button', { name: 'Email' }));
     await waitFor(() => expect(state.requests.at(-1)?.get('sort')).toBe('email'));
     expect(state.requests.at(-1)?.get('direction')).toBeNull();
     expect(await header('Email')).toHaveAttribute('aria-sort', 'ascending');
-    expect(await header('ФИО')).toHaveAttribute('aria-sort', 'none');
+    expect(await header('Фамилия')).toHaveAttribute('aria-sort', 'none');
     await view.user.click(within(await header('Email')).getByRole('button', { name: 'Email' }));
     await waitFor(() => expect(state.requests.at(-1)?.get('direction')).toBe('desc'));
     expect(await header('Email')).toHaveAttribute('aria-sort', 'descending');

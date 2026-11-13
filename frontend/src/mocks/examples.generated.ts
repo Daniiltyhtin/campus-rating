@@ -1146,7 +1146,54 @@ export const examples: ExampleOperation[] = [
         "status": 200,
         "contentType": "application/json",
         "body": {
-          "items": [],
+          "items": [
+            {
+              "id": 1002,
+              "fullName": "Иванова Мария",
+              "lastName": "Иванова",
+              "firstName": "Мария",
+              "middleName": null,
+              "email": "ivanova@student.campus.test",
+              "role": "STUDENT",
+              "group": {
+                "id": 11,
+                "name": "ИВТ-21",
+                "faculty": {
+                  "id": 1,
+                  "code": "ФИТ",
+                  "name": "Факультет информационных технологий"
+                }
+              },
+              "department": null,
+              "passwordSetAt": "2026-11-12T09:00:00Z",
+              "status": "MEMBERSHIP_ACTIVE",
+              "createdAt": "2026-11-12T09:00:00Z",
+              "lastLoginAt": null
+            },
+            {
+              "id": 1001,
+              "fullName": "Смирнова Анна Олеговна",
+              "lastName": "Смирнова",
+              "firstName": "Анна",
+              "middleName": "Олеговна",
+              "email": "smirnova@student.campus.test",
+              "role": "STUDENT",
+              "group": {
+                "id": 11,
+                "name": "ИВТ-21",
+                "faculty": {
+                  "id": 1,
+                  "code": "ФИТ",
+                  "name": "Факультет информационных технологий"
+                }
+              },
+              "department": null,
+              "passwordSetAt": "2026-11-12T09:00:00Z",
+              "status": "MEMBERSHIP_ACTIVE",
+              "createdAt": "2026-11-12T09:00:00Z",
+              "lastLoginAt": "2026-11-13T09:00:00Z"
+            }
+          ],
           "nextCursor": null
         }
       },

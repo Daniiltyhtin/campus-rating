@@ -29,13 +29,13 @@ function Users() {
     setParams((previous) => { const next = new URLSearchParams(previous); if (value) next.set(key, value); else next.delete(key); return next; }, { replace: true });
   }
   const items = query.data?.pages.flatMap((p) => p.items) ?? [];
-  const filtered = Boolean(filters.search || filters.role || filters.status || filters.sort !== 'name' || filters.direction);
+  const filtered = Boolean(filters.search || filters.role || filters.status || filters.sort !== 'lastName' || filters.direction);
   const direction = filters.direction ?? defaultDirection(filters.sort!);
   function sortBy(key: SortKey) {
     setParams((previous) => {
       const next = new URLSearchParams(previous);
       const flip = filters.sort === key ? (direction === 'asc' ? 'desc' : 'asc') : defaultDirection(key);
-      if (key === 'name') next.delete('sort'); else next.set('sort', key);
+      if (key === 'lastName') next.delete('sort'); else next.set('sort', key);
       if (flip === defaultDirection(key)) next.delete('direction'); else next.set('direction', flip);
       return next;
     }, { replace: true });
@@ -49,21 +49,24 @@ function Users() {
         <strong>{requestsTitle(pending.length)}</strong>
         <span>{pending.length === 1 ? `${first.fullName} · ${first.department.name}` : `${first.fullName} и ещё ${pending.length - 1}`}</span>
       </div>
-      <Button onClick={() => setParams({ role: 'TEACHER', status: 'PENDING', ...(filters.sort === 'name' ? {} : { sort: filters.sort! }) })}>Показать заявки</Button>
+      <Button onClick={() => setParams({ role: 'TEACHER', status: 'PENDING', ...(filters.sort === 'lastName' ? {} : { sort: filters.sort! }) })}>Показать заявки</Button>
     </div>}
     <form className="admin-users-filters" role="search" onSubmit={(event) => event.preventDefault()}>
       <TextInput label="Поиск" aria-label="Поиск по ФИО или email" placeholder="ФИО или email" leftSection={magnifier}
         value={filters.search} onChange={(e) => change('search', e.currentTarget.value)} />
       <NativeSelect label="Роль" value={filters.role ?? ''} onChange={(e) => change('role', e.currentTarget.value)} data={[{ value: '', label: 'Все' }, { value: 'STUDENT', label: 'Студенты' }, { value: 'TEACHER', label: 'Преподаватели' }, { value: 'ADMIN', label: 'Администраторы' }]} />
       <NativeSelect label="Статус" value={filters.status ?? ''} onChange={(e) => change('status', e.currentTarget.value)} data={[{ value: '', label: 'Все' }, ...Object.entries(statusNames).map(([value, label]) => ({ value, label }))]} />
-      <NativeSelect className="admin-users-sort" label="Сортировка" value={filters.sort} onChange={(e) => { setParams((previous) => { const next = new URLSearchParams(previous); next.delete('direction'); if (e.currentTarget.value === 'name') next.delete('sort'); else next.set('sort', e.currentTarget.value); return next; }, { replace: true }); }} data={[{ value: 'name', label: 'ФИО' }, { value: 'email', label: 'Email' }, { value: 'role', label: 'Роль' }, { value: 'unit', label: 'Группа / кафедра' }, { value: 'status', label: 'Статус' }, { value: 'created', label: 'Создан' }, { value: 'lastLogin', label: 'Последний вход' }]} />
+      <NativeSelect className="admin-users-sort" label="Сортировка" value={filters.sort} onChange={(e) => { setParams((previous) => { const next = new URLSearchParams(previous); next.delete('direction'); if (e.currentTarget.value === 'lastName') next.delete('sort'); else next.set('sort', e.currentTarget.value); return next; }, { replace: true }); }} data={[{ value: 'lastName', label: 'Фамилия' }, { value: 'firstName', label: 'Имя' }, { value: 'middleName', label: 'Отчество' }, { value: 'email', label: 'Email' }, { value: 'role', label: 'Роль' }, { value: 'unit', label: 'Группа / кафедра' }, { value: 'status', label: 'Статус' }, { value: 'created', label: 'Создан' }, { value: 'lastLogin', label: 'Последний вход' }]} />
     </form>
     <div className="admin-users-summary">
       <Text c="dimmed" size="sm">{query.data ? `Показано: ${items.length}${query.hasNextPage ? ', есть ещё' : ''}` : ''}</Text>
       {filtered && <UnstyledButton className="admin-users-reset" onClick={() => setParams({}, { replace: true })}>Сбросить фильтры</UnstyledButton>}
     </div>
     <div className="admin-users-table"><TeacherTableLayout caption="Пользователи" rows={items} keyForRow={(r) => r.id} state={loadState(query, items.length === 0, 'Никого не нашли')}
-      columns={[{ key: 'name', title: 'ФИО', sort: sortable('name'), render: (r) => <Anchor component={Link} fw={700} to={r.role === 'TEACHER' ? `/admin/users/teachers/${r.id}` : `/users/${r.id}`}>{r.fullName}</Anchor> },
+      columns={[{ key: 'lastName', title: 'Фамилия', className: 'admin-users-name-part', sort: sortable('lastName'), render: (r) => <Anchor component={Link} fw={700} to={r.role === 'TEACHER' ? `/admin/users/teachers/${r.id}` : `/users/${r.id}`}>{r.lastName}</Anchor> },
+        { key: 'firstName', title: 'Имя', className: 'admin-users-name-part', sort: sortable('firstName'), render: (r) => r.firstName },
+        { key: 'middleName', title: 'Отчество', className: 'admin-users-name-part', sort: sortable('middleName'), render: (r) => r.middleName ?? '—' },
+        { key: 'name', title: 'ФИО', className: 'admin-users-full-name', render: (r) => <Anchor component={Link} fw={700} to={r.role === 'TEACHER' ? `/admin/users/teachers/${r.id}` : `/users/${r.id}`}>{r.fullName}</Anchor> },
         { key: 'email', title: 'Email', sort: sortable('email'), render: (r) => <span className="admin-users-muted admin-users-keep">{r.email}</span> },
         { key: 'role', title: 'Роль', sort: sortable('role'), render: (r) => <span className="admin-users-keep">{roleNames[r.role]}</span> },
         { key: 'group', title: 'Группа / кафедра', sort: sortable('unit'), render: (r) => r.group ? <span className="admin-users-keep">{r.group.name}</span> : r.department ? <span className="admin-users-unit"><span>{r.department.name}</span><span className="admin-users-muted admin-users-small">{r.department.faculty.name}</span></span> : '—' },

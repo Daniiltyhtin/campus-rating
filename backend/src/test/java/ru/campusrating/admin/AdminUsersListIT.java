@@ -1,5 +1,6 @@
 package ru.campusrating.admin;
 
+import ru.campusrating.support.UserNameFixture;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +19,11 @@ class AdminUsersListIT extends U13HttpTestSupport {
     }
     private long namedStudent(String suffix, String name) {
         long id = student(suffix, faculty, group);
-        jdbc.update("update app_user set full_name=? where id=?", name, id);
+        jdbc.update("update app_user set last_name=?,first_name=?,middle_name=? where id=?",
+                UserNameFixture.last(name),
+                UserNameFixture.first(name),
+                UserNameFixture.middle(name),
+                id);
         return id;
     }
 
@@ -93,17 +98,25 @@ class AdminUsersListIT extends U13HttpTestSupport {
         assertThat(row(volkov).path("lastLoginAt").isNull()).isTrue();
     }
 
-    @ParameterizedTest @CsvSource({"name,false", "created,false", "lastLogin,false", "name,true", "created,true", "lastLogin,true"})
+    @ParameterizedTest @CsvSource({"lastName,false", "firstName,false", "middleName,false", "created,false", "lastLogin,false", "lastName,true", "firstName,true", "middleName,true", "created,true", "lastLogin,true"})
     void ae6KeysetPagesFiftyFiftyTwentyIncludingEqualNameAndTime(String sort, boolean equalNames) {
         var expected = new ArrayList<Long>();
         for (int i = 1; i <= 120; i++) {
-            long id = jdbc.queryForObject("insert into app_user(email,role,full_name) values (?,'STUDENT',?) returning id", Long.class,
-                    email("page" + i), "Тест " + String.format("%03d", i));
+            long id = jdbc.queryForObject("insert into app_user(email,role,last_name,first_name,middle_name) values (?,'STUDENT',?,?,?) returning id",
+                Long.class,
+                email("page" + i),
+                UserNameFixture.last("Тест " + String.format("%03d", i)),
+                UserNameFixture.first("Тест " + String.format("%03d", i)),
+                UserNameFixture.middle("Тест " + String.format("%03d", i)));
             jdbc.update("insert into group_membership(student_id,group_id,state) values (?,?,'PENDING')", id, group);
             expected.add(id);
         }
         jdbc.update("update app_user set created_at=? where email like ?", java.sql.Timestamp.from(Instant.parse("2026-11-12T15:00:00Z")), prefix + "page%");
-        if (equalNames) jdbc.update("update app_user set full_name='Тест 050' where email like ?", prefix + "page%");
+        if (equalNames) jdbc.update("update app_user set last_name=?,first_name=?,middle_name=? where email like ?",
+                UserNameFixture.last("Тест 050"),
+                UserNameFixture.first("Тест 050"),
+                UserNameFixture.middle("Тест 050"),
+                prefix + "page%");
         var all = new ArrayList<Long>();
         String cursor = null;
         for (int size : List.of(50, 50, 20)) {
@@ -119,7 +132,7 @@ class AdminUsersListIT extends U13HttpTestSupport {
         String parameters = "?search=" + prefix + "page&role=STUDENT&status=MEMBERSHIP_PENDING&sort=" + sort;
         for (String changed : List.of(parameters.replace(prefix + "page", prefix), parameters.replace("role=STUDENT", "role=TEACHER"),
                 parameters.replace("status=MEMBERSHIP_PENDING", "status=MEMBERSHIP_ACTIVE"),
-                parameters.replace("sort=" + sort, "sort=" + (sort.equals("name") ? "created" : "name")))) {
+                parameters.replace("sort=" + sort, "sort=" + (sort.equals("lastName") ? "created" : "lastName")))) {
             problem(admin, "GET", USERS + changed + "&cursor=" + firstCursor, null, 400, "VALIDATION_FAILED");
         }
     }
@@ -127,5 +140,28 @@ class AdminUsersListIT extends U13HttpTestSupport {
     @Test void nonAdministratorsCannotReadUserList() {
         student("student", faculty, group); teacher("teacher", "Петров Павел Петрович");
         for (var session : List.of(login("student"), login("teacher"))) problem(session, "GET", USERS + "?status=PENDING&sort=created", null, 403, "FORBIDDEN");
+    }
+
+    @Test @org.junit.jupiter.api.DisplayName("Covers AE24: full name substring, case insensitive, one character ignored")
+    void searchesComposedName() {
+        long maria = namedStudent("maria", "Иванова Мария");
+        long anna = namedStudent("anna", "Сидорова Анна");
+        for (String term : List.of("ова мар", "МАРИЯ")) assertThat(ids(get(USERS + "?search=" + term))).contains(maria).doesNotContain(anna);
+        assertThat(get(USERS + "?search=Я")).isEqualTo(get(USERS));
+    }
+
+    @Test @org.junit.jupiter.api.DisplayName("Covers AE41: only admin list adds three name fields")
+    void listContainsPartsAndFullName() {
+        var user = row(namedStudent("maria", "Иванова Мария"));
+        assertThat(user.path("lastName").asText()).isEqualTo("Иванова");
+        assertThat(user.path("firstName").asText()).isEqualTo("Мария");
+        assertThat(user.has("middleName")).isTrue();
+        assertThat(user.path("middleName").isNull()).isTrue();
+        assertThat(user.path("fullName").asText()).isEqualTo("Иванова Мария");
+    }
+
+    @Test @org.junit.jupiter.api.DisplayName("Covers AE23: legacy sort name is rejected")
+    void rejectsLegacySort() {
+        problem(admin, "GET", USERS + "?sort=name", null, 400, "VALIDATION_FAILED");
     }
 }

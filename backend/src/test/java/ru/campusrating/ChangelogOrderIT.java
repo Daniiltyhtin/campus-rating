@@ -73,14 +73,25 @@ class ChangelogOrderIT extends PostgresIntegrationTest {
                     .isEqualTo(history);
             assertTable(jdbc, "u2_order_demo", false);
             assertChangesetCount(jdbc, "demo", 0);
-
-            update(url, "default,demo");
-            assertTable(jdbc, "u2_order_demo", true);
-            assertChangesetCount(jdbc, "demo", 1);
-            assertChangesetCount(jdbc, "early", 1);
-            assertChangesetCount(jdbc, "late", 1);
         } finally {
             admin.execute("drop database if exists " + databaseName + " with (force)");
+        }
+    }
+
+    @org.junit.jupiter.api.Test
+    void cleanDemoRunsBothBranchesAndDemoExactlyOnce() throws Exception {
+        try (var db = new ru.campusrating.support.NameMigrationDatabase(temporary)) {
+            addFixture(EARLY);
+            addFixture(LATE);
+            addFixture(DEMO);
+            db.includeLate();
+            db.update("default,demo");
+            assertTable(db.jdbc, "u2_order_demo", true);
+            assertTable(db.jdbc, "u2_order_early", true);
+            assertTable(db.jdbc, "u2_order_late", true);
+            assertChangesetCount(db.jdbc, "demo", 1);
+            assertChangesetCount(db.jdbc, "early", 1);
+            assertChangesetCount(db.jdbc, "late", 1);
         }
     }
 

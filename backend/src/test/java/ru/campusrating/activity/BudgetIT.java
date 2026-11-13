@@ -67,7 +67,7 @@ class BudgetIT extends ActivityTestSupport {
         assertThat(latest.path("activity").path("id").asLong()).isEqualTo(second);
         assertThat(latest.path("activity").path("title").asText()).isEqualTo("Activity");
         assertThat(latest.path("activity").path("type").asText()).isEqualTo("ACADEMIC");
-        assertThat(latest.path("student").path("fullName").asText()).isEqualTo("classmate");
+        assertThat(latest.path("student").path("fullName").asText()).isEqualTo("classmate classmate");
         assertThat(latest.path("group").path("id").asLong()).isEqualTo(group);
         assertThat(latest.path("group").path("faculty").path("code").asText()).isEqualTo(prefix);
         assertThat(latest.path("level").asInt()).isEqualTo(25);

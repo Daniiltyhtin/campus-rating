@@ -47,3 +47,7 @@ databaseChangeLog:
       path: demo
       relativeToChangelogFile: true
       errorIfMissingOrEmpty: false
+  - includeAll:
+      path: late
+      relativeToChangelogFile: true
+      errorIfMissingOrEmpty: false

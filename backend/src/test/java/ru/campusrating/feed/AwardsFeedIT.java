@@ -1,5 +1,6 @@
 package ru.campusrating.feed;
 
+import ru.campusrating.support.UserNameFixture;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -50,8 +51,16 @@ class AwardsFeedIT extends FeedTestSupport {
             expected.add(award(i % 2 == 0 ? student : outsider, Currency.BOA, i + 1));
         }
         Collections.reverse(expected);
-        update("update app_user set full_name=? where id=?", "Новое ФИО студента", student);
-        update("update app_user set full_name=? where id=?", "Текущее ФИО автора", teacher);
+        update("update app_user set last_name=?,first_name=?,middle_name=? where id=?",
+                UserNameFixture.last("Новое ФИО студента"),
+                UserNameFixture.first("Новое ФИО студента"),
+                UserNameFixture.middle("Новое ФИО студента"),
+                student);
+        update("update app_user set last_name=?,first_name=?,middle_name=? where id=?",
+                UserNameFixture.last("Текущее ФИО автора"),
+                UserNameFixture.first("Текущее ФИО автора"),
+                UserNameFixture.middle("Текущее ФИО автора"),
+                teacher);
         var session = login("student");
         var page = request(get(AWARDS), session, 200);
         assertThat(ids(page.path("items"), "entryId")).containsExactlyElementsOf(expected.subList(0, 20));

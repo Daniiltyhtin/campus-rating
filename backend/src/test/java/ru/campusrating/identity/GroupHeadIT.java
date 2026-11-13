@@ -46,7 +46,7 @@ class GroupHeadIT extends AdminHttpTestSupport {
         var assigned = request(admin, "PUT", head(group), Map.of("studentId", head), 200);
         assertThat(assigned.path("groupId").asLong()).isEqualTo(group);
         assertThat(assigned.at("/student/id").asLong()).isEqualTo(head);
-        assertThat(assigned.at("/student/fullName").asText()).isEqualTo("head");
+        assertThat(assigned.at("/student/fullName").asText()).isEqualTo("head head");
         assertThat(headOf(group)).isEqualTo(head);
         var session = login("head");
         assertThat(get(session, ME).path("groupHead").asBoolean()).isTrue();

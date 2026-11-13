@@ -502,7 +502,45 @@ paths:
               schema:
                 $ref: "#/components/schemas/AdminUserPage"
               example:
-                items: []
+                items:
+                  - id: 1002
+                    fullName: Иванова Мария
+                    lastName: Иванова
+                    firstName: Мария
+                    middleName: null
+                    email: ivanova@student.campus.test
+                    role: STUDENT
+                    group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    department: null
+                    passwordSetAt: '2026-11-12T09:00:00Z'
+                    status: MEMBERSHIP_ACTIVE
+                    createdAt: '2026-11-12T09:00:00Z'
+                    lastLoginAt: null
+                  - id: 1001
+                    fullName: Смирнова Анна Олеговна
+                    lastName: Смирнова
+                    firstName: Анна
+                    middleName: Олеговна
+                    email: smirnova@student.campus.test
+                    role: STUDENT
+                    group:
+                      id: 11
+                      name: ИВТ-21
+                      faculty:
+                        id: 1
+                        code: ФИТ
+                        name: Факультет информационных технологий
+                    department: null
+                    passwordSetAt: '2026-11-12T09:00:00Z'
+                    status: MEMBERSHIP_ACTIVE
+                    createdAt: '2026-11-12T09:00:00Z'
+                    lastLoginAt: '2026-11-13T09:00:00Z'
                 nextCursor: null
         "400":
           $ref: "#/components/responses/ValidationFailed"
@@ -534,11 +572,18 @@ paths:
             enum: [PENDING, APPROVED, MEMBERSHIP_PENDING, MEMBERSHIP_REJECTED, MEMBERSHIP_ACTIVE]
         - name: sort
           in: query
-          description: Колонка сортировки; при равенстве — ФИО, затем id.
+          description: >-
+            Колонка сортировки; по умолчанию lastName по возрастанию.
+            При равенстве lastName — firstName, middleName, id;
+            firstName — lastName, middleName, id; middleName — lastName, firstName, id;
+            остальных колонок — lastName, firstName, middleName, id.
+            Дополнительные ключи всегда по возрастанию при любом направлении основного.
+            Пустое отчество как основной ключ идёт после заполненных в обоих направлениях,
+            как дополнительный — перед заполненными.
           schema:
             type: string
-            enum: [name, email, role, unit, status, created, lastLogin]
-            default: name
+            enum: [lastName, firstName, middleName, email, role, unit, status, created, lastLogin]
+            default: lastName
         - name: direction
           in: query
           description: Направление; по умолчанию desc для created, asc для остальных. lastLogin asc — сначала без входа.
@@ -1056,7 +1101,9 @@ paths:
             schema:
               $ref: '#/components/schemas/StudentRegistration'
             example:
-              fullName: Смирнова Анна Олеговна
+              lastName: Смирнова
+              firstName: Анна
+              middleName: Олеговна
               email: smirnova@student.campus.test
               password: demo-student-1
               facultyId: 1
@@ -1144,7 +1191,9 @@ paths:
             schema:
               $ref: '#/components/schemas/TeacherRegistration'
             example:
-              fullName: Волков Максим Игоревич
+              lastName: Волков
+              firstName: Максим
+              middleName: null
               email: volkov@campus.test
               password: teacher-pass-1
               departmentId: 101
@@ -6071,6 +6120,9 @@ components:
       required:
         - id
         - fullName
+        - lastName
+        - firstName
+        - middleName
         - email
         - role
         - group
@@ -6086,6 +6138,19 @@ components:
           minimum: 1
         fullName:
           type: string
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 100
+        middleName:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 100
+          description: null, если отчество отсутствует.
         email:
           type: string
           format: email
@@ -6581,12 +6646,6 @@ components:
       minLength: 8
       maxLength: 72
       description: От 8 символов и не больше 72 байт в UTF-8 (предел BCrypt); байты проверяет сервер.
-    FullName:
-      type: string
-      minLength: 1
-      maxLength: 200
-      description: ФИО одной строкой; пробелы по краям сервер отбрасывает.
-
     EmailVerificationMode:
       type: string
       description: '`campus.mail.email-verification` стенда: `REQUIRED` — `required`, `OFF` — `off`.'
@@ -6684,10 +6743,23 @@ components:
 
     StudentRegistration:
       type: object
-      required: [fullName, email, password, facultyId, groupId]
+      description: Ошибки проверки ФИО возвращаются на поля lastName, firstName, middleName.
+      required: [lastName, firstName, email, password, facultyId, groupId]
       properties:
-        fullName:
-          $ref: '#/components/schemas/FullName'
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Фамилия; пробелы по краям сервер отбрасывает, длину проверяет после обрезки. Допустимы любые символы, включая пробелы и дефисы внутри.
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Имя; пробелы по краям сервер отбрасывает, длину проверяет после обрезки. Допустимы любые символы, включая пробелы и дефисы внутри.
+        middleName:
+          type: [string, "null"]
+          maxLength: 100
+          description: Отчество необязательно; пробелы по краям сервер отбрасывает, длину проверяет после обрезки. Допустимы любые символы, включая пробелы и дефисы внутри. Отсутствующее значение, null, пустую строку и строку из одних пробелов сервер сохраняет как отсутствие отчества (null в API).
         email:
           $ref: '#/components/schemas/Email'
         password:
@@ -6698,10 +6770,23 @@ components:
           $ref: '#/components/schemas/Id'
     TeacherRegistration:
       type: object
-      required: [fullName, email, password, departmentId]
+      description: Ошибки проверки ФИО возвращаются на поля lastName, firstName, middleName.
+      required: [lastName, firstName, email, password, departmentId]
       properties:
-        fullName:
-          $ref: '#/components/schemas/FullName'
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Фамилия; пробелы по краям сервер отбрасывает, длину проверяет после обрезки. Допустимы любые символы, включая пробелы и дефисы внутри.
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Имя; пробелы по краям сервер отбрасывает, длину проверяет после обрезки. Допустимы любые символы, включая пробелы и дефисы внутри.
+        middleName:
+          type: [string, "null"]
+          maxLength: 100
+          description: Отчество необязательно; пробелы по краям сервер отбрасывает, длину проверяет после обрезки. Допустимы любые символы, включая пробелы и дефисы внутри. Отсутствующее значение, null, пустую строку и строку из одних пробелов сервер сохраняет как отсутствие отчества (null в API).
         email:
           $ref: '#/components/schemas/Email'
         password:

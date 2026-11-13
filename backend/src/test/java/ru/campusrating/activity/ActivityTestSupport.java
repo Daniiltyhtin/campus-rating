@@ -1,5 +1,6 @@
 package ru.campusrating.activity;
 
+import ru.campusrating.support.UserNameFixture;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.URLDecoder;
@@ -219,8 +220,14 @@ abstract class ActivityTestSupport extends PostgresIntegrationTest {
     }
 
     long user(String name, String role, Long department) {
-        return id("insert into app_user(email,role,full_name,password_hash,department_id) values (?,?,?,?,?) returning id",
-                prefix + name + "@example.test", role, name, passwords.encode("Password-42"), department);
+        return id("insert into app_user(email,role,last_name,first_name,middle_name,password_hash,department_id) values (?,?,?,?,?,?,?) returning id",
+                prefix + name + "@example.test",
+                role,
+                UserNameFixture.last(name),
+                UserNameFixture.first(name),
+                UserNameFixture.middle(name),
+                passwords.encode("Password-42"),
+                department);
     }
 
     long student(String name, long target, String state) {

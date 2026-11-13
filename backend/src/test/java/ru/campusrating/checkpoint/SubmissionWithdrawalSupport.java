@@ -1,5 +1,6 @@
 package ru.campusrating.checkpoint;
 
+import ru.campusrating.support.UserNameFixture;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.URLDecoder;
@@ -164,8 +165,14 @@ abstract class SubmissionWithdrawalSupport extends PostgresIntegrationTest {
     long id(String sql, Object... parameters) { return jdbc.queryForObject(sql, Long.class, parameters); }
 
     private long person(String name, String role, Long departmentId) {
-        return id("insert into app_user(email,role,full_name,password_hash,department_id) values (?,?,?,?,?) returning id",
-                prefix + name + "@example.test", role, name, passwords.encode("Password-42"), departmentId);
+        return id("insert into app_user(email,role,last_name,first_name,middle_name,password_hash,department_id) values (?,?,?,?,?,?,?) returning id",
+                prefix + name + "@example.test",
+                role,
+                UserNameFixture.last(name),
+                UserNameFixture.first(name),
+                UserNameFixture.middle(name),
+                passwords.encode("Password-42"),
+                departmentId);
     }
 
     private Browser login(String name) {

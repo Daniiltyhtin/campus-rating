@@ -1,5 +1,6 @@
 package ru.campusrating.feed;
 
+import ru.campusrating.support.UserNameFixture;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.URLDecoder;
@@ -230,15 +231,25 @@ abstract class FeedTestSupport extends PostgresIntegrationTest {
     }
 
     long user(String name, String role, Long department) {
-        long result = id("insert into app_user(email,role,full_name,password_hash,department_id) values (?,?,?,?,?) returning id",
-                prefix + name + "@example.test", role, name, passwordHash, department);
+        long result = id("insert into app_user(email,role,last_name,first_name,middle_name,password_hash,department_id) values (?,?,?,?,?,?,?) returning id",
+                prefix + name + "@example.test",
+                role,
+                UserNameFixture.last(name),
+                UserNameFixture.first(name),
+                UserNameFixture.middle(name),
+                passwordHash,
+                department);
         users.add(result);
         return result;
     }
 
     long student(String login, String name, long target, String state) {
         long result = user(login, "STUDENT", null);
-        update("update app_user set full_name=? where id=?", name, result);
+        update("update app_user set last_name=?,first_name=?,middle_name=? where id=?",
+                UserNameFixture.last(name),
+                UserNameFixture.first(name),
+                UserNameFixture.middle(name),
+                result);
         update("insert into group_membership(student_id,group_id,state,activated_at) values (?,?,?,?)",
                 result, target, state, state.equals("ACTIVE") ? clock.instant() : null);
         return result;

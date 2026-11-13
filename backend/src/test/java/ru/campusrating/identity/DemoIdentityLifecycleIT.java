@@ -1,5 +1,6 @@
 package ru.campusrating.identity;
 
+import ru.campusrating.support.UserNameFixture;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -17,8 +18,7 @@ class DemoIdentityLifecycleIT {
             try (var first = IdentityLifecycleSupport.start(database, "demo", Map.of())) {
                 assertDemoAccounts(first);
                 var browser = IdentityLifecycleSupport.browser(first);
-                var transientUser = browser.post("/api/v1/auth/register/student", Map.of("fullName", "Временный Студент",
-                        "email", "transient-demo@example.test", "password", "Synthetic-transient-42", "facultyId", 1, "groupId", 11));
+                var transientUser = browser.post("/api/v1/auth/register/student", Map.of("lastName", UserNameFixture.last("Временный Студент"), "firstName", UserNameFixture.first("Временный Студент"), "middleName", UserNameFixture.middleOrEmpty("Временный Студент"), "email", "transient-demo@example.test", "password", "Synthetic-transient-42", "facultyId", 1, "groupId", 11));
                 assertThat(transientUser.status()).isEqualTo(201);
             }
             try (var restarted = IdentityLifecycleSupport.start(database, "demo", Map.of())) {

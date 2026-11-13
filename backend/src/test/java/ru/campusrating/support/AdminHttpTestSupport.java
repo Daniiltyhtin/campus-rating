@@ -1,5 +1,6 @@
 package ru.campusrating.support;
 
+import ru.campusrating.support.UserNameFixture;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.URLDecoder;
@@ -106,8 +107,12 @@ public abstract class AdminHttpTestSupport extends PostgresIntegrationTest {
     protected Browser browser() { return new Browser(); }
 
     protected Browser administrator(String suffix, boolean changePassword) {
-        jdbc.update("insert into app_user(email,role,full_name,password_hash,must_change_password) values (?,'ADMIN',?,?,true)",
-                email(suffix), suffix, passwords.encode(PASSWORD));
+        jdbc.update("insert into app_user(email,role,last_name,first_name,middle_name,password_hash,must_change_password) values (?,'ADMIN',?,?,?,?,true)",
+                email(suffix),
+                UserNameFixture.last(suffix),
+                UserNameFixture.first(suffix),
+                UserNameFixture.middle(suffix),
+                passwords.encode(PASSWORD));
         var session = login(suffix);
         if (changePassword) request(session, "POST", "/api/v1/auth/password",
                 Map.of("currentPassword", PASSWORD, "newPassword", "Changed-password-43"), 204);
@@ -121,13 +126,11 @@ public abstract class AdminHttpTestSupport extends PostgresIntegrationTest {
     }
 
     protected long teacher(String suffix, String name) {
-        return request(browser(), "POST", "/api/v1/auth/register/teacher", Map.of("email", email(suffix),
-                "password", PASSWORD, "fullName", name, "departmentId", department), 201).path("userId").asLong();
+        return request(browser(), "POST", "/api/v1/auth/register/teacher", Map.of("email", email(suffix), "password", PASSWORD, "lastName", UserNameFixture.last(name), "firstName", UserNameFixture.first(name), "middleName", UserNameFixture.middleOrEmpty(name), "departmentId", department), 201).path("userId").asLong();
     }
 
     protected long student(String suffix, long facultyId, long groupId) {
-        return request(browser(), "POST", "/api/v1/auth/register/student", Map.of("email", email(suffix),
-                "password", PASSWORD, "fullName", suffix, "facultyId", facultyId, "groupId", groupId), 201)
+        return request(browser(), "POST", "/api/v1/auth/register/student", Map.of("email", email(suffix), "password", PASSWORD, "lastName", UserNameFixture.last(suffix), "firstName", UserNameFixture.first(suffix), "middleName", UserNameFixture.middleOrEmpty(suffix), "facultyId", facultyId, "groupId", groupId), 201)
                 .path("userId").asLong();
     }
 

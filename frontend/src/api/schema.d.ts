@@ -1995,6 +1995,10 @@ export interface components {
             /** Format: int64 */
             id: number;
             fullName: string;
+            lastName: string;
+            firstName: string;
+            /** @description null, если отчество отсутствует. */
+            middleName: string | null;
             /** Format: email */
             email: string;
             /** @enum {string} */
@@ -2254,8 +2258,6 @@ export interface components {
         Email: string;
         /** @description От 8 символов и не больше 72 байт в UTF-8 (предел BCrypt); байты проверяет сервер. */
         Password: string;
-        /** @description ФИО одной строкой; пробелы по краям сервер отбрасывает. */
-        FullName: string;
         /**
          * @description `campus.mail.email-verification` стенда: `REQUIRED` — `required`, `OFF` — `off`.
          * @enum {string}
@@ -2315,15 +2317,27 @@ export interface components {
             mustChangePassword: boolean;
         };
         CurrentUser: components["schemas"]["CurrentStudent"] | components["schemas"]["CurrentTeacher"] | components["schemas"]["CurrentAdmin"];
+        /** @description Ошибки проверки ФИО возвращаются на поля lastName, firstName, middleName. */
         StudentRegistration: {
-            fullName: components["schemas"]["FullName"];
+            /** @description Фамилия; пробелы по краям сервер отбрасывает, длину проверяет после обрезки. Допустимы любые символы, включая пробелы и дефисы внутри. */
+            lastName: string;
+            /** @description Имя; пробелы по краям сервер отбрасывает, длину проверяет после обрезки. Допустимы любые символы, включая пробелы и дефисы внутри. */
+            firstName: string;
+            /** @description Отчество необязательно; пробелы по краям сервер отбрасывает, длину проверяет после обрезки. Допустимы любые символы, включая пробелы и дефисы внутри. Отсутствующее значение, null, пустую строку и строку из одних пробелов сервер сохраняет как отсутствие отчества (null в API). */
+            middleName?: string | null;
             email: components["schemas"]["Email"];
             password: components["schemas"]["Password"];
             facultyId: components["schemas"]["Id"];
             groupId: components["schemas"]["Id"];
         };
+        /** @description Ошибки проверки ФИО возвращаются на поля lastName, firstName, middleName. */
         TeacherRegistration: {
-            fullName: components["schemas"]["FullName"];
+            /** @description Фамилия; пробелы по краям сервер отбрасывает, длину проверяет после обрезки. Допустимы любые символы, включая пробелы и дефисы внутри. */
+            lastName: string;
+            /** @description Имя; пробелы по краям сервер отбрасывает, длину проверяет после обрезки. Допустимы любые символы, включая пробелы и дефисы внутри. */
+            firstName: string;
+            /** @description Отчество необязательно; пробелы по краям сервер отбрасывает, длину проверяет после обрезки. Допустимы любые символы, включая пробелы и дефисы внутри. Отсутствующее значение, null, пустую строку и строку из одних пробелов сервер сохраняет как отсутствие отчества (null в API). */
+            middleName?: string | null;
             email: components["schemas"]["Email"];
             password: components["schemas"]["Password"];
             departmentId: components["schemas"]["Id"];
@@ -3934,8 +3948,8 @@ export interface operations {
                 search?: string;
                 role?: "STUDENT" | "TEACHER" | "ADMIN";
                 status?: "PENDING" | "APPROVED" | "MEMBERSHIP_PENDING" | "MEMBERSHIP_REJECTED" | "MEMBERSHIP_ACTIVE";
-                /** @description Колонка сортировки; при равенстве — ФИО, затем id. */
-                sort?: "name" | "email" | "role" | "unit" | "status" | "created" | "lastLogin";
+                /** @description Колонка сортировки; по умолчанию lastName по возрастанию. При равенстве lastName — firstName, middleName, id; firstName — lastName, middleName, id; middleName — lastName, firstName, id; остальных колонок — lastName, firstName, middleName, id. Дополнительные ключи всегда по возрастанию при любом направлении основного. Пустое отчество как основной ключ идёт после заполненных в обоих направлениях, как дополнительный — перед заполненными. */
+                sort?: "lastName" | "firstName" | "middleName" | "email" | "role" | "unit" | "status" | "created" | "lastLogin";
                 /** @description Направление; по умолчанию desc для created, asc для остальных. lastLogin asc — сначала без входа. */
                 direction?: "asc" | "desc";
                 cursor?: string;
@@ -3954,7 +3968,54 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "items": [],
+                     *       "items": [
+                     *         {
+                     *           "id": 1002,
+                     *           "fullName": "Иванова Мария",
+                     *           "lastName": "Иванова",
+                     *           "firstName": "Мария",
+                     *           "middleName": null,
+                     *           "email": "ivanova@student.campus.test",
+                     *           "role": "STUDENT",
+                     *           "group": {
+                     *             "id": 11,
+                     *             "name": "ИВТ-21",
+                     *             "faculty": {
+                     *               "id": 1,
+                     *               "code": "ФИТ",
+                     *               "name": "Факультет информационных технологий"
+                     *             }
+                     *           },
+                     *           "department": null,
+                     *           "passwordSetAt": "2026-11-12T09:00:00Z",
+                     *           "status": "MEMBERSHIP_ACTIVE",
+                     *           "createdAt": "2026-11-12T09:00:00Z",
+                     *           "lastLoginAt": null
+                     *         },
+                     *         {
+                     *           "id": 1001,
+                     *           "fullName": "Смирнова Анна Олеговна",
+                     *           "lastName": "Смирнова",
+                     *           "firstName": "Анна",
+                     *           "middleName": "Олеговна",
+                     *           "email": "smirnova@student.campus.test",
+                     *           "role": "STUDENT",
+                     *           "group": {
+                     *             "id": 11,
+                     *             "name": "ИВТ-21",
+                     *             "faculty": {
+                     *               "id": 1,
+                     *               "code": "ФИТ",
+                     *               "name": "Факультет информационных технологий"
+                     *             }
+                     *           },
+                     *           "department": null,
+                     *           "passwordSetAt": "2026-11-12T09:00:00Z",
+                     *           "status": "MEMBERSHIP_ACTIVE",
+                     *           "createdAt": "2026-11-12T09:00:00Z",
+                     *           "lastLoginAt": "2026-11-13T09:00:00Z"
+                     *         }
+                     *       ],
                      *       "nextCursor": null
                      *     }
                      */
@@ -4353,7 +4414,9 @@ export interface operations {
             content: {
                 /**
                  * @example {
-                 *       "fullName": "Смирнова Анна Олеговна",
+                 *       "lastName": "Смирнова",
+                 *       "firstName": "Анна",
+                 *       "middleName": "Олеговна",
                  *       "email": "smirnova@student.campus.test",
                  *       "password": "demo-student-1",
                  *       "facultyId": 1,
@@ -4411,7 +4474,9 @@ export interface operations {
             content: {
                 /**
                  * @example {
-                 *       "fullName": "Волков Максим Игоревич",
+                 *       "lastName": "Волков",
+                 *       "firstName": "Максим",
+                 *       "middleName": null,
                  *       "email": "volkov@campus.test",
                  *       "password": "teacher-pass-1",
                  *       "departmentId": 101

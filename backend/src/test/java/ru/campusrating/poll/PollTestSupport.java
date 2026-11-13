@@ -1,5 +1,6 @@
 package ru.campusrating.poll;
 
+import ru.campusrating.support.UserNameFixture;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.URLDecoder;
@@ -320,8 +321,16 @@ abstract class PollTestSupport extends PostgresIntegrationTest {
     long user(String name, String role, String fullName, Long departmentId) {
         long distinctive = ThreadLocalRandom.current().nextLong(8_000_000_000L, 9_000_000_000L);
         long result = id("""
-                insert into app_user(id,email,role,full_name,password_hash,department_id) values (?,?,?,?,?,?) returning id
-                """, distinctive, prefix + name + "@example.test", role, fullName, passwordHash, departmentId);
+                insert into app_user(id,email,role,last_name,first_name,middle_name,password_hash,department_id) values (?,?,?,?,?,?,?,?) returning id
+                """,
+                distinctive,
+                prefix + name + "@example.test",
+                role,
+                UserNameFixture.last(fullName),
+                UserNameFixture.first(fullName),
+                UserNameFixture.middle(fullName),
+                passwordHash,
+                departmentId);
         users.add(result);
         return result;
     }
