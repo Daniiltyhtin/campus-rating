@@ -31,7 +31,8 @@ html[data-theme='high-contrast'] a { text-decoration: underline; }
 .cr-ar { color: var(--cr-currency-ar); }
 .cr-bua { color: var(--cr-currency-bua); }
 .cr-boa { color: var(--cr-currency-boa); }
-.cr-currency-mark { display: inline-flex; align-items: center; gap: 4px; text-decoration: none; cursor: help; }
+.cr-currency-mark { position: relative; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; cursor: help; }
+.cr-currency-mark::before { content: ''; position: absolute; inset-block-start: 50%; inset-inline-start: 50%; width: max(100%, var(--cr-touch-target)); height: max(100%, var(--cr-touch-target)); transform: translate(-50%, -50%); }
 .cr-currency-icon { flex: none; vertical-align: -3px; }
 .cr-currency-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 .cr-currency-legend span { display: inline-flex; align-items: center; gap: 4px; }

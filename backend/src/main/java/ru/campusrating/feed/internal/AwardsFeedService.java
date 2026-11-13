@@ -13,6 +13,8 @@ import ru.campusrating.identity.GroupMembers;
 import ru.campusrating.ledger.AwardEntryView;
 import ru.campusrating.ledger.LedgerApi;
 import ru.campusrating.ledger.LedgerPage;
+import ru.campusrating.shared.error.FieldError;
+import ru.campusrating.shared.error.ValidationFailedException;
 
 @Service
 public class AwardsFeedService {
@@ -44,7 +46,13 @@ public class AwardsFeedService {
         return switch (user.role()) {
             case STUDENT -> ledger.awardsToStudent(user.id(), position, limit);
             case TEACHER -> ledger.awardsByAuthor(user.id(), position, limit);
-            case ADMIN -> new LedgerPage<>(List.of(), null);
+            case ADMIN -> {
+                if (position.isPresent()) {
+                    throw new ValidationFailedException("Неверный курсор",
+                            List.of(new FieldError("cursor", "INVALID", "Неверный формат курсора")));
+                }
+                yield new LedgerPage<>(List.of(), null);
+            }
         };
     }
 }
