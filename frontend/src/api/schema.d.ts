@@ -221,7 +221,7 @@ export interface paths {
         };
         /**
          * listGroupStudents
-         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер.
+         * @description U13: правила и тексты — в планах 2026-11-12-004…007 и 008. Роль и принадлежность ресурса проверяет сервер. Администратор видит любую группу — для выбора старосты (U15, план 2026-11-12-010).
          */
         get: operations["listGroupStudents"];
         put?: never;
@@ -474,7 +474,7 @@ export interface paths {
         put?: never;
         /**
          * Регистрация студента
-         * @description Создаёт студента, членство в выбранной группе (`ACTIVE` до мастер-U15, затем `PENDING`) и проводку
+         * @description Создаёт студента, членство `PENDING` в выбранной группе (мастер-U15, R32; подтверждает преподаватель или староста) и проводку
          *     `INITIAL` +1000 АР (мастер-R1, R8). Сессию не создаёт: дальше — вход или подтверждение email
          *     (`nextStep`).
          *
@@ -541,6 +541,154 @@ export interface paths {
          */
         post: operations["changePassword"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/memberships/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Заявки в группы
+         * @description Членства `PENDING` в группах, где текущий пользователь может подтверждать (мастер-R32): у
+         *     преподавателя — группы `TeacherScope` (KTD23), у старосты — его группа. Список целиком, по времени
+         *     заявки, затем id. Недопущенный преподаватель и студент-не-староста получают пустой список.
+         *
+         *     Доступ: преподаватель и студент.
+         */
+        get: operations["listPendingMemberships"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/memberships/{studentId}/approval": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Подтвердить членство
+         * @description `PENDING` → `ACTIVE`, время активации — сейчас, публикуется `MembershipActivated` (мастер-R16, R32,
+         *     KTD11). Подтверждает преподаватель, у которого группа студента в `TeacherScope`, или староста этой
+         *     группы; иначе `403`. Повтор для `ACTIVE` — `204` без второго события. `REJECTED` — `409 INVALID_STATE`.
+         *     Нет студента или членства — `404`.
+         *
+         *     Доступ: преподаватель и студент-староста; нужен CSRF-заголовок.
+         */
+        post: operations["approveMembership"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/memberships/{studentId}/rejection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Отклонить заявку в группу
+         * @description `PENDING` → `REJECTED`, группа в записи сохраняется; аккаунт, проводки и сессии не меняются
+         *     (мастер-R32). Кто может — как у подтверждения. Повтор — `204`. `ACTIVE` — `409 INVALID_STATE`.
+         *     Нет студента или членства — `404`.
+         *
+         *     Доступ: преподаватель и студент-староста; нужен CSRF-заголовок.
+         */
+        post: operations["rejectMembership"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/membership": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Новая заявка в группу
+         * @description Только из `REJECTED`: членство переходит в `PENDING` в выбранной группе (можно ту же), время заявки
+         *     обновляется. Из `PENDING` и `ACTIVE` — `409 INVALID_STATE`. Факультет и группа проверяются как при
+         *     регистрации: группа не того факультета или несуществующая — `400` по полю `groupId`.
+         *
+         *     Доступ: студент, только своё членство; нужен CSRF-заголовок.
+         */
+        put: operations["requestMembership"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/group-heads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Старосты групп
+         * @description Все назначенные старосты — для колонки «Староста» в справочнике групп. По id группы.
+         *
+         *     Доступ: только администратор.
+         */
+        get: operations["listGroupHeads"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/group-heads/{groupId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Назначить старосту
+         * @description Один староста на группу; новое назначение заменяет прежнего. Назначить можно только студента с
+         *     `ACTIVE`-членством в этой группе, иначе `400` по полю `studentId`. Нет группы — `404`.
+         *
+         *     Доступ: только администратор; нужен CSRF-заголовок.
+         */
+        put: operations["assignGroupHead"];
+        post?: never;
+        /**
+         * Снять старосту
+         * @description Снимает старосту группы; он сразу теряет право подтверждать членство. Старосты нет — `404`.
+         *
+         *     Доступ: только администратор; нужен CSRF-заголовок.
+         */
+        delete: operations["removeGroupHead"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1850,7 +1998,7 @@ export interface components {
             group: components["schemas"]["StudyGroupRef"] | null;
             department: components["schemas"]["DepartmentRef"] | null;
             /** @enum {string|null} */
-            status: "PENDING" | "APPROVED" | "MEMBERSHIP_PENDING" | "MEMBERSHIP_ACTIVE" | null;
+            status: "PENDING" | "APPROVED" | "MEMBERSHIP_PENDING" | "MEMBERSHIP_REJECTED" | "MEMBERSHIP_ACTIVE" | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -1869,7 +2017,7 @@ export interface components {
             /** Format: email */
             email: string;
             /** @enum {string} */
-            membershipState: "ACTIVE" | "PENDING";
+            membershipState: "ACTIVE" | "PENDING" | "REJECTED";
             /** Format: date-time */
             passwordSetAt: string | null;
         };
@@ -2029,8 +2177,36 @@ export interface components {
          * @enum {integer}
          */
         ParticipationLevel: 25 | 50 | 75 | 100;
-        /** @enum {string} */
-        GroupMembershipState: "PENDING" | "ACTIVE";
+        /**
+         * @description `PENDING` — ждёт подтверждения, `ACTIVE` — подтверждено, `REJECTED` — заявка отклонена, студент выбирает группу заново (мастер-R32).
+         * @enum {string}
+         */
+        GroupMembershipState: "PENDING" | "ACTIVE" | "REJECTED";
+        PendingMembership: {
+            studentId: components["schemas"]["Id"];
+            fullName: string;
+            email: components["schemas"]["Email"];
+            group: components["schemas"]["StudyGroupRef"];
+            /** Format: date-time */
+            requestedAt: string;
+        };
+        PendingMembershipList: {
+            items: components["schemas"]["PendingMembership"][];
+        };
+        MembershipRequest: {
+            facultyId: components["schemas"]["Id"];
+            groupId: components["schemas"]["Id"];
+        };
+        GroupHeadAssignment: {
+            studentId: components["schemas"]["Id"];
+        };
+        GroupHead: {
+            groupId: components["schemas"]["Id"];
+            student: components["schemas"]["UserRef"];
+        };
+        GroupHeadList: {
+            items: components["schemas"]["GroupHead"][];
+        };
         /** @description Ссылка на пользователя для подписи и перехода в профиль. */
         UserRef: {
             id: components["schemas"]["Id"];
@@ -2102,6 +2278,8 @@ export interface components {
             mustChangePassword: boolean;
             group: components["schemas"]["StudyGroupRef"];
             membershipState: components["schemas"]["GroupMembershipState"];
+            /** @description Староста своей группы — подтверждает в ней членство (мастер-R32). */
+            groupHead: boolean;
         };
         CurrentTeacher: {
             /**
@@ -3749,7 +3927,7 @@ export interface operations {
             query?: {
                 search?: string;
                 role?: "STUDENT" | "TEACHER" | "ADMIN";
-                status?: "PENDING" | "APPROVED" | "MEMBERSHIP_PENDING" | "MEMBERSHIP_ACTIVE";
+                status?: "PENDING" | "APPROVED" | "MEMBERSHIP_PENDING" | "MEMBERSHIP_REJECTED" | "MEMBERSHIP_ACTIVE";
                 /** @description Колонка сортировки; при равенстве — ФИО, затем id. */
                 sort?: "name" | "email" | "role" | "unit" | "status" | "created" | "lastLogin";
                 /** @description Направление; по умолчанию desc для created, asc для остальных. lastLogin asc — сначала без входа. */
@@ -4296,6 +4474,253 @@ export interface operations {
             };
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["CsrfForbidden"];
+        };
+    };
+    listPendingMemberships: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Заявки. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "studentId": 1004,
+                     *           "fullName": "Орлов Никита Сергеевич",
+                     *           "email": "orlov@student.campus.test",
+                     *           "group": {
+                     *             "id": 11,
+                     *             "name": "ИВТ-21",
+                     *             "faculty": {
+                     *               "id": 1,
+                     *               "code": "ФИТ",
+                     *               "name": "Факультет информационных технологий"
+                     *             }
+                     *           },
+                     *           "requestedAt": "2026-11-12T09:00:00Z"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PendingMembershipList"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    approveMembership: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                studentId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Членство активно. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["InvalidState"];
+        };
+    };
+    rejectMembership: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                studentId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Заявка отклонена. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["InvalidState"];
+        };
+    };
+    requestMembership: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "facultyId": 1,
+                 *       "groupId": 12
+                 *     }
+                 */
+                "application/json": components["schemas"]["MembershipRequest"];
+            };
+        };
+        responses: {
+            /** @description Заявка подана; текущий пользователь. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "role": "STUDENT",
+                     *       "id": 1004,
+                     *       "fullName": "Орлов Никита Сергеевич",
+                     *       "email": "orlov@student.campus.test",
+                     *       "mustChangePassword": false,
+                     *       "group": {
+                     *         "id": 12,
+                     *         "name": "ИВТ-22",
+                     *         "faculty": {
+                     *           "id": 1,
+                     *           "code": "ФИТ",
+                     *           "name": "Факультет информационных технологий"
+                     *         }
+                     *       },
+                     *       "membershipState": "PENDING",
+                     *       "groupHead": false
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CurrentUser"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["InvalidState"];
+        };
+    };
+    listGroupHeads: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Старосты. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "groupId": 11,
+                     *           "student": {
+                     *             "id": 1001,
+                     *             "fullName": "Смирнова Анна Олеговна"
+                     *           }
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GroupHeadList"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    assignGroupHead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                groupId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "studentId": 1001
+                 *     }
+                 */
+                "application/json": components["schemas"]["GroupHeadAssignment"];
+            };
+        };
+        responses: {
+            /** @description Староста назначен. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "groupId": 11,
+                     *       "student": {
+                     *         "id": 1001,
+                     *         "fullName": "Смирнова Анна Олеговна"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GroupHead"];
+                };
+            };
+            400: components["responses"]["ValidationFailed"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    removeGroupHead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                groupId: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Староста снят. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
     listAccessibleGroups: {

@@ -23,7 +23,7 @@ test('U2: nginx сохраняет API и закрывает actuator (R6, KTD11
   const config = await request.get('/api/v1/auth/config');
   expect(config.status()).toBe(200);
   expect(config.headers()['content-type']).toMatch(/^application\/json/);
-  expect(await config.json()).toMatchObject({ demo: true, emailVerification: 'OFF' });
+  expect(await config.json()).toMatchObject({ demo: true, emailVerification: 'REQUIRED' });
 
   const missing = await request.get('/api/v1/does-not-exist');
   expect(missing.status()).toBe(401);

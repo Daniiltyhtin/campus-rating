@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -19,6 +20,8 @@ import ru.campusrating.identity.CurrentUser;
 import ru.campusrating.identity.GroupMembers;
 import ru.campusrating.identity.TeacherScope;
 import ru.campusrating.identity.api.AuthDtos.*;
+import ru.campusrating.identity.internal.GroupHeads;
+import ru.campusrating.identity.internal.MembershipApproval;
 import ru.campusrating.identity.internal.RegistrationService;
 import ru.campusrating.identity.internal.SessionService;
 import ru.campusrating.identity.internal.UserAccount;
@@ -35,10 +38,14 @@ class AuthController {
     private final DirectoryApi directory;
     private final Environment environment;
     private final MailModeProperties mail;
+    private final MembershipApproval approval;
+    private final GroupHeads heads;
     AuthController(RegistrationService registration, SessionService sessions, CurrentUser current, GroupMembers members,
-                   TeacherScope scope, DirectoryApi directory, Environment environment, MailModeProperties mail) {
+                   TeacherScope scope, DirectoryApi directory, Environment environment, MailModeProperties mail,
+                   MembershipApproval approval, GroupHeads heads) {
         this.registration = registration; this.sessions = sessions; this.current = current; this.members = members;
         this.scope = scope; this.directory = directory; this.environment = environment; this.mail = mail;
+        this.approval = approval; this.heads = heads;
     }
     @GetMapping("/auth/csrf") @ResponseStatus(HttpStatus.NO_CONTENT)
     void getCsrfToken(@io.swagger.v3.oas.annotations.Parameter(hidden = true) CsrfToken token) { token.getToken(); }
@@ -66,6 +73,10 @@ class AuthController {
         sessions.changePassword(id, body.currentPassword(), body.newPassword());
         sessions.expireOthers(id, request, response);
     }
+    @PutMapping("/me/membership") SessionView requestMembership(@Valid @RequestBody MembershipRequest body) {
+        approval.reapply(body.facultyId(), body.groupId());
+        return view(sessions.account(current.require().id()));
+    }
     @GetMapping("/me/accessible-groups") StudyGroupList listAccessibleGroups() {
         var groups = directory.groups(scope.accessibleGroupIds(current.require().id())).values().stream()
                 .sorted(Comparator.comparing((GroupInfo group) -> group.faculty().name()).thenComparing(GroupInfo::name).thenComparingLong(GroupInfo::id))
@@ -82,7 +93,7 @@ class AuthController {
                 var membership = members.membership(user.id()).orElseThrow();
                 var group = directory.group(membership.groupId()).orElseThrow();
                 yield new CurrentStudent(user.id(), user.fullName(), user.email(), user.mustChangePassword(),
-                        new StudyGroupRef(group.id(), group.name(), group.faculty()), membership.state());
+                        new StudyGroupRef(group.id(), group.name(), group.faculty()), membership.state(), heads.isHead(user.id()));
             }
         };
     }

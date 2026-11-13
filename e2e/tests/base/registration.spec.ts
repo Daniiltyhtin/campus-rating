@@ -1,4 +1,5 @@
 import { test, expect, login, logout, evidence, choose, type Schemas, type User } from './support.js';
+import { mailToken } from '../../fixtures/greenmail.js';
 import type { Page } from '@playwright/test';
 
 async function fill(page: Page, user: Pick<User, 'fullName' | 'email' | 'password'>, faculty: number, target: number, teacher = false) {
@@ -15,7 +16,8 @@ test('REG-01 студент регистрируется и получает н�
   const user = scenario.identity();
   await fill(page, user, scenario.faculty.id, scenario.group.id);
   await page.getByRole('button', { name: 'Зарегистрироваться' }).click();
-  await expect(page.getByRole('status')).toContainText('Регистрация завершена. Теперь можно войти');
+  await expect(page.getByRole('status')).toContainText('Регистрация завершена. Подтвердите email по ссылке из письма.');
+  await scenario.confirmEmail(user.email);
   await login(page, user);
   const me = await page.request.get('/api/v1/auth/me');
   const { id } = await me.json() as { id: number };
@@ -61,6 +63,7 @@ test('REG-02 преподаватель ждёт допуска, после API 
   await fill(page, user, scenario.faculty.id, scenario.department.id, true);
   await page.getByRole('button', { name: 'Зарегистрироваться' }).click();
   await expect(page.getByRole('status')).toContainText('Регистрация завершена');
+  await scenario.confirmEmail(user.email);
   await login(page, user);
   await expect(page.getByText('Заявка ждёт подтверждения администратора', { exact: true })).toBeVisible();
   await page.goto('/groups');
@@ -99,4 +102,39 @@ test('AUTH-01 одинаковая ошибка входа, защита сес�
   expect((await page.request.get('/api/v1/auth/me')).status()).toBe(401);
   await page.goto('/tasks');
   await expect(page).toHaveURL(/\/login$/);
+});
+
+test('REG-03 полный путь: письмо, подтверждение email, вход, подтверждение членства старостой, назначение по открытой точке', async ({ page, browser, scenario }) => {
+  const teacher = await scenario.registerTeacher();
+  const head = await scenario.registerStudent();
+  await scenario.admin.send(`/api/v1/admin/group-heads/${scenario.group.id}`, { studentId: head.id }, 'PUT');
+  const expired = await scenario.checkpoint(teacher, 3);
+  const open = await scenario.checkpoint(teacher, 600);
+  await teacher.api.until(new Date(Date.parse(expired.deadline) + 1000).toISOString());
+
+  const user = scenario.identity();
+  await fill(page, user, scenario.faculty.id, scenario.group.id);
+  await page.getByRole('button', { name: 'Зарегистрироваться' }).click();
+  await expect(page.getByRole('status')).toContainText('Подтвердите email по ссылке из письма.');
+  await page.goto(`/email/confirm/${await mailToken(user.email, 'email/confirm')}`);
+  await page.getByRole('button', { name: 'Подтвердить email', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('Email подтверждён');
+  await login(page, user);
+  await expect(page.getByText(`Членство в ${scenario.group.name} ждёт подтверждения старосты или преподавателя`, { exact: true })).toBeVisible();
+
+  const headContext = await browser.newContext({ baseURL: test.info().project.use.baseURL, viewport: page.viewportSize() ?? undefined });
+  try {
+    const headPage = await headContext.newPage();
+    await login(headPage, head);
+    await headPage.getByRole('link', { name: 'Проверить заявки', exact: true }).click();
+    await expect(headPage).toHaveURL(/\/memberships$/);
+    await headPage.getByRole('button', { name: `Подтвердить ${user.fullName}`, exact: true }).click();
+    await expect(headPage.getByText('Новых заявок нет', { exact: true })).toBeVisible();
+    await evidence(headPage, 'REG-03-head-approved');
+  } finally { await headContext.close(); }
+
+  await page.goto('/tasks');
+  await expect(page.getByRole('link', { name: open.title })).toBeVisible();
+  await expect(page.getByText(expired.title)).toHaveCount(0);
+  await evidence(page, 'REG-03-student-tasks');
 });

@@ -38,6 +38,8 @@ public final class AuthDtos {
     public record StudyGroupRef(@Min(1) long id, String name, FacultyInfo faculty) {}
     @Schema(requiredProperties = "items")
     public record StudyGroupList(List<StudyGroupRef> items) {}
+    @Schema(requiredProperties = {"facultyId", "groupId"})
+    public record MembershipRequest(@NotNull @Min(1) Long facultyId, @NotNull @Min(1) Long groupId) {}
 
     @Schema(name = "CurrentUser", oneOf = {CurrentStudent.class, CurrentTeacher.class, CurrentAdmin.class},
             discriminatorProperty = "role", discriminatorMapping = {
@@ -46,9 +48,10 @@ public final class AuthDtos {
                 @DiscriminatorMapping(value = "ADMIN", schema = CurrentAdmin.class)})
     public sealed interface SessionView permits CurrentStudent, CurrentTeacher, CurrentAdmin {}
 
-    @Schema(requiredProperties = {"role", "id", "fullName", "email", "mustChangePassword", "group", "membershipState"})
+    @Schema(requiredProperties = {"role", "id", "fullName", "email", "mustChangePassword", "group", "membershipState", "groupHead"})
     public record CurrentStudent(@Min(1) long id, String fullName, @Schema(format = "email", maxLength = 254) String email,
-            boolean mustChangePassword, StudyGroupRef group, GroupMembershipState membershipState) implements SessionView {
+            boolean mustChangePassword, StudyGroupRef group, GroupMembershipState membershipState,
+            boolean groupHead) implements SessionView {
         @JsonProperty("role") @Schema(type = "string", _const = "STUDENT") public String role() { return "STUDENT"; }
     }
     @Schema(requiredProperties = {"role", "id", "fullName", "email", "mustChangePassword", "department", "teacherApproved"})

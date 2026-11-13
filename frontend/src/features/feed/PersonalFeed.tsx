@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import { AsyncContent } from '../../app/layouts/PageLayouts';
 import { SectionPlaceholder } from '../../app/routeElements';
 import { useAuthSession } from '../auth/authQueries';
+import { RequestMembership } from '../auth/RequestMembership';
+import { HeadRequestsNotice, TeacherRequestsNotice } from '../groups/PendingMembers';
 import { HomePolls } from '../polls/HomePolls';
 import type { PersonalEvent } from './contracts';
 import { FeedIcon, FeedLink, FeedPage } from './FeedShared';
@@ -16,12 +18,13 @@ function EventEntry({ event, viewerId }: { event: PersonalEvent; viewerId: numbe
     <time className="cr-caption" dateTime={event.createdAt}>{formatFeedTime(event.createdAt)}</time>
   </Stack></article>;
 }
-function Events({ viewerId, notice, polls }: { viewerId: number; notice?: string; polls: ReactNode }) {
+function Events({ viewerId, notice, extra, polls }: { viewerId: number; notice?: string; extra?: ReactNode; polls: ReactNode }) {
   const query = usePersonalFeed(viewerId);
   const { hasNextPage, isFetching, isFetchingNextPage, isFetchNextPageError, fetchNextPage } = query;
   const items = uniqueEvents(query.data?.pages.flatMap((page) => page.items) ?? []);
   return <FeedPage title="Главная" description="Ваши события: задачи, проверки и начисления. Время — по Москве."><Stack gap="lg">
     {notice && <Text>{notice}</Text>}
+    {extra}
     {polls}
     <Title order={2}>События</Title>
     <AsyncContent state={query.data && (!query.isError || isFetchNextPageError) ? (items.length ? { status: 'ready' } : { status: 'empty', message: 'Событий пока нет' })
@@ -38,5 +41,7 @@ export function HomePage() {
   if (user.role === 'ADMIN') return <SectionPlaceholder />;
   const notice = user.role === 'TEACHER' && !user.teacherApproved ? 'Заявка ждёт подтверждения администратора'
     : user.role === 'STUDENT' && user.membershipState === 'PENDING' ? `Членство в ${user.group.name} ждёт подтверждения старосты или преподавателя` : undefined;
-  return <Events viewerId={user.id} key={user.id} notice={notice} polls={<HomePolls userId={user.id} teacher={user.role === 'TEACHER'} />} />;
+  const extra = user.role === 'TEACHER' ? (user.teacherApproved ? <TeacherRequestsNotice /> : undefined) : user.membershipState === 'REJECTED' ? <RequestMembership groupName={user.group.name} />
+    : user.groupHead ? <HeadRequestsNotice groupName={user.group.name} /> : undefined;
+  return <Events viewerId={user.id} key={user.id} notice={notice} extra={extra} polls={<HomePolls userId={user.id} teacher={user.role === 'TEACHER'} />} />;
 }

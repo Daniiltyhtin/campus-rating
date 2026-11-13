@@ -107,6 +107,9 @@ class AdminDirectoryIT extends AdminHttpTestSupport {
     @Test
     void movingGroupToAnotherFacultyKeepsStudentAndMembership() {
         long student = student("student", faculty, group);
+        long teacher = teacher("teacher", "Teacher");
+        approve(teacher, department);
+        request(login("teacher"), "POST", "/api/v1/memberships/" + student + "/approval", null, 204);
         var session = login("student");
         var before = get(session, "/api/v1/auth/me");
         request(admin, "PUT", DIRECTORY + "groups/" + group, body("groups", "moved", otherFaculty), 200);

@@ -15,11 +15,31 @@ class AdminUsersSortIT extends U13HttpTestSupport {
         return items(get("/api/v1/admin/users?search=" + prefix + "&sort=" + sort + (direction == null ? "" : "&direction=" + direction)));
     }
     private static List<String> field(List<JsonNode> rows, String name) { return rows.stream().map(row -> row.path(name).asText()).toList(); }
+    private void active(long student) {
+        jdbc.update("update group_membership set state='ACTIVE',activated_at=? where student_id=?", java.sql.Timestamp.from(clock.instant()), student);
+    }
     private void people() {
-        clock.set(Instant.parse("2026-11-12T10:00:00Z")); student("c-student", faculty, group);
-        clock.set(Instant.parse("2026-11-12T11:00:00Z")); student("a-student", otherFaculty, otherGroup);
+        clock.set(Instant.parse("2026-11-12T10:00:00Z")); active(student("c-student", faculty, group));
+        clock.set(Instant.parse("2026-11-12T11:00:00Z")); active(student("a-student", otherFaculty, otherGroup));
         clock.set(Instant.parse("2026-11-12T12:00:00Z")); approve(teacher("b-teacher", "Bteacher"), department);
         clock.set(Instant.parse("2026-11-12T13:00:00Z")); teacher("d-teacher", "Dteacher");
+    }
+
+    @Test void rejectedMembershipIsListedFilteredAndSortedBothWays() {
+        people();
+        student("pending-student", faculty, group);
+        long rejected = student("rejected-student", faculty, group);
+        request(login("b-teacher"), "POST", "/api/v1/memberships/" + rejected + "/rejection", null, 204);
+
+        var unfiltered = items(get("/api/v1/admin/users?search=" + prefix));
+        assertThat(unfiltered.stream().filter(row -> row.path("id").asLong() == rejected)
+                .map(row -> row.path("status").asText()).toList()).containsExactly("MEMBERSHIP_REJECTED");
+        var filtered = items(get("/api/v1/admin/users?search=" + prefix + "&status=MEMBERSHIP_REJECTED"));
+        assertThat(filtered.stream().map(row -> row.path("id").asLong()).toList()).containsExactly(rejected);
+        assertThat(field(list("status", "asc"), "status")).containsExactly(
+                "PENDING", "MEMBERSHIP_PENDING", "MEMBERSHIP_REJECTED", "APPROVED", "MEMBERSHIP_ACTIVE", "MEMBERSHIP_ACTIVE", "");
+        assertThat(field(list("status", "desc"), "status")).containsExactly(
+                "MEMBERSHIP_ACTIVE", "MEMBERSHIP_ACTIVE", "APPROVED", "MEMBERSHIP_REJECTED", "MEMBERSHIP_PENDING", "PENDING", "");
     }
 
     @Test void emailSortsBothWays() {

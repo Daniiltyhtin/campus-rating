@@ -37,7 +37,7 @@ public class AdminUserService {
             """;
     private static final String UNIT="coalesce((select g.name from study_group g where g.id=m.group_id),(select d.name from department d where d.id=u.department_id))";
     private static final String ROLE_RANK="case u.role when 'ADMIN' then 1 when 'TEACHER' then 2 else 3 end";
-    private static final String STATUS_RANK="case "+STATUS+" when 'PENDING' then 1 when 'MEMBERSHIP_PENDING' then 2 when 'APPROVED' then 3 when 'MEMBERSHIP_ACTIVE' then 4 end";
+    private static final String STATUS_RANK="case "+STATUS+" when 'PENDING' then 1 when 'MEMBERSHIP_PENDING' then 2 when 'MEMBERSHIP_REJECTED' then 3 when 'APPROVED' then 4 when 'MEMBERSHIP_ACTIVE' then 5 end";
 
     @Transactional(readOnly=true)
     public AdminUserPage list(String query,Role role,UserStatus status,UserSort sort,SortDirection direction,String cursor) {
@@ -91,7 +91,7 @@ public class AdminUserService {
     private StudyGroupRef group(Long id) { return id==null?null:directory.group(id).map(g->new StudyGroupRef(g.id(),g.name(),g.faculty())).orElse(null); }
     private ru.campusrating.directory.DepartmentInfo department(Long id) { return id==null?null:directory.department(id).orElse(null); }
     public List<GroupStudent> students(long groupId) {
-        var actor=current.require();if(actor.role()!=Role.TEACHER||!scope.accessibleGroupIds(actor.id()).contains(groupId)) throw forbidden();
+        var actor=current.require();if(actor.role()!=Role.ADMIN&&(actor.role()!=Role.TEACHER||!scope.accessibleGroupIds(actor.id()).contains(groupId))) throw forbidden();
         return jdbc.sql("select u.id,u.full_name,u.email,m.state,"+AUDIT+" password_set_at from app_user u join group_membership m on m.student_id=u.id where m.group_id=:group and m.state in ('ACTIVE','PENDING') order by u.full_name,u.id")
                 .param("group",groupId).query((rs,n)->new GroupStudent(rs.getLong("id"),rs.getString("full_name"),rs.getString("email"),GroupMembershipState.valueOf(rs.getString("state")),rs.getTimestamp("password_set_at")==null?null:rs.getTimestamp("password_set_at").toInstant())).list();
     }

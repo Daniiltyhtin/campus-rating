@@ -44,6 +44,7 @@ class PersonalFeedEventsIT extends PersonalFeedSupport {
         assignment(essay, student);
         drainEvents();
         long orlov = register("orlov", "Орлов Олег Олегович", group);
+        assertThat(exchange(post("/api/v1/memberships/" + orlov + "/approval"), teacherSession).status()).isEqualTo(204);
         long assignment = assignment(essay, orlov);
         var item = awaitFeed(login("orlov"), 1).getFirst();
         assertThat(item.path("kind").asText()).isEqualTo("ASSIGNMENT_CREATED");

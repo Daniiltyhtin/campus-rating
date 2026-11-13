@@ -57,12 +57,14 @@ class IdentityRepository {
         jdbc.sql("update app_user set last_login_at=:time where id=:id")
                 .param("time", Timestamp.from(clock.instant())).param("id", id).update();
     }
-    boolean addMembership(long id, long group, GroupMembershipState state, Instant activatedAt) {
+    boolean addMembership(long id, long group, GroupMembershipState state, Instant activatedAt, Instant requestedAt) {
         return jdbc.sql("""
-                insert into group_membership(student_id,group_id,state,activated_at) values (:id,:group,:state,:time)
+                insert into group_membership(student_id,group_id,state,activated_at,requested_at)
+                values (:id,:group,:state,:time,:requested)
                 on conflict(student_id) do nothing
                 """).param("id", id).param("group", group).param("state", state.name())
-                .param("time", activatedAt == null ? null : Timestamp.from(activatedAt)).update() == 1;
+                .param("time", activatedAt == null ? null : Timestamp.from(activatedAt))
+                .param("requested", Timestamp.from(requestedAt)).update() == 1;
     }
     List<StudentMember> activeMembers(Collection<Long> groupIds) {
         if (groupIds.isEmpty()) return List.of();

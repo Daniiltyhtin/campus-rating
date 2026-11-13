@@ -89,7 +89,7 @@ export function createAuthMockHandlers() {
         : directoryItems('listFacultyDepartments').find((item) => 'departmentId' in body && item.id === body.departmentId);
       if (!target) return HttpResponse.json({ type: 'about:blank', title: 'Ошибка', status: 400, code: 'VALIDATION_FAILED', fieldErrors: [{ field: template.role === 'STUDENT' ? 'groupId' : 'departmentId', code: 'MISMATCH', message: 'Выбор не соответствует факультету.' }] }, { status: 400, headers: { 'Content-Type': 'application/problem+json' } });
       const user = currentUser({ ...template, id: 10_000 + accounts.size, fullName: body.fullName, email: body.email, mustChangePassword: false,
-        ...(template.role === 'TEACHER' ? { teacherApproved: false, department: target } : { group: target }) });
+        ...(template.role === 'TEACHER' ? { teacherApproved: false, department: target } : { group: target, membershipState: 'PENDING', groupHead: false }) });
       accounts.set(user.email.toLowerCase(), { user, password: body.password });
       return HttpResponse.json({ userId: user.id, nextStep: 'LOGIN' }, { status: 201 });
     }),
