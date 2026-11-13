@@ -1,5 +1,5 @@
 import { Anchor, Button, Group, SegmentedControl, Stack, Tabs, Text, Title } from '@mantine/core';
-import { CurrencyLegend, CurrencyMark } from '../../app/CurrencyMark';
+import { CurrencyIcon, CurrencyLegend, CurrencyMark } from '../../app/CurrencyMark';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -35,7 +35,7 @@ function TaskList({ title, tasks, viewer, ownerId, empty }: { title: string; tas
 function HistoryEntry({ entry }: { entry: LedgerEntry }) {
   return <article className="cr-article"><Stack gap="xs"><Group justify="space-between" align="start">
     <time className="cr-caption" dateTime={entry.createdAt}>{formatMoscowTime(entry.createdAt)}</time>
-    <strong className={`cr-number cr-${entry.currency.toLowerCase()}`}>{signedAmount(entry.amount, entry.currency)}</strong>
+    <strong className={`cr-number cr-amount cr-${entry.currency.toLowerCase()}`}><CurrencyIcon currency={entry.currency} />{signedAmount(entry.amount, entry.currency)}</strong>
   </Group><Text>{entry.kind === 'PENALTY' ? 'Просрочка · ' : entry.kind === 'SEMESTER_ACCRUAL' ? 'Начисление семестра · ' : ''}«<span>{entry.source.title}</span>»</Text>
     <Group gap="xs">{entry.author ? <><Text className="cr-caption">от</Text><ProfileLink to={`/users/${entry.author.id}`}>{entry.author.fullName}</ProfileLink></> : <Text className="cr-caption">Система</Text>}</Group>
   </Stack></article>;
