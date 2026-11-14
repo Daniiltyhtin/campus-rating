@@ -1,3 +1,5 @@
+import { useLoaderTiming } from '../../app/loaderTiming';
+import { BrandLoader } from '../../theme/Brand';
 import { useTimedMutation } from '../../app/actionTiming';
 import { Anchor, Button, FileButton, Input, Modal, Stack, Tabs, Text, TextInput } from '@mantine/core';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -49,6 +51,8 @@ export function AssignmentDetails({ assignmentId, readOnly = false }: { assignme
     queryFn: () => readAssignment(assignmentId),
   });
   const assignment = query.data;
+  const timing = useLoaderTiming(query.isPending);
+  if (!timing.resultReady) return timing.indicatorVisible ? <BrandLoader /> : null;
   if (isAccessFailure(query.error)) return <TaskFailure error={query.error} />;
   const currentReturn = assignment?.state === 'OPEN' && assignment.returnComment ? assignment.submissions.find((version) => version.returnComment === assignment.returnComment && version.returnedAt) : undefined;
   return (
@@ -185,6 +189,8 @@ export function TaskPage() {
     queryKey: ['assignment', assignmentId],
     queryFn: () => readAssignment(assignmentId),
   });
+  const timing = useLoaderTiming(query.isPending);
+  if (!timing.resultReady) return <PageLayout title="Задача">{timing.indicatorVisible && <BrandLoader />}</PageLayout>;
   if (isAccessFailure(query.error)) return <TaskFailure error={query.error} />;
   return (
     <PageLayout title={query.data?.checkpoint.title ?? 'Задача'}>

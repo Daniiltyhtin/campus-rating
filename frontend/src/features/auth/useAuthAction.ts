@@ -17,6 +17,8 @@ export function useAuthAction<T = void>(submit: (value: T) => Promise<void>, kin
   const actionGeneration = useRef(0);
   const finish = async (generation: number) => {
     if (generation !== sessionGeneration(client)) return;
+    const refreshStartedAt = Date.now();
+    const waitForPublication = () => Promise.all([waitForLoaderResult(startedAt.current), waitForLoaderResult(refreshStartedAt)]);
     setRefreshState('pending');
     try {
       const ready = kind === 'logout'
@@ -24,22 +26,21 @@ export function useAuthAction<T = void>(submit: (value: T) => Promise<void>, kin
         : await csrfToken();
       if (generation !== sessionGeneration(client)) return;
       client.setQueryData(authKeys.csrf, ready);
+      let user: ReturnType<typeof currentUser> | undefined;
       if (kind !== 'logout') {
         const { data, response } = await api.GET('/api/v1/auth/me');
         if (generation !== sessionGeneration(client)) return;
         if (!response.ok) throw new Error('Не удалось проверить сессию');
-        const user = currentUser(data);
-        await waitForLoaderResult(startedAt.current);
-        if (generation !== sessionGeneration(client)) return;
-        client.setQueryData(authKeys.user, user);
+        user = currentUser(data);
       }
-      await waitForLoaderResult(startedAt.current);
+      await waitForPublication();
       if (generation !== sessionGeneration(client)) return;
+      if (user) client.setQueryData(authKeys.user, user);
       setNeedsRefresh(false);
       setRefreshState('idle');
     } catch (error) {
       if (generation !== sessionGeneration(client)) return;
-      await waitForLoaderResult(startedAt.current);
+      await waitForPublication();
       if (generation !== sessionGeneration(client)) return;
       setRefreshState('error');
       throw error;

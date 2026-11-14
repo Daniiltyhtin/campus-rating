@@ -1,3 +1,5 @@
+import { useLoaderTiming } from '../../app/loaderTiming';
+import { BrandLoader } from '../../theme/Brand';
 import { ActionButton } from '../../app/ActionButton';
 import { useTimedInfiniteQuery } from '../../app/infiniteTiming';
 import { useTimedMutation } from '../../app/actionTiming';
@@ -74,6 +76,8 @@ function CheckpointContent() {
   const checkpoint = query.data;
   const canEdit = session?.role === 'TEACHER' && session.userId === String(checkpoint?.author.id);
   const counts = rowsQuery.data?.pages[0]?.statusCounts;
+  const timing = useLoaderTiming(query.isPending);
+  if (!timing.resultReady) return <PageLayout title="Точка">{timing.indicatorVisible && <BrandLoader />}</PageLayout>;
   if (isAccessFailure(query.error)) return <TaskFailure error={query.error} />;
   function filterChanged() {
     setSelected([]);
@@ -177,9 +181,9 @@ function CheckpointContent() {
                         checked={selected.includes(row.assignmentId)}
                         onChange={(event) => {
                           if (event.currentTarget.checked) {
-                            setSelected([...selected, row.assignmentId]);
+                            setSelected((previous) => [...previous, row.assignmentId]);
                           } else {
-                            setSelected(selected.filter((id) => id !== row.assignmentId));
+                            setSelected((previous) => previous.filter((id) => id !== row.assignmentId));
                           }
                           accept.reset();
                         }}

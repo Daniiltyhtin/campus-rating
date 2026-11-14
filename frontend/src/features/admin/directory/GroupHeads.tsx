@@ -47,7 +47,7 @@ export function HeadCell({ group, heads, disabled }: { group: DirectoryEntry; he
   return <Stack gap={4}>
     <Text>{head ? head.student.fullName : '—'}</Text>
     <Group gap="xs">
-      <Button size="xs" variant="default" aria-label={`Назначить старосту ${group.name}`} disabled={disabled || remove.isPending} onClick={() => setAssigning(true)}>{head ? 'Сменить' : 'Назначить'}</Button>
+      <ActionButton size="xs" variant="default" aria-label={`Назначить старосту ${group.name}`} disabled={disabled} pending={remove.isPending} onClick={() => setAssigning(true)}>{head ? 'Сменить' : 'Назначить'}</ActionButton>
       {head && <ActionButton size="xs" variant="default" aria-label={`Снять старосту ${group.name}`} disabled={disabled} pending={remove.isPending} onClick={() => remove.mutate()}>Снять</ActionButton>}
     </Group>
     {remove.error && <Text role="alert">{errorText(remove.error)}</Text>}

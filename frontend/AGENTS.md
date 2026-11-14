@@ -60,5 +60,5 @@ React 19, Vite, TypeScript, Mantine, React Router, TanStack Query, Vitest. До�
 - Общий API-клиент захватил native fetch до запуска MSW и в UI-тесте получил HTML вместо JSON → обнаружил bootstrap-тест реальных routes → fetch общего клиента разрешать в момент запроса; сохранять проверку старта клиента до server.listen (`src/api/client.ts`, `src/features/auth/bootstrap.test.tsx`).
 - InnerInput/кнопка пароля и label АР меньше цели → браузер/Tab → измерять обе стороны целей, проверять показ пароля клавиатурой и токены подсказок/ошибок (`src/features/auth/AuthLayout.tsx`, `src/features/feed/feed.css`).
 - Открытое меню в jsdom имело display:none из-за нулевой геометрии, хотя aria-expanded=true → выяснил tester по Mantine Popover → для UI-тестов меню задавать MantineProvider env="test" и ждать видимый menuitem, не нажимать скрытый (`src/test/authAcceptance.tsx`).
-- Ранний `setTimeout` оставлял хук в `waiting` → приёмка → в таймере сверять `Date.now()` с deadline (`src/app/loaderTiming.ts`).
-- `toBeDisabled` сразу после клика противоречит R27 → check → ждать через `waitFor`.
+- Ранний `setTimeout` оставлял хук в `waiting` → приёмка → сверять `Date.now()` с deadline (`src/app/loaderTiming.ts`).
+- `toBeDisabled` сразу после клика нарушает R27 → check → число запросов сразу, `disabled` через `waitFor`.

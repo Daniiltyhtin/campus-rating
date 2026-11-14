@@ -12,7 +12,7 @@ export function AsyncContent({ state, children }: { state: LoadState; children: 
     : state.status === 'empty' ? <Text className="cr-caption">{state.message}</Text>
       : state.status === 'error' ? <Alert role="alert" title="Не удалось загрузить данные"><Stack><Text>{state.message}</Text><Button variant="default" onClick={state.retry}>Повторить</Button></Stack></Alert> : null;
   const [lastReady, setLastReady] = useState(() => ({ state, children, content: timing.resultReady ? content : null }));
-  if (state.status !== 'loading' && timing.resultReady && (lastReady.state !== state || lastReady.children !== children)) setLastReady({ state, children, content });
+  if (state.status !== 'loading' && (lastReady.state !== state || lastReady.children !== children)) setLastReady({ state, children, content });
   return timing.indicatorVisible ? <BrandLoader /> : timing.resultReady ? content : lastReady.content;
 }
 

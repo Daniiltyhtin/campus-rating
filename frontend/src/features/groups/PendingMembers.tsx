@@ -34,8 +34,8 @@ function Requests() {
       columns={[{ key: 'name', title: 'ФИО', render: (row) => row.fullName }, { key: 'email', title: 'Email', render: (row) => row.email },
         { key: 'group', title: 'Группа', render: (row) => row.group.name }, { key: 'requested', title: 'Заявка', render: (row) => dateTime(row.requestedAt) },
         { key: 'actions', title: 'Действия', render: (row) => <Group gap="xs">
-          <Button aria-label={`Подтвердить ${row.fullName}`} disabled={decision.isPending} onClick={() => decision.mutate({ studentId: row.studentId, decision: 'approval' })}>Подтвердить</Button>
-          <Button variant="default" aria-label={`Отклонить ${row.fullName}`} disabled={decision.isPending} onClick={() => setRejecting(row)}>Отклонить</Button></Group> }]} />
+          <ActionButton aria-label={`Подтвердить ${row.fullName}`} pending={decision.isPending} onClick={() => decision.mutate({ studentId: row.studentId, decision: 'approval' })}>Подтвердить</ActionButton>
+          <ActionButton variant="default" aria-label={`Отклонить ${row.fullName}`} pending={decision.isPending} onClick={() => setRejecting(row)}>Отклонить</ActionButton></Group> }]} />
     {rejecting && <RejectDialog request={rejecting} close={() => setRejecting(null)} />}
   </PageLayout>;
 }

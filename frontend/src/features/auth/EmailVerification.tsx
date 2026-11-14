@@ -1,3 +1,4 @@
+import { useLoaderTiming } from '../../app/loaderTiming';
 import { ActionButton } from '../../app/ActionButton';
 import { useTimedMutation } from '../../app/actionTiming';
 import { Stack, Text } from '@mantine/core';
@@ -29,7 +30,8 @@ export function EmailGate({ children }: { children: ReactNode }) {
   const query = useQuery({ queryKey: ['email-verification', user?.id], enabled, queryFn: async () => {
     const result = await api.GET('/api/v1/auth/email/status'); if (!result.response.ok || !result.data) throw new Error(); return result.data;
   } });
-  if (enabled && query.isPending) return <Text role="status">Проверка email…</Text>;
+  const timing = useLoaderTiming(enabled && query.isPending);
+  if (!timing.resultReady) return timing.indicatorVisible ? <Text role="status">Проверка email…</Text> : null;
   if (enabled && query.isError) return <RetryNotice message="Не удалось проверить подтверждение email" retry={() => { void query.refetch(); }} />;
   if (enabled && query.data && !query.data.verified) return <AuthLayout title="Подтвердите email" description="Для доступа к приложению подтвердите адрес из письма."><SendVerification email={user!.email} /><LogoutButton /></AuthLayout>;
   return children;

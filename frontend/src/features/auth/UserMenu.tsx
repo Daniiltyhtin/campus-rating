@@ -1,5 +1,6 @@
 import { ActionButton } from '../../app/ActionButton';
-import { Menu, Stack, UnstyledButton } from '@mantine/core';
+import { useLoaderTiming } from '../../app/loaderTiming';
+import { Loader, Menu, Stack, UnstyledButton } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { Link } from 'react-router';
 import { api } from '../../api/client';
@@ -16,6 +17,7 @@ export function LogoutButton() {
 }
 export function UserMenu({ fullName, userId }: { fullName: string; userId: string }) {
   const action = useLogout();
+  const timing = useLoaderTiming(action.isPending);
   const wide = useMediaQuery('(min-width: 1280px)', false, { getInitialValueInEffect: false });
   const [surname = '', ...names] = fullName.trim().split(/\s+/);
   const initials = `${surname[0] ?? ''}${names[0]?.[0] ?? ''}`;
@@ -25,6 +27,6 @@ export function UserMenu({ fullName, userId }: { fullName: string; userId: strin
     <Menu.Dropdown><Menu.Label className="cr-caption">{fullName}</Menu.Label><Menu.Item className="auth-menu-item" component={Link} to={`/users/${userId}`}>Мой профиль</Menu.Item>
       <Menu.Item className="auth-menu-item" component={Link} to="/password/change">Сменить пароль</Menu.Item>
       <Menu.Divider />
-      <Menu.Item className="auth-menu-item" onClick={() => action.mutate()} disabled={action.isPending}>Выйти</Menu.Item>
+      <Menu.Item className="auth-menu-item" closeMenuOnClick={false} onClick={() => { if (!action.isPending) action.mutate(); }} disabled={timing.indicatorVisible} leftSection={timing.indicatorVisible ? <Loader size="xs" /> : undefined}>Выйти</Menu.Item>
     </Menu.Dropdown></Menu>{action.error && <ActionError error={action.error} onReset={action.reset} />}</Stack>;
 }
