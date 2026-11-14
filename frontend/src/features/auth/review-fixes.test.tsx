@@ -94,7 +94,7 @@ it.each(['login', 'password'] as const)('33-4 %s shows loading until refresh act
   const gate = deferred(); let calls = 0;
   server.use(http.get('*/api/v1/auth/csrf', async () => { calls++; await gate.promise; return problem('INTERNAL_ERROR', 500); }));
   if (kind === 'login') { await view.user.type(screen.getByLabelText('Email'), 'a@b.c'); await view.user.type(screen.getByLabelText('Пароль', { exact: true }), 'password'); }
-  else { await view.user.type(screen.getByLabelText('Текущий пароль'), 'password'); await view.user.type(screen.getByLabelText('Новый пароль'), 'password-2'); }
+  else { await view.user.type(screen.getByLabelText('Текущий пароль'), 'password'); await view.user.type(screen.getByLabelText('Новый пароль', { exact: true }), 'password-2'); await view.user.type(screen.getByLabelText('Повторите новый пароль', { exact: true }), 'password-2'); }
   await view.user.click(screen.getByRole('button', { name: kind === 'login' ? 'Войти' : 'Сменить пароль' }));
   await waitFor(() => expect(calls).toBe(1));
   expect(screen.queryByText(/Не удалось обновить/)).not.toBeInTheDocument();

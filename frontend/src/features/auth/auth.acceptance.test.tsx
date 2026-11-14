@@ -1,4 +1,4 @@
-import { cleanup, screen, waitFor } from '@testing-library/react';
+import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { server } from '../../mocks/server';
 import { authUsers, choose, createAuthScenario, fillRegistration, logoutAction, mountAuth, openUserMenu, problem } from '../../test/authAcceptance';
@@ -167,6 +167,7 @@ describe('U5 frontend: регистрация — R1, R2, R47, R48', { timeout: 
     await user.type(screen.getByLabelText('Отчество', { exact: true }), 'Иванович');
     await user.type(screen.getByLabelText('Email'), 'teacher@campus.test');
     await user.type(screen.getByLabelText('Пароль', { exact: true }), 'teacher-password');
+    await user.type(screen.getByLabelText('Повторите пароль', { exact: true }), 'teacher-password');
     await choose(user, 'Факультет', 'Факультет информационных технологий');
     await choose(user, 'Кафедра', 'Кафедра программной инженерии');
     await user.click(screen.getByRole('button', { name: /зарегистрироваться/i }));
@@ -285,7 +286,8 @@ describe('U5 frontend: временный пароль, выход и допус
     const state = createAuthScenario(authUsers.admin);
     const { user, router } = mountAuth('/password/change');
     await user.type(await screen.findByLabelText('Текущий пароль'), 'old');
-    await user.type(screen.getByLabelText('Новый пароль'), 'new-password-1');
+    await user.type(screen.getByLabelText('Новый пароль', { exact: true }), 'new-password-1');
+    await user.type(screen.getByLabelText('Повторите новый пароль', { exact: true }), 'new-password-1');
     await user.click(screen.getByRole('button', { name: 'Сменить пароль' }));
     expect(await screen.findByRole('navigation', { name: 'Боковое меню' })).toBeInTheDocument();
     expect(router.state.location.pathname).not.toBe('/password/change');
@@ -304,7 +306,8 @@ describe('U5 frontend: временный пароль, выход и допус
     server.use(http.post('*/api/v1/auth/password', () => problem(code, 400, extra)));
     const { user } = mountAuth('/password/change');
     await user.type(await screen.findByLabelText('Текущий пароль'), 'old');
-    await user.type(screen.getByLabelText('Новый пароль'), 'new-password-1');
+    await user.type(screen.getByLabelText('Новый пароль', { exact: true }), 'new-password-1');
+    await user.type(screen.getByLabelText('Повторите новый пароль', { exact: true }), 'new-password-1');
     await user.click(screen.getByRole('button', { name: 'Сменить пароль' }));
     await waitFor(() => expect(screen.getByLabelText(label)).toHaveAttribute('aria-invalid', 'true'));
     expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
@@ -353,7 +356,8 @@ describe('U5 frontend: временный пароль, выход и допус
     server.use(http.post('*/api/v1/auth/password', () => problem('UNAUTHENTICATED', 401)));
     const { user, queryClient, router } = mountAuth('/password/change');
     await user.type(await screen.findByLabelText('Текущий пароль'), 'old');
-    await user.type(screen.getByLabelText('Новый пароль'), 'new-password-1');
+    await user.type(screen.getByLabelText('Новый пароль', { exact: true }), 'new-password-1');
+    await user.type(screen.getByLabelText('Повторите новый пароль', { exact: true }), 'new-password-1');
     queryClient.setQueryData(['acceptance-private-profile'], { id: 3001 });
     await user.click(screen.getByRole('button', { name: 'Сменить пароль' }));
     expect(await screen.findByRole('button', { name: 'Войти' })).toBeInTheDocument();
@@ -449,5 +453,147 @@ describe('U24 name fields', { timeout: 15000 }, () => {
     }
     expect(middle).toHaveAccessibleDescription('Если есть');
     expect(screen.queryByRole('textbox', { name: 'ФИО' })).not.toBeInTheDocument();
+  });
+});
+
+describe.each([
+  { kind: 'student', title: 'регистрация студента', ae: 'AE25, AE26', passwordLabel: 'Пароль', repeatLabel: 'Повторите пароль', submitLabel: 'Зарегистрироваться', endpoint: '/api/v1/auth/register/student' },
+  { kind: 'teacher', title: 'регистрация преподавателя', ae: 'AE25, AE26', passwordLabel: 'Пароль', repeatLabel: 'Повторите пароль', submitLabel: 'Зарегистрироваться', endpoint: '/api/v1/auth/register/teacher' },
+  { kind: 'change', title: 'смена своего пароля', ae: 'AE27', passwordLabel: 'Новый пароль', repeatLabel: 'Повторите новый пароль', submitLabel: 'Сменить пароль', endpoint: '/api/v1/auth/password' },
+  { kind: 'temporary', title: 'смена временного пароля', ae: 'AE27', passwordLabel: 'Новый пароль', repeatLabel: 'Повторите новый пароль', submitLabel: 'Сменить пароль', endpoint: '/api/v1/auth/password' },
+  { kind: 'set', title: 'установка по ссылке', ae: 'AE28', passwordLabel: 'Новый пароль', repeatLabel: 'Повторите пароль', submitLabel: 'Установить пароль', endpoint: '/api/v1/auth/password/set' },
+])('U24 U8 $title', (form) => {
+  async function prepare() {
+    const changing = form.kind === 'change' || form.kind === 'temporary';
+    const state = createAuthScenario(changing ? { ...authUsers.student, mustChangePassword: form.kind === 'temporary' } : null);
+    if (form.kind === 'set') {
+      server.use(http.post('*/api/v1/auth/password/set', async ({ request }) => {
+        state.events.push({ method: request.method, path: new URL(request.url).pathname,
+          csrf: request.headers.get('X-XSRF-TOKEN'), body: await request.json() });
+        return new HttpResponse(null, { status: 204 });
+      }));
+    }
+    const view = mountAuth(changing ? (form.kind === 'temporary' ? '/tasks' : '/password/change')
+      : form.kind === 'set' ? '/password/set/acceptance-token' : '/register');
+    const { user } = view;
+    if (form.kind === 'student' || form.kind === 'teacher') {
+      await screen.findByLabelText('Фамилия', { exact: true });
+      if (form.kind === 'teacher') await user.click(screen.getByText('Преподаватель', { exact: true }));
+      await user.type(screen.getByLabelText('Фамилия', { exact: true }), 'Иванова');
+      await user.type(screen.getByLabelText('Имя', { exact: true }), 'Мария');
+      await user.type(screen.getByLabelText('Email', { exact: true }), 'repeat@campus.test');
+      await choose(user, 'Факультет', 'Факультет информационных технологий');
+      await choose(user, form.kind === 'student' ? 'Группа' : 'Кафедра', form.kind === 'student' ? 'ИВТ-21' : 'Кафедра программной инженерии');
+    }
+    if (changing) {
+      await user.type(await screen.findByLabelText('Текущий пароль', { exact: true }), 'old-password');
+      expect(view.router.state.location.pathname).toBe('/password/change');
+    }
+    const password = await screen.findByLabelText(form.passwordLabel, { exact: true });
+    await user.type(password, 'Secret123');
+    const repeat = screen.getByLabelText(form.repeatLabel, { exact: true });
+    const submit = () => user.click(screen.getByRole('button', { name: form.submitLabel }));
+    const requests = () => state.events.filter((event) => event.path === form.endpoint);
+    return { ...view, password, repeat, submit, requests };
+  }
+
+  function expectMismatch(repeat: HTMLElement) {
+    expect(repeat).toHaveAttribute('aria-invalid', 'true');
+    expect(repeat).toHaveAccessibleDescription('Пароли не совпадают');
+    const error = screen.getByText('Пароли не совпадают', { exact: true });
+    expect(error).toBeVisible();
+    expect(repeat.compareDocumentPosition(error) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
+  }
+
+  it(`Covers ${form.ae}, AE30: точная подпись, повтор сразу под новым паролем, autocomplete`, async () => {
+    const { password, repeat } = await prepare();
+    expect(repeat).toBeVisible();
+    expect(repeat).toHaveAttribute('autocomplete', 'new-password');
+    const controls = Array.from(password.closest('form')!.elements).filter((element) =>
+      element instanceof HTMLInputElement && element.type !== 'hidden' || element instanceof HTMLSelectElement || element instanceof HTMLTextAreaElement);
+    expect(controls[controls.indexOf(password) + 1]).toBe(repeat);
+  });
+
+  it.each(['Secret124', 'secret123', 'Secret123 '])(`Covers ${form.ae}: разные значения дают ошибку под повтором, запроса нет (%j)`, async (value) => {
+    const { user, repeat, submit, requests } = await prepare();
+    await user.type(repeat, value);
+    await submit();
+    expectMismatch(repeat);
+    expect(requests()).toHaveLength(0);
+  });
+
+  it(`Covers ${form.ae}: пустой повтор при заполненном пароле даёт ту же ошибку`, async () => {
+    const { repeat, submit, requests } = await prepare();
+    expect(repeat).toHaveValue('');
+    await submit();
+    expectMismatch(repeat);
+    expect(requests()).toHaveLength(0);
+  });
+
+  it(`Covers ${form.ae}, AE26: любая правка повтора сразу снимает ошибку, отправка проверяет снова`, async () => {
+    const { user, repeat, submit, requests } = await prepare();
+    await user.type(repeat, 'Secret124');
+    await submit();
+    expectMismatch(repeat);
+    await user.type(repeat, '5');
+    expect(screen.queryByText('Пароли не совпадают', { exact: true })).not.toBeInTheDocument();
+    expect(repeat).not.toHaveAttribute('aria-invalid', 'true');
+    expect(requests()).toHaveLength(0);
+    await submit();
+    expectMismatch(repeat);
+    expect(requests()).toHaveLength(0);
+    await user.clear(repeat);
+    await user.type(repeat, 'Secret123');
+    expect(screen.queryByText('Пароли не совпадают', { exact: true })).not.toBeInTheDocument();
+    await submit();
+    await waitFor(() => expect(requests()).toHaveLength(1));
+    if (form.kind === 'student' || form.kind === 'teacher') expect(await screen.findByText(/Регистрация завершена/)).toBeVisible();
+    else if (form.kind === 'set') expect(await screen.findByRole('status')).toHaveTextContent('Пароль установлен, email подтверждён');
+    else await screen.findByRole('navigation', { name: 'Боковое меню' });
+  });
+
+  it(`Covers ${form.ae}: правка нового пароля не снимает ошибку повтора`, async () => {
+    const { user, password, repeat, submit, requests } = await prepare();
+    await user.type(repeat, 'Secret124');
+    await submit();
+    expectMismatch(repeat);
+    await user.clear(password);
+    await user.type(password, 'Secret124');
+    expectMismatch(repeat);
+    expect(requests()).toHaveLength(0);
+  });
+
+  it(`Covers ${form.ae}, AE29: совпадение отправляет прежнее тело без поля повтора`, async () => {
+    const { user, repeat, submit, requests } = await prepare();
+    await user.type(repeat, 'Secret123');
+    await submit();
+    await waitFor(() => expect(requests()).toHaveLength(1));
+    const common = { lastName: 'Иванова', firstName: 'Мария', email: 'repeat@campus.test', password: 'Secret123' };
+    const body = form.kind === 'student' ? { ...common, facultyId: 1, groupId: 11 }
+      : form.kind === 'teacher' ? { ...common, departmentId: 101 }
+      : form.kind === 'set' ? { token: 'acceptance-token', password: 'Secret123' }
+      : { currentPassword: 'old-password', newPassword: 'Secret123' };
+    expect(requests()[0]?.body).toEqual(body);
+  });
+
+  it('Covers AE30: свой переключатель повтора сохраняет вид нового пароля', async () => {
+    const { user, password, repeat } = await prepare();
+    await user.type(repeat, 'Secret123');
+    expect(password).toHaveAttribute('type', 'password');
+    expect(repeat).toHaveAttribute('type', 'password');
+    const container = password.closest('form')!;
+    const toggles = within(container).getAllByRole('button', { name: 'Показать пароль' });
+    const repeatToggle = toggles.at(-1)!;
+    await user.click(repeatToggle);
+    expect(repeat).toHaveAttribute('type', 'text');
+    expect(repeat).toHaveValue('Secret123');
+    expect(password).toHaveAttribute('type', 'password');
+    await user.click(within(container).getByRole('button', { name: 'Скрыть пароль' }));
+    expect(repeat).toHaveAttribute('type', 'password');
+    await user.click(toggles.at(-2)!);
+    expect(password).toHaveAttribute('type', 'text');
+    await user.click(repeatToggle);
+    expect(repeat).toHaveAttribute('type', 'text');
+    expect(password).toHaveAttribute('type', 'text');
   });
 });
