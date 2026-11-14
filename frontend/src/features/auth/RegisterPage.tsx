@@ -16,6 +16,7 @@ export function RegisterPage() {
   const [middleName, setMiddleName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordRepeat, setPasswordRepeat] = useState('');
   const [facultyId, setFacultyId] = useState('');
   const [targetId, setTargetId] = useState('');
   const form = useFormErrors();
@@ -32,6 +33,7 @@ export function RegisterPage() {
     if (!result.response.ok) throw new Error('Не удалось зарегистрироваться');
     const outcome = registrationResult(result.data);
     setPassword('');
+    setPasswordRepeat('');
     return outcome;
   }, onError: form.fromServer });
   const ready = config.isSuccess && faculties.isSuccess && targets.isSuccess && targetId !== '';
@@ -49,7 +51,8 @@ export function RegisterPage() {
           const errors = { lastName: lastName.trim().length < 1 || lastName.trim().length > 100 ? 'Укажите фамилию, не больше 100 символов' : undefined,
             firstName: firstName.trim().length < 1 || firstName.trim().length > 100 ? 'Укажите имя, не больше 100 символов' : undefined,
             middleName: middleName.trim().length > 100 ? 'Не больше 100 символов' : undefined,
-            email: emailError(email.trim()), password: passwordError(password) };
+            email: emailError(email.trim()), password: passwordError(password),
+            passwordRepeat: passwordRepeat !== password ? 'Пароли не совпадают' : undefined };
           form.setErrors(Object.fromEntries(Object.entries(errors).filter((entry): entry is [string, string] => typeof entry[1] === 'string')));
           if (!ready || Object.values(errors).some(Boolean) || mutation.isPending) return;
           mutation.mutate();
@@ -58,6 +61,7 @@ export function RegisterPage() {
           <TextInput label="Отчество" description="Если есть" autoComplete="additional-name" value={middleName} onChange={(event) => { setMiddleName(event.currentTarget.value); form.clear('middleName'); }} error={form.errors.middleName} />
           <TextInput label="Email" type="email" autoComplete="email" value={email} onChange={(event) => { setEmail(event.currentTarget.value); form.clear('email'); }} error={form.errors.email} />
           <PasswordField label="Пароль" autoComplete="new-password" description="От 8 символов, не больше 72 байт UTF-8" value={password} onChange={(event) => { setPassword(event.currentTarget.value); form.clear('password'); }} error={form.errors.password} />
+          <PasswordField label="Повторите пароль" autoComplete="new-password" value={passwordRepeat} onChange={(event) => { setPasswordRepeat(event.currentTarget.value); form.clear('passwordRepeat'); }} error={form.errors.passwordRepeat} />
           <NativeSelect label="Факультет" value={facultyId} styles={{ error: { color: 'var(--cr-status-overdue)' } }} onChange={(event) => changeFaculty(event.currentTarget.value)} disabled={!faculties.isSuccess || mutation.isPending} error={form.errors.facultyId}
             data={[{ value: '', label: 'Выберите факультет' }, ...(faculties.data ?? []).map((item) => ({ value: String(item.id), label: item.name }))]} />
           {faculties.isPending && <Text role="status">Загрузка факультетов…</Text>}
