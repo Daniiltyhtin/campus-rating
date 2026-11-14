@@ -228,7 +228,7 @@ describe('U10 раздельные состояния и отказы', { timeou
     mountProfile();
     try {
       await waitFor(() => expect(requested).toBe(true));
-      expect(screen.getByRole('status')).toBeInTheDocument();
+      expect(await screen.findByRole('status')).toBeInTheDocument();
       expect(screen.queryByText(/^940$/)).not.toBeInTheDocument();
       expect(state.requests.some((request) => request.path.includes('/ledger/'))).toBe(false);
       loading.resolve();
@@ -263,7 +263,7 @@ describe('U10 раздельные состояния и отказы', { timeou
     try {
       expect(await screen.findByRole('heading', { name: authUsers.student.fullName })).toBeInTheDocument();
       expect(screen.getByText(/^940$/)).toBeInTheDocument();
-      expect(screen.getByRole('status')).toBeInTheDocument();
+      expect(await screen.findByRole('status')).toBeInTheDocument();
       loading.resolve();
       expect(await screen.findByText(/история.*пуста|проводок.*нет|нет.*проводок|история.*появится/i)).toBeInTheDocument();
       expect(screen.getByText(/^940$/)).toBeInTheDocument();

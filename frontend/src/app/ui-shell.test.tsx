@@ -1,7 +1,8 @@
 import { DEFAULT_THEME, mergeMantineTheme } from '@mantine/core';
-import { cleanup, render, screen, within, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, within, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { vi } from 'vitest';
+import { advance, untilNetwork } from '../test/loaderAcceptance';
 import { renderApp } from '../test/render';
 import { setViewportWidth } from '../test/setup';
 import { authUsers, createAuthScenario, mountAuth } from '../test/authAcceptance';
@@ -15,7 +16,7 @@ import { contrastVariablesResolver, cssVariablesResolver, theme } from '../theme
 const styles = readFileSync('src/theme/theme.css', 'utf8');
 
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
-afterEach(() => { cleanup(); server.resetHandlers(); localStorage.clear(); vi.restoreAllMocks(); });
+afterEach(() => { cleanup(); server.resetHandlers(); localStorage.clear(); vi.restoreAllMocks(); vi.useRealTimers(); });
 afterAll(() => server.close());
 
 it.each([
@@ -128,18 +129,24 @@ it('R31: all themes share the 1920px root scale and scalable size tokens', () =>
 
 it('R41: pending session displays the centered full-cycle 96px loader', async () => {
   createAuthScenario();
-  server.use(http.get('*/api/v1/auth/me', () => new Promise<ReturnType<typeof HttpResponse.json>>(() => {})));
+  let requested = false;
+  server.use(http.get('*/api/v1/auth/me', () => { requested = true; return new Promise<ReturnType<typeof HttpResponse.json>>(() => {}); }));
+  vi.useFakeTimers();
   mountAuth('/login');
-  const loading = await screen.findByRole('status', { name: 'Загрузка' });
+  await untilNetwork(() => requested);
+  await advance(300);
+  const loading = screen.getByRole('status', { name: 'Загрузка' });
   expect(loading).toHaveClass('cr-session-loading');
   expect(loading.querySelector('svg animate')).not.toBeNull();
   expect(loading.querySelector('.cr-loader')).toHaveStyle({ width: '6rem', height: '6rem' });
 });
 
-it.each([false, true])('R41: AsyncContent uses accessible 48px wait animation, reduced motion=%s', (reduce) => {
+it.each([false, true])('R41: AsyncContent uses accessible 48px wait animation, reduced motion=%s', async (reduce) => {
+  vi.useFakeTimers();
   const original = window.matchMedia;
   vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({ ...original(query), matches: query.includes('prefers-reduced-motion') && reduce }));
   render(<CampusThemeProvider><AsyncContent state={{ status: 'loading' }}>Готово</AsyncContent></CampusThemeProvider>);
+  await act(async () => { await vi.advanceTimersByTimeAsync(300); });
   const loading = screen.getByRole('status', { name: 'Загрузка' });
   expect(loading.querySelector('.cr-loader')).toHaveStyle({ width: '3rem', height: '3rem' });
   expect(loading.querySelector('svg')).toHaveAttribute('fill', 'currentColor');
@@ -148,10 +155,12 @@ it.each([false, true])('R41: AsyncContent uses accessible 48px wait animation, r
   expect(screen.queryByText('Готово')).not.toBeInTheDocument();
 });
 
-it('R41: reduced-motion session loader is static', () => {
+it('R41: reduced-motion session loader is static', async () => {
+  vi.useFakeTimers();
   const original = window.matchMedia;
   vi.spyOn(window, 'matchMedia').mockImplementation((query) => ({ ...original(query), matches: query.includes('prefers-reduced-motion') }));
   render(<CampusThemeProvider><RouteLoading /></CampusThemeProvider>);
+  await act(async () => { await vi.advanceTimersByTimeAsync(300); });
   expect(screen.getByRole('status', { name: 'Загрузка' }).querySelector('animate, animateTransform')).toBeNull();
   expect(screen.getByRole('status', { name: 'Загрузка' }).querySelector('svg path')).not.toBeNull();
 });

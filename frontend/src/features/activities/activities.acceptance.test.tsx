@@ -62,7 +62,7 @@ describe('U9 список и запись — R17/R18', () => {
       const enroll = await screen.findByRole('button', { name: new RegExp(`Записаться.*${activityNames.social}`) });
       await user.dblClick(enroll);
       await waitFor(() => expect(puts).toBe(1));
-      expect(enroll).toBeDisabled();
+      await waitFor(() => expect(enroll).toBeDisabled(), { timeout: 3000 });
       expect(screen.queryByRole('button', { name: new RegExp(`Отменить запись.*${activityNames.social}`) })).not.toBeInTheDocument();
       await user.click(enroll);
       expect(puts).toBe(1);

@@ -97,7 +97,7 @@ describe('U5 frontend: сессия и вход — R3, KTD8', () => {
     const button = screen.getByRole('button', { name: 'Войти' });
     await user.click(button);
     await waitFor(() => expect(posts).toBe(1));
-    expect(button).toBeDisabled();
+    await waitFor(() => expect(button).toBeDisabled(), { timeout: 3000 });
     await user.click(button);
     expect(posts).toBe(1);
     finish?.();

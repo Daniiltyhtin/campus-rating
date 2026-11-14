@@ -99,7 +99,7 @@ it.each(['login', 'password'] as const)('33-4 %s shows loading until refresh act
   await waitFor(() => expect(calls).toBe(1));
   expect(screen.queryByText(/Не удалось обновить/)).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Повторить' })).not.toBeInTheDocument();
-  expect(screen.getByRole('status')).toHaveTextContent(/Обновление/);
+  expect(await screen.findByRole('status', {}, { timeout: 3000 })).toHaveTextContent(/Обновление/);
   await act(async () => { gate.resolve(); });
   await screen.findByRole('button', { name: 'Повторить' });
   const retryGate = deferred(); server.use(http.get('*/api/v1/auth/csrf', async () => { calls++; await retryGate.promise; return problem('INTERNAL_ERROR', 500); }));
