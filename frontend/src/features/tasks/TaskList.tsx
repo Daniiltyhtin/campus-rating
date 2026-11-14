@@ -1,5 +1,5 @@
+import { useTimedInfiniteQuery } from '../../app/infiniteTiming';
 import { Anchor, Stack, Tabs, Text } from '@mantine/core';
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { api } from '../../api/client';
@@ -16,7 +16,7 @@ function emptyMessage(pending: boolean, view: 'active' | 'completed') {
 
 export function TaskList() {
   const [view, setView] = useState<'active' | 'completed'>('active');
-  const query = useInfiniteQuery({
+  const query = useTimedInfiniteQuery({
     queryKey: ['tasks', view],
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>

@@ -1,3 +1,4 @@
+import { ActionButton } from '../../app/ActionButton';
 import { Button, Group, SegmentedControl, Stack, Text } from '@mantine/core';
 import { CurrencyIcon } from '../../app/CurrencyMark';
 import { useQueryClient } from '@tanstack/react-query';
@@ -49,7 +50,7 @@ function Awards({ viewerId, mine, onMine }: { viewerId: number; mine: boolean; o
       <div>{items.map((item) => <AwardEntry key={item.entryId} item={item} />)}</div>
     </AsyncContent>
     <div ref={marker}>{isFetchNextPageError ? <Stack role="alert"><Text>{feedError(query.error)}</Text><Button variant="default" disabled={isFetching} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Повторить загрузку наград</Button></Stack>
-      : hasNextPage && <Button variant="default" loading={isFetchingNextPage} disabled={isFetching} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Показать ещё</Button>}</div>
+      : hasNextPage && <ActionButton variant="default" pending={isFetchingNextPage} disabled={isFetching && !isFetchingNextPage} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Показать ещё</ActionButton>}</div>
   </Stack></FeedPage>;
 }
 export function AwardsFeed() {

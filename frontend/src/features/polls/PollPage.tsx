@@ -1,5 +1,7 @@
-import { Button, Checkbox, Radio, Stack, Table, Text } from '@mantine/core';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ActionButton } from '../../app/ActionButton';
+import { useTimedMutation } from '../../app/actionTiming';
+import { Checkbox, Radio, Stack, Table, Text } from '@mantine/core';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useParams } from 'react-router';
 import { AsyncContent } from '../../app/layouts/PageLayouts';
@@ -35,7 +37,7 @@ function Responses({ userId, poll }: { userId: number; poll: Poll }) {
 function Ballot({ poll, onVoted, onFailed }: { poll: Poll; onVoted: () => Promise<unknown>; onFailed: (message: string) => void }) {
   const [answers, setAnswers] = useState<Record<number, number[]>>({});
   const client = useQueryClient();
-  const vote = useMutation({ retry: false,
+  const vote = useTimedMutation({ retry: false,
     mutationFn: () => votePoll(poll.id, { answers: poll.questions.map((question) => ({ questionId: question.id, optionIds: answers[question.id] ?? [] })) }),
     onSuccess: async () => { onFailed(''); await client.invalidateQueries({ queryKey: pollKeys.root }); await onVoted(); },
     onError: async (error) => { onFailed(pollError(error)); await client.invalidateQueries({ queryKey: pollKeys.root }); await onVoted(); } });
@@ -50,7 +52,7 @@ function Ballot({ poll, onVoted, onFailed }: { poll: Poll; onVoted: () => Promis
           onChange={(value) => setAnswers((old) => ({ ...old, [question.id]: value.map(Number) }))}>
           <Stack gap="xs" mt="xs">{question.options.map((option) => <Checkbox key={option.id} value={String(option.id)} label={option.text} />)}</Stack>
         </Checkbox.Group>)}
-    <Button disabled={!complete || vote.isPending} loading={vote.isPending} onClick={() => vote.mutate()}>Проголосовать</Button>
+    <ActionButton disabled={!complete} pending={vote.isPending} onClick={() => vote.mutate()}>Проголосовать</ActionButton>
   </Stack>;
 }
 

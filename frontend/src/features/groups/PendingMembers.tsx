@@ -1,3 +1,4 @@
+import { ActionButton } from '../../app/ActionButton';
 import { Button, Group, Modal, Stack, Text, Title } from '@mantine/core';
 import { useState } from 'react';
 import { Link } from 'react-router';
@@ -18,7 +19,7 @@ function RejectDialog({ request, close }: { request: Pending; close: () => void 
     <Stack><Text>Отклонить заявку {request.fullName} в {request.group.name}? Студент сможет выбрать группу заново.</Text>
       {decision.error && <Text role="alert">{errorText(decision.error)}</Text>}
       <Group justify="end"><Button variant="default" disabled={decision.isPending} onClick={close}>Отмена</Button>
-        <Button loading={decision.isPending} onClick={() => decision.mutate({ studentId: request.studentId, decision: 'rejection' }, { onSuccess: close })}>Отклонить</Button></Group>
+        <ActionButton pending={decision.isPending} onClick={() => decision.mutate({ studentId: request.studentId, decision: 'rejection' }, { onSuccess: close })}>Отклонить</ActionButton></Group>
     </Stack>
   </Modal>;
 }
@@ -33,8 +34,8 @@ function Requests() {
       columns={[{ key: 'name', title: 'ФИО', render: (row) => row.fullName }, { key: 'email', title: 'Email', render: (row) => row.email },
         { key: 'group', title: 'Группа', render: (row) => row.group.name }, { key: 'requested', title: 'Заявка', render: (row) => dateTime(row.requestedAt) },
         { key: 'actions', title: 'Действия', render: (row) => <Group gap="xs">
-          <Button aria-label={`Подтвердить ${row.fullName}`} disabled={decision.isPending} onClick={() => decision.mutate({ studentId: row.studentId, decision: 'approval' })}>Подтвердить</Button>
-          <Button variant="default" aria-label={`Отклонить ${row.fullName}`} disabled={decision.isPending} onClick={() => setRejecting(row)}>Отклонить</Button></Group> }]} />
+          <ActionButton aria-label={`Подтвердить ${row.fullName}`} pending={decision.isPending} onClick={() => decision.mutate({ studentId: row.studentId, decision: 'approval' })}>Подтвердить</ActionButton>
+          <ActionButton variant="default" aria-label={`Отклонить ${row.fullName}`} pending={decision.isPending} onClick={() => setRejecting(row)}>Отклонить</ActionButton></Group> }]} />
     {rejecting && <RejectDialog request={rejecting} close={() => setRejecting(null)} />}
   </PageLayout>;
 }

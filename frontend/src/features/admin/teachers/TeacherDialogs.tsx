@@ -1,3 +1,4 @@
+import { ActionButton } from '../../../app/ActionButton';
 import { Button, Group, Modal, NativeSelect, Stack, Text, TextInput } from '@mantine/core';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
@@ -19,7 +20,7 @@ function Frame({ title, busy, close, children }: { title: string; busy: boolean;
 function Failure({ action }: { action: Action }) {
   const error = action.refresh.error ?? action.mutation.error;
   return <>{error && <Stack role="alert" gap="sm"><Text>{teacherError(error)}</Text>
-    {error instanceof ApiError && error.code === 'CSRF_INVALID' && <Button variant="default" loading={action.refresh.isPending} onClick={() => action.refresh.mutate()}>Обновить защиту</Button>}
+    {error instanceof ApiError && error.code === 'CSRF_INVALID' && <ActionButton variant="default" pending={action.refresh.isPending} onClick={() => action.refresh.mutate()}>Обновить защиту</ActionButton>}
     {error instanceof ApiError && (error.code === 'INVALID_STATE' || error.code === 'NOT_FOUND') && <Button variant="default" onClick={action.reload}>Обновить карточку</Button>}
   </Stack>}{action.refresh.isSuccess && <Text role="status">Защита обновлена. Повторите действие.</Text>}</>;
 }
@@ -38,7 +39,7 @@ export function ApprovalDialog({ teacher, viewerId, close, finished }: DialogPro
       <NativeSelect label="Кафедра" value={selected} disabled={busy} data={[{ value: '', label: 'Выберите кафедру' }, ...rows.map((row) => ({ value: String(row.id), label: row.name }))]}
         error={errors.departmentId} onChange={(event) => { setSelected(event.currentTarget.value); setErrors({}); }} data-autofocus />
     </AsyncContent><Failure action={action} />
-    <Group justify="end"><Button variant="default" disabled={busy} onClick={close}>Отмена</Button><Button type="submit" disabled={busy || unavailable} loading={action.mutation.isPending}>Допустить</Button></Group>
+    <Group justify="end"><Button variant="default" disabled={busy} onClick={close}>Отмена</Button><ActionButton type="submit" disabled={unavailable} pending={action.mutation.isPending}>Допустить</ActionButton></Group>
   </Stack></form></Frame>;
 }
 export function GrantDialog({ teacher, viewerId, close, finished }: DialogProps & { viewerId: number }) {
@@ -62,7 +63,7 @@ export function GrantDialog({ teacher, viewerId, close, finished }: DialogProps 
     {needsFaculty && <AsyncContent state={teacherState(facultyQuery, faculties.length === 0, 'Факультетов пока нет. Сначала создайте факультет.')}><NativeSelect label="Факультет" value={fields.facultyId} disabled={busy} error={errors.facultyId}
       data={[{ value: '', label: 'Выберите факультет' }, ...faculties.map((faculty) => ({ value: String(faculty.id), label: faculty.name }))]} onChange={(event) => change('facultyId', event.currentTarget.value)} /></AsyncContent>}
     {(fields.kind === 'COURSE' || fields.kind === 'FACULTY_COURSE') && <TextInput type="number" label="Курс" value={fields.course} disabled={busy} error={errors.course} onChange={(event) => change('course', event.currentTarget.value)} />}
-    <Failure action={action} /><Group justify="end"><Button variant="default" disabled={busy} onClick={close}>Отмена</Button><Button type="submit" disabled={busy || unavailable} loading={action.mutation.isPending}>Выдать доступ</Button></Group>
+    <Failure action={action} /><Group justify="end"><Button variant="default" disabled={busy} onClick={close}>Отмена</Button><ActionButton type="submit" disabled={unavailable} pending={action.mutation.isPending}>Выдать доступ</ActionButton></Group>
   </Stack></form></Frame>;
 }
 export function ConfirmTeacherDialog({ teacher, command, grant, close, finished }: DialogProps & { command: 'reject' | 'remove'; grant?: Grant }) {
@@ -71,7 +72,7 @@ export function ConfirmTeacherDialog({ teacher, command, grant, close, finished 
     {command === 'reject' ? <><Text>{teacher.fullName} · {teacher.email}</Text><Text>Аккаунт будет удалён. Пользователь сможет зарегистрироваться заново.</Text></>
       : <><Text>{grant && grantDescription(grant)}</Text><Text>Группа может остаться доступной по кафедре или другой выдаче.</Text></>}
     <Failure action={action} /><Group justify="end"><Button variant="default" disabled={busy} onClick={close}>Отмена</Button>
-      <Button disabled={busy} loading={action.mutation.isPending} onClick={() => { if (command === 'reject') action.mutation.mutate({ kind: 'reject' }); else if (grant) action.mutation.mutate({ kind: 'remove', grantId: grant.id }); }}>{command === 'reject' ? 'Отклонить' : 'Снять доступ'}</Button>
+      <ActionButton pending={action.mutation.isPending} onClick={() => { if (command === 'reject') action.mutation.mutate({ kind: 'reject' }); else if (grant) action.mutation.mutate({ kind: 'remove', grantId: grant.id }); }}>{command === 'reject' ? 'Отклонить' : 'Снять доступ'}</ActionButton>
     </Group>
   </Stack></Frame>;
 }

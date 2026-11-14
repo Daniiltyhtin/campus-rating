@@ -23,13 +23,13 @@ describe('styleguide', () => {
     const user = userEvent.setup();
     renderApp('/styleguide');
     await user.click(await screen.findByRole('radio', { name: 'Загрузка' }));
-    expect(screen.getAllByRole('status').length).toBeGreaterThan(0);
+    expect((await screen.findAllByRole('status', {}, { timeout: 3000 })).length).toBeGreaterThan(0);
     await user.click(screen.getByRole('radio', { name: 'Пусто' }));
-    expect(screen.getAllByText('Здесь пока нет данных').length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Здесь пока нет данных', {}, { timeout: 3000 })).length).toBeGreaterThan(0);
     await user.click(screen.getByRole('radio', { name: 'Ошибка' }));
-    expect(screen.getAllByRole('alert').length).toBeGreaterThan(0);
+    expect((await screen.findAllByRole('alert', {}, { timeout: 3000 })).length).toBeGreaterThan(0);
     await user.click(screen.getAllByRole('button', { name: 'Повторить' })[0]!);
-    expect(screen.getAllByText('Лабораторная 3. Деревья поиска').length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Лабораторная 3. Деревья поиска', {}, { timeout: 3000 })).length).toBeGreaterThan(0);
   });
 
   it('offers the system theme and reports partial acceptance without losing selection', async () => {

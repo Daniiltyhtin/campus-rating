@@ -1,3 +1,5 @@
+import { useLoaderTiming } from '../../../app/loaderTiming';
+import { BrandLoader } from '../../../theme/Brand';
 import { Button, Group, Stack, Text, Title } from '@mantine/core';
 import { useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
@@ -47,6 +49,8 @@ function TeacherContent({ viewerId, teacher, result, setResult }: { viewerId: nu
 function TeacherRecord({ viewerId, teacherId }: { viewerId: number; teacherId: number }) {
   const query = useTeacher(viewerId, teacherId);
   const [result, setResult] = useState('');
+  const timing = useLoaderTiming(query.isPending);
+  if (!timing.resultReady) return <TeacherLayout title="Преподаватель">{timing.indicatorVisible && <BrandLoader />}</TeacherLayout>;
   if (query.error instanceof ApiError && (query.error.code === 'NOT_FOUND' || query.error.code === 'FORBIDDEN')) return <TeacherLayout title={query.error.code === 'NOT_FOUND' ? 'Преподаватель не найден' : 'Нет доступа'}><TeacherLink to="/admin/users">Пользователи</TeacherLink></TeacherLayout>;
   return <TeacherLayout title={query.data?.fullName ?? 'Преподаватель'}><TeacherLink to="/admin/users">Пользователи</TeacherLink>
     <AsyncContent state={teacherState(query)}>{query.data && <TeacherContent key={`${teacherId}-${query.data.teacherApproved}-${query.data.department.id}`} viewerId={viewerId} teacher={query.data} result={result} setResult={setResult} />}</AsyncContent>

@@ -1,4 +1,5 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useTimedInfiniteQuery } from '../../app/infiniteTiming';
+import { useQuery } from '@tanstack/react-query';
 import { api, ApiError } from '../../api/client';
 import { parseLedgerPage, parseProfile } from './contracts';
 import type { Currency } from './contracts';
@@ -23,7 +24,7 @@ export function useProfile(viewerId: number, userId: number) {
   } });
 }
 export function useLedger(viewerId: number, userId: number, currency: Currency | '') {
-  return useInfiniteQuery({ queryKey: ['profile-ledger', viewerId, userId, currency], retry: false, initialPageParam: null as string | null,
+  return useTimedInfiniteQuery({ queryKey: ['profile-ledger', viewerId, userId, currency], retry: false, initialPageParam: null as string | null,
     queryFn: ({ signal, pageParam }) => readProfileResponse(api.GET('/api/v1/ledger/{userId}/entries', { params: { path: { userId }, query: { currency: currency || undefined, cursor: pageParam ?? undefined } }, signal }), parseLedgerPage),
     getNextPageParam: (last) => last.nextCursor ?? undefined });
 }

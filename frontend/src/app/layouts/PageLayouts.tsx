@@ -1,17 +1,19 @@
 import { Alert, Button, Container, Group, Stack, Text, Title } from '@mantine/core';
 import { BrandLoader } from '../../theme/Brand';
-import type { FormEventHandler, ReactNode } from 'react';
+import { useState, type FormEventHandler, type ReactNode } from 'react';
+import { useLoaderTiming } from '../loaderTiming';
 
 export type LoadState = { status: 'ready' } | { status: 'loading' } | { status: 'empty'; message: string }
   | { status: 'error'; message: string; retry: () => void };
 
 export function AsyncContent({ state, children }: { state: LoadState; children: ReactNode }) {
-  switch (state.status) {
-    case 'loading': return <BrandLoader />;
-    case 'empty': return <Text className="cr-caption">{state.message}</Text>;
-    case 'error': return <Alert role="alert" title="Не удалось загрузить данные"><Stack><Text>{state.message}</Text><Button variant="default" onClick={state.retry}>Повторить</Button></Stack></Alert>;
-    case 'ready': return children;
-  }
+  const timing = useLoaderTiming(state.status === 'loading');
+  const content = state.status === 'ready' ? children
+    : state.status === 'empty' ? <Text className="cr-caption">{state.message}</Text>
+      : state.status === 'error' ? <Alert role="alert" title="Не удалось загрузить данные"><Stack><Text>{state.message}</Text><Button variant="default" onClick={state.retry}>Повторить</Button></Stack></Alert> : null;
+  const [lastReady, setLastReady] = useState(() => ({ state, children, content: timing.resultReady ? content : null }));
+  if (state.status !== 'loading' && (lastReady.state !== state || lastReady.children !== children)) setLastReady({ state, children, content });
+  return timing.indicatorVisible ? <BrandLoader /> : timing.resultReady ? content : lastReady.content;
 }
 
 export function PageLayout({ title, description, actions, children, wide = false }: {

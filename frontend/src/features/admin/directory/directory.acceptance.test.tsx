@@ -229,7 +229,7 @@ describe('U13 directory writes — R24/KTD17', { timeout: 15_000 }, () => {
     const view = mountDirectory(), dialog = await openAdd(view); await fill(view, dialog, 'faculties');
     await view.user.dblClick(dialog.getByRole('button', { name: 'Сохранить' }));
     await waitFor(() => expect(mutations(state)).toHaveLength(1));
-    expect(dialog.getByRole('button', { name: 'Сохранить' })).toBeDisabled();
+    await waitFor(() => expect(dialog.getByRole('button', { name: 'Сохранить' })).toBeDisabled(), { timeout: 3000 });
     expect(dialog.getByRole('button', { name: 'Отмена' })).toBeDisabled();
     await view.user.keyboard('{Escape}'); expect(screen.getByRole('dialog')).toBeInTheDocument();
     await act(async () => { gate.resolve(); }); await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());

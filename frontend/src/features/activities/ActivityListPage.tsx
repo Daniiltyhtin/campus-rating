@@ -1,5 +1,7 @@
+import { ActionButton } from '../../app/ActionButton';
+import { useTimedMutation } from '../../app/actionTiming';
 import { Button, Group, SegmentedControl, Stack, Text, Title } from '@mantine/core';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { api } from '../../api/client';
@@ -14,7 +16,7 @@ import { formatMoscowTime } from './time';
 type User = Exclude<CurrentUser, { role: 'ADMIN' }>;
 function ActivityItem({ activity, user }: { activity: Activity; user: User }) {
   const client = useQueryClient();
-  const enrollment = useMutation({ retry: false, mutationFn: (join: boolean) => {
+  const enrollment = useTimedMutation({ retry: false, mutationFn: (join: boolean) => {
     const params = { path: { activityId: activity.id } };
     return read(join ? api.PUT('/api/v1/activities/{activityId}/enrollment', { params }) : api.DELETE('/api/v1/activities/{activityId}/enrollment', { params }), parseActivity);
   }, onSettled: () => { void client.invalidateQueries({ queryKey: activityKeys.root }); } });
@@ -30,10 +32,10 @@ function ActivityItem({ activity, user }: { activity: Activity; user: User }) {
     {student && activity.myAward && <Text>Начислено <Points amount={activity.myAward.amount} currency={activity.currency} /> · {activity.myAward.level} %</Text>}
     {student && activity.type === 'ACADEMIC' && <Text className="cr-caption">Запись не нужна: участников отметит преподаватель.</Text>}
     {student && activity.type === 'SOCIAL' && (activity.enrollmentOpen || !enrollment.error) && <Text className="cr-caption">{activity.enrolled ? 'Вы записаны. ' : ''}{activity.enrollmentOpen ? 'Запись и отмена доступны до начала. Баллы получат только записавшиеся.' : 'Запись закрыта.'}</Text>}
-    {canChange && <Button variant={activity.enrolled ? 'default' : 'filled'}
+    {canChange && <ActionButton variant={activity.enrolled ? 'default' : 'filled'}
       aria-label={`${activity.enrolled ? 'Отменить запись' : 'Записаться'}: ${activity.title}`}
-      disabled={enrollment.isPending || (pendingMember && !activity.enrolled)} loading={enrollment.isPending}
-      onClick={() => enrollment.mutate(!activity.enrolled)}>{activity.enrolled ? 'Отменить запись' : 'Записаться'}</Button>}
+      disabled={(pendingMember && !activity.enrolled)} pending={enrollment.isPending}
+      onClick={() => enrollment.mutate(!activity.enrolled)}>{activity.enrolled ? 'Отменить запись' : 'Записаться'}</ActionButton>}
     {!student && <Group><Text className="cr-caption">Записаны: {activity.enrolledCount} · Подтверждены: {activity.confirmedCount}</Text>
       {activity.confirmationOpen ? <ActivityLink to={`/activities/${activity.id}/confirm`}>Подтвердить участие: {activity.title}</ActivityLink>
         : <Text className="cr-caption">Подтверждение участия доступно после начала.</Text>}</Group>}

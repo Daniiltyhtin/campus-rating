@@ -1,6 +1,6 @@
-import { Button, Text, type ButtonProps } from '@mantine/core';
+import { ActionButton, type ActionButtonProps } from '../../app/ActionButton';
+import { Text } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import type { ComponentPropsWithoutRef } from 'react';
 import { ApiError } from '../../api/client';
 import { PageLayout } from '../../app/layouts/PageLayouts';
 import { useEffect, useRef } from 'react';
@@ -34,16 +34,16 @@ export function More({
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
   return hasNextPage ? (
     <div ref={ref}>
-      <Button variant="default" loading={isFetchingNextPage} onClick={() => fetchNextPage()}>
+      <ActionButton variant="default" pending={isFetchingNextPage} onClick={() => fetchNextPage()}>
         Загрузить ещё
-      </Button>
+      </ActionButton>
     </div>
   ) : null;
 }
 
-export function TaskButton(props: ButtonProps & ComponentPropsWithoutRef<'button'>) {
+export function TaskButton(props: ActionButtonProps) {
   const desktop = useMediaQuery('(min-width: 48em)', true, { getInitialValueInEffect: false });
-  return <Button {...props} style={{ alignSelf: 'flex-start', width: desktop ? 'auto' : '100%' }} />;
+  return <ActionButton {...props} style={{ alignSelf: 'flex-start', width: desktop ? 'auto' : '100%' }} />;
 }
 
 export function TaskFailure({ error, forbidden = false }: { error?: unknown; forbidden?: boolean }) {

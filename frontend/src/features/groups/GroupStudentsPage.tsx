@@ -1,3 +1,5 @@
+import { useLoaderTiming } from '../../app/loaderTiming';
+import { BrandLoader } from '../../theme/Brand';
 import { Anchor } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router';
@@ -10,6 +12,8 @@ import { SetPasswordDialog } from './SetPasswordDialog';
 
 function Students({ groupId }: { groupId: number }) {
   const query = useQuery({ queryKey: ['group-students', groupId], queryFn: () => dataOf(api.GET('/api/v1/groups/{groupId}/students', { params: { path: { groupId } } })) });
+  const timing = useLoaderTiming(query.isPending);
+  if (!timing.resultReady) return <PageLayout title="Студенты группы">{timing.indicatorVisible && <BrandLoader />}</PageLayout>;
   if (isAccessFailure(query.error)) return <TaskFailure error={query.error} />;
   return <PageLayout title="Студенты группы"><TeacherTableLayout caption="Студенты" rows={query.data?.items ?? []} keyForRow={(r) => r.id} state={loadState(query, query.data?.items.length === 0, 'В группе пока нет студентов')}
     columns={[{ key: 'name', title: 'ФИО', render: (r) => <Anchor component={Link} to={`/users/${r.id}`}>{r.fullName}</Anchor> }, { key: 'email', title: 'Email', render: (r) => r.email },

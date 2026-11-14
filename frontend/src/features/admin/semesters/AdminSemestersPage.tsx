@@ -1,5 +1,7 @@
+import { ActionButton } from '../../../app/ActionButton';
+import { useTimedMutation } from '../../../app/actionTiming';
 import { Button, Menu, Modal, Stack, Text, TextInput } from '@mantine/core';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../../../api/client';
 import type { components } from '../../../api/schema';
@@ -16,7 +18,7 @@ function Semesters() {
   const [editor, setEditor] = useState<{ kind: 'save' | 'delete' | 'start'; semester?: Semester }>();
   const [title, setTitle] = useState(''), [startsAt, setStartsAt] = useState('');
   const [message, setMessage] = useState('');
-  const action = useMutation({ mutationFn: async (command: Command) => {
+  const action = useTimedMutation({ mutationFn: async (command: Command) => {
     if (command.kind === 'delete') { const result = await api.DELETE('/api/v1/admin/semesters/{semesterId}', { params: { path: { semesterId: command.id } } }); if (!result.response.ok) throw new Error(); return; }
     if (command.kind === 'start') return dataOf(api.POST('/api/v1/admin/semesters/{semesterId}/start', { params: { path: { semesterId: command.id } } }));
     const body = { title: command.title, startsAt: new Date(`${command.startsAt}:00+03:00`).toISOString() };
@@ -42,10 +44,10 @@ function Semesters() {
       <Stack>{editor?.kind === 'save' ? <form onSubmit={(event) => { event.preventDefault(); action.mutate({ kind: 'save', id: editor.semester?.id, title, startsAt }); }}>
         <Stack><TextInput required label="Название" maxLength={100} value={title} onChange={(e) => setTitle(e.currentTarget.value)} error={fieldError(action.error, 'title')} />
           <TextInput required type="datetime-local" label="Начало (МСК)" value={startsAt} onChange={(e) => setStartsAt(e.currentTarget.value)} error={fieldError(action.error, 'startsAt')} />
-          <Button type="submit" loading={action.isPending}>Сохранить</Button></Stack></form> : <>
+          <ActionButton type="submit" pending={action.isPending}>Сохранить</ActionButton></Stack></form> : <>
         {editor?.kind === 'start' ? <AsyncContent state={loadState(settings)}><Text>Начать семестр «{editor.semester?.title}» сейчас? Каждому студенту начислится до {settings.data?.semesterAccrual} АР. Отменить начисление будет нельзя.</Text>
           {previous && <Text>Предыдущий семестр «{previous.title}» начат {dateTime(previous.startsAt)}.</Text>}</AsyncContent> : <Text>Удалить семестр «{editor?.semester?.title}»?</Text>}
-        <Button loading={action.isPending} disabled={editor?.kind === 'start' && !settings.data} onClick={() => { if (editor?.semester && editor.kind !== 'save') action.mutate({ kind: editor.kind, id: editor.semester.id }); }}>{editor?.kind === 'start' ? 'Начать' : 'Удалить'}</Button>
+        <ActionButton pending={action.isPending} disabled={editor?.kind === 'start' && !settings.data} onClick={() => { if (editor?.semester && editor.kind !== 'save') action.mutate({ kind: editor.kind, id: editor.semester.id }); }}>{editor?.kind === 'start' ? 'Начать' : 'Удалить'}</ActionButton>
       </>}<AdminError error={action.error} /><Button variant="default" disabled={action.isPending} onClick={() => setEditor(undefined)}>Отмена</Button></Stack>
     </Modal>
   </PageLayout>;

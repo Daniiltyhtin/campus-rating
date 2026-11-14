@@ -1,5 +1,7 @@
+import { ActionButton } from '../../app/ActionButton';
+import { useTimedMutation } from '../../app/actionTiming';
 import { Button, Checkbox, Group, Radio, Stack, Text, Textarea, TextInput } from '@mantine/core';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { AsyncContent, FormLayout } from '../../app/layouts/PageLayouts';
@@ -47,7 +49,7 @@ function NewPollForm({ userId }: { userId: number }) {
   const [title, setTitle] = useState(''), [description, setDescription] = useState(''), [endsAt, setEndsAt] = useState('');
   const [groupIds, setGroupIds] = useState<string[]>([]), [anonymous, setAnonymous] = useState(false);
   const [questions, setQuestions] = useState<QuestionDraft[]>(() => [blankQuestion()]);
-  const create = useMutation({ retry: false, mutationFn: createPoll, onError: form.fromServer,
+  const create = useTimedMutation({ retry: false, mutationFn: createPoll, onError: form.fromServer,
     onSuccess: async (poll) => { await client.invalidateQueries({ queryKey: pollKeys.root }); await navigate(`/polls/${poll.id}`); } });
   const available = groups.data?.items ?? [];
   const error = (field: string) => form.errors[field];
@@ -75,7 +77,7 @@ function NewPollForm({ userId }: { userId: number }) {
       {error('questions') && <Text className="activity-danger">{error('questions')}</Text>}
       {questions.length < 20 && <Button variant="default" onClick={() => setQuestions((old) => [...old, blankQuestion()])}>Добавить вопрос</Button>}
       {create.error != null && <div role="alert"><Text>{pollError(create.error)}</Text></div>}
-      <Button type="submit" loading={create.isPending} disabled={!groups.isSuccess || available.length === 0}>Создать опрос</Button>
+      <ActionButton type="submit" pending={create.isPending} disabled={!groups.isSuccess || available.length === 0}>Создать опрос</ActionButton>
     </FormLayout></div>
   </ActivityPage>;
 }

@@ -1,5 +1,7 @@
-import { Anchor, Button, NativeSelect, Text, TextInput, UnstyledButton } from '@mantine/core';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { ActionButton } from '../../../app/ActionButton';
+import { useTimedInfiniteQuery } from '../../../app/infiniteTiming';
+import { Button, Anchor, NativeSelect, Text, TextInput, UnstyledButton } from '@mantine/core';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { api } from '../../../api/client';
 import { PageLayout, TeacherTableLayout } from '../../../app/layouts/PageLayouts';
@@ -18,11 +20,27 @@ const warning = <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stro
 const magnifier = <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
   aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="m20 20-4.5-4.5" /></svg>;
 
+function useUserSort(setParams: ReturnType<typeof useSearchParams>[1]) {
+  const currentSetParams = useRef(setParams);
+  useLayoutEffect(() => { currentSetParams.current = setParams; }, [setParams]);
+  return useCallback((key: SortKey) => {
+    currentSetParams.current((previous) => {
+      const next = new URLSearchParams(previous);
+      const current = userFilters(previous);
+      const currentDirection = current.direction ?? defaultDirection(current.sort!);
+      const flip = current.sort === key ? (currentDirection === 'asc' ? 'desc' : 'asc') : defaultDirection(key);
+      if (key === 'lastName') next.delete('sort'); else next.set('sort', key);
+      if (flip === defaultDirection(key)) next.delete('direction'); else next.set('direction', flip);
+      return next;
+    }, { replace: true });
+  }, []);
+}
+
 function Users() {
   const [params, setParams] = useSearchParams(), filters = userFilters(params);
   const viewerId = useAuthSession().session.data!.id;
   const teachers = useTeachers(viewerId), pending = teachers.data?.items.filter((teacher) => !teacher.teacherApproved) ?? [];
-  const query = useInfiniteQuery({ queryKey: ['admin-users', viewerId, filters], initialPageParam: undefined as string | undefined, gcTime: 0,
+  const query = useTimedInfiniteQuery({ queryKey: ['admin-users', viewerId, filters], initialPageParam: undefined as string | undefined, gcTime: 0,
     queryFn: ({ pageParam, signal }) => dataOf(api.GET('/api/v1/admin/users', { signal, params: { query: { ...filters, cursor: pageParam } } })),
     getNextPageParam: (page) => page.nextCursor ?? undefined });
   function change(key: string, value: string) {
@@ -31,15 +49,7 @@ function Users() {
   const items = query.data?.pages.flatMap((p) => p.items) ?? [];
   const filtered = Boolean(filters.search || filters.role || filters.status || filters.sort !== 'lastName' || filters.direction);
   const direction = filters.direction ?? defaultDirection(filters.sort!);
-  function sortBy(key: SortKey) {
-    setParams((previous) => {
-      const next = new URLSearchParams(previous);
-      const flip = filters.sort === key ? (direction === 'asc' ? 'desc' : 'asc') : defaultDirection(key);
-      if (key === 'lastName') next.delete('sort'); else next.set('sort', key);
-      if (flip === defaultDirection(key)) next.delete('direction'); else next.set('direction', flip);
-      return next;
-    }, { replace: true });
-  }
+  const sortBy = useUserSort(setParams);
   const sortable = (key: SortKey) => ({ direction: filters.sort === key ? direction : null, onSort: () => sortBy(key) });
   const first = pending[0];
   return <PageLayout title="Пользователи" description="Студенты, преподаватели и администраторы стенда" wide>
@@ -77,7 +87,7 @@ function Users() {
           <SetPasswordDialog user={{ ...r, role: r.role }} />
           {r.passwordSetAt && <span className="admin-users-muted admin-users-audit">Пароль выставлен <time dateTime={r.passwordSetAt}>{userTime(r.passwordSetAt)}</time></span>}
         </div> }]} /></div>
-    {query.hasNextPage && <Button variant="default" loading={query.isFetchingNextPage} onClick={() => { void query.fetchNextPage(); }}>Загрузить ещё</Button>}
+    {query.hasNextPage && <ActionButton variant="default" pending={query.isFetchingNextPage} onClick={() => { void query.fetchNextPage(); }}>Загрузить ещё</ActionButton>}
   </PageLayout>;
 }
 export function AdminUsersPage() { return <AdminOnly><Users /></AdminOnly>; }

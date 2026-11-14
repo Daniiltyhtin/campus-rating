@@ -1,4 +1,5 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useTimedInfiniteQuery } from '../../app/infiniteTiming';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { parseActivity, parseActivityList, parseAwardPage, parseBudgets, parseGroups, parseParticipants, parsePreview, parseSummary } from './contracts';
 import type { ParticipationRequest } from './contracts';
@@ -34,7 +35,7 @@ export function useAwardSummary(userId: number, month: string) {
   return useQuery({ queryKey: ['activities', userId, 'summary', month], enabled: month !== '', queryFn: ({ signal }) => read(api.GET('/api/v1/me/awards/summary', { params: { query: { month } }, signal }), parseSummary), retry: false });
 }
 export function useAwardHistory(userId: number, month: string, groupId: string) {
-  return useInfiniteQuery({ queryKey: ['activities', userId, 'awards', month, groupId], enabled: month !== '', initialPageParam: null as string | null,
+  return useTimedInfiniteQuery({ queryKey: ['activities', userId, 'awards', month, groupId], enabled: month !== '', initialPageParam: null as string | null,
     queryFn: ({ pageParam, signal }) => read(api.GET('/api/v1/me/awards', { params: { query: { month, groupId: groupId ? Number(groupId) : undefined, cursor: pageParam ?? undefined } }, signal }), parseAwardPage),
     getNextPageParam: (last) => last.nextCursor ?? undefined, retry: false });
 }

@@ -1,5 +1,10 @@
+import { useLoaderTiming } from '../../app/loaderTiming';
+import { BrandLoader } from '../../theme/Brand';
+import { ActionButton } from '../../app/ActionButton';
+import { useTimedInfiniteQuery } from '../../app/infiniteTiming';
+import { useTimedMutation } from '../../app/actionTiming';
 import { Button, Checkbox, Menu, Modal, NativeSelect, Stack, Tabs, Text, Textarea } from '@mantine/core';
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMediaQuery } from '@mantine/hooks';
 import { useState } from 'react';
 import { useParams } from 'react-router';
@@ -39,7 +44,7 @@ function CheckpointContent() {
   const [returnId, setReturnId] = useState<number>();
   const [editing, setEditing] = useState(false);
   const [names, setNames] = useState<Record<number, string>>({});
-  const rowsQuery = useInfiniteQuery({
+  const rowsQuery = useTimedInfiniteQuery({
     queryKey: ['checkpoint-assignments', checkpointId, status, groupId],
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>
@@ -55,7 +60,7 @@ function CheckpointContent() {
   });
   const rows = rowsQuery.data?.pages.flatMap((page) => page.items) ?? [];
   const client = useQueryClient();
-  const accept = useMutation({
+  const accept = useTimedMutation({
     mutationFn: (ids: number[]) =>
       dataOf(
         api.POST('/api/v1/checkpoints/{checkpointId}/assignments/accept', {
@@ -71,6 +76,8 @@ function CheckpointContent() {
   const checkpoint = query.data;
   const canEdit = session?.role === 'TEACHER' && session.userId === String(checkpoint?.author.id);
   const counts = rowsQuery.data?.pages[0]?.statusCounts;
+  const timing = useLoaderTiming(query.isPending);
+  if (!timing.resultReady) return <PageLayout title="Точка">{timing.indicatorVisible && <BrandLoader />}</PageLayout>;
   if (isAccessFailure(query.error)) return <TaskFailure error={query.error} />;
   function filterChanged() {
     setSelected([]);
@@ -128,16 +135,16 @@ function CheckpointContent() {
                 <Button variant="subtle" onClick={() => setSelected([])}>
                   Снять выбор
                 </Button>
-                <Button
+                <ActionButton
                   disabled={!selected.length}
-                  loading={accept.isPending}
+                  pending={accept.isPending}
                   onClick={() => {
                     setNames(Object.fromEntries(rows.map((row) => [row.assignmentId, row.student.fullName])));
                     accept.mutate([...selected]);
                   }}
                 >
                   Принять {workCount(selected.length)}
-                </Button>
+                </ActionButton>
               </section>
             )}
             {accept.data && (
@@ -174,9 +181,9 @@ function CheckpointContent() {
                         checked={selected.includes(row.assignmentId)}
                         onChange={(event) => {
                           if (event.currentTarget.checked) {
-                            setSelected([...selected, row.assignmentId]);
+                            setSelected((previous) => [...previous, row.assignmentId]);
                           } else {
-                            setSelected(selected.filter((id) => id !== row.assignmentId));
+                            setSelected((previous) => previous.filter((id) => id !== row.assignmentId));
                           }
                           accept.reset();
                         }}
@@ -240,7 +247,7 @@ function ReturnForm({ assignmentId, onReturned }: { assignmentId: number; onRetu
   const [comment, setComment] = useState('');
   const [required, setRequired] = useState(false);
   const client = useQueryClient();
-  const mutation = useMutation({
+  const mutation = useTimedMutation({
     mutationFn: () =>
       dataOf(
         api.POST('/api/v1/assignments/{assignmentId}/return', {
@@ -278,7 +285,7 @@ function ReturnForm({ assignmentId, onReturned }: { assignmentId: number; onRetu
         />
         <Text>После возврата штраф возобновится, если дедлайн прошёл и стоимость ещё не списана.</Text>
         {!fieldError(mutation.error, 'comment') && <ErrorMessage error={mutation.error} />}
-        <TaskButton type="submit" loading={mutation.isPending}>
+        <TaskButton type="submit" pending={mutation.isPending}>
           Вернуть работу
         </TaskButton>
       </Stack>

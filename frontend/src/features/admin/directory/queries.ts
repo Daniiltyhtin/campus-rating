@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTimedMutation } from '../../../app/actionTiming';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError } from '../../../api/client';
 import { authKeys, csrfToken } from '../../auth/authQueries';
 import { parseDirectoryEntry, parseDirectoryList } from './contracts';
@@ -45,9 +46,9 @@ export function useDirectoryAction(kind: DirectoryKind, finished: (message: stri
     void client.invalidateQueries({ predicate: (query) => ['admin-directory', 'directory', 'profile'].includes(String(query.queryKey[0]))
       || (query.queryKey[0] === 'activities' && query.queryKey[2] === 'groups') });
   };
-  const mutation = useMutation({ retry: false, mutationFn: (command: Command) => write(kind, command),
+  const mutation = useTimedMutation({ retry: false, mutationFn: (command: Command) => write(kind, command),
     onSuccess: (_data, command) => { finished(command.action === 'delete' ? 'Запись удалена' : 'Запись сохранена'); invalidate(); },
     onError: (error) => { if (error instanceof ApiError && error.code === 'NOT_FOUND') { finished('Запись уже удалена или больше не существует'); invalidate(); } } });
-  const refresh = useMutation({ retry: false, mutationFn: async () => { await csrfToken(); client.setQueryData(authKeys.csrf, true); mutation.reset(); } });
+  const refresh = useTimedMutation({ retry: false, mutationFn: async () => { await csrfToken(); client.setQueryData(authKeys.csrf, true); mutation.reset(); } });
   return { mutation, refresh };
 }
