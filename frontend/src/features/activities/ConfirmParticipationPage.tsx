@@ -1,5 +1,7 @@
+import { ActionButton } from '../../app/ActionButton';
+import { useTimedMutation } from '../../app/actionTiming';
 import { Button, Checkbox, Group, SegmentedControl, Stack, Text, Title } from '@mantine/core';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { api, ApiError } from '../../api/client';
@@ -48,7 +50,7 @@ function Confirmation({ activity, userId }: { activity: Activity; userId: number
       setSelection((old) => Object.fromEntries(Object.entries(old).filter(([id]) => roster?.items.some((row) => row.student.id === Number(id) && !row.confirmed && (activity.type !== 'SOCIAL' || row.enrolled === true)))));
     });
   }, [preview.error, preview.errorUpdatedAt, client, userId, activity.id, activity.type]);
-  const confirm = useMutation({ retry: false,
+  const confirm = useTimedMutation({ retry: false,
     mutationFn: (body: ParticipationRequest) => read(api.POST('/api/v1/activities/{activityId}/participation', { params: { path: { activityId: activity.id } }, body }), parseResult),
     onSuccess: () => { setSelection({}); }, onSettled: () => { void client.invalidateQueries({ queryKey: activityKeys.root }); } });
   const change = (id: number, next: Level | undefined) => {
@@ -62,7 +64,7 @@ function Confirmation({ activity, userId }: { activity: Activity; userId: number
       || (items.length >= participationLimit && selection[participant.student.id] === undefined),
     choose: (checked) => change(participant.student.id, checked ? 100 : undefined), changeLevel: (value) => change(participant.student.id, value) })]));
   const total = preview.data?.total;
-  const canConfirm = preview.isSuccess && !preview.isFetching && preview.data.withinBudget && !confirm.isPending && !participants.isFetching && items.length > 0;
+  const canConfirm = preview.isSuccess && !preview.isFetching && preview.data.withinBudget && !participants.isFetching && items.length > 0;
   return <Stack gap="lg">
     {activity.type === 'SOCIAL' && <Text className="cr-caption">Общественная активность: подтверждать можно только записавшихся участников.</Text>}
     <div className="activity-participants"><TeacherTableLayout caption="Участники" rows={rows} keyForRow={(row) => row.student.id}
@@ -87,7 +89,7 @@ function Confirmation({ activity, userId }: { activity: Activity; userId: number
       ? <Text className="cr-success">Начислено {confirm.data.total} {confirm.data.currency === 'BUA' ? 'БУА' : 'БОА'}</Text>
       : <Text>Новых начислений нет — участие уже подтверждено.</Text>}
       {confirm.data.total > 0 && confirm.data.alreadyConfirmed.length > 0 && <Text>Ранее подтверждены: {confirm.data.alreadyConfirmed.length}, без повторного начисления.</Text>}</div>}
-    <Button disabled={!canConfirm} loading={confirm.isPending} onClick={() => confirm.mutate(body)}>{total === undefined ? 'Начислить' : `Начислить ${total} ${activity.currency === 'BUA' ? 'БУА' : 'БОА'}`}</Button>
+    <ActionButton disabled={!canConfirm} pending={confirm.isPending} onClick={() => confirm.mutate(body)}>{total === undefined ? 'Начислить' : `Начислить ${total} ${activity.currency === 'BUA' ? 'БУА' : 'БОА'}`}</ActionButton>
   </Stack>;
 }
 function ConfirmationActivity({ userId, activityId }: { userId: number; activityId: number }) {

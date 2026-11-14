@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTimedMutation } from '../../app/actionTiming';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { dataOf } from '../tasks/helpers';
 
@@ -18,7 +19,7 @@ async function decide(studentId: number, decision: 'approval' | 'rejection') {
 
 export function useMembershipDecision() {
   const client = useQueryClient();
-  return useMutation({
+  return useTimedMutation({
     mutationFn: ({ studentId, decision }: { studentId: number; decision: 'approval' | 'rejection' }) => decide(studentId, decision),
     onSettled: () => client.invalidateQueries({ queryKey: membershipKeys.pending }),
   });

@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTimedMutation } from '../../../app/actionTiming';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError } from '../../../api/client';
 import { authKeys, csrfToken } from '../../auth/authQueries';
 import { parseGrants, parseGrant, parseScope, parseTeacher, parseTeachers } from './contracts';
@@ -69,8 +70,8 @@ async function write(teacherId: number, command: TeacherCommand) {
 export function useTeacherAction(teacherId: number, finished: (command: TeacherCommand) => void) {
   const client = useQueryClient();
   const invalidate = () => { void client.invalidateQueries({ predicate: (query) => ['admin-teachers', 'profile', 'activities', 'group-rating'].includes(String(query.queryKey[0])) }); };
-  const mutation = useMutation({ retry: false, mutationFn: (command: TeacherCommand) => write(teacherId, command), onSuccess: (_data, command) => { invalidate(); finished(command); } });
-  const refresh = useMutation({ retry: false, mutationFn: async () => { await csrfToken(); client.setQueryData(authKeys.csrf, true); mutation.reset(); } });
+  const mutation = useTimedMutation({ retry: false, mutationFn: (command: TeacherCommand) => write(teacherId, command), onSuccess: (_data, command) => { invalidate(); finished(command); } });
+  const refresh = useTimedMutation({ retry: false, mutationFn: async () => { await csrfToken(); client.setQueryData(authKeys.csrf, true); mutation.reset(); } });
   const reload = () => { invalidate(); mutation.reset(); };
   return { mutation, refresh, reload };
 }

@@ -1,5 +1,6 @@
+import { useTimedMutation } from '../../app/actionTiming';
 import { Button, Checkbox, Input, Stack, Text, Textarea, TextInput } from '@mantine/core';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { api } from '../../api/client';
@@ -13,7 +14,7 @@ export function CheckpointEdit({ checkpoint, onSaved }: { checkpoint: Schemas['C
   const [description, setDescription] = useState(checkpoint.description);
   const [titleError, setTitleError] = useState<string>();
   const client = useQueryClient();
-  const mutation = useMutation({
+  const mutation = useTimedMutation({
     mutationFn: () =>
       dataOf(
         api.PATCH('/api/v1/checkpoints/{checkpointId}', {
@@ -52,7 +53,7 @@ export function CheckpointEdit({ checkpoint, onSaved }: { checkpoint: Schemas['C
         error={fieldError(mutation.error, 'description')}
       />
       {!['title', 'description', 'groupIds', 'deadline', 'cost'].some((field) => fieldError(mutation.error, field)) && <ErrorMessage error={mutation.error} />}
-      <TaskButton type="submit" loading={mutation.isPending}>
+      <TaskButton type="submit" pending={mutation.isPending}>
         Сохранить
       </TaskButton>
       <Button variant="default" onClick={onSaved}>
@@ -85,7 +86,7 @@ function CheckpointNewForm() {
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const navigate = useNavigate();
   const client = useQueryClient();
-  const mutation = useMutation({
+  const mutation = useTimedMutation({
     mutationFn: () =>
       dataOf(
         api.POST('/api/v1/checkpoints', {
@@ -193,7 +194,7 @@ function CheckpointNewForm() {
               Фиксируются при создании.
             </Text>
             {!['title', 'description', 'groupIds', 'deadline', 'cost'].some((field) => fieldError(mutation.error, field)) && <ErrorMessage error={mutation.error} />}
-            <TaskButton type="submit" loading={mutation.isPending}>
+            <TaskButton type="submit" pending={mutation.isPending}>
               Создать точку
             </TaskButton>
           </FormLayout>

@@ -1,3 +1,4 @@
+import { ActionButton } from '../../app/ActionButton';
 import { Button, Group, Modal, Stack, Text, Title } from '@mantine/core';
 import { useState } from 'react';
 import { Link } from 'react-router';
@@ -18,7 +19,7 @@ function RejectDialog({ request, close }: { request: Pending; close: () => void 
     <Stack><Text>Отклонить заявку {request.fullName} в {request.group.name}? Студент сможет выбрать группу заново.</Text>
       {decision.error && <Text role="alert">{errorText(decision.error)}</Text>}
       <Group justify="end"><Button variant="default" disabled={decision.isPending} onClick={close}>Отмена</Button>
-        <Button loading={decision.isPending} onClick={() => decision.mutate({ studentId: request.studentId, decision: 'rejection' }, { onSuccess: close })}>Отклонить</Button></Group>
+        <ActionButton pending={decision.isPending} onClick={() => decision.mutate({ studentId: request.studentId, decision: 'rejection' }, { onSuccess: close })}>Отклонить</ActionButton></Group>
     </Stack>
   </Modal>;
 }

@@ -1,4 +1,5 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useTimedInfiniteQuery } from '../../app/infiniteTiming';
+import { useQuery } from '@tanstack/react-query';
 import { api, ApiError } from '../../api/client';
 import type { LoadState } from '../../app/layouts/PageLayouts';
 import { parseAwardsPage, parseGroupRating, parsePersonalPage } from './contracts';
@@ -26,7 +27,7 @@ function readAwards(signal: AbortSignal, cursor?: string, mine = false) {
   return read(api.GET('/api/v1/feed/awards', { params: { query: { cursor, mine: mine || undefined } }, signal }), parseAwardsPage);
 }
 export function useAwards(viewerId: number, mine = false) {
-  return useInfiniteQuery({ queryKey: awardsKey(viewerId, mine), initialPageParam: null as string | null, retry: false,
+  return useTimedInfiniteQuery({ queryKey: awardsKey(viewerId, mine), initialPageParam: null as string | null, retry: false,
     staleTime: Infinity, refetchOnWindowFocus: false, refetchOnReconnect: false,
     queryFn: ({ signal, pageParam }) => readAwards(signal, pageParam ?? undefined, mine),
     getNextPageParam: (last, _pages, _param, params) => last.nextCursor && !params.includes(last.nextCursor) ? last.nextCursor : undefined });
@@ -43,7 +44,7 @@ export function useGroupRating(viewerId: number, groupId: number, sort: Currency
   } });
 }
 export function usePersonalFeed(viewerId: number) {
-  return useInfiniteQuery({ queryKey: ['personal-feed', viewerId], initialPageParam: null as string | null, retry: false,
+  return useTimedInfiniteQuery({ queryKey: ['personal-feed', viewerId], initialPageParam: null as string | null, retry: false,
     queryFn: ({ signal, pageParam }) => read(api.GET('/api/v1/feed/personal', { params: { query: { cursor: pageParam ?? undefined } }, signal }), parsePersonalPage),
     getNextPageParam: (last, _pages, _param, params) => last.nextCursor && !params.includes(last.nextCursor) ? last.nextCursor : undefined });
 }

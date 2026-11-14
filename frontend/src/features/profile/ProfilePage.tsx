@@ -1,4 +1,7 @@
-import { Anchor, Button, Group, SegmentedControl, Stack, Tabs, Text, Title } from '@mantine/core';
+import { ActionButton } from '../../app/ActionButton';
+import { Button, Anchor, Group, SegmentedControl, Stack, Tabs, Text, Title } from '@mantine/core';
+import { BrandLoader } from '../../theme/Brand';
+import { useLoaderTiming } from '../../app/loaderTiming';
 import { CurrencyIcon, CurrencyLegend, CurrencyMark } from '../../app/CurrencyMark';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
@@ -61,7 +64,7 @@ function History({ viewerId, userId }: { viewerId: number; userId: number }) {
     {query.data && query.isError && !isFetchNextPageError && <Stack role="alert"><Text>{profileError(query.error)}</Text><Button variant="default" disabled={isFetching} onClick={() => { void query.refetch(); }}>Повторить обновление истории</Button></Stack>}
     <AsyncContent state={state}><div>{entries.map((entry) => <HistoryEntry key={entry.id} entry={entry} />)}</div></AsyncContent>
     <div ref={marker}>{query.isFetchNextPageError ? <Stack role="alert"><Text>{profileError(query.error)}</Text><Button variant="default" disabled={isFetching} onClick={() => { void query.fetchNextPage({ cancelRefetch: false }); }}>Повторить загрузку истории</Button></Stack>
-      : hasNextPage && <Button variant="default" loading={isFetchingNextPage} disabled={isFetching} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Показать ещё</Button>}</div>
+      : hasNextPage && <ActionButton variant="default" pending={isFetchingNextPage} disabled={isFetching && !isFetchingNextPage} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Показать ещё</ActionButton>}</div>
   </Stack>;
 }
 function ProfileContent({ profile, viewer }: { profile: UserProfile; viewer: CurrentUser }) {
@@ -80,6 +83,8 @@ function ProfileContent({ profile, viewer }: { profile: UserProfile; viewer: Cur
 }
 function LoadedProfile({ viewer, userId }: { viewer: CurrentUser; userId: number }) {
   const query = useProfile(viewer.id, userId);
+  const timing = useLoaderTiming(query.isPending);
+  if (!timing.resultReady) return <ProfileLayout title="Профиль">{timing.indicatorVisible && <BrandLoader />}</ProfileLayout>;
   if (query.isError) {
     const message = profileError(query.error);
     return <ProfileLayout title={message}><Text>{message === 'Пользователь не найден' || message === 'Нет доступа' ? 'Проверьте адрес профиля.' : 'Попробуйте загрузить данные ещё раз.'}</Text>

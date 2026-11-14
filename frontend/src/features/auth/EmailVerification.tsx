@@ -1,5 +1,7 @@
-import { Button, Stack, Text } from '@mantine/core';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ActionButton } from '../../app/ActionButton';
+import { useTimedMutation } from '../../app/actionTiming';
+import { Stack, Text } from '@mantine/core';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { useParams } from 'react-router';
 import { api } from '../../api/client';
@@ -9,16 +11,16 @@ import { AdminError } from '../admin/shared';
 import { LogoutButton } from './UserMenu';
 
 export function SendVerification({ email }: { email: string }) {
-  const mutation = useMutation({ mutationFn: async () => { const result = await api.POST('/api/v1/auth/email/verification', { body: { email } }); if (!result.response.ok) throw new Error(); } });
-  return <Stack><Button variant="default" loading={mutation.isPending} onClick={() => mutation.mutate()}>Отправить ссылку подтверждения</Button>
+  const mutation = useTimedMutation({ mutationFn: async () => { const result = await api.POST('/api/v1/auth/email/verification', { body: { email } }); if (!result.response.ok) throw new Error(); } });
+  return <Stack><ActionButton variant="default" pending={mutation.isPending} onClick={() => mutation.mutate()}>Отправить ссылку подтверждения</ActionButton>
     {mutation.isSuccess && <Text role="status">Если email ожидает подтверждения, ссылка отправлена</Text>}<AdminError error={mutation.error} /></Stack>;
 }
 export function ConfirmEmailPage() {
   const { token } = useParams(), client = useQueryClient();
-  const mutation = useMutation({ mutationFn: async () => { const result = await api.POST('/api/v1/auth/email/confirmation', { body: { token: token ?? '' } }); if (!result.response.ok) throw new Error(); },
+  const mutation = useTimedMutation({ mutationFn: async () => { const result = await api.POST('/api/v1/auth/email/confirmation', { body: { token: token ?? '' } }); if (!result.response.ok) throw new Error(); },
     onSuccess: () => client.invalidateQueries({ queryKey: ['email-verification'] }) });
   return <AuthLayout title="Подтверждение email" description="Подтвердите адрес для входа в аккаунт."><Stack>
-    {mutation.isSuccess ? <Text role="status">Email подтверждён</Text> : <Button loading={mutation.isPending} onClick={() => mutation.mutate()}>Подтвердить email</Button>}
+    {mutation.isSuccess ? <Text role="status">Email подтверждён</Text> : <ActionButton pending={mutation.isPending} onClick={() => mutation.mutate()}>Подтвердить email</ActionButton>}
     <AdminError error={mutation.error} /><LoginLink /></Stack></AuthLayout>;
 }
 export function EmailGate({ children }: { children: ReactNode }) {

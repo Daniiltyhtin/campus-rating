@@ -1,5 +1,6 @@
-import { Anchor, Button, NativeSelect, Text, TextInput, UnstyledButton } from '@mantine/core';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { ActionButton } from '../../../app/ActionButton';
+import { useTimedInfiniteQuery } from '../../../app/infiniteTiming';
+import { Button, Anchor, NativeSelect, Text, TextInput, UnstyledButton } from '@mantine/core';
 import { Link, useSearchParams } from 'react-router';
 import { api } from '../../../api/client';
 import { PageLayout, TeacherTableLayout } from '../../../app/layouts/PageLayouts';
@@ -22,7 +23,7 @@ function Users() {
   const [params, setParams] = useSearchParams(), filters = userFilters(params);
   const viewerId = useAuthSession().session.data!.id;
   const teachers = useTeachers(viewerId), pending = teachers.data?.items.filter((teacher) => !teacher.teacherApproved) ?? [];
-  const query = useInfiniteQuery({ queryKey: ['admin-users', viewerId, filters], initialPageParam: undefined as string | undefined, gcTime: 0,
+  const query = useTimedInfiniteQuery({ queryKey: ['admin-users', viewerId, filters], initialPageParam: undefined as string | undefined, gcTime: 0,
     queryFn: ({ pageParam, signal }) => dataOf(api.GET('/api/v1/admin/users', { signal, params: { query: { ...filters, cursor: pageParam } } })),
     getNextPageParam: (page) => page.nextCursor ?? undefined });
   function change(key: string, value: string) {
@@ -77,7 +78,7 @@ function Users() {
           <SetPasswordDialog user={{ ...r, role: r.role }} />
           {r.passwordSetAt && <span className="admin-users-muted admin-users-audit">Пароль выставлен <time dateTime={r.passwordSetAt}>{userTime(r.passwordSetAt)}</time></span>}
         </div> }]} /></div>
-    {query.hasNextPage && <Button variant="default" loading={query.isFetchingNextPage} onClick={() => { void query.fetchNextPage(); }}>Загрузить ещё</Button>}
+    {query.hasNextPage && <ActionButton variant="default" pending={query.isFetchingNextPage} onClick={() => { void query.fetchNextPage(); }}>Загрузить ещё</ActionButton>}
   </PageLayout>;
 }
 export function AdminUsersPage() { return <AdminOnly><Users /></AdminOnly>; }

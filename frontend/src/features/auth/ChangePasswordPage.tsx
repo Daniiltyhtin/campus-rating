@@ -1,4 +1,5 @@
-import { Button, Text } from '@mantine/core';
+import { ActionButton } from '../../app/ActionButton';
+import { Text } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { api } from '../../api/client';
@@ -32,7 +33,7 @@ export function ChangePasswordPage() {
       <PasswordField label="Повторите новый пароль" autoComplete="new-password" value={passwordRepeat} onChange={(event) => { setPasswordRepeat(event.currentTarget.value); form.clear('passwordRepeat'); }} error={form.errors.passwordRepeat} />
       {action.refreshing ? <Text role="status">Обновление сессии…</Text> : action.refreshFailed ? <RetryNotice message="Пароль изменён. Не удалось обновить сессию. Повторите обновление." retry={action.refresh} />
         : action.error && <ActionError error={action.error} onReset={action.reset} />}
-      <Button type="submit" disabled={action.isPending || action.needsRefresh} loading={action.isPending || action.refreshing}>Сменить пароль</Button>
+      <ActionButton type="submit" disabled={action.needsRefresh && !action.isPending} pending={action.isPending || action.refreshing}>Сменить пароль</ActionButton>
     </FormLayout><LogoutButton />
   </AuthLayout>;
 }

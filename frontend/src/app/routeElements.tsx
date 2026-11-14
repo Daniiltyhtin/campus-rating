@@ -3,6 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router';
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { BrandLoader } from '../theme/Brand';
+import { useLoaderTiming } from './loaderTiming';
 import { AppShell } from './AppShell';
 import { authKeys, useAuthSession } from '../features/auth/authQueries';
 import { AuthLayout, RetryNotice } from '../features/auth/AuthLayout';
@@ -27,10 +28,12 @@ export function AuthBoundary() {
     window.addEventListener('campus:password-required', passwordRequired);
     return () => { window.removeEventListener('campus:session-expired', expired); window.removeEventListener('campus:password-required', passwordRequired); };
   }, [client]);
-  if (csrf.isError || session.isError) return <AuthLayout title="Не удалось открыть приложение" description="Проверьте соединение и повторите загрузку.">
+  const failed = csrf.isError || session.isError;
+  const timing = useLoaderTiming(!failed && (csrf.isPending || csrf.data !== true || session.isPending));
+  if (!timing.resultReady) return timing.indicatorVisible ? <BrandLoader session /> : null;
+  if (failed) return <AuthLayout title="Не удалось открыть приложение" description="Проверьте соединение и повторите загрузку.">
     <RetryNotice message="Не удалось проверить сессию или защиту формы" retry={() => { if (csrf.isError) void csrf.refetch(); if (session.isError) void session.refetch(); }} />
   </AuthLayout>;
-  if (csrf.isPending || csrf.data !== true || session.isPending) return <RouteLoading />;
   return <Outlet />;
 }
 export function GuestGate() {
@@ -61,5 +64,6 @@ export function SectionPlaceholder() {
 }
 
 export function RouteLoading() {
-  return <BrandLoader session />;
+  const timing = useLoaderTiming(true);
+  return timing.indicatorVisible ? <BrandLoader session /> : null;
 }

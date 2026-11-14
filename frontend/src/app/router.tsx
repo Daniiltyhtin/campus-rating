@@ -1,4 +1,5 @@
 import { redirect, type RouteObject } from 'react-router';
+import { HomePage } from '../features/feed/PersonalFeed';
 import { LoginPage } from '../features/auth/LoginPage';
 import { RegisterPage } from '../features/auth/RegisterPage';
 import { ChangePasswordPage } from '../features/auth/ChangePasswordPage';
@@ -47,7 +48,7 @@ export const routes: RouteObject[] = [
         { path: 'polls/new', lazy: async () => ({ Component: (await import('../features/polls/NewPollPage')).NewPollPage }) },
         { path: 'polls/:id', lazy: async () => ({ Component: (await import('../features/polls/PollPage')).PollPage }) },
         { path: 'groups', lazy: async () => ({ Component: (await import('../features/activities/BudgetPage')).BudgetPage }) },
-        { index: true, lazy: async () => ({ Component: (await import('../features/feed/PersonalFeed')).HomePage }) },
+        { index: true, element: <HomePage /> },
         { path: '*', element: <SectionPlaceholder /> },
       ] },
     ],

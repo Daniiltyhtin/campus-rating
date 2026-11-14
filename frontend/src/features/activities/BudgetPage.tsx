@@ -1,3 +1,4 @@
+import { ActionButton } from '../../app/ActionButton';
 import { Button, Group as MantineGroup, NativeSelect, Stack, Text, TextInput, Title } from '@mantine/core';
 import { useEffect, useRef, useState } from 'react';
 import { AsyncContent, TeacherTableLayout } from '../../app/layouts/PageLayouts';
@@ -28,7 +29,7 @@ function History({ userId, month, groupId }: { userId: number; month: string; gr
         <Text className="cr-caption">{award.group.name} · {award.level} % · <time dateTime={award.confirmedAt}>{formatMoscowTime(award.confirmedAt)}</time></Text>
       </Stack></article>)}</Stack>
     </AsyncContent>
-    <div ref={sentinel}>{isFetchNextPageError ? <Stack role="alert"><Text>{activityError(query.error)}</Text><Button variant="default" disabled={isFetching} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Повторить загрузку истории</Button></Stack> : hasNextPage && <Button variant="default" loading={isFetchingNextPage} disabled={isFetching} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Показать ещё</Button>}</div>
+    <div ref={sentinel}>{isFetchNextPageError ? <Stack role="alert"><Text>{activityError(query.error)}</Text><Button variant="default" disabled={isFetching} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Повторить загрузку истории</Button></Stack> : hasNextPage && <ActionButton variant="default" pending={isFetchingNextPage} disabled={isFetching && !isFetchingNextPage} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Показать ещё</ActionButton>}</div>
   </section>;
 }
 function Budget({ userId }: { userId: number }) {

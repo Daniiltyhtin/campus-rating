@@ -1,3 +1,4 @@
+import { ActionButton } from '../../../app/ActionButton';
 import { Button, Group, Modal, NativeSelect, Stack, Text, TextInput } from '@mantine/core';
 import { useState } from 'react';
 import { ApiError } from '../../../api/client';
@@ -11,7 +12,7 @@ type FacultyQuery = ReturnType<typeof useDirectory>;
 function ActionError({ action }: { action: ReturnType<typeof useDirectoryAction> }) {
   const error = action.refresh.error ?? action.mutation.error;
   return <>{error && <Stack role="alert" gap="sm"><Text>{directoryError(error)}</Text>
-    {error instanceof ApiError && error.code === 'CSRF_INVALID' && <Button variant="default" loading={action.refresh.isPending} onClick={() => action.refresh.mutate()}>Обновить защиту</Button>}</Stack>}
+    {error instanceof ApiError && error.code === 'CSRF_INVALID' && <ActionButton variant="default" pending={action.refresh.isPending} onClick={() => action.refresh.mutate()}>Обновить защиту</ActionButton>}</Stack>}
     {action.refresh.isSuccess && <Text role="status">Защита обновлена. Повторите действие.</Text>}</>;
 }
 export function EditDirectory({ kind, entry, faculties, close, finished }: { kind: DirectoryKind; entry?: DirectoryEntry; faculties: FacultyQuery; close: () => void; finished: (message: string) => void }) {
@@ -43,7 +44,7 @@ export function EditDirectory({ kind, entry, faculties, close, finished }: { kin
       </AsyncContent></>}
       {kind === 'groups' && <TextInput type="number" label="Год набора" value={fields.admissionYear} onChange={(event) => change('admissionYear', event.currentTarget.value)} error={errors.admissionYear} disabled={busy} />}
       <ActionError action={action} />
-      <Group justify="end"><Button variant="default" onClick={close} disabled={busy}>Отмена</Button><Button type="submit" disabled={busy || unavailable} loading={action.mutation.isPending}>Сохранить</Button></Group>
+      <Group justify="end"><Button variant="default" onClick={close} disabled={busy}>Отмена</Button><ActionButton type="submit" disabled={unavailable} pending={action.mutation.isPending}>Сохранить</ActionButton></Group>
     </Stack></form>
   </Modal>;
 }
@@ -51,7 +52,7 @@ export function DeleteDirectory({ entry, close, finished }: { entry: DirectoryEn
   const action = useDirectoryAction(entry.kind, finished), busy = action.mutation.isPending || action.refresh.isPending;
   return <Modal opened onClose={() => { if (!busy) close(); }} title={`Удалить ${labels[entry.kind].noun}`} centered className="directory-dialog" returnFocus={false} closeButtonProps={{ 'aria-label': 'Закрыть' }} closeOnClickOutside={!busy} closeOnEscape={!busy} withCloseButton={!busy}>
     <Stack><Text>Удалить «{entry.name}»? Связанные данные удалены не будут. Сервер проверит, используется ли запись.</Text><ActionError action={action} />
-      <Group justify="end"><Button variant="default" disabled={busy} onClick={close}>Отмена</Button><Button disabled={busy} loading={action.mutation.isPending} onClick={() => action.mutation.mutate({ action: 'delete', id: entry.id })}>Удалить</Button></Group>
+      <Group justify="end"><Button variant="default" disabled={busy} onClick={close}>Отмена</Button><ActionButton pending={action.mutation.isPending} onClick={() => action.mutation.mutate({ action: 'delete', id: entry.id })}>Удалить</ActionButton></Group>
     </Stack>
   </Modal>;
 }

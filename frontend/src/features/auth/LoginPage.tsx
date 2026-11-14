@@ -1,4 +1,5 @@
-import { Anchor, Button, Stack, Text, TextInput } from '@mantine/core';
+import { ActionButton } from '../../app/ActionButton';
+import { Anchor, Stack, Text, TextInput } from '@mantine/core';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { api, ApiError } from '../../api/client';
@@ -29,7 +30,7 @@ export function LoginPage() {
       <PasswordField label="Пароль" autoComplete="current-password" value={password} onChange={(event) => { setPassword(event.currentTarget.value); form.clear('password'); }} error={form.errors.password} />
       {action.refreshing ? <Text role="status">Обновление сессии…</Text> : action.refreshFailed ? <RetryNotice message="Вход выполнен. Не удалось обновить защиту формы. Повторите обновление." retry={action.refresh} />
         : action.error && <ActionError error={action.error} onReset={action.reset} />}
-      <Button type="submit" loading={action.isPending || action.refreshing} disabled={action.isPending || action.needsRefresh}>Войти</Button>
+      <ActionButton type="submit" pending={action.isPending || action.refreshing} disabled={action.needsRefresh && !action.isPending}>Войти</ActionButton>
     </FormLayout>
     <Stack gap="xs"><Text className="cr-caption">Первый раз здесь?</Text><Anchor component={Link} to="/register" c="var(--cr-link)">Создать аккаунт</Anchor></Stack>
     {action.error instanceof ApiError && action.error.code === 'EMAIL_NOT_VERIFIED' && <SendVerification email={email} />}

@@ -1,5 +1,6 @@
+import { useTimedMutation } from '../../app/actionTiming';
 import { Anchor, Button, FileButton, Input, Modal, Stack, Tabs, Text, TextInput } from '@mantine/core';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import { taskClock } from './clock';
@@ -106,7 +107,7 @@ function SubmissionForm({ assignment }: { assignment: Schemas['Assignment'] }) {
   const [file, setFile] = useState<File>();
   const [localError, setLocalError] = useState<string>();
   const resetFile = useRef<() => void>(null);
-  const mutation = useMutation({
+  const mutation = useTimedMutation({
     mutationFn: () => dataOf(submitAssignment(api, assignment.id, mode === 'file' && file ? { file } : { link })),
     onSuccess: () => invalidateTaskData(client),
   });
@@ -171,7 +172,7 @@ function SubmissionForm({ assignment }: { assignment: Schemas['Assignment'] }) {
         </Input.Wrapper>
       )}
       {!fieldError(mutation.error, mode === 'file' ? 'file' : 'link') && <ErrorMessage error={mutation.error} />}
-      <TaskButton type="submit" loading={mutation.isPending} disabled={!!validation}>
+      <TaskButton type="submit" pending={mutation.isPending} disabled={!!validation}>
         Сдать работу
       </TaskButton>
     </FormLayout>
@@ -218,7 +219,7 @@ function Withdrawal({ assignment }: { assignment: Awaited<ReturnType<typeof read
     const timer = window.setInterval(() => setNow(taskClock.monotonicNow()), 250);
     return () => window.clearInterval(timer);
   }, [eligible]);
-  const mutation = useMutation({
+  const mutation = useTimedMutation({
     mutationFn: () => dataOf(api.POST('/api/v1/assignments/{assignmentId}/submission/withdrawal', { params: { path: { assignmentId: assignment.id } } })),
     onSuccess: async () => { setOpened(false); await invalidateTaskData(client); },
     onError: () => invalidateTaskData(client),
@@ -227,7 +228,7 @@ function Withdrawal({ assignment }: { assignment: Awaited<ReturnType<typeof read
     {eligible && <TaskButton variant="default" onClick={() => { mutation.reset(); setOpened(true); }}>Отозвать сдачу</TaskButton>}
     <Modal opened={opened} onClose={() => setOpened(false)} title="Отозвать работу?">
       <Stack><Text>Вы сможете сдать её заново до дедлайна</Text>
-        <TaskButton loading={mutation.isPending} disabled={mutation.isSuccess} onClick={() => mutation.mutate()}>Отозвать</TaskButton>
+        <TaskButton pending={mutation.isPending} disabled={mutation.isSuccess} onClick={() => mutation.mutate()}>Отозвать</TaskButton>
         <ErrorMessage error={mutation.error} />
         <TaskButton variant="default" onClick={() => setOpened(false)}>Отмена</TaskButton>
       </Stack>

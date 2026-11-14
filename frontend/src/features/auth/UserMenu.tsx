@@ -1,4 +1,5 @@
-import { Button, Menu, Stack, UnstyledButton } from '@mantine/core';
+import { ActionButton } from '../../app/ActionButton';
+import { Menu, Stack, UnstyledButton } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { Link } from 'react-router';
 import { api } from '../../api/client';
@@ -10,7 +11,7 @@ function useLogout() {
 }
 export function LogoutButton() {
   const action = useLogout();
-  return <Stack gap="xs"><Button variant="default" onClick={() => action.mutate()} disabled={action.isPending} loading={action.isPending}>Выйти</Button>
+  return <Stack gap="xs"><ActionButton variant="default" onClick={() => action.mutate()} pending={action.isPending}>Выйти</ActionButton>
     {action.error && <ActionError error={action.error} onReset={action.reset} />}</Stack>;
 }
 export function UserMenu({ fullName, userId }: { fullName: string; userId: string }) {

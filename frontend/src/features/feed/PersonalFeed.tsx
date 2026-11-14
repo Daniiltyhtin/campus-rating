@@ -1,3 +1,4 @@
+import { ActionButton } from '../../app/ActionButton';
 import { Button, Stack, Text, Title } from '@mantine/core';
 import type { ReactNode } from 'react';
 import { AsyncContent } from '../../app/layouts/PageLayouts';
@@ -32,7 +33,7 @@ function Events({ viewerId, notice, extra, polls }: { viewerId: number; notice?:
       <div>{items.map((event) => <EventEntry key={event.id} event={event} viewerId={viewerId} />)}</div>
     </AsyncContent>
     {isFetchNextPageError ? <Stack role="alert"><Text>{feedError(query.error)}</Text><Button variant="default" disabled={isFetching} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Повторить загрузку событий</Button></Stack>
-      : hasNextPage && <div><Button variant="default" loading={isFetchingNextPage} disabled={isFetching} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Загрузить ещё</Button></div>}
+      : hasNextPage && <div><ActionButton variant="default" pending={isFetchingNextPage} disabled={isFetching && !isFetchingNextPage} onClick={() => { void fetchNextPage({ cancelRefetch: false }); }}>Загрузить ещё</ActionButton></div>}
   </Stack></FeedPage>;
 }
 export function HomePage() {

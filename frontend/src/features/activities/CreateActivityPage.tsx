@@ -1,5 +1,7 @@
-import { Button, Checkbox, NativeSelect, Stack, Text, Textarea, TextInput } from '@mantine/core';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { ActionButton } from '../../app/ActionButton';
+import { useTimedMutation } from '../../app/actionTiming';
+import { Checkbox, NativeSelect, Stack, Text, Textarea, TextInput } from '@mantine/core';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { api } from '../../api/client';
@@ -19,7 +21,7 @@ function CreateForm({ userId }: { userId: number }) {
   const form = useFormErrors();
   const [fields, setFields] = useState<CreationFields>({ title: '', description: '', type: 'ACADEMIC', groupIds: [], startsAt: '', maxPoints: '' });
   const change = (field: Exclude<keyof CreationFields, 'groupIds'>, value: string) => { setFields((old) => ({ ...old, [field]: value })); form.clear(field); };
-  const create = useMutation({ retry: false, mutationFn: (body: components['schemas']['ActivityCreate']) => read(api.POST('/api/v1/activities', { body }), parseActivity),
+  const create = useTimedMutation({ retry: false, mutationFn: (body: components['schemas']['ActivityCreate']) => read(api.POST('/api/v1/activities', { body }), parseActivity),
     onError: form.fromServer, onSuccess: async () => { await client.invalidateQueries({ queryKey: activityKeys.root }); await navigate('/activities'); } });
   const available = groups.data?.items ?? [];
   return <ActivityPage title="Новая активность" description="Задайте группы, время и максимум баллов. Начало указывается по Москве." actions={<ActivityLink to="/activities">К активностям</ActivityLink>}>
@@ -41,7 +43,7 @@ function CreateForm({ userId }: { userId: number }) {
       <TextInput label="Дата и время начала (Москва)" type="datetime-local" value={fields.startsAt} error={form.errors.startsAt} onChange={(event) => change('startsAt', event.currentTarget.value)} />
       <TextInput label="Максимум баллов" inputMode="numeric" description="Целое число от 2 до 10000. Начисления выполняются при подтверждении участия." value={fields.maxPoints} error={form.errors.maxPoints} onChange={(event) => change('maxPoints', event.currentTarget.value)} />
       {create.error != null && <ActivityFailure error={create.error} />}
-      <Button type="submit" disabled={!groups.isSuccess || available.length === 0 || create.isPending} loading={create.isPending}>Создать активность</Button>
+      <ActionButton type="submit" disabled={!groups.isSuccess || available.length === 0} pending={create.isPending}>Создать активность</ActionButton>
       <Text className="cr-caption">Учебная активность даёт БУА, общественная — БОА. Для общественной активности студентам нужна предварительная запись.</Text>
     </FormLayout></div>
   </ActivityPage>;

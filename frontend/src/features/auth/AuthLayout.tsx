@@ -1,8 +1,10 @@
-import { Anchor, Button, Group, PasswordInput, Stack, Text } from '@mantine/core';
+import { ActionButton } from '../../app/ActionButton';
+import { useTimedMutation } from '../../app/actionTiming';
+import { Button, Anchor, Group, PasswordInput, Stack, Text } from '@mantine/core';
 import type { PasswordInputProps } from '@mantine/core';
 import { useId, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../../api/client';
 import { PageLayout } from '../../app/layouts/PageLayouts';
 import { ThemeMenu } from '../../theme/ThemeMenu';
@@ -41,10 +43,10 @@ export function PasswordField(props: PasswordInputProps) {
 }
 export function ActionError({ error, onReset }: { error: unknown; onReset: () => void }) {
   const client = useQueryClient();
-  const refresh = useMutation({ mutationFn: csrfToken, retry: false, onSuccess: (ready) => {
+  const refresh = useTimedMutation({ mutationFn: csrfToken, retry: false, onSuccess: (ready) => {
     client.setQueryData(authKeys.csrf, ready); onReset();
   } });
   return <Stack gap="xs"><Text role="alert">{errorMessage(error)}</Text>
-    {error instanceof ApiError && error.code === 'CSRF_INVALID' && <Button variant="default" loading={refresh.isPending} disabled={refresh.isPending} onClick={() => refresh.mutate()}>Обновить защиту формы</Button>}
+    {error instanceof ApiError && error.code === 'CSRF_INVALID' && <ActionButton variant="default" pending={refresh.isPending} onClick={() => refresh.mutate()}>Обновить защиту формы</ActionButton>}
     {refresh.error && <Text role="alert">Не удалось обновить защиту формы. Попробуйте снова.</Text>}</Stack>;
 }
