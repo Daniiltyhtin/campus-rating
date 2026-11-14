@@ -169,3 +169,16 @@ export async function choose(label: Locator) {
   await label.evaluate((element) => element.scrollIntoView({ block: 'center' }));
   await label.click();
 }
+
+export async function fillRegistration(page: Page, user: Pick<User, 'lastName' | 'firstName' | 'middleName' | 'email' | 'password'>, faculty: number, target: number, teacher = false) {
+  await page.goto('/register');
+  if (teacher) await choose(page.getByText('Преподаватель', { exact: true }));
+  await page.getByLabel('Фамилия', { exact: true }).fill(user.lastName);
+  await page.getByLabel('Имя', { exact: true }).fill(user.firstName);
+  await page.getByLabel('Отчество', { exact: true }).fill(user.middleName);
+  await page.getByLabel('Email', { exact: true }).fill(user.email);
+  await page.getByLabel('Пароль', { exact: true }).fill(user.password);
+  await page.getByLabel('Повторите пароль', { exact: true }).fill(user.password);
+  await page.getByLabel('Факультет', { exact: true }).selectOption(String(faculty));
+  await page.getByLabel(teacher ? 'Кафедра' : 'Группа', { exact: true }).selectOption(String(target));
+}

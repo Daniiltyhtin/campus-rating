@@ -1,22 +1,9 @@
-import { test, expect, login, logout, evidence, choose, type Schemas, type User } from './support.js';
+import { test, expect, login, logout, evidence, fillRegistration, type Schemas } from './support.js';
 import { mailToken } from '../../fixtures/greenmail.js';
-import type { Page } from '@playwright/test';
-
-async function fill(page: Page, user: Pick<User, 'lastName' | 'firstName' | 'middleName' | 'email' | 'password'>, faculty: number, target: number, teacher = false) {
-  await page.goto('/register');
-  if (teacher) await choose(page.getByText('Преподаватель', { exact: true }));
-  await page.getByLabel('Фамилия', { exact: true }).fill(user.lastName);
-  await page.getByLabel('Имя', { exact: true }).fill(user.firstName);
-  await page.getByLabel('Отчество', { exact: true }).fill(user.middleName);
-  await page.getByLabel('Email', { exact: true }).fill(user.email);
-  await page.getByLabel('Пароль', { exact: true }).fill(user.password);
-  await page.getByLabel('Факультет', { exact: true }).selectOption(String(faculty));
-  await page.getByLabel(teacher ? 'Кафедра' : 'Группа', { exact: true }).selectOption(String(target));
-}
 
 test('REG-01 Covers AE1, AE40 студент регистрируется и получает начальные балансы', async ({ page, scenario }) => {
   const user = scenario.identity();
-  await fill(page, user, scenario.faculty.id, scenario.group.id);
+  await fillRegistration(page, user, scenario.faculty.id, scenario.group.id);
   await evidence(page, 'U24-registration-name-fields');
   await page.getByRole('button', { name: 'Зарегистрироваться' }).click();
   await expect(page.getByRole('status')).toContainText('Регистрация завершена. Подтвердите email по ссылке из письма.');
@@ -34,11 +21,12 @@ test('REG-01 Covers AE1, AE40 студент регистрируется и п�
 
 test('REG-01 ошибки полей: короткий пароль, занятый email, чужой факультет', async ({ page, scenario }) => {
   const existing = await scenario.registerStudent();
-  await fill(page, { ...existing, password: 'short' }, scenario.faculty.id, scenario.group.id);
+  await fillRegistration(page, { ...existing, password: 'short' }, scenario.faculty.id, scenario.group.id);
   await page.getByRole('button', { name: 'Зарегистрироваться' }).click();
   await expect(page.getByLabel('Пароль', { exact: true })).toHaveAttribute('aria-invalid', 'true');
   await expect(page.getByText('Пароль должен содержать не меньше 8 символов', { exact: true })).toBeVisible();
   await page.getByLabel('Пароль', { exact: true }).fill(existing.password);
+  await page.getByLabel('Повторите пароль', { exact: true }).fill(existing.password);
   await page.getByRole('button', { name: 'Зарегистрироваться' }).click();
   await expect(page.getByLabel('Email', { exact: true })).toHaveAttribute('aria-invalid', 'true');
   await expect(page.getByText('Этот email уже зарегистрирован', { exact: true })).toBeVisible();
@@ -63,7 +51,7 @@ test('REG-01 ошибки полей: короткий пароль, занят�
 
 test('REG-02 преподаватель ждёт допуска, после API U13 видит группы', async ({ page, scenario }) => {
   const user = scenario.identity('Преподаватель');
-  await fill(page, user, scenario.faculty.id, scenario.department.id, true);
+  await fillRegistration(page, user, scenario.faculty.id, scenario.department.id, true);
   await page.getByRole('button', { name: 'Зарегистрироваться' }).click();
   await expect(page.getByRole('status')).toContainText('Регистрация завершена');
   await scenario.confirmEmail(user.email);
@@ -81,7 +69,7 @@ test('REG-02 преподаватель ждёт допуска, после API 
 });
 
 test('REG-02 email из списка преподавателей нельзя зарегистрировать студентом', async ({ page, scenario }) => {
-  await fill(page, { ...scenario.identity(), email: 'petrov@campus.test' }, scenario.faculty.id, scenario.group.id);
+  await fillRegistration(page, { ...scenario.identity(), email: 'petrov@campus.test' }, scenario.faculty.id, scenario.group.id);
   await page.getByRole('button', { name: 'Зарегистрироваться' }).click();
   await expect(page.getByLabel('Email', { exact: true })).toHaveAttribute('aria-invalid', 'true');
   await expect(page.getByText('Этот email закреплён за преподавателем. Зарегистрируйтесь как преподаватель.', { exact: true })).toBeVisible();
@@ -116,7 +104,7 @@ test('REG-03 полный путь: письмо, подтверждение ema
   await teacher.api.until(new Date(Date.parse(expired.deadline) + 1000).toISOString());
 
   const user = scenario.identity();
-  await fill(page, user, scenario.faculty.id, scenario.group.id);
+  await fillRegistration(page, user, scenario.faculty.id, scenario.group.id);
   await page.getByRole('button', { name: 'Зарегистрироваться' }).click();
   await expect(page.getByRole('status')).toContainText('Подтвердите email по ссылке из письма.');
   await page.goto(`/email/confirm/${await mailToken(user.email, 'email/confirm')}`);
@@ -141,3 +129,47 @@ test('REG-03 полный путь: письмо, подтверждение ema
   await expect(page.getByText(expired.title)).toHaveCount(0);
   await evidence(page, 'REG-03-student-tasks');
 });
+
+for (const teacher of [false, true]) {
+  test(`U24 U8 Covers AE25, AE26: ${teacher ? 'преподаватель' : 'студент'} исправляет повтор пароля и регистрируется`, async ({ page, scenario }) => {
+    const user = { ...scenario.identity(), password: 'Secret123' };
+    const endpoint = `/api/v1/auth/register/${teacher ? 'teacher' : 'student'}`;
+    const requests: unknown[] = [];
+    page.on('request', (request) => {
+      if (request.method() === 'POST' && new URL(request.url()).pathname === endpoint) requests.push(request.postDataJSON());
+    });
+    await fillRegistration(page, user, scenario.faculty.id, teacher ? scenario.department.id : scenario.group.id, teacher);
+    const password = page.getByLabel('Пароль', { exact: true });
+    const repeat = page.getByLabel('Повторите пароль', { exact: true });
+    const error = page.getByText('Пароли не совпадают', { exact: true });
+    const submit = page.getByRole('button', { name: 'Зарегистрироваться', exact: true });
+    await repeat.fill('Secret124');
+    await submit.click();
+    await expect(error).toBeVisible();
+    await expect(repeat).toHaveAttribute('aria-invalid', 'true');
+    await expect(repeat).toHaveAccessibleDescription('Пароли не совпадают');
+    expect(requests).toHaveLength(0);
+    await password.fill('Secret124');
+    await expect(error).toBeVisible();
+    await password.fill('Secret123');
+    await repeat.fill('Secret125');
+    await expect(error).toHaveCount(0);
+    expect(requests).toHaveLength(0);
+    await submit.click();
+    await expect(error).toBeVisible();
+    expect(requests).toHaveLength(0);
+    await evidence(page, 'U24-U8-password-mismatch');
+    await repeat.fill('Secret123');
+    await expect(error).toHaveCount(0);
+    await submit.click();
+    await expect(page.getByRole('status')).toContainText('Регистрация завершена');
+    expect(requests).toEqual([teacher ? {
+      lastName: user.lastName, firstName: user.firstName, email: user.email, password: user.password, departmentId: scenario.department.id,
+    } : {
+      lastName: user.lastName, firstName: user.firstName, email: user.email, password: user.password, facultyId: scenario.faculty.id, groupId: scenario.group.id,
+    }]);
+    await evidence(page, 'U24-U8-registration-success');
+    await scenario.confirmEmail(user.email);
+    await login(page, user);
+  });
+}

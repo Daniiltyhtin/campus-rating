@@ -57,6 +57,7 @@ test('ADM-02: временный пароль, смена и приватный 
   await expect(page).toHaveURL(/\/password\/change$/);
   await page.getByLabel('Текущий пароль', { exact: true }).fill(password);
   await page.getByLabel('Новый пароль', { exact: true }).fill('New-e2e-password-32');
+  await page.getByLabel('Повторите новый пароль', { exact: true }).fill('New-e2e-password-32');
   await page.getByRole('button', { name: 'Сменить пароль', exact: true }).click();
   await expect(page).not.toHaveURL(/\/password\/change$/);
   await page.goto(`/users/${student.id}`);
