@@ -6,6 +6,7 @@ import { isActive, navigationFor } from './navigation';
 import type { Session } from './session';
 import type { CurrentUser } from '../features/auth/contracts';
 import { BrandMark } from '../theme/Brand';
+import { useBrandCycle } from '../theme/useBrandCycle';
 import { UserMenu } from '../features/auth/UserMenu';
 import { TeacherBadge } from '../features/admin/teachers/TeacherBadge';
 import { NavIcon } from './NavIcon';
@@ -20,6 +21,7 @@ export function AppShell({ session, user }: { session: Session; user: CurrentUse
   });
   const { pathname } = useLocation();
   const items = navigationFor(session);
+  const brand = useBrandCycle();
 
   return (
     <MantineAppShell
@@ -30,7 +32,7 @@ export function AppShell({ session, user }: { session: Session; user: CurrentUse
     >
       <MantineAppShell.Header>
         <Group h="100%" px="md" className="auth-shell-header">
-          <Link className="cr-brand" to={items[0]?.to ?? '/'} aria-label="Campus Rating"><BrandMark /><span>Campus Rating</span></Link>
+          <Link className="cr-brand" to={items[0]?.to ?? '/'} aria-label="Campus Rating" onClick={brand.play}><BrandMark playing={brand.playing} /><span>Campus Rating</span></Link>
           <Group gap="xs" wrap="nowrap"><ThemeMenu /><UserMenu fullName={user.fullName} userId={session.userId} /></Group>
         </Group>
       </MantineAppShell.Header>
