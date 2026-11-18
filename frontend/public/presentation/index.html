@@ -5,6 +5,663 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="campus-presentation" content="defense-2026">
 <title>Campus Rating — защита</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ===========================================
+   FIXED 16:9 STAGE: MANDATORY BASE STYLES
+   Include this ENTIRE file in every presentation.
+   Slides are authored at 1920×1080 and scaled as a whole.
+   =========================================== */
+
+/* 1. Lock the browser viewport */
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: var(--stage-bg, #000);
+}
+
+/* 2. Full-window deck viewport */
+.deck-viewport {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: var(--stage-bg, #000);
+}
+
+/* 3. Fixed 16:9 design canvas.
+   JavaScript sets transform: translate(...) scale(...). */
+.deck-stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    transform-origin: 0 0;
+    background: var(--slide-bg, #fff);
+}
+
+/* 4. Slides stack inside the fixed stage.
+   Content must be laid out at 1920×1080, not reflowed per device. */
+.slide {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    background: var(--slide-bg, #fff);
+}
+
+.slide.active,
+.slide.visible {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 1;
+}
+
+/* 5. Keep media inside authored slide bounds */
+img,
+video,
+canvas,
+svg {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* 6. Presentation chrome stays outside the slide design system */
+.deck-controls {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+/* 7. Print one fixed-size slide per page */
+@media print {
+    html,
+    body {
+        width: 1920px;
+        height: auto;
+        overflow: visible;
+        background: #fff;
+    }
+
+    .deck-viewport {
+        position: static;
+        overflow: visible;
+        background: #fff;
+    }
+
+    .deck-stage {
+        position: static;
+        width: auto;
+        height: auto;
+        transform: none !important;
+        background: none;
+    }
+
+    .slide {
+        position: relative;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        width: 1920px;
+        height: 1080px;
+        break-after: page;
+        page-break-after: always;
+    }
+
+    .slide:last-child {
+        break-after: auto;
+        page-break-after: auto;
+    }
+
+    .deck-controls {
+        display: none !important;
+    }
+}
+
+/* 8. Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+    }
+}
+:root {
+  --stage-bg: #e6e9ee;
+  --slide-bg: #f5f6f8;
+  --surface: #ffffff;
+  --ink: #161b22;
+  --muted: #57606a;
+  --hint: #8b949e;
+  --rule: #d6dbe1;
+  --accent: #2450c4;
+  --accent-soft: #e8eefc;
+  --ok: #1a7f37;
+  --no: #8b949e;
+  --demo-frame: #161b22;
+  --demo-frame-bg: #ffffff;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --sans: 'Golos Text', system-ui, sans-serif;
+}
+body { font-family: var(--sans); color: var(--ink); }
+.slide { font-family: var(--sans); color: var(--ink); }
+.rail { position: absolute; left: 0; top: 0; bottom: 0; width: 96px; border-right: 1px solid var(--rule); display: flex; flex-direction: column; align-items: center; padding-top: 112px; gap: 26px; font: 600 18px var(--mono); color: var(--hint); }
+.rail .on { color: var(--accent); }
+.page { position: absolute; left: 200px; right: 120px; bottom: 56px; display: flex; justify-content: space-between; font: 400 20px var(--mono); color: var(--muted); }
+.k { position: absolute; left: 200px; top: 104px; font: 600 22px var(--mono); color: var(--accent); letter-spacing: .08em; text-transform: uppercase; margin: 0; }
+.t { position: absolute; left: 200px; top: 148px; width: 1560px; font-weight: 700; font-size: 68px; line-height: 1.08; letter-spacing: -.015em; margin: 0; }
+.t em { font-style: normal; color: var(--accent); }
+.lead { font-size: 34px; line-height: 1.4; color: var(--muted); margin: 0; }
+.box { position: absolute; }
+.rows { width: 100%; border-collapse: collapse; font-size: 30px; line-height: 1.35; }
+.rows td { border-top: 1px solid var(--rule); padding: 20px 24px 20px 0; vertical-align: top; }
+.rows tr:last-child td { border-bottom: 1px solid var(--rule); }
+.rows td.tag { font: 600 22px/1.6 var(--mono); color: var(--accent); width: 300px; letter-spacing: .04em; text-transform: uppercase; }
+.rows td.dim { color: var(--muted); }
+.rows.tight td { padding: 9px 24px 9px 0; font-size: 26px; }
+.rows.tight td.tag { width: 70px; font-size: 22px; }
+.st { font: 600 22px var(--mono); }
+.st.ok { color: var(--ok); }
+.st.no { color: var(--no); }
+.col-h { font: 600 24px var(--mono); color: var(--accent); letter-spacing: .06em; text-transform: uppercase; margin: 0 0 18px; }
+.list { list-style: none; margin: 0; padding: 0; font-size: 30px; line-height: 1.35; }
+.list li { border-top: 1px solid var(--rule); padding: 18px 0; }
+.list li:last-child { border-bottom: 1px solid var(--rule); }
+.list li b { font-weight: 600; }
+.list.muted li { color: var(--muted); }
+.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.card { background: var(--surface); border: 1px solid var(--rule); padding: 30px 34px; }
+.card .id { font: 600 22px var(--mono); color: var(--accent); }
+.card h3 { font-size: 34px; margin: 10px 0 12px; font-weight: 700; }
+.card p { font-size: 26px; line-height: 1.4; color: var(--muted); margin: 0; }
+.num { font: 600 92px/1 var(--mono); color: var(--ink); letter-spacing: -.03em; }
+.num small { font-size: 40px; color: var(--muted); }
+.num-l { font-size: 26px; color: var(--muted); margin-top: 12px; line-height: 1.3; }
+.stat { border-top: 2px solid var(--ink); padding-top: 22px; }
+.flow { display: flex; flex-direction: column; gap: 0; }
+.flow .node { background: var(--surface); border: 1px solid var(--rule); padding: 22px 30px; }
+.flow .node b { display: block; font-size: 32px; font-weight: 700; }
+.flow .node span { font-size: 24px; color: var(--muted); }
+.flow .arrow { font: 600 28px var(--mono); color: var(--accent); padding: 8px 0 8px 34px; }
+.note-line { font: 400 22px var(--mono); color: var(--muted); }
+.err { border-top: 1px solid var(--rule); padding: 26px 0; display: grid; grid-template-columns: 560px 1fr; gap: 40px; }
+.err:last-child { border-bottom: 1px solid var(--rule); }
+.err h3 { font-size: 32px; margin: 0; font-weight: 700; line-height: 1.25; }
+.err p { font-size: 26px; line-height: 1.45; color: var(--muted); margin: 0; }
+.err p b { color: var(--ink); font-weight: 600; }
+.cover-h { position: absolute; left: 200px; top: 166px; font-weight: 700; font-size: 132px; letter-spacing: -.02em; margin: 0; }
+.cover-sub { position: absolute; left: 200px; top: 356px; width: 1100px; }
+.end-h { position: absolute; left: 200px; top: 230px; font-weight: 700; font-size: 120px; letter-spacing: -.02em; margin: 0; }
+.links { font: 400 32px/1.9 var(--mono); }
+.links b { color: var(--accent); font-weight: 600; }
+.demo-left { position: absolute; left: 200px; top: 300px; width: 960px; }
+.demo-left .lead { color: var(--ink); }
+.ux { margin-top: 34px; padding: 26px 30px; background: var(--accent-soft); font-size: 28px; line-height: 1.45; }
+.ux b { font: 600 20px var(--mono); color: var(--accent); display: block; margin-bottom: 8px; letter-spacing: .06em; }
+.run { margin-top: 40px; display: flex; align-items: center; gap: 28px; }
+.run button { font: 600 28px var(--sans); color: #fff; background: var(--accent); border: 0; padding: 20px 36px; cursor: pointer; }
+.run button[disabled] { background: var(--rule); color: var(--muted); cursor: default; }
+.run p { font: 400 24px var(--mono); color: var(--muted); margin: 0; }
+.slot { position: absolute; left: 1300px; top: 96px; width: 440px; height: 904px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 40px; box-sizing: border-box; border: 2px dashed var(--rule); border-radius: 28px; font: 400 24px/1.5 var(--mono); color: var(--muted); }
+.role { position: absolute; left: 1300px; top: 52px; width: 440px; margin: 0; font: 600 22px var(--mono); color: var(--accent); text-align: center; }
+.prefix { margin-top: 40px; display: flex; flex-direction: column; gap: 14px; width: 640px; }
+.prefix label { font: 600 22px var(--mono); color: var(--accent); letter-spacing: .06em; }
+.prefix input { font: 400 30px var(--mono); padding: 16px 20px; border: 1px solid var(--muted); background: var(--surface); color: var(--ink); }
+.prefix p { font: 400 22px var(--mono); color: var(--muted); margin: 0; }
+.notes { display: none; }
+.notes-panel { position: fixed; right: 16px; bottom: 16px; width: min(560px, calc(100vw - 32px)); max-height: 40vh; overflow: auto; z-index: 1001; background: #161b22; color: #e6edf3; font: 15px/1.5 var(--sans); padding: 16px 18px; border-radius: 8px; display: none; }
+.notes-panel.on { display: block; }
+.notes-panel b { color: #8fb1ff; }
+.deck-controls { left: auto; right: 16px; top: 12px; bottom: auto; transform: none; display: flex; gap: 8px; align-items: center; font: 13px var(--mono); color: var(--muted); opacity: .25; transition: opacity .2s; }
+.deck-controls:hover { opacity: 1; }
+.deck-controls button { font: 13px var(--mono); border: 1px solid var(--rule); background: #fff; color: var(--ink); padding: 4px 10px; cursor: pointer; }
+.editing [data-editable] { outline: 2px dashed var(--accent); outline-offset: 4px; }
+body.export .deck-controls, body.export .notes-panel { display: none !important; }
+</style>
 </head>
-<body></body>
+<body>
+<div class="deck-viewport">
+<div class="deck-stage">
+
+<section class="slide" data-section="1">
+  <p class="k">Защита проекта</p>
+  <h1 class="cover-h" data-editable>Campus Rating</h1>
+  <p class="lead cover-sub" data-editable>Университетская соцсеть: академический рейтинг, баллы учебной и общественной активности, ленты наград</p>
+  <div class="box" style="left:200px;top:560px;width:1560px">
+    <table class="rows">
+      <tr><td class="tag">Студент</td><td data-editable>видит, сколько АР спишут и когда — до дедлайна</td></tr>
+      <tr><td class="tag">Преподаватель</td><td data-editable>проверяет сдачи и начисляет баллы из месячного бюджета группы</td></tr>
+      <tr><td class="tag">Вуз</td><td data-editable>получает учёт активности в журнале, который нельзя переписать</td></tr>
+    </table>
+  </div>
+  <div class="page"><span>Даниил · Максим · Александр</span><span>Хакатон M-Social 2026 · БГТУ · 19.11.2026</span></div>
+  <aside class="notes">Даниил, 30 с. Цель одной фразой: студент заранее видит цену просрочки, вуз получает честный учёт активности. АР — академический рейтинг, у студента 1000 на старте; БУА и БОА — баллы учебной и общественной активности. Три строки — три задачи, которые решает проект.</aside>
+</section>
+
+<section class="slide" data-section="2">
+  <p class="k">02 · Роли в команде</p>
+  <h2 class="t" data-editable>Три человека, <em>два агента</em></h2>
+  <div class="box" style="left:200px;top:330px;width:1560px">
+    <table class="rows">
+      <tr><td class="tag">Даниил<br>backend · процесс</td><td data-editable>журнал проводок, контрольные точки и штрафы, спецификация, работа с агентами</td></tr>
+      <tr><td class="tag">Максим<br>frontend</td><td data-editable>интерфейс, вход и регистрация, администрирование, подтверждение членства, опросы</td></tr>
+      <tr><td class="tag">Александр<br>QA</td><td data-editable>тест-план, прогоны и регрессия, визуальная ревизия интерфейса</td></tr>
+    </table>
+    <p class="lead" style="margin-top:44px" data-editable>Код пишут Claude Code и Codex. Задачу ставит, проверяет и отвечает за каждую строку — человек.</p>
+  </div>
+  <div class="page"><span>Campus Rating · роли</span><span data-pg></span></div>
+  <aside class="notes">Даниил, 30 с. Максим сегодня не выступает — вопросы по frontend принимает Даниил. Подчеркнуть: агенты — исполнители и ревьюеры, решения и ответственность — наши.</aside>
+</section>
+
+<section class="slide" data-section="3">
+  <p class="k">03 · Что сделано из ТЗ</p>
+  <h2 class="t" data-editable>Базовая часть целиком, <em>из семи опций — пять</em></h2>
+  <div class="box" style="left:200px;top:262px;width:1560px">
+    <table class="rows tight">
+      <tr><td class="tag">1</td><td>Профиль пользователя</td><td class="st ok">сделано</td><td class="dim">демо, шаг 7</td></tr>
+      <tr><td class="tag">2</td><td>Академический рейтинг</td><td class="st ok">сделано</td><td class="dim">демо, шаги 1, 4, 5</td></tr>
+      <tr><td class="tag">3</td><td>Баллы активности</td><td class="st ok">сделано</td><td class="dim">демо, шаги 2, 3, 6</td></tr>
+      <tr><td class="tag">4</td><td>Лента наград</td><td class="st ok">сделано</td><td class="dim">демо, шаг 7</td></tr>
+      <tr><td class="tag">5</td><td>Онлайн-опросы</td><td class="st ok">сделано</td><td class="dim">экран «Опросы»</td></tr>
+      <tr><td class="tag">6</td><td>Персональная лента событий</td><td class="st ok">сделано</td><td class="dim">главная</td></tr>
+      <tr><td class="tag">7</td><td>Подтверждение регистрации</td><td class="st ok">сделано</td><td class="dim">письмо и заявки в группу</td></tr>
+      <tr><td class="tag">8</td><td>Администрирование</td><td class="st ok">сделано</td><td class="dim">экраны администратора, импорт CSV</td></tr>
+      <tr><td class="tag">9</td><td>Уведомления</td><td class="st no">нет</td><td class="dim">—</td></tr>
+      <tr><td class="tag">10</td><td>Аналитика для преподавателя</td><td class="st ok">сделано</td><td class="dim">экран группы</td></tr>
+      <tr><td class="tag">11</td><td>ИИ-функция в продукте</td><td class="st no">нет</td><td class="dim">—</td></tr>
+    </table>
+  </div>
+  <div class="page"><span>Модули 1–4 — базовая часть, 5–11 — дополнительные опции</span><span data-pg></span></div>
+  <aside class="notes">Даниил, 60 с. Базовая часть — модули 1–4 — сделана целиком. Из дополнительных опций сделаны 5–8 и 10; уведомления и ИИ-функция — в развитии, в коде под них только заготовки модулей. Отметка «сделано» — каждый подпункт модуля можно выполнить через интерфейс стенда.</aside>
+</section>
+
+<section class="slide" data-section="4">
+  <p class="k">04 · Архитектура и стек</p>
+  <h2 class="t" data-editable>Модульный монолит, <em>одна команда запуска</em></h2>
+  <div class="box flow" style="left:200px;top:300px;width:640px">
+    <div class="node"><b>Браузер</b><span>телефон или компьютер</span></div>
+    <div class="arrow">↓</div>
+    <div class="node"><b>web · nginx</b><span>React SPA, прокси /api</span></div>
+    <div class="arrow">↓</div>
+    <div class="node"><b>backend · Spring Boot</b><span>Spring Modulith, серверная сессия</span></div>
+    <div class="arrow">↓</div>
+    <div class="node"><b>PostgreSQL 18</b><span>журнал проводок, балансы, файлы сдач</span></div>
+  </div>
+  <div class="box" style="left:920px;top:300px;width:840px">
+    <table class="rows">
+      <tr><td class="tag">Backend</td><td data-editable>Java 25 · Spring Boot 4.1 · Spring Modulith 2.1 · Liquibase</td></tr>
+      <tr><td class="tag">Frontend</td><td data-editable>React 19 · Vite 8 · TypeScript 6 · Mantine 9 · TanStack Query 5</td></tr>
+      <tr><td class="tag">Контракт</td><td data-editable>OpenAPI 3.1 → типы фронта и моки MSW</td></tr>
+      <tr><td class="tag">Тесты</td><td data-editable>JUnit + Testcontainers · Vitest · Playwright</td></tr>
+      <tr><td class="tag">Запуск</td><td data-editable>docker compose — локально и на стенде за nginx хоста</td></tr>
+    </table>
+  </div>
+  <div class="page"><span>Campus Rating · архитектура</span><span data-pg></span></div>
+  <aside class="notes">Даниил, 60 с. Фронт и API отдаются с одного адреса, поэтому вход — серверной сессией с cookie и CSRF, без токенов в браузере. Один compose-файл поднимает весь стек; на стенде к нему добавляется серверный override.</aside>
+</section>
+
+<section class="slide" data-section="4">
+  <p class="k">04 · Ключевые решения · 4 из 9 ADR</p>
+  <h2 class="t" data-editable>Решения, которые <em>держат баллы честными</em></h2>
+  <div class="box cards" style="left:200px;top:300px;width:1560px">
+    <div class="card"><div class="id">ADR001</div><h3>Журнал проводок со снимком баланса</h3><p data-editable>Любое изменение баллов — неизменяемая проводка с ключом идемпотентности. Баланс обновляется в той же транзакции.</p></div>
+    <div class="card"><div class="id">ADR002</div><h3>Штраф по слотам</h3><p data-editable>Ключ «назначение + слот»: повторный или параллельный запуск планировщика не спишет дважды.</p></div>
+    <div class="card"><div class="id">ADR004</div><h3>Контракт до кода</h3><p data-editable>Сначала openapi.yaml, потом код. Типы фронта генерируются из контракта, расхождение ловит компилятор и тест совместимости.</p></div>
+    <div class="card"><div class="id">ADR005</div><h3>События модулей через outbox</h3><p data-editable>Модули общаются событиями в той же базе. Нарушил границу модуля — сборка красная.</p></div>
+  </div>
+  <div class="page"><span>docs/spec/architecture-decisions</span><span data-pg></span></div>
+  <aside class="notes">Даниил, 60 с. Если спросят про гонку «штраф против сдачи» — единый порядок блокировок: назначение, бюджет, баланс. Остальные ADR: серверные сессии, Liquibase, доступ преподавателя, режимы запуска и почта, визуальный стиль.</aside>
+</section>
+
+<section class="slide" data-section="5">
+  <p class="k">05 · Работа с агентами</p>
+  <h2 class="t" data-editable>Агент пишет, <em>другой агент проверяет</em>, человек отвечает</h2>
+  <div class="box" style="left:200px;top:330px;width:740px">
+    <p class="col-h">Инструменты</p>
+    <ul class="list">
+      <li><b>Claude Code и Codex</b> — пишут код и ревьюят друг друга</li>
+      <li><b>MCP Playwright</b> — проход по стенду и скриншоты</li>
+      <li><b>Скиллы</b> write-tests, implement-unit, review-unit, agent-log</li>
+      <li><b>Субагенты</b> reviewer и tester</li>
+      <li><b>Хук guard</b> — запрет push в main, --force и чтения .env</li>
+    </ul>
+  </div>
+  <div class="box" style="left:1020px;top:330px;width:740px">
+    <p class="col-h">Кто что делает</p>
+    <ul class="list">
+      <li><b>Человек</b> — ставит юнит, принимает решения, коммитит</li>
+      <li><b>Исполнитель</b> — тесты вперёд, затем код по плану юнита</li>
+      <li><b>Ревьюер другой моделью</b> — повторяет проверки на SHA из PR</li>
+      <li><b>Журнал</b> — что сделано, как проверено, где ошибся агент</li>
+      <li><b>Правила</b> — AGENTS.md и docs/spec, урок попадает туда</li>
+    </ul>
+  </div>
+  <div class="page"><span>AGENTS.md · docs/agent-process.md · docs/agent-log.md</span><span data-pg></span></div>
+  <aside class="notes">Даниил, 50 с. Ключевая мысль: автор и ревьюер — разные модели, проверки повторяются, а не берутся на слово. Тесты пишет отдельная сессия до реализации.</aside>
+</section>
+
+<section class="slide" data-section="5">
+  <p class="k">05 · Процесс в цифрах</p>
+  <h2 class="t" data-editable>Всё, что сделали агенты, <em>прошло через PR</em></h2>
+  <div class="box" style="left:200px;top:310px;width:1560px;display:grid;grid-template-columns:1fr 1fr;column-gap:120px;row-gap:44px">
+    <div class="stat"><div class="num">379</div><div class="num-l">коммитов в main</div></div>
+    <div class="stat"><div class="num">10 <small>млн</small></div><div class="num-l">токенов на вход и выход без кэша</div></div>
+    <div class="stat"><div class="num">71</div><div class="num-l">PR слит в main</div></div>
+    <div class="stat"><div class="num">245 <small>млн</small></div><div class="num-l">токенов с учётом кэша</div></div>
+    <div class="stat"><div class="num">117 · 20</div><div class="num-l">записей журнала агентов · кругов ревью</div></div>
+    <div class="stat"><div class="note-line" style="font-size:24px;line-height:1.6">Нижняя оценка: сессии в папке проекта у двух участников, 31.10–18.11.2026</div></div>
+  </div>
+  <div class="page"><span>Срез: c3b1c12, 15.11.2026 МСК</span><span data-pg></span></div>
+  <aside class="notes">Даниил, 30 с. Каждая цифра воспроизводится командой — таблица источников в docs/presentation/slides/sources.md. Токены — нижняя оценка: считаны только сессии, запущенные в папке проекта; денег не считаем.</aside>
+</section>
+
+<section class="slide" data-section="5">
+  <p class="k">05 · Где агент ошибался</p>
+  <h2 class="t" data-editable>Ошибки ловили <em>вопросы и второе ревью</em></h2>
+  <div class="box" style="left:200px;top:310px;width:1560px">
+    <div class="err"><h3>Баланс считался суммой проводок</h3><p><b>Заметили:</b> человек спросил, что будет при 1000+ проводок на студента.<br><b>Изменили:</b> снимок баланса в той же транзакции, SUM в рабочих запросах запрещён.</p></div>
+    <div class="err"><h3>5 дефектов P1 в спеке после самопроверки</h3><p><b>Заметили:</b> ревью другой моделью до первой строки кода.<br><b>Изменили:</b> требования к штрафу, бюджету и идемпотентности.</p></div>
+    <div class="err"><h3>Тест гонок зелёный и без блокировки</h3><p><b>Заметили:</b> ревьюер убрал for update — тест не упал.<br><b>Изменили:</b> данные готовятся до гонки, без блокировки тест красный.</p></div>
+  </div>
+  <div class="page"><span>Формат журнала: ошибка → как заметили → что изменили</span><span data-pg></span></div>
+  <aside class="notes">Даниил, 40 с. Урок, который повторится, уходит в AGENTS.md — следующая сессия агента получает его автоматически.</aside>
+</section>
+
+<section class="slide" data-section="6">
+  <p class="k">06 · Безопасность</p>
+  <h2 class="t" data-editable>Стенд открыт в интернет — <em>и это учтено</em></h2>
+  <div class="box" style="left:200px;top:310px;width:740px">
+    <p class="col-h">Сделано</p>
+    <ul class="list">
+      <li>Лимит на nginx: вход 60, регистрация и письма 10 в минуту с IP</li>
+      <li>Серверная сессия и CSRF, cookie Secure и HttpOnly</li>
+      <li>Обязательное подтверждение email</li>
+      <li>Защитные заголовки, HSTS, встраивание только в свой сайт</li>
+      <li>Три прохода ревью безопасности: P0 и P1 закрыты или риск принят</li>
+    </ul>
+  </div>
+  <div class="box" style="left:1020px;top:310px;width:740px">
+    <p class="col-h">Дальше</p>
+    <ul class="list muted">
+      <li>2FA кодом в Telegram</li>
+      <li>Капча после неудачных входов и на регистрации</li>
+      <li>Уведомление о входе с нового устройства и список сессий</li>
+      <li>Журнал действий администратора и преподавателя</li>
+      <li>Цель — вход без пароля: passkeys</li>
+    </ul>
+  </div>
+  <div class="page"><span>Находки ревью безопасности — PR #75</span><span data-pg></span></div>
+  <aside class="notes">Даниил, 60 с. Принятый риск: общий префикс демо-паролей — на демо роли раздаёт команда. Капча включается по порогу, а не всем подряд: студентов не мучаем.</aside>
+</section>
+
+<section class="slide" data-section="7">
+  <p class="k">07 · План тестирования</p>
+  <h2 class="t" data-editable>Проверки, <em>а не отчёты агента</em></h2>
+  <div class="box" style="left:200px;top:310px;width:640px;display:grid;row-gap:40px">
+    <div class="stat"><div class="num" data-backend-tests>1026</div><div class="num-l">тестов backend: модульные и с PostgreSQL в Testcontainers</div></div>
+    <div class="stat"><div class="num">797</div><div class="num-l">тестов frontend на Vitest</div></div>
+    <div class="stat"><div class="num">72</div><div class="num-l">e2e-проверки Playwright на телефоне 360 px и компьютере</div></div>
+  </div>
+  <div class="box" style="left:920px;top:310px;width:840px">
+    <ul class="list">
+      <li>Матрицы «требование → тест» и «операция × роль»</li>
+      <li>Ворота CI: JaCoCo ≥ 80 % и CRAP ≤ 10 в домене</li>
+      <li>Мутации PIT ≥ 70 % в ledger, checkpoint, activity</li>
+      <li>Ручные проходы: 1280 px, 360 px, Android</li>
+      <li>Ревьюер повторяет проверки на SHA из PR</li>
+    </ul>
+  </div>
+  <div class="page"><span>Срез: c3b1c12 · docs/spec/test-plan.md</span><span data-pg></span></div>
+  <aside class="notes">Александр, 90 с. Пример бага, найденного вручную: на Android съезжало нижнее меню — автотесты его не видели. Отчёт агента — не доказательство: проверки повторяются на коммите из PR.</aside>
+</section>
+
+<section class="slide" data-section="8" data-demo-intro>
+  <p class="k">08 · Демонстрация</p>
+  <h2 class="t" data-editable>Живое демо <em>на campus-rating.ru</em></h2>
+  <div class="demo-left" style="top:310px">
+    <p class="lead" data-editable>Презентация сама нажимает кнопки на стенде. Студент — Смирнова из ИВТ-21, преподаватель — Петров.</p>
+    <div class="ux"><b>ЛОГИКА ПОЛЬЗОВАТЕЛЯ</b>Штраф виден заранее, статус — не только цветом, итог действия написан прямо в кнопке.</div>
+    <div class="prefix">
+      <label for="demo-prefix">ПРЕФИКС ДЕМО-ПАРОЛЕЙ</label>
+      <input id="demo-prefix" data-demo-prefix type="password" autocomplete="off" spellcheck="false">
+      <p data-demo-intro-status>Хранится только в этой вкладке до перезагрузки</p>
+    </div>
+  </div>
+  <div class="page"><span>Ведёт Александр · 7 шагов</span><span data-pg></span></div>
+  <aside class="notes">Александр, 15 с. До выступления ввести префикс демо-паролей стенда. Если стенд не ответил — пролистать шаги и продолжить с раздела «Интеграция».</aside>
+</section>
+
+<section class="slide" data-section="8" data-demo-step="1">
+  <p class="k">08 · Шаг 1 из 7 · Преподаватель</p>
+  <p class="role" data-demo-role>Преподаватель Петров</p>
+  <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
+  <div class="demo-left" style="top:170px">
+    <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Петров создаёт контрольную точку</h2>
+    <p class="lead" data-editable>Курсовая для ИВТ-21: стоимость 12 АР, дедлайн — через 1–2 минуты.</p>
+    <div class="ux"><b>ПОЧЕМУ ТАК</b>Шаг и интервал штрафа видны до создания точки: преподаватель знает, что назначает.</div>
+    <div class="run"><button data-demo-run>Запустить шаг</button><p data-demo-status></p></div>
+  </div>
+  <div class="page"><span>Демонстрация</span><span data-pg></span></div>
+  <aside class="notes">Александр, 32 с. Пока до дедлайна идут 1–2 минуты, создаём активность и записываемся.</aside>
+</section>
+
+<section class="slide" data-section="8" data-demo-step="2">
+  <p class="k">08 · Шаг 2 из 7 · Преподаватель</p>
+  <p class="role" data-demo-role>Преподаватель Петров</p>
+  <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
+  <div class="demo-left" style="top:170px">
+    <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Петров объявляет субботник</h2>
+    <p class="lead" data-editable>Общественная активность до 75 баллов, начало — через 1–2 минуты.</p>
+    <div class="ux"><b>ПОЧЕМУ ТАК</b>Запись — до начала, подтверждение участия — после: баллы получают те, кто пришёл.</div>
+    <div class="run"><button data-demo-run>Запустить шаг</button><p data-demo-status></p></div>
+  </div>
+  <div class="page"><span>Демонстрация</span><span data-pg></span></div>
+  <aside class="notes">Александр, 32 с. Баллы активности начисляются из месячного бюджета группы.</aside>
+</section>
+
+<section class="slide" data-section="8" data-demo-step="3">
+  <p class="k">08 · Шаг 3 из 7 · Студент</p>
+  <p class="role" data-demo-role>Студент Смирнова</p>
+  <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
+  <div class="demo-left" style="top:170px">
+    <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Смирнова видит задачу и записывается</h2>
+    <p class="lead" data-editable>Задача «В процессе», на субботник — запись в один клик.</p>
+    <div class="ux"><b>ПОЧЕМУ ТАК</b>Статус — не только цветом: текст и форма метки. До дедлайна видно, сколько спишут.</div>
+    <div class="run"><button data-demo-run>Запустить шаг</button><p data-demo-status></p></div>
+  </div>
+  <div class="page"><span>Демонстрация</span><span data-pg></span></div>
+  <aside class="notes">Александр, 32 с. Телефонная вёрстка: нижнее меню, кнопки от 44 px.</aside>
+</section>
+
+<section class="slide" data-section="8" data-demo-step="4">
+  <p class="k">08 · Шаг 4 из 7 · Студент</p>
+  <p class="role" data-demo-role>Студент Смирнова</p>
+  <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
+  <div class="demo-left" style="top:170px">
+    <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Дедлайн прошёл — штраф идёт</h2>
+    <p class="lead" data-editable>«Просрочено» и «Списано 4 из 12 АР»: шаг 4 АР раз в минуту, не больше стоимости точки.</p>
+    <div class="ux"><b>ПОЧЕМУ ТАК</b>Штраф не сюрприз: экран показывает, сколько уже списано и когда следующее списание.</div>
+    <div class="run"><button data-demo-run>Запустить шаг</button><p data-demo-status></p></div>
+  </div>
+  <div class="page"><span>Демонстрация</span><span data-pg></span></div>
+  <aside class="notes">Александр, 32 с. Кнопка доступна через 5 секунд после дедлайна.</aside>
+</section>
+
+<section class="slide" data-section="8" data-demo-step="5">
+  <p class="k">08 · Шаг 5 из 7 · Студент и преподаватель</p>
+  <p class="role" data-demo-role>Студент Смирнова</p>
+  <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
+  <div class="demo-left" style="top:170px">
+    <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Сдача, возврат, пересдача</h2>
+    <p class="lead" data-editable>Сдала — штраф остановлен. Вернули с комментарием — штраф идёт. Пересдала — «Принято».</p>
+    <div class="ux"><b>ПОЧЕМУ ТАК</b>Возврат обязательно с комментарием: студент видит, что исправить.</div>
+    <div class="run"><button data-demo-run>Запустить шаг</button><p data-demo-status></p></div>
+  </div>
+  <div class="page"><span>Демонстрация</span><span data-pg></span></div>
+  <aside class="notes">Александр, 32 с. Роль меняется трижды — презентация выходит и входит сама.</aside>
+</section>
+
+<section class="slide" data-section="8" data-demo-step="6">
+  <p class="k">08 · Шаг 6 из 7 · Преподаватель</p>
+  <p class="role" data-demo-role>Преподаватель Петров</p>
+  <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
+  <div class="demo-left" style="top:170px">
+    <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Участие подтверждено на 50 %</h2>
+    <p class="lead" data-editable>Смирновой +38 БОА, бюджет ИВТ-21 меньше на 38.</p>
+    <div class="ux"><b>ПОЧЕМУ ТАК</b>Кнопка называет итог: «Начислить 38 БОА», а не «ОК».</div>
+    <div class="run"><button data-demo-run>Запустить шаг</button><p data-demo-status></p></div>
+  </div>
+  <div class="page"><span>Демонстрация</span><span data-pg></span></div>
+  <aside class="notes">Александр, 32 с. Уровни участия 25, 50, 75 и 100 % — из ТЗ; 50 % от 75 округляется до 38.</aside>
+</section>
+
+<section class="slide" data-section="8" data-demo-step="7">
+  <p class="k">08 · Шаг 7 из 7 · Студент</p>
+  <p class="role" data-demo-role>Студент Смирнова</p>
+  <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
+  <div class="demo-left" style="top:170px">
+    <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>История и лента</h2>
+    <p class="lead" data-editable>В профиле — списания АР и +38 БОА, в ленте наград — запись о начислении.</p>
+    <div class="ux"><b>ПОЧЕМУ ТАК</b>Каждое изменение баллов видно в истории: за что, когда, сколько.</div>
+    <div class="run"><button data-demo-run>Запустить шаг</button><p data-demo-status></p></div>
+  </div>
+  <div class="page"><span>Демонстрация</span><span data-pg></span></div>
+  <aside class="notes">Александр, 33 с. История — из того же журнала проводок, что и баланс.</aside>
+</section>
+
+<section class="slide" data-section="9">
+  <p class="k">09 · Интеграция в жизнь вуза</p>
+  <h2 class="t" data-editable>Как Campus Rating <em>встаёт в вуз</em></h2>
+  <div class="box" style="left:200px;top:310px;width:1560px">
+    <table class="rows">
+      <tr><td class="tag">Режим prod</td><td data-editable>без демо-данных, отдельный compose для сервера</td></tr>
+      <tr><td class="tag">Люди</td><td data-editable>импорт студентов и списка почт преподавателей</td></tr>
+      <tr><td class="tag">Доступ</td><td data-editable>группы своего факультета плюс выдачи администратора</td></tr>
+      <tr><td class="tag">Почта</td><td data-editable>свой SMTP с SPF, DKIM и DMARC</td></tr>
+      <tr><td class="tag">От вуза</td><td data-editable>согласие на обработку ПДн, срок хранения, выгрузка из деканата</td></tr>
+    </table>
+  </div>
+  <div class="page"><span>Campus Rating · внедрение</span><span data-pg></span></div>
+  <aside class="notes">Александр, 30 с. Преподаватель регистрируется сам, но полномочия получает только по списку почт или после допуска администратором.</aside>
+</section>
+
+<section class="slide" data-section="10">
+  <p class="k">10 · Дальнейшее развитие</p>
+  <h2 class="t" data-editable>Куда идут сервисы — <em>и наш шаг туда</em></h2>
+  <div class="box" style="left:200px;top:310px;width:1560px">
+    <table class="rows">
+      <tr><td class="tag">ИИ в продукте</td><td data-editable>черновик задания для преподавателя, подсказка студенту, сводка опроса</td></tr>
+      <tr><td class="tag">Мессенджер</td><td data-editable>уведомления о дедлайнах и запись на активность в Telegram</td></tr>
+      <tr><td class="tag">Единый вход</td><td data-editable>вход через учётную запись вуза</td></tr>
+      <tr><td class="tag">Аналитика</td><td data-editable>сигнал куратору о студенте с просрочками подряд</td></tr>
+      <tr><td class="tag">Дизайн</td><td data-editable>улучшение дизайна и UI/UX</td></tr>
+    </table>
+  </div>
+  <div class="page"><span>Campus Rating · развитие</span><span data-pg></span></div>
+  <aside class="notes">Александр, 60 с. Уведомления и ИИ-функция — модули 9 и 11 ТЗ, под них уже есть заготовки модулей. Аналитика: журнал проводок уже копит нужные данные.</aside>
+</section>
+
+<section class="slide" data-section="11">
+  <h1 class="end-h" data-editable>Спасибо! <span style="color:var(--accent)">Ваши вопросы</span></h1>
+  <div class="box" style="left:200px;top:470px;width:1560px">
+    <div class="links">
+      <div><b>Стенд</b>  https://campus-rating.ru</div>
+      <div><b>Презентация</b>  https://campus-rating.ru/presentation</div>
+      <div><b>Код</b>  github.com/Daniiltyhtin/campus-rating</div>
+      <div><b>Демо</b>  smirnova@student.campus.test · petrov@campus.test</div>
+    </div>
+  </div>
+  <div class="page"><span>Даниил · Максим · Александр</span><span>Хакатон M-Social 2026 · БГТУ</span></div>
+  <aside class="notes">Александр, 0 с. На вопросы по любому фрагменту кода отвечает автор юнита; «это написал агент» не отвечаем.</aside>
+</section>
+
+</div>
+</div>
+<div class="deck-controls"><button type="button" data-prev aria-label="Назад">←</button><span data-counter></span><button type="button" data-next aria-label="Вперёд">→</button><span>N — заметки · E — правка</span></div>
+<div class="notes-panel" aria-live="polite"></div>
+<script>
+(() => {
+  const stage = document.querySelector('.deck-stage');
+  const slides = [...stage.querySelectorAll('.slide')];
+  const sections = [...new Set(slides.map(s => s.dataset.section))];
+  const panel = document.querySelector('.notes-panel');
+  const counter = document.querySelector('[data-counter]');
+  const exportMode = new URLSearchParams(location.search).has('export');
+  if (exportMode) document.body.classList.add('export');
+  let current = 0;
+  slides.forEach((slide, i) => {
+    const rail = document.createElement('nav');
+    rail.className = 'rail';
+    rail.setAttribute('aria-hidden', 'true');
+    sections.forEach(n => {
+      const item = document.createElement('span');
+      item.textContent = n.padStart(2, '0');
+      if (n === slide.dataset.section) item.className = 'on';
+      rail.append(item);
+    });
+    slide.prepend(rail);
+    const pg = slide.querySelector('[data-pg]');
+    if (pg) pg.textContent = `${i + 1} / ${slides.length}`;
+  });
+  function fit() {
+    const k = Math.min(innerWidth / 1920, innerHeight / 1080);
+    stage.style.transform = `translate(${(innerWidth - 1920 * k) / 2}px, ${(innerHeight - 1080 * k) / 2}px) scale(${k})`;
+  }
+  function show(i) {
+    current = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, j) => s.classList.toggle('active', j === current));
+    counter.textContent = `${current + 1} / ${slides.length}`;
+    const notes = slides[current].querySelector('.notes');
+    panel.innerHTML = notes ? `<b>${current + 1}.</b> ${notes.innerHTML}` : '';
+    if (location.hash !== `#s${current + 1}`) history.replaceState(null, '', `${location.search}#s${current + 1}`);
+    document.dispatchEvent(new CustomEvent('deck:slidechange', { detail: { index: current, slide: slides[current] } }));
+  }
+  function fromHash() {
+    const m = location.hash.match(/^#s(\d+)$/);
+    return m ? Number(m[1]) - 1 : 0;
+  }
+  function toggleEdit() {
+    const on = document.body.classList.toggle('editing');
+    stage.querySelectorAll('[data-editable]').forEach(el => { el.contentEditable = on ? 'true' : 'false'; });
+  }
+  document.addEventListener('keydown', e => {
+    const t = e.target;
+    if (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || (t instanceof HTMLElement && t.isContentEditable)) {
+      if (e.key === 'Escape' && document.body.classList.contains('editing')) toggleEdit();
+      return;
+    }
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); show(current + 1); }
+    else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(current - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+    else if (e.key === 'n' || e.key === 'N' || e.key === 'т' || e.key === 'Т') panel.classList.toggle('on');
+    else if (e.key === 'e' || e.key === 'E' || e.key === 'у' || e.key === 'У') toggleEdit();
+  });
+  document.querySelector('[data-prev]').addEventListener('click', () => show(current - 1));
+  document.querySelector('[data-next]').addEventListener('click', () => show(current + 1));
+  addEventListener('hashchange', () => { const i = fromHash(); if (i !== current) show(i); });
+  addEventListener('resize', fit);
+  fit();
+  show(fromHash());
+})();
+</script>
+<script src="/presentation/demo.js" defer></script>
+</body>
 </html>
