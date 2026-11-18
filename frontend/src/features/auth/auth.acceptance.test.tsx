@@ -61,6 +61,16 @@ describe('U5 frontend: сессия и вход — R3, KTD8', () => {
     expect(state.csrfCount).toBeGreaterThanOrEqual(2);
   });
 
+  it('под ссылкой регистрации ведёт гостя на презентацию проекта вне SPA', async () => {
+    createAuthScenario();
+    mountAuth();
+    const register = await screen.findByRole('link', { name: 'Создать аккаунт' });
+    const presentation = screen.getByRole('link', { name: 'Презентация проекта' });
+    expect(presentation).toHaveAttribute('href', '/presentation');
+    expect(presentation).not.toHaveAttribute('target');
+    expect(register.compareDocumentPosition(presentation) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('показывает одинаковую понятную ошибку INVALID_CREDENTIALS и сохраняет email', async () => {
     createAuthScenario();
     let posts = 0;

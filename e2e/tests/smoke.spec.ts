@@ -44,9 +44,9 @@ test('U22: nginx отдаёт заголовки безопасности оди
   const expected = {
     'x-content-type-options': 'nosniff',
     'referrer-policy': 'no-referrer',
-    'content-security-policy': "frame-ancestors 'none'",
+    'content-security-policy': "frame-ancestors 'self'",
   };
-  for (const path of ['/', '/login', '/api/v1/auth/config']) {
+  for (const path of ['/', '/login', '/presentation', '/api/v1/auth/config']) {
     const response = await request.get(path);
     expect(response.status(), path).toBe(200);
     const headers = response.headersArray();
@@ -55,5 +55,17 @@ test('U22: nginx отдаёт заголовки безопасности оди
       expect(values, `${path} ${name}`).toEqual([value]);
     }
     expect(response.headers()['server'] ?? '', path).not.toMatch(/\d/);
+  }
+});
+
+test('U20: презентация открывается без входа по пути с косой чертой и без', async ({ request }) => {
+  const spa = await (await request.get('/')).text();
+  for (const path of ['/presentation', '/presentation/']) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    expect(response.status(), path).toBe(200);
+    expect(response.headers()['content-type'], path).toMatch(/^text\/html/);
+    const html = await response.text();
+    expect(html, path).toContain('name="campus-presentation"');
+    expect(html, path).not.toBe(spa);
   }
 });
