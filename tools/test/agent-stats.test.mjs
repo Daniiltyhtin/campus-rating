@@ -75,7 +75,7 @@ test('KTD9 merge sums two participants, counts journal entries and review rounds
   assert.equal(await main(['--merge'], options), 0);
   const text = await report();
   assert.match(text, /\| Алиса \| claude \| 14 \| 33 \| 63 \| 110 \| 1\.750000 \| один проект Claude \|/);
-  assert.match(text, /\| Боб \| codex \| 20 \| 10 \| 170 \| 200 \| 2\.500000 \| вся машина \|/);
+  assert.match(text, /\| Боб \| codex \| 20 \| 10 \| 170 \| 200 \| 2\.500000 \| вся машина; не входит в итог для слайда \|/);
   assert.match(text, /\| \*\*Итого\*\* \| — \| 68 \| 86 \| 466 \| 620 \| 8\.500000 \|/);
   assert.match(text, /Записей журнала: 5/);
   assert.match(text, /Кругов ревью: 5/);
@@ -100,7 +100,7 @@ test('KTD9 merge includes daily rows by date, participant and source alongside t
     '| 2026-10-31 | Боб | claude | 10 | 0.500000 |',
   ]);
   assert.match(text, /\*\*Итого\*\*.*620 \| 8\.500000/);
-  assert.doesNotMatch(text, /сесси/i);
+  assert.match(text, /## Для слайда/);
 });
 
 test('KTD9 journal distinguishes accepted units from research, missing commits and templates', async t => {
@@ -178,4 +178,149 @@ test('KTD9 merge without participant exports reports zero and still counts the j
   assert.equal(await main(['--merge'], options), 0);
   assert.match(await report(), /\*\*Итого\*\* \| — \| 0 \| 0 \| 0 \| 0 \| 0\.000000/);
   assert.match(await report(), /Записей журнала: 5/);
+});
+
+async function jsonl(file, records) {
+  await fs.mkdir(path.dirname(file), { recursive: true });
+  await fs.writeFile(file, records.map(record => typeof record === 'string' ? record : JSON.stringify(record)).join('\n') + '\n');
+}
+
+function rollout(id, cwd, timestamp = '2026-11-10T12:00:00Z', usage = { input_tokens: 711187, cached_input_tokens: 672768, output_tokens: 4463 }) {
+  return [
+    { type: 'session_meta', timestamp, payload: { id, cwd } },
+    { type: 'event_msg', payload: { type: 'token_count', info: { total_token_usage: { input_tokens: 1, cached_input_tokens: 0, output_tokens: 0 } } } },
+    '{broken',
+    { type: 'event_msg', payload: { type: 'token_count', info: { total_token_usage: usage } } },
+  ];
+}
+
+test('Codex cwd includes root and descendants, excludes prefix siblings, skips broken and empty sessions, and deduplicates ids', async t => {
+  const { options, exported, calls } = await setup(t);
+  const home = path.join(options.root, 'codex');
+  const cwd = path.join(options.root, 'campus-rating');
+  const other = path.join(options.root, 'second-project');
+  await jsonl(path.join(home, 'sessions/a/rollout-root.jsonl'), rollout('root', cwd));
+  await jsonl(path.join(home, 'sessions/b/rollout-copy.jsonl'), rollout('root', cwd));
+  await jsonl(path.join(home, 'sessions/b/rollout-child.jsonl'), rollout('child', path.join(cwd, 'backend')));
+  await jsonl(path.join(home, 'sessions/rollout-other.jsonl'), rollout('other', other));
+  await jsonl(path.join(home, 'sessions/rollout-training.jsonl'), rollout('training', `${cwd}-training`));
+  await jsonl(path.join(home, 'sessions/rollout-old.jsonl'), rollout('old', cwd, '2026-10-21T12:00:00Z'));
+  await jsonl(path.join(home, 'sessions/rollout-empty.jsonl'), [rollout('empty', cwd)[0], 'bad json']);
+  assert.equal(await main(['--export', 'Даниил', '--codex-home', home, '--codex-cwd', cwd, '--codex-cwd', other], options), 0);
+  const result = await exported('Даниил');
+  const stats = result.sources.codex;
+  assert.equal(stats.ioTokens, 42882 * 3);
+  assert.equal(stats.withCacheTokens, 715650 * 3);
+  assert.deepEqual(stats.daily[0].tokens, { input: 38419 * 3, output: 4463 * 3, cache: 672768 * 3, total: 715650 * 3 });
+  assert.equal(stats.costUSD, undefined);
+  assert.equal(stats.daily[0].costUSD, null);
+  assert.equal(calls.some(call => call.args.includes('codex')), false);
+  assert.doesNotMatch(JSON.stringify(result), new RegExp(options.root));
+});
+
+function claudeMessage(sessionId, id, requestId, input = 10, timestamp = '2026-11-09T12:00:00Z') {
+  return { type: 'assistant', sessionId, requestId, timestamp, message: { id, model: 'claude-test', usage: { input_tokens: input, output_tokens: 2, cache_creation_input_tokens: 3, cache_read_input_tokens: 4 } } };
+}
+
+test('Claude multiple config directories and exact project names deduplicate sessions and message/request pairs', async t => {
+  const { options, calls, exported } = await setup(t);
+  const configs = [path.join(options.root, 'claude-a'), path.join(options.root, 'claude-b')];
+  const records = [claudeMessage('s1', 'm1', 'r1'), claudeMessage('s1', 'm1', 'r1'), claudeMessage('s1', 'm1', 'r2')];
+  for (const config of configs) await jsonl(path.join(config, 'projects/campus/session.jsonl'), records);
+  await jsonl(path.join(configs[1], 'projects/campus-training/ignored.jsonl'), [claudeMessage('ignored', 'm2', 'r2', 10000)]);
+  await jsonl(path.join(configs[1], 'projects/second/session.jsonl'), [claudeMessage('s2', 'm2', 'r1', 20)]);
+  await jsonl(path.join(configs[0], 'projects/campus/old.jsonl'), [claudeMessage('old', 'old', 'old', 999, '2026-10-21T12:00:00Z'), 'broken']);
+  assert.equal(await main(['--export', 'Алиса', '--claude-config-dir', configs[0], '--claude-config-dir', configs[1], '--claude-project', 'campus', '--claude-project', 'second'], options), 0);
+  const stats = (await exported('Алиса')).sources.claude;
+  assert.equal(stats.ioTokens, 46);
+  assert.equal(stats.withCacheTokens, 67);
+  assert.deepEqual(stats.daily[0].tokens, { input: 40, output: 6, cache: 21, total: 67 });
+  const claudeCalls = calls.filter(call => call.args.includes('claude'));
+  assert.equal(claudeCalls.length, 2);
+  assert.ok(claudeCalls.every(call => call.settings.env.CLAUDE_CONFIG_DIR === configs.join(',')));
+  assert.deepEqual(claudeCalls.map(call => call.args.at(-1)), ['campus', 'second']);
+  assert.doesNotMatch(JSON.stringify(await exported('Алиса')), new RegExp(options.root));
+});
+
+for (const [tokens, millions] of [[1499999, 1], [1500000, 2]]) {
+  test(`Slide rounds combined ${tokens} to ${millions} million, uses min/max dates, excludes machine-wide Codex`, async t => {
+    const { options, report } = await setup(t);
+    const dir = path.join(options.root, 'docs/presentation/agent-stats');
+    await fs.mkdir(dir, { recursive: true });
+    const day = (date, input, cache) => ({ date, tokens: { input, output: 0, cache, total: input + cache }, costUSD: 1, models: [] });
+    for (const [participant, date, input] of [['Максим', '2026-11-12', 100], ['Даниил', '2026-10-29', tokens - 100]]) {
+      await fs.writeFile(path.join(dir, `${participant}.json`), JSON.stringify({
+        participant, period: { since: '2026-10-22', through: date }, sources: {
+          claude: { status: 'ok', coverage: 'один проект Claude', daily: [day(date, input, 500000)] },
+          codex: { status: 'ok', coverage: 'вся машина', daily: [day('2026-11-19', 999999999, 999999999)] },
+        },
+      }));
+    }
+    assert.equal(await main(['--merge'], options), 0);
+    const text = await report();
+    const slide = text.split('## Для слайда\n')[1]?.split('\n\n|')[0];
+    assert.ok(slide);
+    assert.match(slide, new RegExp(`Без кэша: ${millions} млн токенов`));
+    assert.match(slide, new RegExp(`С учётом кэша: ${millions + 1} млн токенов`));
+    assert.match(slide, /Нижняя оценка: сессии в папке проекта у двух участников, 29\.10–12\.11\.2026/);
+    assert.doesNotMatch(slide, /USD|\$|стоимость/i);
+    assert.match(text, /Максим \| codex .*вся машина; не входит в итог для слайда/);
+    assert.match(text, /Стоимость, USD/);
+  });
+}
+
+test('Codex single session exposes exact slide sums and uses session_meta date', async t => {
+  const { options, exported, report } = await setup(t);
+  const home = path.join(options.root, 'codex');
+  const lines = rollout('single', options.root, '2026-11-01T12:00:00Z');
+  lines.at(-1).timestamp = '2026-11-19T12:00:00Z';
+  await jsonl(path.join(home, 'sessions/rollout-single.jsonl'), ['null', ...lines]);
+  assert.equal(await main(['--export', 'Даниил', '--codex-home', home, '--codex-cwd', options.root], options), 0);
+  const stats = (await exported('Даниил')).sources.codex;
+  assert.equal(stats.ioTokens, 42882);
+  assert.equal(stats.withCacheTokens, 715650);
+  assert.equal(stats.daily[0].date, '2026-11-01');
+  assert.equal(await main(['--merge'], options), 0);
+  assert.match(await report(), /С учётом кэша: 1 млн токенов/);
+  assert.match(await report(), /01\.11–01\.11\.2026/);
+});
+
+test('Claude exact single project uses joined config roots and keeps matching ccusage cost', async t => {
+  const { options, calls, exported } = await setup(t);
+  const config = path.join(options.root, 'claude');
+  await jsonl(path.join(config, 'projects/campus/session.jsonl'), [claudeMessage('s', 'm', 'r')]);
+  await jsonl(path.join(config, 'projects/campus-training/session.jsonl'), [claudeMessage('x', 'x', 'x', 1000)]);
+  const run = options.run;
+  options.run = (command, args, settings) => {
+    const result = run(command, args, settings);
+    if (args.includes('claude')) result.stdout = JSON.stringify({ daily: [{ date: '2026-11-09', inputTokens: 10, outputTokens: 2, cacheCreationTokens: 3, cacheReadTokens: 4, totalTokens: 19, totalCost: 0.25, modelsUsed: ['claude-test'] }] });
+    return result;
+  };
+  assert.equal(await main(['--export', 'Алиса', '--claude-config-dir', config, '--claude-project', 'campus'], options), 0);
+  const stats = (await exported('Алиса')).sources.claude;
+  assert.equal(stats.ioTokens, 12);
+  assert.equal(stats.withCacheTokens, 19);
+  assert.equal(stats.daily[0].costUSD, 0.25);
+  assert.equal(calls[0].settings.env.CLAUDE_CONFIG_DIR, config);
+  assert.deepEqual(calls[0].args.slice(-2), ['--project', 'campus']);
+});
+
+test('Claude tokens survive ccusage failure and no filesystem paths enter exports or reports', async t => {
+  const { options, exported, report } = await setup(t);
+  const config = path.join(options.root, 'claude');
+  await jsonl(path.join(config, 'projects/campus/session.jsonl'), [claudeMessage('s', 'm', 'r')]);
+  options.run = () => ({ error: new Error(`Cannot open '${config}/private.jsonl'`), status: null });
+  assert.equal(await main(['--export', 'Алиса', '--claude-config-dir', config, '--claude-project', 'campus'], options), 0);
+  const data = await exported('Алиса');
+  assert.equal(data.sources.claude.withCacheTokens, 19);
+  assert.equal(data.sources.claude.daily[0].costUSD, null);
+  assert.doesNotMatch(JSON.stringify(data), new RegExp(options.root));
+  assert.equal(await main(['--merge'], options), 0);
+  assert.doesNotMatch(await report(), new RegExp(options.root));
+});
+
+test('Claude project folder beginning with a dash is passed as an attached ccusage value', async t => {
+  const { options, calls } = await setup(t);
+  assert.equal(await main(['--export', 'Алиса', '--claude-project', '-encoded-project'], options), 0);
+  assert.ok(calls[0].args.includes('--project=-encoded-project'));
 });
