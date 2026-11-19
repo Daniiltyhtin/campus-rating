@@ -53,7 +53,10 @@
       video.muted = true;
       video.playsInline = true;
       video.preload = 'auto';
+      let replaced = false;
       const fallback = () => {
+        if (replaced) return;
+        replaced = true;
         video.remove();
         const poster = document.createElement('img');
         poster.src = clip(step, 'end.jpg');
@@ -63,6 +66,7 @@
       };
       video.addEventListener('ended', () => setState(slide, 'done'));
       video.addEventListener('error', fallback);
+      video.addEventListener('demo-fallback', fallback);
       slot.append(video);
     });
     document.addEventListener('deck:next', (event) => {
@@ -72,7 +76,7 @@
       event.preventDefault();
       setState(slide, 'running');
       video.currentTime = 0;
-      void video.play().catch(() => video.dispatchEvent(new Event('error')));
+      void video.play().catch(() => video.dispatchEvent(new Event('demo-fallback')));
     });
     document.addEventListener('deck:slidechange', () => {
       slides.forEach((slide) => {

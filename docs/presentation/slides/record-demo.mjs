@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { cp, mkdir, mkdtemp, readdir, rm } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readdir, rename, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -80,8 +80,19 @@ try {
   if (!video) throw new Error('Видео записи не найдено');
   await mkdir(staged);
   cutClips(result, path.join(work, video));
-  await rm(output, { recursive: true, force: true });
-  await cp(staged, output, { recursive: true });
+  const fresh = `${output}.new`;
+  const previous = `${output}.old`;
+  await rm(fresh, { recursive: true, force: true });
+  await rm(previous, { recursive: true, force: true });
+  await cp(staged, fresh, { recursive: true });
+  await rename(output, previous).catch((error) => { if (error.code !== 'ENOENT') throw error; });
+  try {
+    await rename(fresh, output);
+  } catch (error) {
+    await rename(previous, output).catch(() => {});
+    throw error;
+  }
+  await rm(previous, { recursive: true, force: true });
   console.log(`Записи: ${path.relative(root, output)}`);
 } finally {
   await rm(work, { recursive: true, force: true });
