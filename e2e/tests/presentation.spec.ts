@@ -41,8 +41,7 @@ async function run(page: Page, step: number) {
 
 test.describe('R25 живое демо защиты', () => {
   test.describe.configure({ mode: 'serial' });
-  test.beforeEach(({}, info) => {
-    test.skip(info.project.name !== 'desktop', 'Демо использует общие сидовые аккаунты и бюджет');
+  test.beforeEach(() => {
     test.setTimeout(300_000);
   });
 

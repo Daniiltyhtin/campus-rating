@@ -285,6 +285,20 @@ test('Codex single session exposes exact slide sums and uses session_meta date',
   assert.match(await report(), /01\.11–01\.11\.2026/);
 });
 
+test('Codex token_count without usage after a valid one keeps the last valid total', async t => {
+  const { options, exported } = await setup(t);
+  const home = path.join(options.root, 'codex');
+  await jsonl(path.join(home, 'sessions/rollout-tail.jsonl'), [
+    ...rollout('tail', options.root),
+    { type: 'event_msg', payload: { type: 'token_count', info: null } },
+    { type: 'event_msg', payload: { type: 'token_count', info: { last_token_usage: { input_tokens: 5 } } } },
+  ]);
+  assert.equal(await main(['--export', 'Даниил', '--codex-home', home, '--codex-cwd', options.root], options), 0);
+  const stats = (await exported('Даниил')).sources.codex;
+  assert.equal(stats.ioTokens, 42882);
+  assert.equal(stats.withCacheTokens, 715650);
+});
+
 test('Claude exact single project uses joined config roots and keeps matching ccusage cost', async t => {
   const { options, calls, exported } = await setup(t);
   const config = path.join(options.root, 'claude');

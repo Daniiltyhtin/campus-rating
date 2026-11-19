@@ -11,7 +11,9 @@
   let running = false;
   let failed = false;
   let completed = 0;
+  const startKey = 'campus-demo-last-start';
   let previousStart = -Infinity;
+  try { previousStart = Number(sessionStorage.getItem(startKey)) || -Infinity; } catch { previousStart = -Infinity; }
   let run;
   let role;
   let studentName;
@@ -147,7 +149,11 @@
       slots.forEach((slot) => { slot.textContent = ''; });
       await navigate('/login');
     }
-    if (role === target) return;
+    const surname = target === 'teacher' ? 'Петров' : 'Смирнова';
+    if (role === target) {
+      const current = await wait(() => byRole('button', /^Меню пользователя:/) || control('Email'));
+      if (current.getAttribute('aria-label')?.includes(surname)) return;
+    }
     const state = await wait(() => byRole('button', /^Меню пользователя:/) || control('Email'));
     if (state.tagName === 'BUTTON' || state.getAttribute('aria-label')?.startsWith('Меню пользователя:')) {
       await click('button', /^Меню пользователя:/);
@@ -161,7 +167,7 @@
     await click('button', 'Войти');
     const menu = await wait(() => byRole('button', /^Меню пользователя:/));
     const fullName = menu.getAttribute('aria-label').replace('Меню пользователя: ', '');
-    if (!fullName.includes(target === 'teacher' ? 'Петров' : 'Смирнова')) throw new Error('Неверная роль');
+    if (!fullName.includes(surname)) throw new Error('Неверная роль');
     role = target;
     renderRole();
     if (target === 'student') studentName = fullName;
@@ -187,6 +193,7 @@
       run.checkpointPath = path();
     },
     async 2() {
+      await signIn('teacher');
       await navigate('/activities/new');
       await fill('Название', run.activityTitle);
       await fill('Описание', 'Демонстрация на защите');
@@ -210,11 +217,14 @@
       await text('Вы записались на активность');
     },
     async 4() {
+      await signIn('student');
       const end = performance.now() + 14_500;
       await navigate(run.taskPath, 14_500);
       await wait(() => byText('Просрочено') && byText(/Списано (4|8|12) из 12 АР/), Math.max(1, end - performance.now()));
     },
     async 5() {
+      await signIn('student');
+      await navigate(run.taskPath);
       await submit();
       await signIn('teacher');
       await navigate(run.checkpointPath);
@@ -237,6 +247,7 @@
       });
     },
     async 6() {
+      await signIn('teacher');
       await navigate('/activities');
       const link = await wait(() => byRole('link', `Подтвердить участие: ${run.activityTitle}`));
       const confirmPath = link.getAttribute('href');
@@ -297,6 +308,9 @@
       const step = Number(slide.dataset.demoStep);
       if (step === 1) {
         previousStart = Date.now();
+        try { sessionStorage.setItem(startKey, String(previousStart)); } catch { previousStart = Date.now(); }
+        started = false;
+        role = undefined;
         const time = Math.floor(previousStart / 1000) * 1000;
         const hhmm = moscow(time).slice(11);
         run = { time, deadline: Math.ceil((time + 60_000) / 60_000) * 60_000, checkpointTitle: `Курсовая, этап ${hhmm}`, activityTitle: `Субботник ${hhmm}` };

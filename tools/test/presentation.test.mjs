@@ -44,7 +44,7 @@ test('U20: нет localhost, docker compose up и паролей демо-акк
 });
 
 test('U20: каждая цифра о проекте со слайдов есть в таблице источников', () => {
-  for (const value of ['379', '71', '117', '20', '9', '10 млн', '245 млн', '797', '72', 'c3b1c12']) {
+  for (const value of ['379', '71', '117', '20', '9', '11 млн', '248 млн', '797', '72', 'c3b1c12']) {
     assert.ok(sources.includes(`| ${value} |`), `нет строки источника для ${value}`);
   }
   const backend = deck.match(/data-backend-tests>([^<]+)</)[1];

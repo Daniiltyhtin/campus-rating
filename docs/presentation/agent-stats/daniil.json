@@ -2,7 +2,7 @@
   "participant": "Даниил",
   "period": {
     "since": "2026-10-22",
-    "through": "2026-11-18"
+    "through": "2026-11-19"
   },
   "sources": {
     "claude": {
@@ -143,17 +143,28 @@
         {
           "date": "2026-11-18",
           "tokens": {
-            "input": 127839,
-            "output": 20570,
-            "cache": 2256000,
-            "total": 2404409
+            "input": 209676,
+            "output": 36936,
+            "cache": 4227200,
+            "total": 4473812
+          },
+          "costUSD": null,
+          "models": []
+        },
+        {
+          "date": "2026-11-19",
+          "tokens": {
+            "input": 186271,
+            "output": 7994,
+            "cache": 1006976,
+            "total": 1201241
           },
           "costUSD": null,
           "models": []
         }
       ],
-      "ioTokens": 10291993,
-      "withCacheTokens": 212064025
+      "ioTokens": 10584461,
+      "withCacheTokens": 215334669
     }
   }
 }

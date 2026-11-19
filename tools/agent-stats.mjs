@@ -178,7 +178,7 @@ async function collectCodex(config) {
     let usage;
     for await (const record of records(file)) {
       if (!meta && record?.type === 'session_meta') meta = record;
-      if (record?.type === 'event_msg' && record.payload?.type === 'token_count') usage = record.payload.info?.total_token_usage;
+      if (record?.type === 'event_msg' && record.payload?.type === 'token_count' && record.payload.info?.total_token_usage) usage = record.payload.info.total_token_usage;
     }
     const date = sessionDate(meta?.timestamp);
     if (!date || date < config.sinceDate || typeof meta.payload?.id !== 'string'
