@@ -20,7 +20,7 @@ async function show(page: Page, step: number) {
 
 async function start(page: Page) {
   page.on('console', (message) => { if (message.text().startsWith('[demo]')) console.log(message.text()); });
-  await page.goto('/presentation');
+  await page.goto('/presentation?live');
   const intro = page.locator('[data-demo-intro]');
   for (let index = 0; index < 60 && !await intro.evaluate((slide) => slide.classList.contains('active')); index++) {
     await page.keyboard.press('ArrowRight');
@@ -56,7 +56,7 @@ test.describe('R25 живое демо защиты', () => {
       const before = await titles.allTextContents();
       let siteRequests = 0;
       page.on('request', (request) => { if (new URL(request.url()).pathname.startsWith('/api/')) siteRequests++; });
-      await page.goto('/presentation');
+      await page.goto('/presentation?live');
       await show(page, 1);
       await page.reload();
       await show(page, 1);
@@ -69,7 +69,7 @@ test.describe('R25 живое демо защиты', () => {
   });
 
   test('без префикса клавиша листает дальше, префикс забывается после перезагрузки', async ({ page }) => {
-    await page.goto('/presentation');
+    await page.goto('/presentation?live');
     await show(page, 1);
     await page.keyboard.press('ArrowRight');
     await expect(stepSlide(page, 2)).toHaveClass(/\bactive\b/);
@@ -123,9 +123,35 @@ test.describe('R25 живое демо защиты', () => {
     }
   });
 
-  test('экспорт не создаёт iframe', async ({ page }) => {
+  test('экспорт показывает последний кадр записи и не создаёт iframe', async ({ page }) => {
     await page.goto('/presentation?export');
     await expect(page.locator('iframe')).toHaveCount(0);
-    await expect(page.locator('[data-demo-frame-slot]')).toHaveText(Array<string>(7).fill('Живое демо — campus-rating.ru'));
+    for (let step = 1; step <= 7; step++) {
+      await expect(stepSlide(page, step).locator('[data-demo-frame-slot] img')).toHaveAttribute('src', `/presentation/demo/step-${step}.end.jpg`);
+    }
+  });
+});
+
+test.describe('запись демо по умолчанию', () => {
+  test('клавиша запускает запись шага, следующая листает; сайт не открывается', async ({ page }) => {
+    let siteRequests = 0;
+    page.on('request', (request) => { if (new URL(request.url()).pathname.startsWith('/api/')) siteRequests++; });
+    await page.goto('/presentation');
+    await expect(page.locator('[data-demo-prefix]')).toBeHidden();
+    for (let step = 1; step <= 7; step++) {
+      const response = await page.request.get(`/presentation/demo/step-${step}.mp4`);
+      expect(response.status(), `step-${step}.mp4`).toBe(200);
+    }
+    const slide = await show(page, 1);
+    const video = slide.locator('[data-demo-frame-slot] video');
+    await expect(video).toHaveAttribute('src', '/presentation/demo/step-1.mp4');
+    await page.keyboard.press('ArrowRight');
+    await expect(slide).toHaveClass(/\bactive\b/);
+    await expect(slide).toHaveAttribute('data-demo-state', 'running');
+    await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime)).toBeGreaterThan(0.5);
+    await page.keyboard.press('ArrowRight');
+    await expect(stepSlide(page, 2)).toHaveClass(/\bactive\b/);
+    await expect(page.locator('iframe')).toHaveCount(0);
+    expect(siteRequests).toBe(0);
   });
 });

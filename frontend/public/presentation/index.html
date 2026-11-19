@@ -225,6 +225,10 @@ body { font-family: var(--sans); color: var(--ink); }
 @keyframes demo-tap { from { transform: scale(.8); opacity: .9; } to { transform: scale(2.2); opacity: 0; } }
 .slot { position: absolute; left: 1300px; top: 96px; width: 440px; height: 904px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 40px; box-sizing: border-box; border: 2px dashed var(--rule); border-radius: 28px; font: 400 24px/1.5 var(--mono); color: var(--muted); }
 .role { position: absolute; left: 1300px; top: 52px; width: 440px; margin: 0; font: 600 22px var(--mono); color: var(--accent); text-align: center; }
+.slot.recorded { border: 0; padding: 0; border-radius: 0; }
+.slot.recorded video, .slot.recorded img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.prefix { display: none; }
+.demo-live .prefix { display: flex; }
 .prefix { margin-top: 40px; display: flex; flex-direction: column; gap: 14px; width: 640px; }
 .prefix label { font: 600 22px var(--mono); color: var(--accent); letter-spacing: .06em; }
 .prefix input { font: 400 30px var(--mono); padding: 16px 20px; border: 1px solid var(--muted); background: var(--surface); color: var(--ink); }
@@ -438,9 +442,9 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
 
 <section class="slide" data-section="8" data-demo-intro>
   <p class="k">08 · Демонстрация</p>
-  <h2 class="t" data-editable>Живое демо <em>на campus-rating.ru</em></h2>
+  <h2 class="t" data-editable>Демо <em>на campus-rating.ru</em></h2>
   <div class="demo-left" style="top:310px">
-    <p class="lead" data-editable>Презентация сама нажимает кнопки на стенде — под демо-аккаунтами студента группы ИВТ-21 и её преподавателя.</p>
+    <p class="lead" data-editable>Сценарий защиты на стенде — под демо-аккаунтами студента группы ИВТ-21 и её преподавателя. Отметки показывают, где нажимают.</p>
     <div class="ux"><b>ЛОГИКА ПОЛЬЗОВАТЕЛЯ</b>Штраф виден заранее, статус — не только цветом, итог действия написан прямо в кнопке.</div>
     <div class="prefix">
       <label for="demo-prefix">ПРЕФИКС ДЕМО-ПАРОЛЕЙ</label>
@@ -449,7 +453,7 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
     </div>
   </div>
   <div class="page"><span>Демонстрация</span><span data-pg></span></div>
-  <aside class="notes">Александр, 15 с. До выступления ввести префикс демо-паролей стенда. На слайде шага клавиша → сначала запускает шаг, следующее нажатие листает дальше. Если стенд не ответил — листать дальше до раздела «Интеграция».</aside>
+  <aside class="notes">Александр, 15 с. На слайде шага клавиша → сначала запускает запись шага, следующее нажатие листает дальше. Живой режим на стенде — /presentation?live (нужен префикс демо-паролей).</aside>
 </section>
 
 <section class="slide" data-section="8" data-demo-step="1">
@@ -505,12 +509,12 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
     <p class="demo-status" data-demo-status></p>
   </div>
   <div class="page"><span>Демонстрация</span><span data-pg></span></div>
-  <aside class="notes">Александр, 32 с. Если дедлайн ещё не наступил, шаг сам дождётся его и выполнится — пока можно рассказать про шаг штрафа.</aside>
+  <aside class="notes">Александр, 32 с. Ожидание дедлайна в записи вырезано: штраф начинает списываться сразу после дедлайна, шагом 4 АР в минуту.</aside>
 </section>
 
 <section class="slide" data-section="8" data-demo-step="5">
   <p class="k">08 · Шаг 5 из 7 · Студент и преподаватель</p>
-  <p class="role" data-demo-role>Студент</p>
+  <p class="role" data-demo-role>Студент и преподаватель</p>
   <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
   <div class="demo-left" style="top:170px">
     <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Сдача, возврат, пересдача</h2>

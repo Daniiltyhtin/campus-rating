@@ -5,7 +5,10 @@
   const slots = slides.map((slide) => slide.querySelector('[data-demo-frame-slot]'));
   const prefixInput = document.querySelector('[data-demo-prefix]');
   const introStatus = document.querySelector('[data-demo-intro-status]');
-  const exporting = new URLSearchParams(location.search).has('export');
+  const params = new URLSearchParams(location.search);
+  const exporting = params.has('export');
+  const live = params.has('live') && !exporting;
+  document.body.classList.toggle('demo-live', live);
   let prefix = '';
   let started = false;
   let failed = false;
@@ -29,10 +32,53 @@
     slide.querySelector('[data-demo-status]').textContent = message;
   };
 
-  slots.forEach((slot) => { slot.textContent = exporting ? 'Живое демо — campus-rating.ru' : 'campus-rating.ru'; });
   slides.forEach((slide) => setState(slide, 'idle'));
   if (prefixInput) prefixInput.value = '';
-  if (exporting) return;
+  const clip = (step, kind) => `/presentation/demo/step-${step}.${kind}`;
+  if (!live) {
+    slides.forEach((slide, index) => {
+      const step = Number(slide.dataset.demoStep);
+      const slot = slots[index];
+      slot.textContent = '';
+      slot.classList.add('recorded');
+      if (exporting) {
+        const poster = document.createElement('img');
+        poster.src = clip(step, 'end.jpg');
+        poster.alt = '';
+        slot.append(poster);
+        return;
+      }
+      const video = document.createElement('video');
+      video.src = clip(step, 'mp4');
+      video.poster = clip(step, 'start.jpg');
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = 'auto';
+      video.addEventListener('ended', () => setState(slide, 'done'));
+      slot.append(video);
+    });
+    document.addEventListener('deck:next', (event) => {
+      const slide = document.querySelector('section.slide.active');
+      const video = slide?.querySelector('[data-demo-frame-slot] video');
+      if (!video || slide.dataset.demoState !== 'idle') return;
+      event.preventDefault();
+      setState(slide, 'running');
+      video.currentTime = 0;
+      void video.play().catch(() => setState(slide, 'failed', 'Запись не воспроизводится'));
+    });
+    document.addEventListener('deck:slidechange', () => {
+      slides.forEach((slide) => {
+        if (slide.classList.contains('active')) return;
+        const video = slide.querySelector('[data-demo-frame-slot] video');
+        if (!video) return;
+        video.pause();
+        video.currentTime = 0;
+        setState(slide, 'idle');
+      });
+    });
+    return;
+  }
+  slots.forEach((slot) => { slot.textContent = 'campus-rating.ru'; });
 
   const frame = document.createElement('iframe');
   frame.title = 'Живое демо Campus Rating';
