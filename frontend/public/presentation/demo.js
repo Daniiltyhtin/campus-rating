@@ -52,6 +52,11 @@
 
   const deckKeys = ['ArrowRight', 'ArrowLeft', 'PageDown', 'PageUp', ' '];
   frame.addEventListener('load', () => {
+    const hideScrollbars = frame.contentDocument?.createElement('style');
+    if (hideScrollbars) {
+      hideScrollbars.textContent = 'html, body, * { scrollbar-width: none; } ::-webkit-scrollbar { display: none; }';
+      frame.contentDocument.head.append(hideScrollbars);
+    }
     frame.contentDocument?.addEventListener('keydown', (event) => {
       const target = event.target;
       const win = frame.contentWindow;
