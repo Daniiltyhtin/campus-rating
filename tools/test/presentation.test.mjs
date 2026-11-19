@@ -44,10 +44,14 @@ test('U20: нет localhost, docker compose up и паролей демо-акк
 });
 
 test('U20: каждая цифра о проекте со слайдов есть в таблице источников', () => {
-  for (const value of ['379', '71', '117', '20', '9', '11 млн', '248 млн', '797', '72', 'c3b1c12']) {
+  const plain = (html) => html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  const numbers = [...deck.matchAll(/<div class="num"[^>]*>([\s\S]*?)<\/div>/g)].flatMap(([, html]) => plain(html).split(' · '));
+  const adr = deck.match(/(\d+) ADR</)[1];
+  const slice = deck.match(/Срез: ([0-9a-f]{7})/)[1];
+  const values = [...numbers, adr, slice];
+  assert.ok(numbers.length >= 9, `на слайдах найдено ${numbers.length} цифр`);
+  for (const value of values) {
+    assert.match(value, /^[0-9a-f]+( млн)?$/, `не цифра: «${value}»`);
     assert.ok(sources.includes(`| ${value} |`), `нет строки источника для ${value}`);
   }
-  const backend = deck.match(/data-backend-tests>([^<]+)</)[1];
-  assert.match(backend, /^\d[\d ]*$/, 'число тестов backend не заполнено');
-  assert.ok(sources.includes(`| ${backend} |`), 'нет строки источника для тестов backend');
 });

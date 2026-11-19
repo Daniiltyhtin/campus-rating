@@ -123,6 +123,23 @@ test.describe('R25 живое демо защиты', () => {
     }
   });
 
+  test('после сбоя шага 1 его можно запустить снова с верным префиксом', async ({ page }) => {
+    await page.goto('/presentation?live#s11');
+    await page.locator('[data-demo-prefix]').fill('wrong');
+    await page.locator('[data-demo-prefix]').blur();
+    const slide = await show(page, 1);
+    await page.keyboard.press('ArrowRight');
+    await expect(slide.locator('[data-demo-status]')).toHaveText('Стенд не ответил', { timeout: 60_000 });
+    await expect(slide).toHaveAttribute('data-demo-state', 'idle');
+    await page.keyboard.press('ArrowLeft');
+    await page.locator('[data-demo-prefix]').fill('demo');
+    await page.locator('[data-demo-prefix]').blur();
+    await show(page, 1);
+    await page.keyboard.press('ArrowRight');
+    await expect(slide).toHaveClass(/\bactive\b/);
+    await expect(slide).toHaveAttribute('data-demo-state', 'done', { timeout: 200_000 });
+  });
+
   test('экспорт показывает последний кадр записи и не создаёт iframe', async ({ page }) => {
     await page.goto('/presentation?export');
     await expect(page.locator('iframe')).toHaveCount(0);

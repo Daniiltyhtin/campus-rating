@@ -10,9 +10,13 @@ const { chromium } = createRequire(path.join(root, 'e2e/package.json'))('@playwr
 const publicDir = path.join(root, 'frontend/public');
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.mp4': 'video/mp4' };
 const server = createServer(async (request, response) => {
-  const pathname = decodeURIComponent(new URL(request.url, 'http://local').pathname);
-  const file = path.join(publicDir, pathname.endsWith('/') ? `${pathname}index.html` : pathname);
-  if (!file.startsWith(publicDir)) { response.writeHead(403).end(); return; }
+  let file;
+  try {
+    const pathname = decodeURIComponent(new URL(request.url, 'http://local').pathname);
+    file = path.join(publicDir, pathname.endsWith('/') ? `${pathname}index.html` : pathname);
+  } catch { response.writeHead(400).end(); return; }
+  const relative = path.relative(publicDir, file);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) { response.writeHead(403).end(); return; }
   try {
     const body = await readFile(file);
     response.writeHead(200, { 'content-type': types[path.extname(file)] ?? 'application/octet-stream' }).end(body);

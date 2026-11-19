@@ -53,7 +53,16 @@
       video.muted = true;
       video.playsInline = true;
       video.preload = 'auto';
+      const fallback = () => {
+        video.remove();
+        const poster = document.createElement('img');
+        poster.src = clip(step, 'end.jpg');
+        poster.alt = '';
+        slot.append(poster);
+        setState(slide, 'done', 'Запись недоступна — показан итог шага');
+      };
       video.addEventListener('ended', () => setState(slide, 'done'));
+      video.addEventListener('error', fallback);
       slot.append(video);
     });
     document.addEventListener('deck:next', (event) => {
@@ -63,7 +72,7 @@
       event.preventDefault();
       setState(slide, 'running');
       video.currentTime = 0;
-      void video.play().catch(() => setState(slide, 'failed', 'Запись не воспроизводится'));
+      void video.play().catch(() => video.dispatchEvent(new Event('error')));
     });
     document.addEventListener('deck:slidechange', () => {
       slides.forEach((slide) => {
@@ -459,8 +468,11 @@
       console.error(`[demo] шаг ${step}: ${pending} — ${error?.message ?? error}`);
       failed = true;
       role = undefined;
-      setState(slide, 'failed', 'Стенд не ответил');
-      if (step !== 1) setState(slides[0], 'idle');
+      if (step === 1) setState(slide, 'idle', 'Стенд не ответил');
+      else {
+        setState(slide, 'failed', 'Стенд не ответил');
+        setState(slides[0], 'idle');
+      }
     } finally {
       cursor.classList.remove('on');
       returnFocus();
