@@ -227,6 +227,14 @@ body { font-family: var(--sans); color: var(--ink); }
 .role { position: absolute; left: 1300px; top: 52px; width: 440px; margin: 0; font: 600 22px var(--mono); color: var(--accent); text-align: center; }
 .slot.recorded { border: 0; padding: 0; border-radius: 0; }
 .slot.recorded video, .slot.recorded img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.phase-row { display: grid; grid-template-columns: repeat(4, 1fr); }
+.phase { border-top: 3px solid var(--ink); padding: 26px 24px 0 0; }
+.phase .n { font: 600 22px var(--mono); color: var(--accent); }
+.phase h3 { font-size: 34px; margin: 12px 0 10px; font-weight: 700; }
+.phase p { font-size: 24px; line-height: 1.4; color: var(--muted); margin: 0; }
+.phase .who { display: inline-block; margin-top: 16px; font: 600 18px var(--mono); padding: 6px 10px; letter-spacing: .04em; }
+.who.r-t { background: var(--accent-soft); color: var(--accent); }
+.who.r-s { background: #eceff3; color: var(--ink); }
 .prefix { display: none; }
 .demo-live .prefix { display: flex; }
 .prefix { margin-top: 40px; flex-direction: column; gap: 14px; width: 640px; }
@@ -442,22 +450,22 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
 
 <section class="slide" data-section="8" data-demo-intro>
   <p class="k">08 · Демонстрация</p>
-  <h2 class="t" data-editable>Демо <em>на campus-rating.ru</em></h2>
-  <div class="demo-left" style="top:310px">
-    <p class="lead" data-editable>Семь шагов сценария защиты на стенде — с телефона, под демо-аккаунтами студента группы ИВТ-21 и её преподавателя. Кружки показывают, где нажимают.</p>
-    <p class="col-h" style="margin-top:44px">На что смотреть</p>
-    <ul class="list">
-      <li><b>Штраф виден заранее</b> — сколько спишут и когда</li>
-      <li><b>Статус не только цветом</b> — текст и форма метки</li>
-      <li><b>Итог в кнопке</b> — «Начислить 38 БОА», а не «ОК»</li>
-    </ul>
-    <div class="prefix">
+  <h2 class="t" style="width:1060px" data-editable>Одна курсовая — <em>от задания до награды</em></h2>
+  <p class="lead" style="position:absolute;left:200px;top:330px;width:1000px" data-editable>Запись с campus-rating.ru.</p>
+  <div class="box phase-row" style="left:200px;top:440px;width:1060px">
+    <div class="phase"><div class="n">Шаги 1–2</div><h3>Задание</h3><p data-editable>точка на 12 АР и субботник на 75 баллов</p><span class="who r-t">ПРЕПОДАВАТЕЛЬ</span></div>
+    <div class="phase"><div class="n">Шаги 3–4</div><h3>Просрочка</h3><p data-editable>студент записался, дедлайн прошёл — штраф идёт</p><span class="who r-s">СТУДЕНТ</span></div>
+    <div class="phase"><div class="n">Шаг 5</div><h3>Проверка</h3><p data-editable>сдача, возврат с комментарием, «Принято»</p><span class="who r-s">ОБА</span></div>
+    <div class="phase"><div class="n">Шаги 6–7</div><h3>Награда</h3><p data-editable>+38 БОА, история и лента</p><span class="who r-t">ПРЕПОДАВАТЕЛЬ</span></div>
+  </div>
+  <div class="box" style="left:200px;top:780px">
+    <div class="prefix" style="margin-top:0">
       <label for="demo-prefix">ПРЕФИКС ДЕМО-ПАРОЛЕЙ</label>
       <input id="demo-prefix" data-demo-prefix type="password" autocomplete="off" spellcheck="false">
       <p data-demo-intro-status>Хранится только в этой вкладке до перезагрузки</p>
     </div>
   </div>
-  <p class="role">Задача студента после дедлайна</p>
+  <p class="role">Студент после дедлайна</p>
   <div class="slot recorded"><img src="/presentation/demo/step-4.end.jpg" alt="Экран задачи: просрочено, списано 4 из 12 АР"></div>
   <div class="page"><span>Демонстрация</span><span data-pg></span></div>
   <aside class="notes">Александр, 15 с. На слайде шага клавиша → сначала запускает запись шага, следующее нажатие листает дальше. Живой режим на стенде — /presentation?live (нужен префикс демо-паролей).</aside>
