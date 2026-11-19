@@ -8,7 +8,6 @@
   const exporting = new URLSearchParams(location.search).has('export');
   let prefix = '';
   let started = false;
-  let running = false;
   let failed = false;
   let completed = 0;
   const startKey = 'campus-demo-last-start';
@@ -18,18 +17,22 @@
   let role;
   let studentName;
   let studentPath;
-  let nextActionAt = 0;
   let pending = '';
+  let frameLeft = 0;
+  let frameTop = 0;
+  let frameScale = 1;
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const normalize = (value) => (value ?? '').replace(/\s+/g, ' ').trim();
   const matches = (value, expected) => expected instanceof RegExp ? expected.test(normalize(value)) : normalize(value) === expected;
+  const setState = (slide, state, message = '') => {
+    slide.dataset.demoState = state;
+    slide.querySelector('[data-demo-status]').textContent = message;
+  };
 
-  slots.forEach((slot) => { slot.textContent = exporting ? 'Живое демо — campus-rating.ru' : 'Сайт откроется по кнопке шага'; });
+  slots.forEach((slot) => { slot.textContent = exporting ? 'Живое демо — campus-rating.ru' : 'campus-rating.ru'; });
+  slides.forEach((slide) => setState(slide, 'idle'));
   if (prefixInput) prefixInput.value = '';
-  if (exporting) {
-    slides.forEach((slide) => { slide.querySelector('[data-demo-run]').disabled = true; });
-    return;
-  }
+  if (exporting) return;
 
   const frame = document.createElement('iframe');
   frame.title = 'Живое демо Campus Rating';
@@ -40,12 +43,20 @@
     visibility: 'hidden', zIndex: '10',
   });
   stage.append(frame);
-  const deckKeys = ['ArrowRight', 'ArrowLeft', 'PageDown', 'PageUp'];
+  const cursor = document.createElement('div');
+  cursor.className = 'demo-touch';
+  cursor.setAttribute('aria-hidden', 'true');
+  const finger = document.createElement('span');
+  cursor.append(finger);
+  stage.append(cursor);
+
+  const deckKeys = ['ArrowRight', 'ArrowLeft', 'PageDown', 'PageUp', ' '];
   frame.addEventListener('load', () => {
     frame.contentDocument?.addEventListener('keydown', (event) => {
       const target = event.target;
-      const typing = target instanceof frame.contentWindow.HTMLInputElement || target instanceof frame.contentWindow.HTMLTextAreaElement
-        || target instanceof frame.contentWindow.HTMLSelectElement || target?.isContentEditable;
+      const win = frame.contentWindow;
+      const typing = target instanceof win.HTMLInputElement || target instanceof win.HTMLTextAreaElement
+        || target instanceof win.HTMLSelectElement || target?.isContentEditable;
       if (!deckKeys.includes(event.key) || typing) return;
       event.preventDefault();
       document.dispatchEvent(new KeyboardEvent('keydown', { key: event.key }));
@@ -91,29 +102,84 @@
     }
     throw new Error('Стенд не ответил');
   }
+
+  function pointOf(element) {
+    const rect = element.getBoundingClientRect();
+    return {
+      x: frameLeft + (2 + rect.left + Math.min(rect.width / 2, 120)) * frameScale,
+      y: frameTop + (2 + rect.top + Math.min(rect.height / 2, 28)) * frameScale,
+    };
+  }
+  async function settle(element) {
+    let last = element.getBoundingClientRect().top;
+    for (let i = 0; i < 20; i++) {
+      await sleep(80);
+      const top = element.getBoundingClientRect().top;
+      if (Math.abs(top - last) < 0.5) return;
+      last = top;
+    }
+  }
+  async function moveTo(element) {
+    element.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+    await settle(element);
+    const point = pointOf(element);
+    if (!cursor.classList.contains('on')) {
+      cursor.style.transition = 'none';
+      cursor.style.transform = `translate(${point.x}px, ${point.y + 60}px)`;
+      cursor.getBoundingClientRect();
+      cursor.style.transition = '';
+      cursor.classList.add('on');
+    }
+    cursor.style.transform = `translate(${point.x}px, ${point.y}px)`;
+    await sleep(650);
+  }
+  function tap(element) {
+    const point = pointOf(element);
+    const mark = document.createElement('div');
+    mark.className = 'demo-tap';
+    mark.setAttribute('aria-hidden', 'true');
+    mark.style.left = `${point.x}px`;
+    mark.style.top = `${point.y}px`;
+    stage.append(mark);
+    finger.classList.remove('press');
+    finger.getBoundingClientRect();
+    finger.classList.add('press');
+    setTimeout(() => mark.remove(), 900);
+  }
   async function action(find, perform) {
-    await sleep(Math.max(0, nextActionAt - performance.now()));
     const element = await wait(() => {
       const found = find();
       return visible(found) && !found.disabled && found.getAttribute('aria-disabled') !== 'true' ? found : null;
     });
-    element.scrollIntoView({ block: 'center', inline: 'nearest' });
-    perform(element);
-    nextActionAt = performance.now() + 1500;
+    await moveTo(element);
+    tap(element);
+    await sleep(160);
+    await perform(element);
+    await sleep(600);
     return element;
   }
   const click = (roleName, expected, root) => { pending = `${roleName} «${expected}»`; return action(() => byRole(roleName, expected, root), (element) => element.click()); };
   const text = (expected, root) => { pending = `текст «${expected}»`; return wait(() => byText(expected, root)); };
   const choose = (expected, root) => { pending = `выбор «${expected}»`; return action(() => byText(expected, root), (element) => element.click()); };
+  function setValue(element, value) {
+    const win = element.ownerDocument.defaultView;
+    const prototype = element.tagName === 'TEXTAREA' ? win.HTMLTextAreaElement.prototype
+      : element.tagName === 'SELECT' ? win.HTMLSelectElement.prototype : win.HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(prototype, 'value').set.call(element, value);
+    element.dispatchEvent(new win.Event('input', { bubbles: true }));
+  }
   async function fill(expected, value) {
     pending = `поле «${expected}»`;
-    await action(() => control(expected), (element) => {
-      const win = element.ownerDocument.defaultView;
-      const prototype = element.tagName === 'TEXTAREA' ? win.HTMLTextAreaElement.prototype
-        : element.tagName === 'SELECT' ? win.HTMLSelectElement.prototype : win.HTMLInputElement.prototype;
-      Object.getOwnPropertyDescriptor(prototype, 'value').set.call(element, value);
-      element.dispatchEvent(new win.Event('input', { bubbles: true }));
-      element.dispatchEvent(new win.Event('change', { bubbles: true }));
+    await action(() => control(expected), async (element) => {
+      element.focus();
+      const typed = element.tagName !== 'SELECT' && !['datetime-local', 'date', 'time', 'month'].includes(element.type);
+      if (typed) {
+        for (let i = 1; i <= value.length; i++) {
+          setValue(element, value.slice(0, i));
+          await sleep(value.length > 30 ? 18 : 40);
+        }
+      } else setValue(element, value);
+      element.dispatchEvent(new element.ownerDocument.defaultView.Event('change', { bubbles: true }));
     });
   }
   async function select(expected, value) {
@@ -126,27 +192,27 @@
   }
   async function navigate(path, timeout = 15_000) {
     pending = `переход ${path}`;
-    const end = performance.now() + timeout;
-    await sleep(Math.max(0, nextActionAt - performance.now()));
+    cursor.classList.remove('on');
     await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => { frame.removeEventListener('load', loaded); reject(new Error('Стенд не ответил')); }, Math.max(0, end - performance.now()));
+      const timer = setTimeout(() => { frame.removeEventListener('load', loaded); reject(new Error('Стенд не ответил')); }, timeout);
       function loaded() { clearTimeout(timer); resolve(); }
       frame.addEventListener('load', loaded, { once: true });
       frame.contentWindow.location.assign(path);
     });
-    nextActionAt = performance.now() + 1500;
+    await sleep(900);
   }
   const path = () => frame.contentWindow.location.pathname;
   const waitPath = (pattern) => { pending = `адрес ${pattern}`; return wait(() => pattern.test(path())); };
   function renderRole() {
     slides.forEach((slide) => {
-      slide.querySelector('[data-demo-role]').textContent = role === 'teacher' ? 'Преподаватель Петров' : role === 'student' ? 'Студент Смирнова' : '';
+      slide.querySelector('[data-demo-role]').textContent = role === 'teacher' ? 'Преподаватель' : role === 'student' ? 'Студент' : '';
     });
   }
   async function signIn(target) {
     if (!started) {
       started = true;
       slots.forEach((slot) => { slot.textContent = ''; });
+      position();
       await navigate('/login');
     }
     const surname = target === 'teacher' ? 'Петров' : 'Смирнова';
@@ -218,9 +284,8 @@
     },
     async 4() {
       await signIn('student');
-      const end = performance.now() + 14_500;
       await navigate(run.taskPath, 14_500);
-      await wait(() => byText('Просрочено') && byText(/Списано (4|8|12) из 12 АР/), Math.max(1, end - performance.now()));
+      await wait(() => byText('Просрочено') && byText(/Списано (4|8|12) из 12 АР/));
     },
     async 5() {
       await signIn('student');
@@ -269,19 +334,11 @@
         && item.textContent.includes(run.activityTitle) && /\+38 БОА/.test(item.textContent)));
     },
   };
-  function refresh() {
-    slides.forEach((slide) => {
-      const step = Number(slide.dataset.demoStep);
-      const button = slide.querySelector('[data-demo-run]');
-      const remaining = Math.max(0, Math.ceil(((step === 1 ? previousStart + 60_000 : step === 4 && run ? run.deadline + 5_000 : 0) - Date.now()) / 1000));
-      button.disabled = !prefix || running || remaining > 0 || (step > 1 && (failed || completed !== step - 1));
-      const caption = remaining > 0 ? `Запустить шаг (${remaining} с)` : 'Запустить шаг';
-      if (button.textContent !== caption) button.textContent = caption;
-    });
-  }
   function position(slide = document.querySelector('section.slide.active')) {
     const slot = slide?.querySelector('[data-demo-frame-slot]');
-    frame.style.visibility = slot ? 'visible' : 'hidden';
+    const shown = Boolean(slot) && started;
+    frame.style.visibility = shown ? 'visible' : 'hidden';
+    cursor.style.visibility = shown ? 'visible' : 'hidden';
     if (!slot) return;
     let left = 0;
     let top = 0;
@@ -291,59 +348,77 @@
       top += current.offsetTop;
       current = current.offsetParent;
     }
+    frameLeft = left;
+    frameTop = top;
+    frameScale = Math.min(slot.offsetWidth / 364, slot.offsetHeight / 744);
     frame.style.left = `${left}px`;
     frame.style.top = `${top}px`;
-    frame.style.transform = `scale(${Math.min(slot.offsetWidth / 364, slot.offsetHeight / 744)})`;
-    frame.style.visibility = started ? 'visible' : 'hidden';
+    frame.style.transform = `scale(${frameScale})`;
+  }
+  const runnable = (step, slide) => {
+    const state = slide.dataset.demoState;
+    if (!prefix || state === 'done' || state === 'failed') return false;
+    return step === 1 ? true : Boolean(run) && !failed && completed === step - 1;
+  };
+  const busy = () => slides.some((slide) => ['waiting', 'running'].includes(slide.dataset.demoState));
+  async function start(step, slide) {
+    if (step === 1) {
+      const pause = previousStart + 60_000 - Date.now();
+      if (pause > 0) {
+        setState(slide, 'waiting', 'Ждём минуту после прошлого прогона…');
+        await sleep(pause);
+      }
+      previousStart = Date.now();
+      try { sessionStorage.setItem(startKey, String(previousStart)); } catch { previousStart = Date.now(); }
+      started = false;
+      role = undefined;
+      const time = Math.floor(previousStart / 1000) * 1000;
+      const hhmm = moscow(time).slice(11);
+      run = { time, deadline: Math.ceil((time + 60_000) / 60_000) * 60_000, checkpointTitle: `Курсовая, этап ${hhmm}`, activityTitle: `Субботник ${hhmm}` };
+      completed = 0;
+      failed = false;
+      slides.forEach((item) => { if (item !== slide) setState(item, 'idle'); });
+    }
+    if (step === 4) {
+      const pause = run.deadline + 5_000 - Date.now();
+      if (pause > 0) {
+        setState(slide, 'waiting', 'Ждём дедлайн…');
+        await sleep(pause);
+      }
+    }
+    setState(slide, 'running');
+    try {
+      await steps[step]();
+      completed = step;
+      setState(slide, 'done');
+    } catch (error) {
+      console.error(`[demo] шаг ${step}: ${pending} — ${error?.message ?? error}`);
+      failed = true;
+      role = undefined;
+      setState(slide, 'failed', 'Стенд не ответил');
+      if (step !== 1) setState(slides[0], 'idle');
+    } finally {
+      cursor.classList.remove('on');
+      returnFocus();
+    }
   }
   prefixInput?.addEventListener('input', () => {
     prefix = prefixInput.value.trim();
-    if (introStatus) introStatus.textContent = prefix ? 'Префикс введён' : 'Введите префикс для запуска демо';
-    refresh();
+    if (introStatus) introStatus.textContent = prefix ? 'Префикс введён' : 'Хранится только в этой вкладке до перезагрузки';
   });
-  slides.forEach((slide) => {
-    slide.querySelector('[data-demo-run]').addEventListener('click', async () => {
-      const button = slide.querySelector('[data-demo-run]');
-      if (button.disabled) return;
-      const step = Number(slide.dataset.demoStep);
-      if (step === 1) {
-        previousStart = Date.now();
-        try { sessionStorage.setItem(startKey, String(previousStart)); } catch { previousStart = Date.now(); }
-        started = false;
-        role = undefined;
-        const time = Math.floor(previousStart / 1000) * 1000;
-        const hhmm = moscow(time).slice(11);
-        run = { time, deadline: Math.ceil((time + 60_000) / 60_000) * 60_000, checkpointTitle: `Курсовая, этап ${hhmm}`, activityTitle: `Субботник ${hhmm}` };
-        completed = 0;
-        failed = false;
-        slides.forEach((item) => { item.querySelector('[data-demo-status]').textContent = ''; });
-      }
-      running = true;
-      refresh();
-      const status = slide.querySelector('[data-demo-status]');
-      status.textContent = 'Выполняется…';
-      try {
-        const promise = steps[step]();
-        position();
-        await promise;
-        completed = step;
-        status.textContent = 'Шаг выполнен';
-      } catch (error) {
-        console.error(`[demo] шаг ${step}: ${pending} — ${error?.message ?? error}`);
-        failed = true;
-        role = undefined;
-        status.textContent = 'Стенд не ответил';
-      } finally {
-        running = false;
-        refresh();
-        position();
-        returnFocus();
-      }
-    });
+  document.addEventListener('deck:next', (event) => {
+    const slide = document.querySelector('section.slide.active');
+    const step = Number(slide?.dataset.demoStep);
+    if (!step) return;
+    if (busy()) {
+      event.preventDefault();
+      return;
+    }
+    if (!runnable(step, slide)) return;
+    event.preventDefault();
+    void start(step, slide);
   });
   document.addEventListener('deck:slidechange', (event) => position(event.detail.slide));
   window.addEventListener('resize', () => position());
-  setInterval(refresh, 250);
-  refresh();
   position();
 })();

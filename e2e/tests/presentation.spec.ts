@@ -32,11 +32,11 @@ async function start(page: Page) {
 
 async function run(page: Page, step: number) {
   const slide = await show(page, step);
-  const button = slide.locator('[data-demo-run]');
-  await expect(button).toBeEnabled({ timeout: step === 4 ? 130_000 : 5000 });
-  await button.click();
-  await expect(slide.locator('[data-demo-status]')).toHaveText('Шаг выполнен', { timeout: 100_000 });
-  if (step > 1) await expect(button).toBeDisabled();
+  await expect(slide).toHaveAttribute('data-demo-state', 'idle');
+  await page.keyboard.press('ArrowRight');
+  await expect(slide).toHaveClass(/\bactive\b/);
+  if (step !== 4) await expect(page.locator('.demo-tap').first()).toBeAttached({ timeout: 30_000 });
+  await expect(slide).toHaveAttribute('data-demo-state', 'done', { timeout: step === 4 ? 230_000 : 120_000 });
 }
 
 test.describe('R25 живое демо защиты', () => {
@@ -61,31 +61,34 @@ test.describe('R25 живое демо защиты', () => {
       await page.reload();
       await show(page, 1);
       await expect(page.locator('iframe')).not.toHaveAttribute('src', /\/(login|tasks|checkpoints)/);
-      await expect(stepSlide(page, 1).locator('[data-demo-frame-slot]')).toContainText('Сайт откроется по кнопке шага');
+      await expect(stepSlide(page, 1).locator('[data-demo-frame-slot]')).toHaveText('campus-rating.ru');
       await account.reload();
       await expect(titles).toHaveText(before);
       expect(siteRequests).toBe(0);
     } finally { await observer.close(); }
   });
 
-  test('префикс обязателен и забывается после перезагрузки', async ({ page }) => {
+  test('без префикса клавиша листает дальше, префикс забывается после перезагрузки', async ({ page }) => {
     await page.goto('/presentation');
     await show(page, 1);
-    await expect(stepSlide(page, 1).locator('[data-demo-run]')).toBeDisabled();
+    await page.keyboard.press('ArrowRight');
+    await expect(stepSlide(page, 2)).toHaveClass(/\bactive\b/);
+    await expect(stepSlide(page, 1)).toHaveAttribute('data-demo-state', 'idle');
     await start(page);
     await show(page, 1);
-    await expect(stepSlide(page, 1).locator('[data-demo-run]')).toBeEnabled();
+    await expect(stepSlide(page, 1)).toHaveAttribute('data-demo-state', 'idle');
     await page.reload();
     await expect(page.locator('[data-demo-prefix]')).toHaveValue('');
     await show(page, 1);
-    await expect(stepSlide(page, 1).locator('[data-demo-run]')).toBeDisabled();
+    await page.keyboard.press('ArrowRight');
+    await expect(stepSlide(page, 2)).toHaveClass(/\bactive\b/);
+    await expect(page.locator('iframe')).not.toHaveAttribute('src', /./);
   });
 
   test('шаги 1–7: создание, штраф, возврат, приём и 38 БОА в ленте', async ({ page }) => {
     await start(page);
     await run(page, 1);
     const checkpoint = await phone(page).getByRole('heading', { name: /^Курсовая, этап / }).innerText();
-    await expect(stepSlide(page, 1).locator('[data-demo-run]')).toBeDisabled();
     await run(page, 2);
     const activity = `Субботник ${checkpoint.replace('Курсовая, этап ', '')}`;
     await expect(phone(page).getByRole('heading', { name: activity, exact: true })).toBeVisible();
@@ -100,21 +103,24 @@ test.describe('R25 живое демо защиты', () => {
     await expect(phone(page).getByRole('status')).toContainText('Начислено 38 БОА');
     await run(page, 7);
     await expect(phone(page).getByRole('article').filter({ hasText: activity })).toContainText('+38 БОА');
-    for (const step of [5, 6, 7]) await expect(stepSlide(page, step).locator('[data-demo-run]')).toBeDisabled();
   });
 
   test('сбой iframe останавливает прогон и блокирует шаги 5–7', async ({ page }) => {
     await start(page);
     for (const step of [1, 2, 3]) await run(page, step);
     const slide = await show(page, 4);
-    await expect(slide.locator('[data-demo-run]')).toBeEnabled({ timeout: 130_000 });
     await page.route('**/*', async (route) => {
       if (route.request().frame().parentFrame()) await route.abort();
       else await route.continue();
     });
-    await slide.locator('[data-demo-run]').click();
-    await expect(slide.locator('[data-demo-status]')).toHaveText('Стенд не ответил', { timeout: 15_000 });
-    for (const step of [5, 6, 7]) await expect(stepSlide(page, step).locator('[data-demo-run]')).toBeDisabled();
+    await page.keyboard.press('ArrowRight');
+    await expect(slide).toHaveAttribute('data-demo-state', /waiting|running/);
+    await expect(slide.locator('[data-demo-status]')).toHaveText('Стенд не ответил', { timeout: 160_000 });
+    for (const step of [5, 6, 7]) {
+      await page.keyboard.press('ArrowRight');
+      await expect(stepSlide(page, step)).toHaveClass(/\bactive\b/);
+      await expect(stepSlide(page, step)).toHaveAttribute('data-demo-state', 'idle');
+    }
   });
 
   test('экспорт не создаёт iframe', async ({ page }) => {

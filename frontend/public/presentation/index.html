@@ -215,10 +215,14 @@ body { font-family: var(--sans); color: var(--ink); }
 .demo-left .lead { color: var(--ink); }
 .ux { margin-top: 34px; padding: 26px 30px; background: var(--accent-soft); font-size: 28px; line-height: 1.45; }
 .ux b { font: 600 20px var(--mono); color: var(--accent); display: block; margin-bottom: 8px; letter-spacing: .06em; }
-.run { margin-top: 40px; display: flex; align-items: center; gap: 28px; }
-.run button { font: 600 28px var(--sans); color: #fff; background: var(--accent); border: 0; padding: 20px 36px; cursor: pointer; }
-.run button[disabled] { background: var(--rule); color: var(--muted); cursor: default; }
-.run p { font: 400 24px var(--mono); color: var(--muted); margin: 0; }
+.demo-status { margin: 34px 0 0; min-height: 34px; font: 400 24px var(--mono); color: var(--muted); }
+.demo-touch { position: absolute; left: 0; top: 0; z-index: 12; width: 0; height: 0; pointer-events: none; opacity: 0; transition: transform .6s cubic-bezier(.33, 0, .2, 1), opacity .35s ease; }
+.demo-touch.on { opacity: 1; }
+.demo-touch span { position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; border-radius: 50%; background: rgba(255, 255, 255, .55); border: 2px solid rgba(36, 80, 196, .85); box-shadow: 0 4px 14px rgba(22, 27, 34, .25); backdrop-filter: blur(1px); }
+.demo-touch span.press { animation: demo-press .35s ease-out; }
+@keyframes demo-press { 0% { transform: scale(1); } 40% { transform: scale(.78); background: rgba(36, 80, 196, .35); } 100% { transform: scale(1); } }
+.demo-tap { position: absolute; z-index: 11; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; border: 2px solid var(--accent); pointer-events: none; animation: demo-tap .8s ease-out forwards; }
+@keyframes demo-tap { from { transform: scale(.8); opacity: .9; } to { transform: scale(2.2); opacity: 0; } }
 .slot { position: absolute; left: 1300px; top: 96px; width: 440px; height: 904px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 40px; box-sizing: border-box; border: 2px dashed var(--rule); border-radius: 28px; font: 400 24px/1.5 var(--mono); color: var(--muted); }
 .role { position: absolute; left: 1300px; top: 52px; width: 440px; margin: 0; font: 600 22px var(--mono); color: var(--accent); text-align: center; }
 .prefix { margin-top: 40px; display: flex; flex-direction: column; gap: 14px; width: 640px; }
@@ -436,7 +440,7 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
   <p class="k">08 · Демонстрация</p>
   <h2 class="t" data-editable>Живое демо <em>на campus-rating.ru</em></h2>
   <div class="demo-left" style="top:310px">
-    <p class="lead" data-editable>Презентация сама нажимает кнопки на стенде. Студент — Смирнова из ИВТ-21, преподаватель — Петров.</p>
+    <p class="lead" data-editable>Презентация сама нажимает кнопки на стенде — под демо-аккаунтами студента группы ИВТ-21 и её преподавателя.</p>
     <div class="ux"><b>ЛОГИКА ПОЛЬЗОВАТЕЛЯ</b>Штраф виден заранее, статус — не только цветом, итог действия написан прямо в кнопке.</div>
     <div class="prefix">
       <label for="demo-prefix">ПРЕФИКС ДЕМО-ПАРОЛЕЙ</label>
@@ -444,19 +448,19 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
       <p data-demo-intro-status>Хранится только в этой вкладке до перезагрузки</p>
     </div>
   </div>
-  <div class="page"><span>Ведёт Александр · 7 шагов</span><span data-pg></span></div>
-  <aside class="notes">Александр, 15 с. До выступления ввести префикс демо-паролей стенда. Если стенд не ответил — пролистать шаги и продолжить с раздела «Интеграция».</aside>
+  <div class="page"><span>Демонстрация</span><span data-pg></span></div>
+  <aside class="notes">Александр, 15 с. До выступления ввести префикс демо-паролей стенда. На слайде шага клавиша → сначала запускает шаг, следующее нажатие листает дальше. Если стенд не ответил — листать дальше до раздела «Интеграция».</aside>
 </section>
 
 <section class="slide" data-section="8" data-demo-step="1">
   <p class="k">08 · Шаг 1 из 7 · Преподаватель</p>
-  <p class="role" data-demo-role>Преподаватель Петров</p>
+  <p class="role" data-demo-role>Преподаватель</p>
   <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
   <div class="demo-left" style="top:170px">
-    <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Петров создаёт контрольную точку</h2>
+    <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Преподаватель создаёт контрольную точку</h2>
     <p class="lead" data-editable>Курсовая для ИВТ-21: стоимость 12 АР, дедлайн — через 1–2 минуты.</p>
     <div class="ux"><b>ПОЧЕМУ ТАК</b>Шаг и интервал штрафа видны до создания точки: преподаватель знает, что назначает.</div>
-    <div class="run"><button data-demo-run>Запустить шаг</button><p data-demo-status></p></div>
+    <p class="demo-status" data-demo-status></p>
   </div>
   <div class="page"><span>Демонстрация</span><span data-pg></span></div>
   <aside class="notes">Александр, 32 с. Пока до дедлайна идут 1–2 минуты, создаём активность и записываемся.</aside>
@@ -464,13 +468,13 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
 
 <section class="slide" data-section="8" data-demo-step="2">
   <p class="k">08 · Шаг 2 из 7 · Преподаватель</p>
-  <p class="role" data-demo-role>Преподаватель Петров</p>
+  <p class="role" data-demo-role>Преподаватель</p>
   <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
   <div class="demo-left" style="top:170px">
-    <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Петров объявляет субботник</h2>
+    <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Преподаватель объявляет субботник</h2>
     <p class="lead" data-editable>Общественная активность до 75 баллов, начало — через 1–2 минуты.</p>
     <div class="ux"><b>ПОЧЕМУ ТАК</b>Запись — до начала, подтверждение участия — после: баллы получают те, кто пришёл.</div>
-    <div class="run"><button data-demo-run>Запустить шаг</button><p data-demo-status></p></div>
+    <p class="demo-status" data-demo-status></p>
   </div>
   <div class="page"><span>Демонстрация</span><span data-pg></span></div>
   <aside class="notes">Александр, 32 с. Баллы активности начисляются из месячного бюджета группы.</aside>
@@ -478,13 +482,13 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
 
 <section class="slide" data-section="8" data-demo-step="3">
   <p class="k">08 · Шаг 3 из 7 · Студент</p>
-  <p class="role" data-demo-role>Студент Смирнова</p>
+  <p class="role" data-demo-role>Студент</p>
   <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
   <div class="demo-left" style="top:170px">
-    <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Смирнова видит задачу и записывается</h2>
+    <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Студент видит задачу и записывается</h2>
     <p class="lead" data-editable>Задача «В процессе», на субботник — запись в один клик.</p>
     <div class="ux"><b>ПОЧЕМУ ТАК</b>Статус — не только цветом: текст и форма метки. До дедлайна видно, сколько спишут.</div>
-    <div class="run"><button data-demo-run>Запустить шаг</button><p data-demo-status></p></div>
+    <p class="demo-status" data-demo-status></p>
   </div>
   <div class="page"><span>Демонстрация</span><span data-pg></span></div>
   <aside class="notes">Александр, 32 с. Телефонная вёрстка: нижнее меню, кнопки от 44 px.</aside>
@@ -492,27 +496,27 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
 
 <section class="slide" data-section="8" data-demo-step="4">
   <p class="k">08 · Шаг 4 из 7 · Студент</p>
-  <p class="role" data-demo-role>Студент Смирнова</p>
+  <p class="role" data-demo-role>Студент</p>
   <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
   <div class="demo-left" style="top:170px">
     <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Дедлайн прошёл — штраф идёт</h2>
     <p class="lead" data-editable>«Просрочено» и «Списано 4 из 12 АР»: шаг 4 АР раз в минуту, не больше стоимости точки.</p>
     <div class="ux"><b>ПОЧЕМУ ТАК</b>Штраф не сюрприз: экран показывает, сколько уже списано и когда следующее списание.</div>
-    <div class="run"><button data-demo-run>Запустить шаг</button><p data-demo-status></p></div>
+    <p class="demo-status" data-demo-status></p>
   </div>
   <div class="page"><span>Демонстрация</span><span data-pg></span></div>
-  <aside class="notes">Александр, 32 с. Кнопка доступна через 5 секунд после дедлайна.</aside>
+  <aside class="notes">Александр, 32 с. Если дедлайн ещё не наступил, шаг сам дождётся его и выполнится — пока можно рассказать про шаг штрафа.</aside>
 </section>
 
 <section class="slide" data-section="8" data-demo-step="5">
   <p class="k">08 · Шаг 5 из 7 · Студент и преподаватель</p>
-  <p class="role" data-demo-role>Студент Смирнова</p>
+  <p class="role" data-demo-role>Студент</p>
   <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
   <div class="demo-left" style="top:170px">
     <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Сдача, возврат, пересдача</h2>
     <p class="lead" data-editable>Сдала — штраф остановлен. Вернули с комментарием — штраф идёт. Пересдала — «Принято».</p>
     <div class="ux"><b>ПОЧЕМУ ТАК</b>Возврат обязательно с комментарием: студент видит, что исправить.</div>
-    <div class="run"><button data-demo-run>Запустить шаг</button><p data-demo-status></p></div>
+    <p class="demo-status" data-demo-status></p>
   </div>
   <div class="page"><span>Демонстрация</span><span data-pg></span></div>
   <aside class="notes">Александр, 32 с. Роль меняется трижды — презентация выходит и входит сама.</aside>
@@ -520,13 +524,13 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
 
 <section class="slide" data-section="8" data-demo-step="6">
   <p class="k">08 · Шаг 6 из 7 · Преподаватель</p>
-  <p class="role" data-demo-role>Преподаватель Петров</p>
+  <p class="role" data-demo-role>Преподаватель</p>
   <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
   <div class="demo-left" style="top:170px">
     <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Участие подтверждено на 50 %</h2>
-    <p class="lead" data-editable>Смирновой +38 БОА, бюджет ИВТ-21 меньше на 38.</p>
+    <p class="lead" data-editable>Студенту +38 БОА, бюджет ИВТ-21 меньше на 38.</p>
     <div class="ux"><b>ПОЧЕМУ ТАК</b>Кнопка называет итог: «Начислить 38 БОА», а не «ОК».</div>
-    <div class="run"><button data-demo-run>Запустить шаг</button><p data-demo-status></p></div>
+    <p class="demo-status" data-demo-status></p>
   </div>
   <div class="page"><span>Демонстрация</span><span data-pg></span></div>
   <aside class="notes">Александр, 32 с. Уровни участия 25, 50, 75 и 100 % — из ТЗ; 50 % от 75 округляется до 38.</aside>
@@ -534,13 +538,13 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
 
 <section class="slide" data-section="8" data-demo-step="7">
   <p class="k">08 · Шаг 7 из 7 · Студент</p>
-  <p class="role" data-demo-role>Студент Смирнова</p>
+  <p class="role" data-demo-role>Студент</p>
   <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
   <div class="demo-left" style="top:170px">
     <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>История и лента</h2>
     <p class="lead" data-editable>В профиле — списания АР и +38 БОА, в ленте наград — запись о начислении.</p>
     <div class="ux"><b>ПОЧЕМУ ТАК</b>Каждое изменение баллов видно в истории: за что, когда, сколько.</div>
-    <div class="run"><button data-demo-run>Запустить шаг</button><p data-demo-status></p></div>
+    <p class="demo-status" data-demo-status></p>
   </div>
   <div class="page"><span>Демонстрация</span><span data-pg></span></div>
   <aside class="notes">Александр, 33 с. История — из того же журнала проводок, что и баланс.</aside>
@@ -633,6 +637,9 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
     if (location.hash !== `#s${current + 1}`) history.replaceState(null, '', `${location.search}#s${current + 1}`);
     document.dispatchEvent(new CustomEvent('deck:slidechange', { detail: { index: current, slide: slides[current] } }));
   }
+  function next() {
+    if (document.dispatchEvent(new CustomEvent('deck:next', { cancelable: true }))) show(current + 1);
+  }
   function fromHash() {
     const m = location.hash.match(/^#s(\d+)$/);
     return m ? Number(m[1]) - 1 : 0;
@@ -647,7 +654,7 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
       if (e.key === 'Escape' && document.body.classList.contains('editing')) toggleEdit();
       return;
     }
-    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); show(current + 1); }
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); next(); }
     else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); show(current - 1); }
     else if (e.key === 'Home') show(0);
     else if (e.key === 'End') show(slides.length - 1);
@@ -655,7 +662,7 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
     else if (e.key === 'e' || e.key === 'E' || e.key === 'у' || e.key === 'У') toggleEdit();
   });
   document.querySelector('[data-prev]').addEventListener('click', () => show(current - 1));
-  document.querySelector('[data-next]').addEventListener('click', () => show(current + 1));
+  document.querySelector('[data-next]').addEventListener('click', () => next());
   addEventListener('hashchange', () => { const i = fromHash(); if (i !== current) show(i); });
   addEventListener('resize', fit);
   fit();
