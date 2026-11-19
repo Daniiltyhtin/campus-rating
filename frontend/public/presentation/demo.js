@@ -19,7 +19,6 @@
   let run;
   let role;
   let studentName;
-  let studentPath;
   let pending = '';
   let frameLeft = 0;
   let frameTop = 0;
@@ -289,6 +288,22 @@
     renderRole();
     if (target === 'student') studentName = fullName;
   }
+  async function tab(labelText, pattern) {
+    pending = `меню «${labelText}»`;
+    await click('link', labelText, await wait(() => doc().querySelector('nav[aria-label="Нижнее меню"]')));
+    await waitPath(pattern);
+    await sleep(500);
+  }
+  async function openTask() {
+    await tab('Задачи', /^\/tasks$/);
+    await click('link', run.checkpointTitle);
+    await waitPath(/^\/tasks\/\d+$/);
+  }
+  async function openCheckpoint() {
+    await tab('Точки', /^\/checkpoints$/);
+    await click('link', run.checkpointTitle);
+    await waitPath(/^\/checkpoints\/\d+$/);
+  }
   const moscow = (instant) => new Date(instant + 3 * 3600_000).toISOString().slice(0, 16);
   async function submit() {
     await fill('Ссылка на работу', 'https://github.com/Daniiltyhtin/campus-rating');
@@ -298,7 +313,9 @@
   const steps = {
     async 1() {
       await signIn('teacher');
-      await navigate('/checkpoints/new');
+      await tab('Точки', /^\/checkpoints$/);
+      await click('link', 'Новая точка');
+      await waitPath(/^\/checkpoints\/new$/);
       await fill('Название', run.checkpointTitle);
       await fill('Описание', 'Демонстрация на защите');
       await choose('ИВТ-21');
@@ -307,11 +324,12 @@
       await click('button', 'Создать точку');
       await waitPath(/^\/checkpoints\/\d+$/);
       await wait(() => byRole('heading', run.checkpointTitle));
-      run.checkpointPath = path();
     },
     async 2() {
       await signIn('teacher');
-      await navigate('/activities/new');
+      await tab('Активности', /^\/activities$/);
+      await click('link', 'Создать активность');
+      await waitPath(/^\/activities\/new$/);
       await fill('Название', run.activityTitle);
       await fill('Описание', 'Демонстрация на защите');
       await select('Тип активности', 'SOCIAL');
@@ -324,37 +342,34 @@
     },
     async 3() {
       await signIn('student');
-      await navigate('/tasks');
-      await click('link', run.checkpointTitle);
-      await waitPath(/^\/tasks\/\d+$/);
-      run.taskPath = path();
+      await openTask();
       await text('В процессе');
-      await navigate('/activities');
+      await tab('Активности', /^\/activities$/);
       await click('button', `Записаться: ${run.activityTitle}`);
       await text('Вы записались на активность');
     },
     async 4() {
       await signIn('student');
-      await navigate(run.taskPath, 14_500);
+      await openTask();
       await wait(() => byText('Просрочено') && byText(/Списано (4|8|12) из 12 АР/));
     },
     async 5() {
       await signIn('student');
-      await navigate(run.taskPath);
+      await openTask();
       await submit();
       await signIn('teacher');
-      await navigate(run.checkpointPath);
+      await openCheckpoint();
       await click('button', `Действия: ${studentName}`);
       await click('menuitem', 'Вернуть…');
       await fill('Комментарий возврата', 'Добавьте ссылку на отчёт');
       await click('button', 'Вернуть работу');
       await wait(() => !byRole('button', 'Вернуть работу'));
       await signIn('student');
-      await navigate(run.taskPath);
+      await openTask();
       await text('Добавьте ссылку на отчёт');
       await submit();
       await signIn('teacher');
-      await navigate(run.checkpointPath);
+      await openCheckpoint();
       await action(() => label(studentName), (element) => element.click());
       await click('button', 'Принять 1 работу');
       await wait(() => {
@@ -364,12 +379,10 @@
     },
     async 6() {
       await signIn('teacher');
-      await navigate('/activities');
-      const link = await wait(() => byRole('link', `Подтвердить участие: ${run.activityTitle}`));
-      const confirmPath = link.getAttribute('href');
-      await navigate(confirmPath);
+      await tab('Активности', /^\/activities$/);
+      await click('link', `Подтвердить участие: ${run.activityTitle}`);
+      await waitPath(/^\/activities\/\d+\/confirm$/);
       const row = await wait(() => [...doc().querySelectorAll('[role="row"]')].find((item) => visible(item) && item.textContent.includes(studentName)));
-      studentPath = byRole('link', studentName, row).getAttribute('href');
       await choose('Выбрать', row);
       await choose('50 %', row);
       await click('button', 'Начислить 38 БОА');
@@ -377,10 +390,10 @@
     },
     async 7() {
       await signIn('student');
-      await navigate(studentPath);
+      await tab('Профиль', /^\/users\/\d+$/);
       await wait(() => [...doc().querySelectorAll('[aria-label="Балансы"]')].find(visible));
       await sleep(1500);
-      await navigate('/awards');
+      await tab('Награды', /^\/awards$/);
       await wait(() => [...doc().querySelectorAll('article')].find((item) => visible(item)
         && item.textContent.includes(run.activityTitle) && /\+38 БОА/.test(item.textContent)));
     },
