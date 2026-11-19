@@ -336,7 +336,7 @@ async function merge(options) {
     '| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |',
   ];
   const grand = emptyTotal();
-  const slide = { ioTokens: 0, withCacheTokens: 0, dates: [], participants: new Set() };
+  const slide = { ioTokens: 0, withCacheTokens: 0, dates: [] };
   const periods = [];
   const daily = [];
   for (const file of files) {
@@ -356,7 +356,6 @@ async function merge(options) {
           slide.ioTokens += tokens.ioTokens;
           slide.withCacheTokens += tokens.withCacheTokens;
           slide.dates.push(...stats.daily.map(day => day.date));
-          slide.participants.add(data.participant);
         }
         const coverage = `${cell(stats.coverage)}${included ? '' : '; не входит в итог для слайда'}`;
         rows.push(`| ${cell(data.participant)} | ${source} | ${totalCells(total)} | ${coverage} |`);
@@ -376,8 +375,6 @@ async function merge(options) {
   slide.dates.sort();
   const formatDate = date => date.split('-').reverse().join('.');
   const period = slide.dates.length ? `${formatDate(slide.dates[0]).slice(0, 5)}–${formatDate(slide.dates.at(-1))}` : 'нет данных';
-  const participants = slide.participants.size === 2 ? 'двух участников'
-    : slide.participants.size === 1 ? 'одного участника' : `${slide.participants.size} участников`;
   rows.push('## Сбор данных', '',
     'Повторяйте `--claude-config-dir`, `--claude-project` и `--codex-cwd` для нескольких каталогов и корней. Имя проекта Claude должно точно совпадать с именем папки в `projects`.', '',
     '```sh',
@@ -388,7 +385,7 @@ async function merge(options) {
     'Стоимость Claude из ccusage сохраняется только при совпадении суточного числа токенов с дедуплицированными журналами; иначе оценка неизвестна.', '');
   rows.push('## Для слайда', '', `Без кэша: ${Math.round(slide.ioTokens / 1_000_000)} млн токенов`, '',
     `С учётом кэша: ${Math.round(slide.withCacheTokens / 1_000_000)} млн токенов`, '',
-    `Нижняя оценка: сессии в папке проекта у ${participants}, ${period}`, '');
+    `Нижняя оценка: сессии в папке проекта, ${period}`, '');
   const journal = journalStats(await fs.readFile(path.join(options.root, 'docs/agent-log.md'), 'utf8'));
   rows.push(`Принятых юнитов: ${journal.accepted}`, '', `Записей журнала: ${journal.entries}`, '', `Кругов ревью: ${journal.rounds}`, '');
   await fs.writeFile(path.join(options.root, 'docs/presentation/agent-stats.md'), rows.join('\n'));

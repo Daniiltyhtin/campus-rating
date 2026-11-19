@@ -262,7 +262,7 @@ for (const [tokens, millions] of [[1499999, 1], [1500000, 2]]) {
     assert.ok(slide);
     assert.match(slide, new RegExp(`Без кэша: ${millions} млн токенов`));
     assert.match(slide, new RegExp(`С учётом кэша: ${millions + 1} млн токенов`));
-    assert.match(slide, /Нижняя оценка: сессии в папке проекта у двух участников, 29\.10–12\.11\.2026/);
+    assert.match(slide, /Нижняя оценка: сессии в папке проекта, 29\.10–12\.11\.2026/);
     assert.doesNotMatch(slide, /USD|\$|стоимость/i);
     assert.match(text, /Максим \| codex .*вся машина; не входит в итог для слайда/);
     assert.match(text, /Стоимость, USD/);
