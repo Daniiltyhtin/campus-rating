@@ -78,7 +78,7 @@ test('KTD9 merge sums two participants, counts journal entries and review rounds
   assert.match(text, /\| Боб \| codex \| 20 \| 10 \| 170 \| 200 \| 2\.500000 \| вся машина; не входит в итог для слайда \|/);
   assert.match(text, /\| \*\*Итого\*\* \| — \| 68 \| 86 \| 466 \| 620 \| 8\.500000 \|/);
   assert.match(text, /Записей журнала: 5/);
-  assert.match(text, /Кругов ревью: 5/);
+  assert.match(text, /Кругов ревью: 8/);
   await main(['--export', 'Алиса', '--claude-project', 'campus'], options);
   assert.equal(await main(['--merge'], options), 0);
   assert.equal(await report(), text);
@@ -110,7 +110,7 @@ test('KTD9 journal distinguishes accepted units from research, missing commits a
   const text = await report();
   assert.match(text, /Принятых юнитов: 1\b/);
   assert.match(text, /Записей журнала: 5\b/);
-  assert.match(text, /Кругов ревью: 5\b/);
+  assert.match(text, /Кругов ревью: 8\b/);
 });
 
 for (const [name, failed, reason] of [

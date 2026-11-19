@@ -265,17 +265,17 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
 
 <section class="slide" data-section="2">
   <p class="k">02 · Роли в команде</p>
-  <h2 class="t" data-editable>Три человека, <em>два агента</em></h2>
+  <h2 class="t" data-editable>Три человека, <em>три модели</em></h2>
   <div class="box" style="left:200px;top:330px;width:1560px">
     <table class="rows">
       <tr><td class="tag">Даниил<br>backend · процесс</td><td data-editable>журнал проводок, контрольные точки и штрафы, спецификация, работа с агентами</td></tr>
-      <tr><td class="tag">Максим<br>frontend</td><td data-editable>интерфейс, вход и регистрация, администрирование, подтверждение членства, опросы</td></tr>
-      <tr><td class="tag">Александр<br>QA</td><td data-editable>тест-план, прогоны и регрессия, визуальная ревизия интерфейса</td></tr>
+      <tr><td class="tag">Максим<br>frontend</td><td data-editable>интерфейс; вход, администрирование с импортом, подтверждение членства, опросы — фронт и бэк</td></tr>
+      <tr><td class="tag">Александр<br>QA</td><td data-editable>тест-план, прогоны и регрессия, ревизия интерфейса; backend профиля и истории баллов</td></tr>
     </table>
-    <p class="lead" style="margin-top:44px" data-editable>Код пишут Claude Code и Codex. Задачу ставит, проверяет и отвечает за каждую строку — человек.</p>
+    <p class="lead" style="margin-top:44px" data-editable>Код пишут Claude Code и Codex, ревьюит ещё и Gemini. Задачу ставит, проверяет и отвечает за каждую строку — человек.</p>
   </div>
   <div class="page"><span>Campus Rating · роли</span><span data-pg></span></div>
-  <aside class="notes">Даниил, 30 с. Максим сегодня не выступает — вопросы по frontend принимает Даниил. Подчеркнуть: агенты — исполнители и ревьюеры, решения и ответственность — наши.</aside>
+  <aside class="notes">Даниил, 30 с. Максим сегодня не выступает — вопросы по frontend и импорту в админке принимает Даниил, по профилю и истории баллов — Саша. Подчеркнуть: агенты — исполнители и ревьюеры, решения и ответственность — наши.</aside>
 </section>
 
 <section class="slide" data-section="3">
@@ -297,7 +297,7 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
     </table>
   </div>
   <div class="page"><span>Модули 1–4 — базовая часть, 5–11 — дополнительные опции</span><span data-pg></span></div>
-  <aside class="notes">Даниил, 60 с. Базовая часть — модули 1–4 — сделана целиком. Из дополнительных опций сделаны 5–8 и 10; уведомления и ИИ-функция — в развитии, в коде под них только заготовки модулей. Отметка «сделано» — каждый подпункт модуля можно выполнить через интерфейс стенда.</aside>
+  <aside class="notes">Даниил, 60 с. Базовая часть — модули 1–4 — сделана целиком. Из дополнительных опций сделаны 5–8 и 10; уведомления и ИИ-функция — в развитии, в коде под них только заготовки модулей. Отметка «сделано» — каждый подпункт модуля можно выполнить через интерфейс стенда. Если спросят про сроки: опросы и подтверждение членства слиты 13.11, на день позже срока сдачи 12.11 — говорим прямо.</aside>
 </section>
 
 <section class="slide" data-section="4">
@@ -310,7 +310,7 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
     <div class="arrow">↓</div>
     <div class="node"><b>backend · Spring Boot</b><span>Spring Modulith, серверная сессия</span></div>
     <div class="arrow">↓</div>
-    <div class="node"><b>PostgreSQL 18</b><span>журнал проводок, балансы, файлы сдач</span></div>
+    <div class="node"><b>PostgreSQL 18</b><span>журнал проводок, балансы; файлы сдач — на томе</span></div>
   </div>
   <div class="box" style="left:920px;top:300px;width:840px">
     <table class="rows">
@@ -344,7 +344,7 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
   <div class="box" style="left:200px;top:330px;width:740px">
     <p class="col-h">Инструменты</p>
     <ul class="list">
-      <li><b>Claude Code и Codex</b> — пишут код и ревьюят друг друга</li>
+      <li><b>Claude Code и Codex</b> пишут и ревьюят, <b>Gemini</b> — независимый ревьюер</li>
       <li><b>MCP Playwright</b> — проход по стенду и скриншоты</li>
       <li><b>Скиллы</b> write-tests, implement-unit, review-unit, agent-log</li>
       <li><b>Субагенты</b> reviewer и tester</li>
@@ -373,7 +373,7 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
     <div class="stat"><div class="num">11 <small>млн</small></div><div class="num-l">токенов на вход и выход без кэша</div></div>
     <div class="stat"><div class="num">71</div><div class="num-l">PR слит в main</div></div>
     <div class="stat"><div class="num">248 <small>млн</small></div><div class="num-l">токенов с учётом кэша</div></div>
-    <div class="stat"><div class="num">117 · 20</div><div class="num-l">записей журнала агентов · кругов ревью</div></div>
+    <div class="stat"><div class="num">117 · 74</div><div class="num-l">записей журнала агентов · кругов ревью</div></div>
     <div class="stat"><div class="note-line" style="font-size:24px;line-height:1.6">Нижняя оценка: сессии в папке проекта, 31.10–19.11.2026</div></div>
   </div>
   <div class="page"><span>Срез: c3b1c12, 15.11.2026 МСК</span><span data-pg></span></div>
@@ -384,7 +384,7 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
   <p class="k">05 · Где агент ошибался</p>
   <h2 class="t" data-editable>Ошибки ловили <em>вопросы и второе ревью</em></h2>
   <div class="box" style="left:200px;top:310px;width:1560px">
-    <div class="err"><h3>Баланс считался суммой проводок</h3><p><b>Заметили:</b> человек спросил, что будет при 1000+ проводок на студента.<br><b>Изменили:</b> снимок баланса в той же транзакции, SUM в рабочих запросах запрещён.</p></div>
+    <div class="err"><h3>Баланс считался суммой проводок</h3><p><b>Заметили:</b> человек спросил, что будет при 1000+ проводок на студента.<br><b>Изменили:</b> баланс читается из снимка в той же транзакции; SUM — только в аналитике и сверке.</p></div>
     <div class="err"><h3>5 дефектов P1 в спеке после самопроверки</h3><p><b>Заметили:</b> ревью другой моделью до первой строки кода.<br><b>Изменили:</b> требования к штрафу, бюджету и идемпотентности.</p></div>
     <div class="err"><h3>Тест гонок зелёный и без блокировки</h3><p><b>Заметили:</b> ревьюер убрал for update — тест не упал.<br><b>Изменили:</b> данные готовятся до гонки, без блокировки тест красный.</p></div>
   </div>
@@ -504,12 +504,12 @@ body.export .deck-controls, body.export .notes-panel { display: none !important;
   <div data-demo-frame-slot class="slot">Живое демо — campus-rating.ru</div>
   <div class="demo-left" style="top:170px">
     <h2 style="font-size:56px;line-height:1.1;margin:0 0 28px" data-editable>Дедлайн прошёл — штраф идёт</h2>
-    <p class="lead" data-editable>«Просрочено» и «Списано 4 из 12 АР»: шаг 4 АР раз в минуту, не больше стоимости точки.</p>
+    <p class="lead" data-editable>«Просрочено» и «Списано 4 из 12 АР»: шаг и интервал — настройка администратора, на стенде 4 АР в минуту.</p>
     <div class="ux"><b>ПОЧЕМУ ТАК</b>Штраф не сюрприз: экран показывает, сколько уже списано и когда следующее списание.</div>
     <p class="demo-status" data-demo-status></p>
   </div>
   <div class="page"><span>Демонстрация</span><span data-pg></span></div>
-  <aside class="notes">Александр, 32 с. Ожидание дедлайна в записи вырезано: штраф начинает списываться сразу после дедлайна, шагом 4 АР в минуту.</aside>
+  <aside class="notes">Александр, 32 с. Ожидание дедлайна в записи вырезано. В ТЗ пример — 20 АР в минуту; у нас шаг и интервал задаёт администратор, для демо стоит 4. Списание не больше стоимости точки.</aside>
 </section>
 
 <section class="slide" data-section="8" data-demo-step="5">

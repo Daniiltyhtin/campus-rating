@@ -299,7 +299,7 @@ function journalStats(text) {
         ? { unit: /\bU\d+\b/.test(line), committed: false } : undefined;
       if (entry) entries += 1;
     }
-    const match = line.match(/^\s*- \*\*Кругов ревью:\*\*\s+(\d+)(?:\s*\(.*\))?\s*$/);
+    const match = line.match(/^\s*- \*\*Кругов ревью:\*\*\s+(\d+)(?!\d)/);
     if (entry && match) rounds += Number(match[1]);
     const commit = line.match(/^\s*- \*\*Коммит \/ PR:\*\*\s*(.*?)\s*$/);
     if (entry && commit && commit[1] && commit[1] !== '—') entry.committed = true;
