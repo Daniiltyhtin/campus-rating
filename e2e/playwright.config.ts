@@ -12,7 +12,8 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'mobile', use: { viewport: { width: 360, height: 800 } } },
-    { name: 'desktop', use: { viewport: { width: 1280, height: 800 } } },
+    { name: 'mobile', testIgnore: /presentation\.spec\.ts/, use: { viewport: { width: 360, height: 800 } } },
+    { name: 'desktop', testIgnore: /presentation\.spec\.ts/, use: { viewport: { width: 1280, height: 800 } } },
+    { name: 'demo', testMatch: /presentation\.spec\.ts/, dependencies: ['mobile', 'desktop'], use: { viewport: { width: 1280, height: 800 } } },
   ],
 });

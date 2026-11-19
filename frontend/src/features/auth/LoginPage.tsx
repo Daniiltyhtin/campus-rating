@@ -32,7 +32,7 @@ export function LoginPage() {
         : action.error && <ActionError error={action.error} onReset={action.reset} />}
       <ActionButton type="submit" pending={action.isPending || action.refreshing} disabled={action.needsRefresh && !action.isPending}>Войти</ActionButton>
     </FormLayout>
-    <Stack gap="xs"><Text className="cr-caption">Первый раз здесь?</Text><Anchor component={Link} to="/register" c="var(--cr-link)">Создать аккаунт</Anchor></Stack>
+    <Stack gap="xs"><Text className="cr-caption">Первый раз здесь?</Text><Anchor component={Link} to="/register" c="var(--cr-link)">Создать аккаунт</Anchor><Anchor href="/presentation" c="var(--cr-link)">Презентация проекта</Anchor></Stack>
     {action.error instanceof ApiError && action.error.code === 'EMAIL_NOT_VERIFIED' && <SendVerification email={email} />}
     <ConfigNotices config={config.data} />
   </AuthLayout>;

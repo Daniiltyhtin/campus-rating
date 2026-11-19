@@ -1,0 +1,170 @@
+{
+  "participant": "Даниил",
+  "period": {
+    "since": "2026-10-22",
+    "through": "2026-11-19"
+  },
+  "sources": {
+    "claude": {
+      "status": "ok",
+      "coverage": "один проект Claude",
+      "daily": [
+        {
+          "date": "2026-10-31",
+          "tokens": {
+            "input": 50,
+            "output": 12130,
+            "cache": 934667,
+            "total": 946847
+          },
+          "costUSD": 0.8092868,
+          "models": [
+            "claude-opus-5-5"
+          ]
+        }
+      ],
+      "ioTokens": 12180,
+      "withCacheTokens": 946847
+    },
+    "codex": {
+      "status": "ok",
+      "coverage": "папка проекта Codex",
+      "daily": [
+        {
+          "date": "2026-10-31",
+          "tokens": {
+            "input": 744201,
+            "output": 100404,
+            "cache": 9724672,
+            "total": 10569277
+          },
+          "costUSD": null,
+          "models": []
+        },
+        {
+          "date": "2026-11-02",
+          "tokens": {
+            "input": 148610,
+            "output": 10430,
+            "cache": 880000,
+            "total": 1039040
+          },
+          "costUSD": null,
+          "models": []
+        },
+        {
+          "date": "2026-11-07",
+          "tokens": {
+            "input": 887647,
+            "output": 93808,
+            "cache": 12154496,
+            "total": 13135951
+          },
+          "costUSD": null,
+          "models": []
+        },
+        {
+          "date": "2026-11-08",
+          "tokens": {
+            "input": 245685,
+            "output": 31335,
+            "cache": 4600576,
+            "total": 4877596
+          },
+          "costUSD": null,
+          "models": []
+        },
+        {
+          "date": "2026-11-09",
+          "tokens": {
+            "input": 759748,
+            "output": 149985,
+            "cache": 20679936,
+            "total": 21589669
+          },
+          "costUSD": null,
+          "models": []
+        },
+        {
+          "date": "2026-11-10",
+          "tokens": {
+            "input": 488421,
+            "output": 157513,
+            "cache": 22562048,
+            "total": 23207982
+          },
+          "costUSD": null,
+          "models": []
+        },
+        {
+          "date": "2026-11-11",
+          "tokens": {
+            "input": 1818916,
+            "output": 278827,
+            "cache": 42312832,
+            "total": 44410575
+          },
+          "costUSD": null,
+          "models": []
+        },
+        {
+          "date": "2026-11-12",
+          "tokens": {
+            "input": 1522432,
+            "output": 203686,
+            "cache": 42972032,
+            "total": 44698150
+          },
+          "costUSD": null,
+          "models": []
+        },
+        {
+          "date": "2026-11-13",
+          "tokens": {
+            "input": 1477107,
+            "output": 160308,
+            "cache": 24106112,
+            "total": 25743527
+          },
+          "costUSD": null,
+          "models": []
+        },
+        {
+          "date": "2026-11-14",
+          "tokens": {
+            "input": 761340,
+            "output": 103181,
+            "cache": 19523328,
+            "total": 20387849
+          },
+          "costUSD": null,
+          "models": []
+        },
+        {
+          "date": "2026-11-18",
+          "tokens": {
+            "input": 209676,
+            "output": 36936,
+            "cache": 4227200,
+            "total": 4473812
+          },
+          "costUSD": null,
+          "models": []
+        },
+        {
+          "date": "2026-11-19",
+          "tokens": {
+            "input": 186271,
+            "output": 7994,
+            "cache": 1006976,
+            "total": 1201241
+          },
+          "costUSD": null,
+          "models": []
+        }
+      ],
+      "ioTokens": 10584461,
+      "withCacheTokens": 215334669
+    }
+  }
+}

@@ -133,7 +133,7 @@ test('U22: inner nginx sends security headers once on every location', async () 
   assert.match(server, /server_tokens off;/);
   assert.match(server, /add_header X-Content-Type-Options nosniff always;/);
   assert.match(server, /add_header Referrer-Policy no-referrer always;/);
-  assert.match(server, /add_header Content-Security-Policy "frame-ancestors 'none'" always;/);
+  assert.match(server, /add_header Content-Security-Policy "frame-ancestors 'self'" always;/);
   const locations = nginx.slice(nginx.indexOf('location '));
   assert.doesNotMatch(locations, /add_header/, 'add_header in a location drops the server headers');
   assert.match(locationBlock(nginx, '/api/'), /proxy_hide_header X-Content-Type-Options;/);

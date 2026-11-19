@@ -48,7 +48,9 @@
             "claude-opus-5-5"
           ]
         }
-      ]
+      ],
+      "ioTokens": 111091,
+      "withCacheTokens": 31972479
     },
     "codex": {
       "status": "ok",
@@ -119,7 +121,9 @@
             "gpt-6.1-sol"
           ]
         }
-      ]
+      ],
+      "ioTokens": 6728823,
+      "withCacheTokens": 360450423
     }
   }
 }
