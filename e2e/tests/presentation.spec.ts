@@ -136,7 +136,8 @@ test.describe('запись демо по умолчанию', () => {
   test('клавиша запускает запись шага, следующая листает; сайт не открывается', async ({ page }) => {
     let siteRequests = 0;
     page.on('request', (request) => { if (new URL(request.url()).pathname.startsWith('/api/')) siteRequests++; });
-    await page.goto('/presentation');
+    await page.goto('/presentation#s11');
+    await expect(page.locator('[data-demo-intro]')).toHaveClass(/\bactive\b/);
     await expect(page.locator('[data-demo-prefix]')).toBeHidden();
     for (let step = 1; step <= 7; step++) {
       const response = await page.request.get(`/presentation/demo/step-${step}.mp4`);
